@@ -1,8 +1,8 @@
-﻿using desu.life_Bot.Drivers;
+﻿using desu_life_Bot.Drivers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace desu.life_Bot.Event;
+namespace desu_life_Bot.Event;
 
 public interface IEvent
 {

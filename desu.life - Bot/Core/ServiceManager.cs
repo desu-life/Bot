@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using desu.life_Bot.Drivers;
-using desu.life_Bot.Event;
-using static desu.life_Bot.Command.CommandSystem;
-using Msg = desu.life_Bot.Message;
+using desu_life_Bot.Drivers;
+using desu_life_Bot.Event;
+using static desu_life_Bot.Command.CommandSystem;
+using Msg = desu_life_Bot.Message;
 
-namespace desu.life_Bot.Core;
+namespace desu_life_Bot.Core;
 
 public static class ServiceManager
 {

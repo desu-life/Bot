@@ -1,12 +1,12 @@
 ﻿using Newtonsoft.Json.Linq;
-using desu.life_Bot.Message;
+using desu_life_Bot.Message;
 //using KanonBot.API;
-using desu.life_Bot.Serializer;
+using desu_life_Bot.Serializer;
 using Newtonsoft.Json;
 using Serilog;
 using System.Reflection;
 
-namespace desu.life_Bot.Drivers;
+namespace desu_life_Bot.Drivers;
 
 
 public partial class OneBot

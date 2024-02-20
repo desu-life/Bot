@@ -1,16 +1,6 @@
-﻿using desu.life_Bot.Drivers;
-using desu.life_Bot;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using desu_life_Bot.Message;
 
-//using KanonBot.API;
-using desu.life_Bot.Message;
-using Microsoft.VisualBasic.CompilerServices;
-
-namespace desu.life_Bot.Drivers;
+namespace desu_life_Bot.Drivers;
 
 public partial class FakeSocket : ISocket, IReply
 {

@@ -1,8 +1,8 @@
-﻿using desu.life_Bot.Serializer;
+﻿using desu_life_Bot.Serializer;
 using Tomlyn.Model;
 
 
-namespace desu.life_Bot;
+namespace desu_life_Bot;
 
 /// <summary>
 /// 提供配置管理功能，包括配置的加载、保存以及默认配置的生成。

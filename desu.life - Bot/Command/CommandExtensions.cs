@@ -1,4 +1,4 @@
-﻿namespace desu.life_Bot.Command;
+﻿namespace desu_life_Bot.Command;
 
 public static class Extensions
 {

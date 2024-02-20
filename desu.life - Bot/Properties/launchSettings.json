@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "desu.life - Bot": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "KANONBOT_TEST_USER_ID": "123456"
+      }
+    }
+  }
+}

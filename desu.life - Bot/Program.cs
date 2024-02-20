@@ -1,5 +1,5 @@
-﻿using static desu.life_Bot.Initializer;
-using static desu.life_Bot.Core.ServiceManager;
+﻿using static desu_life_Bot.Initializer;
+using static desu_life_Bot.Core.ServiceManager;
 
 // 初始化
 await InitializationAsync();

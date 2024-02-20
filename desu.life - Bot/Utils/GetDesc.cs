@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Reflection;
 
-namespace desu.life_Bot;
+namespace desu_life_Bot;
 
 public static partial class Utils
 {

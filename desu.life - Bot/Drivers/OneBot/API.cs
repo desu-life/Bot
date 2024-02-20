@@ -1,13 +1,13 @@
 ﻿using System.Collections.Concurrent;
 using System.Reflection;
-using desu.life_Bot.Message;
-using desu.life_Bot.Serializer;
+using desu_life_Bot.Message;
+using desu_life_Bot.Serializer;
 using LanguageExt.UnsafeValueAccess;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Serilog;
 
-namespace desu.life_Bot.Drivers;
+namespace desu_life_Bot.Drivers;
 
 public partial class OneBot
 {

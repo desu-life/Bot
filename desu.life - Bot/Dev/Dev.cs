@@ -1,9 +1,9 @@
-﻿using desu.life_Bot.Drivers;
-using static desu.life_Bot.Command.CommandSystem;
-using Msg = desu.life_Bot.Message;
+﻿using desu_life_Bot.Drivers;
+using static desu_life_Bot.Command.CommandSystem;
+using Msg = desu_life_Bot.Message;
 using LanguageExt.UnsafeValueAccess;
 
-namespace desu.life_Bot;
+namespace desu_life_Bot;
 
 public static partial class Dev
 {

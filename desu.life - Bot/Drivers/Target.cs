@@ -1,11 +1,11 @@
 ﻿using Serilog;
 using System.Threading.Channels;
-using static desu.life_Bot.Config;
+using static desu_life_Bot.Config;
 //using libDiscord = Discord;
 //using libKook = Kook;
-using Msg = desu.life_Bot.Message;
+using Msg = desu_life_Bot.Message;
 
-namespace desu.life_Bot.Drivers;
+namespace desu_life_Bot.Drivers;
 
 // 消息target封装
 // 暂时还不知道怎么写

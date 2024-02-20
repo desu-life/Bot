@@ -1,8 +1,8 @@
-﻿using desu.life_Bot.Drivers;
+﻿using desu_life_Bot.Drivers;
 using System.Reflection;
 using System.Data;
 
-namespace desu.life_Bot.Command
+namespace desu_life_Bot.Command
 {
     public static class CommandRegister
     {

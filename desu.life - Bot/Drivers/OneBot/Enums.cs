@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace desu.life_Bot.Drivers;
+namespace desu_life_Bot.Drivers;
 
 public partial class OneBot
 {

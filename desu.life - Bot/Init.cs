@@ -1,4 +1,4 @@
-﻿using desu.life_Bot.Drivers;
+﻿using desu_life_Bot.Drivers;
 using LanguageExt.UnsafeValueAccess;
 using Serilog;
 using System;
@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static desu.life_Bot.Dev;
-using static desu.life_Bot.Command.CommandRegister;
-using static desu.life_Bot.Command.CommandSystem;
+using static desu_life_Bot.Dev;
+using static desu_life_Bot.Command.CommandRegister;
+using static desu_life_Bot.Command.CommandSystem;
 
-namespace desu.life_Bot;
+namespace desu_life_Bot;
 
 /// <summary>
 /// 初始化应用程序配置，通过从预定义路径加载配置信息。

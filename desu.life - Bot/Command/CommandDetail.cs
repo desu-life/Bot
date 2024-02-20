@@ -1,6 +1,6 @@
-﻿using desu.life_Bot.Drivers;
+﻿using desu_life_Bot.Drivers;
 
-namespace desu.life_Bot.Command
+namespace desu_life_Bot.Command
 {
     public class CommandNode(
         string name,

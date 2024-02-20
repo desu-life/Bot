@@ -1,9 +1,9 @@
 ﻿using Fleck;
-using desu.life_Bot.Event;
-using desu.life_Bot.Serializer;
+using desu_life_Bot.Event;
+using desu_life_Bot.Serializer;
 using Newtonsoft.Json;
 
-namespace desu.life_Bot.Drivers;
+namespace desu_life_Bot.Drivers;
 
 public partial class OneBot
 {

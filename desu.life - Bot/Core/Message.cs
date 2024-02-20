@@ -1,8 +1,8 @@
-﻿using desu.life_Bot.Drivers;
+﻿using desu_life_Bot.Drivers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace desu.life_Bot.Message;
+namespace desu_life_Bot.Message;
 
 public interface IMsgSegment : IEquatable<IMsgSegment>
 {

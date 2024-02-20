@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Globalization;
 using Tomyn = Tomlyn.Toml;
 
-namespace desu.life_Bot.Serializer;
+namespace desu_life_Bot.Serializer;
 
 public static class Json
 {
