@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace desu.life_Bot;
 
-public class Utils
+public static partial class Utils
 {
     public static string GetDesc(object? value)
     {

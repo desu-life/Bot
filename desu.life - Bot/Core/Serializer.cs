@@ -97,6 +97,6 @@ public class JsonEnumConverter : JsonConverter
             writer.WriteValue("");
             return;
         }
-        writer.WriteValue(Utils.GetDesc(value));
+        writer.WriteValue(GetDesc(value));
     }
 }

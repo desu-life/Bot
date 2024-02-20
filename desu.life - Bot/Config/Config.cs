@@ -1,6 +1,7 @@
 ﻿using desu.life_Bot.Serializer;
 using Tomlyn.Model;
 
+
 namespace desu.life_Bot;
 
 /// <summary>
@@ -17,8 +18,7 @@ public class Config
         get => inner;
         set
         {
-            if (inner != null)
-                inner = value;
+            inner ??= value;
         }
     }
 
@@ -32,7 +32,7 @@ public class Config
         TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
     }
 
-    public class Guild : ITomlMetadataProvider
+    public class QQGuild : ITomlMetadataProvider
     {
         public bool Sandbox { get; set; }
         public long AppID { get; set; }
@@ -51,9 +51,9 @@ public class Config
 
     public class Base : ITomlMetadataProvider
     {
-        public bool Debug { get; set; }
+        public bool Dev { get; set; }
         public OneBot? Onebot { get; set; }
-        public Guild? Guild { get; set; }
+        public QQGuild? QQGuild { get; set; }
         public Discord? Discord { get; set; }
 
         TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
@@ -62,7 +62,7 @@ public class Config
         {
             return new Base()
             {
-                Debug = true,
+                Dev = false,
                 Onebot = new()
                 {
                     ManagementGroup = 0,
@@ -71,7 +71,7 @@ public class Config
                     HttpPort = 5700,
                     Port = 6700
                 },
-                Guild = new()
+                QQGuild = new()
                 {
                     AppID = 0,
                     Secret = "",

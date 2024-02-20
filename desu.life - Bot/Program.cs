@@ -1,10 +1,11 @@
-﻿using desu.life_Bot;
-using static desu.life_Bot.ConfigInitializer;
+﻿using static desu.life_Bot.Initializer;
+using static desu.life_Bot.Core.ServiceManager;
 
-Console.WriteLine("---desu.life Bot---");
+// 初始化
+await InitializationAsync();
 
+// 启动服务
+RunService();
 
-// 初始化配置
-InitializeConfig();
-
-var _Config = Config.Inner!;
+// 关闭日志
+Log.CloseAndFlush();
