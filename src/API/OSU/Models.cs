@@ -1039,13 +1039,13 @@ namespace KanonBot.API
 
             public class ScoreStatistics
             {
-                [JsonProperty("count_100")]
+                [JsonProperty("count_100", NullValueHandling = NullValueHandling.Ignore)]
                 public uint CountOk { get; set; }
 
-                [JsonProperty("count_300")]
+                [JsonProperty("count_300", NullValueHandling = NullValueHandling.Ignore)]
                 public uint CountGreat { get; set; }
 
-                [JsonProperty("count_50")]
+                [JsonProperty("count_50", NullValueHandling = NullValueHandling.Ignore)]
                 public uint CountMeh { get; set; }
 
                 [JsonProperty("count_geki", NullValueHandling = NullValueHandling.Ignore)]
@@ -1054,7 +1054,7 @@ namespace KanonBot.API
                 [JsonProperty("count_katu", NullValueHandling = NullValueHandling.Ignore)]
                 public uint CountKatu { get; set; }
 
-                [JsonProperty("count_miss")]
+                [JsonProperty("count_miss", NullValueHandling = NullValueHandling.Ignore)]
                 public uint CountMiss { get; set; }
             }
 
