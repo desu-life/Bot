@@ -38,6 +38,7 @@ public class Client
                 Database = config.database.db,
                 CharacterSet = "utf8mb4",
                 CancellationTimeout = 5,
+                DefaultCommandTimeout = 30
             }.ConnectionString
         );
         // 暂时只有Mysql
