@@ -8,6 +8,7 @@ using KanonBot.Functions.OSUBot;
 using LinqToDB;
 using LinqToDB.Configuration;
 using LinqToDB.Data;
+using LinqToDB.DataProvider.MySql;
 using MySqlConnector;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Ocsp;
@@ -26,7 +27,7 @@ public class Client
 {
     private static Config.Base config = Config.inner!;
 
-    private static DB GetInstance()
+    public static DB GetInstance()
     {
         var options = new DataOptions().UseMySqlConnector(
             new MySqlConnectionStringBuilder
@@ -295,6 +296,7 @@ public class Client
                 where p.uid == oid && p.gamemode == API.OSU.Enums.Mode2String(mode)
                 orderby p.lastupdate descending
                 select p;
+            
             data = await q.FirstOrDefaultAsync();
         }
         else

@@ -231,7 +231,7 @@ public class Model
     public class OsuArchivedRec
     {
         [PrimaryKey]
-        public int uid { get; set; }
+        public long uid { get; set; }
 
         [Column]
         public int play_count { get; set; }

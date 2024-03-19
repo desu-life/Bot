@@ -3,7 +3,7 @@ use interoptopus::{ffi_type, patterns::option::FFIOption};
 use rosu_pp::{
     beatmap::BeatmapAttributes, catch::CatchPerformanceAttributes,
     mania::ManiaPerformanceAttributes, osu::OsuPerformanceAttributes,
-    taiko::TaikoPerformanceAttributes, Beatmap, GameMode, PerformanceAttributes,
+    taiko::TaikoPerformanceAttributes, Beatmap, PerformanceAttributes,
 };
 
 #[ffi_type]

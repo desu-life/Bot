@@ -72,7 +72,7 @@ public partial class OneBot
 
         void Parse(ResponseMessage msg)
         {
-            var m = Json.ToLinq(msg.Text);
+            var m = Json.ToLinq(msg.Text!);
             if (m != null)
             {
                 if (m["post_type"] != null)

@@ -106,7 +106,7 @@ public partial class Guild : ISocket, IDriver
 
     void Parse(ResponseMessage msg)
     {
-        var obj = Json.Deserialize<Models.PayloadBase<JToken>>(msg.Text)!;
+        var obj = Json.Deserialize<Models.PayloadBase<JToken>>(msg.Text!)!;
         // Log.Debug("收到消息: {@0} 数据: {1}", obj, obj.Data?.ToString(Formatting.None) ?? null);
 
         if (obj.Seq != null)

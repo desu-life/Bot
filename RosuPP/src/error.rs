@@ -38,7 +38,7 @@ pub enum Error {
     #[error("Unknown error")]
     Unknown,
     #[error("ParseError")]
-    ParseError(#[from] rosu_pp::ParseError),
+    Parse(#[from] rosu_pp::ParseError),
     #[error("Invalid String")]
     InvalidString(#[from] Option<std::str::Utf8Error>),
 }
@@ -56,7 +56,7 @@ impl From<Error> for FFIError {
     fn from(x: Error) -> Self {
         match x {
             Error::Unknown => Self::Unknown,
-            Error::ParseError(_) => Self::ParseError,
+            Error::Parse(_) => Self::ParseError,
             Error::InvalidString(_) => Self::InvalidString,
         }
     }
