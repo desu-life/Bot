@@ -45,6 +45,7 @@ public class Config
         public int clientId { get; set; }
         public string? clientSecret { get; set; }
         public string? v1key { get; set; }
+        public string? v2EndPoint { get; set; }
         TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
     }
     public class OSS : ITomlMetadataProvider
@@ -102,7 +103,8 @@ public class Config
                 osu = new()
                 {
                     clientId = 0,
-                    clientSecret = ""
+                    clientSecret = "",
+                    v2EndPoint = "https://osu.ppy.sh/api/v2/"
                 },
                 onebot = new()
                 {

@@ -12,12 +12,13 @@ namespace KanonBot.API
         private static string Token = "";
         private static long TokenExpireTime = 0;
         public static readonly string EndPointV1 = "https://osu.ppy.sh/api/";
-        public static readonly string EndPointV2 = "https://proxy-osu-1.desu.life/api/v2/";
+        public static readonly string EndPointV2 = "https://osu.ppy.sh/api/v2/";
 
         static IFlurlRequest http()
         {
             CheckToken().Wait();
-            return EndPointV2.WithHeader("Authorization", $"Bearer {Token}").AllowHttpStatus(HttpStatusCode.NotFound);
+            var ep = config.osu?.v2EndPoint;
+            return (ep ?? EndPointV2).WithHeader("Authorization", $"Bearer {Token}").AllowHttpStatus(HttpStatusCode.NotFound);
         }
 
         async private static Task<bool> GetToken()
