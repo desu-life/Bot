@@ -63,10 +63,10 @@ if (config.dev)
     // Console.WriteLine("cal pp {0}", data.ppInfo.ppStat.total);
     // Console.WriteLine("cal data {0}", Json.Serialize(data.ppInfo));
 
-    var sender = parseInt(Environment.GetEnvironmentVariable("KANONBOT_TEST_USER_ID"));
+    var sender = parseInt(Environment.GetEnvironmentVariable("KANONBOT_TEST_QQ_ID"));
     sender.IfNone(() =>
     {
-        Log.Error("未设置测试环境变量 KANONBOT_TEST_USER_ID");
+        Log.Error("未设置测试环境变量 KANONBOT_TEST_QQ_ID");
         Thread.Sleep(500);
         Environment.Exit(1);
     });

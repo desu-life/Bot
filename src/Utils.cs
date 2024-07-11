@@ -246,15 +246,15 @@ public static partial class Utils
     {
         StringBuilder sb = new();
         string str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        for (int o = 0; o < 7; o++)
+        for (int o = 0; o < 5; o++)
         {
-            for (int i = 0; i < 7; i++)
+            for (int i = 0; i < 5; i++)
             {
                 byte[] randomBytes = GenerateRandomBytes(255);
                 int randomIndex = randomBytes[i] % str.Length;
                 sb.Append(str[randomIndex]);
             }
-            if (o < 6) sb.Append('-');
+            if (o < 4) sb.Append('-');
         }
         return sb.ToString();
     }
