@@ -3,9 +3,8 @@ using KanonBot.Message;
 using KanonBot.API;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Jpeg;
-using KanonBot.Functions.OSU.RosuPP;
-using System.IO;
 using KanonBot.Functions.OSU;
+using System.IO;
 using static KanonBot.API.OSU.Models;
 using LanguageExt.UnsafeValueAccess;
 

@@ -24,8 +24,9 @@
 
   <ItemGroup>
 		<ProjectReference Include="../src/KanonBot.csproj" />
-		<ProjectReference Include="../RosuPP/RosuPP.csproj" />
   </ItemGroup>
-  <Import Project="../RosuPP/Rosu.targets" />
+  <ItemGroup>
+	  <ProjectReference Include="../rosu-pp-ffi/RosuPP/RosuPP.csproj" />
+	</ItemGroup>
 
 </Project>

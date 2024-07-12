@@ -3,7 +3,6 @@ using KanonBot.command_parser;
 using KanonBot.Drivers;
 using KanonBot.Event;
 using KanonBot.Functions.OSU;
-using KanonBot.Functions.OSU.RosuPP;
 using KanonBot.Serializer;
 using LanguageExt.UnsafeValueAccess;
 using Newtonsoft.Json;

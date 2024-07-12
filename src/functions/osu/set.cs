@@ -5,7 +5,7 @@ using Flurl.Http;
 using Flurl.Util;
 using KanonBot.API;
 using KanonBot.Drivers;
-using KanonBot.Functions.OSU.RosuPP;
+using KanonBot.Functions.OSU;
 using KanonBot.Image;
 using KanonBot.LegacyImage;
 using KanonBot.Message;

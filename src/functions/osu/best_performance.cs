@@ -3,7 +3,7 @@ using KanonBot.Message;
 using KanonBot.API;
 using System.Security.Cryptography;
 using static KanonBot.API.OSU.Enums;
-using KanonBot.Functions.OSU.RosuPP;
+using KanonBot.Functions.OSU;
 using RosuPP;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Jpeg;

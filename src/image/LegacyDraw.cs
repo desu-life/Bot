@@ -2,7 +2,7 @@
 using System.IO;
 using System.Numerics;
 using KanonBot.API;
-using KanonBot.Functions.OSU.RosuPP;
+using KanonBot.Functions.OSU;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.ColorSpaces;
@@ -939,7 +939,7 @@ namespace KanonBot.LegacyImage
                 x => x.DrawText(drawOptions, textOptions, song_time, new SolidBrush(color), null)
             );
             // bpm
-            var bpm = data.scoreInfo.Beatmap.BPM.GetValueOrDefault().ToString("0");
+            var bpm = data.ppInfo.bpm!.Value.ToString("0.##");
             textOptions.Origin = new PointF(1457, 127);
             score.Mutate(
                 x => x.DrawText(drawOptions, textOptions, bpm, new SolidBrush(Color.Black), null)

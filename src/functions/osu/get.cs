@@ -10,7 +10,6 @@ using Flurl.Util;
 using KanonBot.API;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
-using KanonBot.Functions.OSU.RosuPP;
 using KanonBot.image;
 using KanonBot.Message;
 using LanguageExt.UnsafeValueAccess;

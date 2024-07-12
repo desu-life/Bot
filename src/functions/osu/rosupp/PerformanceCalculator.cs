@@ -3,37 +3,13 @@ using System.IO;
 using System.Runtime.InteropServices;
 using KanonBot.API;
 using KanonBot.LegacyImage;
+using LanguageExt.ClassInstances.Pred;
 using RosuPP;
 
-namespace KanonBot.Functions.OSU.RosuPP
+namespace KanonBot.Functions.OSU
 {
     public static class PerformanceCalculator
     {
-        class Beatmap
-        {
-            Calculator calculator;
-
-            public Beatmap(byte[] beatmapData)
-            {
-                // 手动处理内存
-                var data = GCHandle.Alloc(beatmapData, GCHandleType.Pinned);
-                this.calculator = Calculator.New(new Sliceu8(data, (ulong)beatmapData.Length));
-                data.Free();
-            }
-
-            public ref Calculator GetRef() => ref this.calculator;
-
-            public CalculateResult Calculate(ScoreParams scoreParams) =>
-                this.calculator.Calculate(scoreParams.Context);
-        }
-
-        public static readonly ImmutableArray<string> mods_str =
-            ImmutableArray.Create("NF", "EZ", "TD", "HD", "HR", "SD", "DT", "RX",
-            "HT", "NC", "FL", "AU", "SO", "AP", "PF", "K4",
-            "K5", "K6", "K7", "K8", "FI", "RD", "CN", "TG",
-            "K9", "KC", "K1", "K3", "K2", "S2", "MR");
-
-
         public struct PPInfo
         {
             public required double star,
@@ -43,6 +19,7 @@ namespace KanonBot.Functions.OSU.RosuPP
                 OD;
             public double? accuracy;
             public uint? maxCombo;
+            public double? bpm;
             public required PPStat ppStat;
             public List<PPStat>? ppStats;
 
@@ -55,126 +32,119 @@ namespace KanonBot.Functions.OSU.RosuPP
                     strain,
                     flashlight;
             }
-        }
 
-        public enum Mods
-        {
-            None = 1 >> 1,
-            NoFail = 1 << 0,
-            Easy = 1 << 1,
-            TouchDevice = 1 << 2,
-            Hidden = 1 << 3,
-            HardRock = 1 << 4,
-            SuddenDeath = 1 << 5,
-            DoubleTime = 1 << 6,
-            Relax = 1 << 7,
-            HalfTime = 1 << 8,
-            Nightcore = 1 << 9 | DoubleTime, // Only set along with DoubleTime. i.e: NC only gives 576
-            Flashlight = 1 << 10,
-            Autoplay = 1 << 11,
-            SpunOut = 1 << 12,
-            Relax2 = 1 << 13, // Autopilot
-            Perfect = 1 << 14 | SuddenDeath, // Only set along with SuddenDeath. i.e: PF only gives 16416
-            Key4 = 1 << 15,
-            Key5 = 1 << 16,
-            Key6 = 1 << 17,
-            Key7 = 1 << 18,
-            Key8 = 1 << 19,
-            FadeIn = 1 << 20,
-            Random = 1 << 21,
-            Cinema = 1 << 22,
-            Target = 1 << 23,
-            Key9 = 1 << 24,
-            KeyCoop = 1 << 25,
-            Key1 = 1 << 26,
-            Key3 = 1 << 27,
-            Key2 = 1 << 28,
-            ScoreV2 = 1 << 29,
-            Mirror = 1 << 30,
-            KeyMod = Key1 | Key2 | Key3 | Key4 | Key5 | Key6 | Key7 | Key8 | Key9 | KeyCoop,
-            FreeModAllowed =
-                NoFail
-                | Easy
-                | Hidden
-                | HardRock
-                | SuddenDeath
-                | Flashlight
-                | FadeIn
-                | Relax
-                | Relax2
-                | SpunOut
-                | KeyMod,
-            ScoreIncreaseMods = Hidden | HardRock | DoubleTime | Flashlight | FadeIn
-        };
-
-        public static PPInfo ToPPInfo(this CalculateResult result)
-        {
-            return new PPInfo()
-            {
-                star = result.stars,
-                CS = result.cs,
-                HP = result.hp,
-                AR = result.ar,
-                OD = result.od,
-                accuracy = result.ppAcc.ToNullable(),
-                maxCombo = result.maxCombo.ToNullable(),
-                ppStat = new PPInfo.PPStat()
+            public static PPInfo New(PerformanceAttributes result, BeatmapAttributes bmAttr, double bpm) {
+                switch (result.mode)
                 {
-                    total = result.pp,
-                    aim = result.ppAim.ToNullable(),
-                    speed = result.ppSpeed.ToNullable(),
-                    acc = result.ppAcc.ToNullable(),
-                    strain = result.ppStrain.ToNullable(),
-                    flashlight = result.ppFlashlight.ToNullable(),
-                },
-                ppStats = null
-            };
-        }
-
-        public struct Params
-        {
-            public required API.OSU.Enums.Mode mode;
-            public string[]? mods;
-            public double? acc;
-            public uint? n300,
-                n100,
-                n50,
-                nmisses,
-                nkatu,
-                combo,
-                passedObjects,
-                clockRate;
-
-            public void build(ref ScoreParams p)
-            {
-                p.Mode(
-                    mode switch
-                    {
-                        API.OSU.Enums.Mode.OSU => Mode.Osu,
-                        API.OSU.Enums.Mode.Taiko => Mode.Taiko,
-                        API.OSU.Enums.Mode.Fruits => Mode.Catch,
-                        API.OSU.Enums.Mode.Mania => Mode.Mania,
-                        _ => throw new ArgumentException()
+                    case Mode.Osu: {
+                        var attr = result.osu.ToNullable()!.Value;
+                        return new PPInfo()
+                        {
+                            star = attr.stars,
+                            CS = bmAttr.cs,
+                            HP = attr.difficulty.hp,
+                            AR = attr.difficulty.ar,
+                            OD = attr.difficulty.od,
+                            accuracy = attr.pp_acc,
+                            maxCombo = attr.max_combo,
+                            bpm = bpm,
+                            ppStat = new PPInfo.PPStat()
+                            {
+                                total = attr.pp,
+                                aim = attr.pp_aim,
+                                speed = attr.pp_speed,
+                                acc = attr.pp_acc,
+                                strain = null,
+                                flashlight = attr.pp_flashlight,
+                            },
+                            ppStats = null
+                        };
                     }
-                );
-                if (acc != null)
-                    p.Acc(acc.Value);
-                if (n300 != null)
-                    p.N300(n300.Value);
-                if (n100 != null)
-                    p.N100(n100.Value);
-                if (n50 != null)
-                    p.N50(n50.Value);
-                if (nmisses != null)
-                    p.NMisses(nmisses.Value);
-                if (nkatu != null)
-                    p.NKatu(nkatu.Value);
-                if (combo != null)
-                    p.Combo(combo.Value);
-                if (mods != null)
-                    p.Mods(Intmod_parser(mods));
+                    case Mode.Taiko: {
+                        var attr = result.taiko.ToNullable()!.Value;
+                        return  new PPInfo()
+                        {
+                            star = attr.stars,
+                            CS = bmAttr.cs,
+                            HP = bmAttr.hp,
+                            AR = bmAttr.ar,
+                            OD = bmAttr.od,
+                            accuracy = attr.pp_acc,
+                            maxCombo = attr.max_combo,
+                            bpm = bpm,
+                            ppStat = new PPInfo.PPStat()
+                            {
+                                total = attr.pp,
+                                aim = null,
+                                speed = null,
+                                acc = attr.pp_acc,
+                                strain = attr.pp_difficulty,
+                                flashlight = null,
+                            },
+                            ppStats = null
+                        };
+                    }
+                    case Mode.Catch: {
+                        var attr = result.fruit.ToNullable()!.Value;
+                        return  new PPInfo()
+                        {
+                            star = attr.stars,
+                            CS = bmAttr.cs,
+                            HP = bmAttr.hp,
+                            AR = attr.difficulty.ar,
+                            OD = bmAttr.od,
+                            accuracy = null,
+                            maxCombo = attr.max_combo,
+                            bpm = bpm,
+                            ppStat = new PPInfo.PPStat()
+                            {
+                                total = attr.pp,
+                                aim = null,
+                                speed = null,
+                                acc = null,
+                                strain = null,
+                                flashlight = null,
+                            },
+                            ppStats = null
+                        };
+                    }
+                    case Mode.Mania: {
+                        var attr = result.mania.ToNullable()!.Value;
+                        return  new PPInfo()
+                        {
+                            star = attr.stars,
+                            CS = bmAttr.cs,
+                            HP = bmAttr.hp,
+                            AR = bmAttr.ar,
+                            OD = bmAttr.od,
+                            accuracy = null,
+                            maxCombo = attr.max_combo,
+                            bpm = bpm,
+                            ppStat = new PPInfo.PPStat()
+                            {
+                                total = attr.pp,
+                                aim = null,
+                                speed = null,
+                                acc = null,
+                                strain = attr.pp_difficulty,
+                                flashlight = null,
+                            },
+                            ppStats = null
+                        };
+                    }
+                    default: throw new ArgumentOutOfRangeException();
+                }
             }
         }
+
+        public static RosuPP.Mode ToRosu(this API.OSU.Enums.Mode mode) => mode switch
+        {
+            API.OSU.Enums.Mode.OSU => RosuPP.Mode.Osu,
+            API.OSU.Enums.Mode.Taiko => RosuPP.Mode.Taiko,
+            API.OSU.Enums.Mode.Fruits => RosuPP.Mode.Catch,
+            API.OSU.Enums.Mode.Mania => RosuPP.Mode.Mania,
+            _ => throw new ArgumentException()
+        };
 
         async public static Task<Draw.ScorePanelData> CalculatePanelSSData(API.OSU.Models.Beatmap map)
         {
@@ -185,7 +155,7 @@ namespace KanonBot.Functions.OSU.RosuPP
                 // 下载谱面
                 await API.OSU.BeatmapFileChecker(map.BeatmapId);
                 // 读取铺面
-                beatmap = new Beatmap(
+                beatmap = Beatmap.FromBytes(
                     await File.ReadAllBytesAsync(
                         $"./work/beatmap/{map.BeatmapId}.osu"
                     )
@@ -198,10 +168,13 @@ namespace KanonBot.Functions.OSU.RosuPP
                 throw;
             }
 
-            var p = ScoreParams.New();
-            p.Acc(100);
+            var builder = BeatmapAttributesBuilder.New();
+            var bpm = builder.GetClockRate() * beatmap.Bpm();
+            var bmAttr = builder.Build(beatmap);
+            var p = Performance.New();
+            p.Accuracy(100);
             // 开始计算
-            var res = beatmap.Calculate(p);
+            var res = p.Calculate(beatmap);
             var data = new Draw.ScorePanelData
             {
                 scoreInfo = new API.OSU.Models.Score
@@ -225,7 +198,7 @@ namespace KanonBot.Functions.OSU.RosuPP
                 }
             };
             var statistics = data.scoreInfo.Statistics;
-            data.ppInfo = res.ToPPInfo();
+            data.ppInfo = PPInfo.New(res, bmAttr, bpm);
 
             double[] accs =
             {
@@ -238,14 +211,11 @@ namespace KanonBot.Functions.OSU.RosuPP
             };
             data.ppInfo.ppStats = accs.Select(acc =>
                 {
-                    var p = ScoreParams.New();
-                    new Params
-                    {
-                        mode = data.scoreInfo.Mode,
-                        mods = data.scoreInfo.Mods,
-                        acc = acc,
-                    }.build(ref p);
-                    return beatmap.Calculate(p).ToPPInfo().ppStat;
+                    var p = Performance.New();
+                    p.Mode(data.scoreInfo.Mode.ToRosu());
+                    p.Mods(data.scoreInfo.Mods);
+                    p.Accuracy(acc);
+                    return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm).ppStat;
                 })
                 .ToList();
 
@@ -265,7 +235,7 @@ namespace KanonBot.Functions.OSU.RosuPP
                 // 下载谱面
                 await API.OSU.BeatmapFileChecker(score.Beatmap!.BeatmapId);
                 // 读取铺面
-                beatmap = new Beatmap(
+                beatmap = Beatmap.FromBytes(
                     await File.ReadAllBytesAsync(
                         $"./work/beatmap/{data.scoreInfo.Beatmap!.BeatmapId}.osu"
                     )
@@ -278,20 +248,24 @@ namespace KanonBot.Functions.OSU.RosuPP
                 throw;
             }
 
-            var p = ScoreParams.New();
-            new Params
-            {
-                mode = data.scoreInfo.Mode,
-                mods = data.scoreInfo.Mods,
-                combo = data.scoreInfo.MaxCombo,
-                n300 = statistics.CountGreat,
-                n100 = statistics.CountOk,
-                n50 = statistics.CountMeh,
-                nmisses = statistics.CountMiss,
-                nkatu = statistics.CountKatu,
-            }.build(ref p);
+
+            var builder = BeatmapAttributesBuilder.New();
+            builder.Mode(data.scoreInfo.Mode.ToRosu());
+            builder.Mods(data.scoreInfo.Mods);
+            var bpm = builder.GetClockRate() * beatmap.Bpm();
+            var bmAttr = builder.Build(beatmap);
+
+            var p = Performance.New();
+            p.Mode(data.scoreInfo.Mode.ToRosu());
+            p.Mods(data.scoreInfo.Mods);
+            p.Combo(data.scoreInfo.MaxCombo);
+            p.N300(statistics.CountGreat);
+            p.N100(statistics.CountOk);
+            p.N50(statistics.CountMeh);
+            p.Misses(statistics.CountMiss);
+            p.NKatu(statistics.CountKatu);
             // 开始计算
-            data.ppInfo = beatmap.Calculate(p).ToPPInfo();
+            data.ppInfo = PPInfo.New(p.Calculate(beatmap), bmAttr, bpm);
 
             // 5种acc + 全连
             double[] accs =
@@ -305,51 +279,15 @@ namespace KanonBot.Functions.OSU.RosuPP
             };
             data.ppInfo.ppStats = accs.Select(acc =>
                 {
-                    var p = ScoreParams.New();
-                    new Params
-                    {
-                        mode = data.scoreInfo.Mode,
-                        mods = data.scoreInfo.Mods,
-                        acc = acc,
-                    }.build(ref p);
-                    return beatmap.Calculate(p).ToPPInfo().ppStat;
+                    var p = Performance.New();
+                    p.Mode(data.scoreInfo.Mode.ToRosu());
+                    p.Mods(data.scoreInfo.Mods);
+                    p.Accuracy(acc);
+                    return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm).ppStat;
                 })
-                .ToList();
+                .ToList();            
 
             return data;
-        }
-
-        public static uint Intmod_parser(string[] mods)
-        {
-            List<Mods> enabled_mods = new();
-            uint num = 0;
-            foreach (var x in mods)
-            {
-                var t = x.ToUpper();
-                for (int i = 0; i < 31; ++i)
-                {
-                    {
-                        if (mods_str[i] == t)
-                        {
-                            uint mod_num = (uint)1 << i;
-                            if (i == 9)
-                            {
-                                mod_num += (uint)Mods.DoubleTime;
-                            }
-                            if (i == 14)
-                            {
-                                mod_num += (uint)Mods.SuddenDeath;
-                            }
-                            enabled_mods.Add((Mods)mod_num);
-                            break;
-                        }
-                    }
-                }
-            }
-            //get mod number
-            foreach (var xx in enabled_mods)
-                num |= (uint)xx;
-            return num;
         }
     }
 }

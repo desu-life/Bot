@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Numerics;
 using KanonBot.API;
-using KanonBot.Functions.OSU.RosuPP;
+using KanonBot.Functions.OSU;
 using KanonBot.Image;
 using KanonBot.LegacyImage;
 using SixLabors.Fonts;
@@ -135,30 +135,6 @@ namespace KanonBot.DrawV3
             avatar.Mutate(x => x.Resize(100, 100).RoundCorner(new Size(100, 100), 50));
             scoreimg.Mutate(x => x.Fill(Color.White, new EllipsePolygon(140, 618, 105, 105)));
             scoreimg.Mutate(x => x.DrawImage(avatar, new Point(90, 568), 1));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
             //设定textOption/drawOption
             var textOptions = new RichTextOptions(new Font(TorusSemiBold, 120))

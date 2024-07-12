@@ -3,7 +3,7 @@ using KanonBot.Message;
 using KanonBot.API;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Jpeg;
-using KanonBot.Functions.OSU.RosuPP;
+using KanonBot.Functions.OSU;
 using System.IO;
 using LanguageExt.UnsafeValueAccess;
 
