@@ -42,9 +42,9 @@ namespace KanonBot.Functions.OSU
                         {
                             star = attr.stars,
                             CS = bmAttr.cs,
-                            HP = attr.difficulty.hp,
-                            AR = attr.difficulty.ar,
-                            OD = attr.difficulty.od,
+                            HP = bmAttr.hp,
+                            AR = bmAttr.ar,
+                            OD = bmAttr.od,
                             accuracy = attr.pp_acc,
                             maxCombo = attr.max_combo,
                             bpm = bpm,
@@ -91,7 +91,7 @@ namespace KanonBot.Functions.OSU
                             star = attr.stars,
                             CS = bmAttr.cs,
                             HP = bmAttr.hp,
-                            AR = attr.difficulty.ar,
+                            AR = bmAttr.ar,
                             OD = bmAttr.od,
                             accuracy = null,
                             maxCombo = attr.max_combo,
@@ -169,8 +169,8 @@ namespace KanonBot.Functions.OSU
             }
 
             var builder = BeatmapAttributesBuilder.New();
-            var bpm = builder.GetClockRate() * beatmap.Bpm();
             var bmAttr = builder.Build(beatmap);
+            var bpm = bmAttr.clock_rate * beatmap.Bpm();
             var p = Performance.New();
             p.Accuracy(100);
             // 开始计算
@@ -252,8 +252,8 @@ namespace KanonBot.Functions.OSU
             var builder = BeatmapAttributesBuilder.New();
             builder.Mode(data.scoreInfo.Mode.ToRosu());
             builder.Mods(data.scoreInfo.Mods);
-            var bpm = builder.GetClockRate() * beatmap.Bpm();
             var bmAttr = builder.Build(beatmap);
+            var bpm = bmAttr.clock_rate * beatmap.Bpm();
 
             var p = Performance.New();
             p.Mode(data.scoreInfo.Mode.ToRosu());
