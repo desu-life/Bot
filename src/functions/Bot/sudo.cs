@@ -15,6 +15,7 @@ namespace KanonBot.Functions.OSU
     {
         public static async Task Execute(Target target, string cmd)
         {
+            if (target.isFromAdmin == false) return;
             try
             {
                 var AccInfo = GetAccInfo(target);

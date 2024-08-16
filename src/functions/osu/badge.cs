@@ -78,6 +78,7 @@ namespace KanonBot.Functions.OSUBot
 
         private static async Task SudoExecute(Drivers.Target target, string cmd, AccInfo accinfo)
         {
+            if (target.isFromAdmin == false) return;
             var userinfo = await Database.Client.GetUsersByUID(accinfo.uid, accinfo.platform);
             List<string> permissions = new();
             if (userinfo!.permissions!.IndexOf(";") < 1) //一般不会出错，默认就是user

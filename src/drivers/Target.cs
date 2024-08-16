@@ -35,6 +35,7 @@ public class Target
     public required string? selfAccount { get; init; }
     public required string? sender { get; init; }
     public required Platform platform { get; init; }
+    public bool isFromAdmin { get; set; } = false;
 
     // 原平台消息结构
     public object? raw { get; init; }

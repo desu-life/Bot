@@ -67,7 +67,9 @@ public class JsonEnumConverter : JsonConverter
             }
         }
 
-        throw new ArgumentException("Not found.", nameof(description));
+        Log.Warning("Unknown Json Enum Value: {0}", description);
+        // throw new ArgumentException("Not found.", nameof(description));
+        return null;
     }
 
     public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
