@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using KanonBot.API;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
@@ -284,6 +285,7 @@ namespace KanonBot.Functions.OSUBot
                         100,
                         0
                     );
+
                     img = await DrawV2.OsuInfoPanelV2.Draw(
                         data,
                         allBP!,

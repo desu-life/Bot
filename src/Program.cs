@@ -4,6 +4,7 @@ using KanonBot.Drivers;
 using KanonBot.Event;
 using KanonBot.Functions.OSU;
 using KanonBot.Serializer;
+using LanguageExt.ClassInstances.Pred;
 using LanguageExt.UnsafeValueAccess;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -75,22 +76,27 @@ if (config.dev)
         var input = Console.ReadLine();
         if (string.IsNullOrEmpty(input)) return;
         Log.Warning("解析消息: {0}", input);
-        await Universal.Parser(new Target()
+        var target  = new Target()
         {
             msg = new Msg.Chain().msg(input!.Trim()),
             sender = $"{sender.Value()}",
             platform = Platform.OneBot,
             selfAccount = null,
-            socket = new FakeSocket() {
-                action = (msg) => {
+            socket = new FakeSocket()
+            {
+                action = (msg) =>
+                {
                     Log.Information("本地测试消息 {0}", msg);
                 }
             },
-            raw = new OneBot.Models.CQMessageEventBase() {
+            raw = new OneBot.Models.CQMessageEventBase()
+            {
                 UserId = sender.Value(),
             },
             isFromAdmin = true
-        });
+        };
+        _ = Task.Run(async () => await Universal.Parser(target));
+        Universal.reduplicateTargetChecker.TryUnlock(target);
     }
 }
 
