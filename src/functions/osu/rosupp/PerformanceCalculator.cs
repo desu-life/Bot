@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using KanonBot.API;
 using KanonBot.LegacyImage;
 using LanguageExt.ClassInstances.Pred;
+using System.Security.Cryptography;
 using RosuPP;
 
 namespace KanonBot.Functions.OSU
@@ -154,25 +155,7 @@ namespace KanonBot.Functions.OSU
         async public static Task<Draw.ScorePanelData> CalculatePanelSSData(API.OSU.Models.Beatmap map)
         {
             
-            Beatmap beatmap;
-            try
-            {
-                // 下载谱面
-                await API.OSU.BeatmapFileChecker(map.BeatmapId);
-                // 读取铺面
-                beatmap = Beatmap.FromBytes(
-                    await File.ReadAllBytesAsync(
-                        $"./work/beatmap/{map.BeatmapId}.osu"
-                    )
-                );
-            }
-            catch (Exception)
-            {
-                // 加载失败，删除重新抛异常
-                File.Delete($"./work/beatmap/{map.BeatmapId}.osu");
-                throw;
-            }
-
+            Beatmap beatmap = await LoadBeatmap(map);
             var builder = BeatmapAttributesBuilder.New();
             var bmAttr = builder.Build(beatmap);
             var bpm = bmAttr.clock_rate * beatmap.Bpm();
@@ -227,6 +210,48 @@ namespace KanonBot.Functions.OSU
             return data;
         }
 
+        async public static Task<Beatmap> LoadBeatmap(API.OSU.Models.Beatmap bm)
+        {
+            try
+            {   
+                byte[]? f = null;
+                // 检查有没有本地的谱面
+                if (File.Exists($"./work/beatmap/{bm.BeatmapId}.osu")) {
+                    f = await File.ReadAllBytesAsync($"./work/beatmap/{bm.BeatmapId}.osu");
+                    if (bm.Checksum is not null) {
+                        using (var md5 = MD5.Create())
+                        {
+                            var hash = md5.ComputeHash(f);
+                            var hash_online = System.Convert.FromHexString(bm.Checksum);
+
+                            if (!hash.SequenceEqual(hash_online)) {
+                                // 删除本地的谱面
+                                File.Delete($"./work/beatmap/{bm.BeatmapId}.osu");
+                                f = null;
+                            }
+                        }
+                    }
+                }
+
+                if (f is null) {
+                    // 下载谱面
+                    await API.OSU.BeatmapFileChecker(bm.BeatmapId);
+                    f = await File.ReadAllBytesAsync($"./work/beatmap/{bm.BeatmapId}.osu");
+                }
+
+                // 读取铺面
+                return Beatmap.FromBytes(
+                    f
+                );
+            }
+            catch
+            {
+                // 加载失败，删除重新抛异常
+                File.Delete($"./work/beatmap/{bm.BeatmapId}.osu");
+                throw;
+            }
+        }
+
         async public static Task<Draw.ScorePanelData> CalculatePanelData(API.OSU.Models.ScoreLazer score)
         {
             var data = new Draw.ScorePanelData
@@ -234,28 +259,10 @@ namespace KanonBot.Functions.OSU
                 scoreInfo = score
             };
             var statistics = data.scoreInfo.Statistics;
-            Beatmap beatmap;
-            try
-            {
-                // 下载谱面
-                await API.OSU.BeatmapFileChecker(score.Beatmap!.BeatmapId);
-                // 读取铺面
-                beatmap = Beatmap.FromBytes(
-                    await File.ReadAllBytesAsync(
-                        $"./work/beatmap/{data.scoreInfo.Beatmap!.BeatmapId}.osu"
-                    )
-                );
-            }
-            catch (Exception)
-            {
-                // 加载失败，删除重新抛异常
-                File.Delete($"./work/beatmap/{data.scoreInfo.Beatmap!.BeatmapId}.osu");
-                throw;
-            }
 
+            Beatmap beatmap = await LoadBeatmap(data.scoreInfo.Beatmap!);
 
             var builder = BeatmapAttributesBuilder.New();
-
 
             var mode = API.OSU.Enums.Int2Mode(data.scoreInfo.ModeInt);
             Mode rmode;
@@ -306,6 +313,7 @@ namespace KanonBot.Functions.OSU
                 .ToList();            
 
             data.mode = rmode;
+
             return data;
         }
     }

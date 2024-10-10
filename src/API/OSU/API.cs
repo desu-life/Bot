@@ -366,7 +366,6 @@ namespace KanonBot.API
 
         async public static Task BeatmapFileChecker(long bid)
         {
-            if (!Directory.Exists("./work/beatmap/")) Directory.CreateDirectory("./work/beatmap/");
             if (!File.Exists($"./work/beatmap/{bid}.osu"))
             {
                 await Http.DownloadFile($"http://osu.ppy.sh/osu/{bid}", $"./work/beatmap/{bid}.osu");
