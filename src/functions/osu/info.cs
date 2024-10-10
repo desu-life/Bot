@@ -345,7 +345,7 @@ namespace KanonBot.Functions.OSUBot
                            score.Rank.ToUpper() == "S" ||
                            score.Rank.ToUpper() == "A")
                     {
-                        var data = await PerformanceCalculator.CalculatePanelData(score);
+                        var data = await PerformanceCalculator.CalculatePanelDataRosu(score);
                         await Database.Client.InsertOsuStandardBeatmapTechData(
                         score.Beatmap!.BeatmapId,
                         data.ppInfo.star,

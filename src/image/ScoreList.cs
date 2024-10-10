@@ -297,7 +297,7 @@ namespace KanonBot.image
             );
 
             //get stars from rosupp
-            var ppinfo = await CalculatePanelData(TBP[0]);
+            var ppinfo = await CalculatePanelDataAuto(TBP[0]);
             textOptions.Origin = new PointF(1182, mainScoreXPos);
             image.Mutate(
                 x =>
@@ -376,7 +376,7 @@ namespace KanonBot.image
                 using var osuscoremode_icon = await ReadImageRgba(
                     $"./work/panelv2/icons/mode_icon/score/{TBP[i].Mode.ToStr()}.png"
                 );
-                var ppinfo1 = await CalculatePanelData(TBP[i]);
+                var ppinfo1 = await CalculatePanelDataAuto(TBP[i]);
                 //Difficulty icon
                 Color modeC = ForStarDifficulty(ppinfo1.ppInfo.star);
                 osuscoremode_icon.Mutate(x => x.Resize(92, 92));
@@ -669,6 +669,10 @@ namespace KanonBot.image
             image.Mutate(
                 x => x.DrawImage(FooterPic, new Point(0, 698 + (TBP.Count - 1) * 186 + 1), 1)
             );
+
+            // 不知道为啥更新了imagesharp后对比度变了
+            image.Mutate(x => x.Contrast(0.988f));
+
             return image;
         }
     }

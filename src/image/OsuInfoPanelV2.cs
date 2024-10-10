@@ -1769,11 +1769,15 @@ namespace KanonBot.DrawV2
                         )
                 );
                 //mods
-                if (!islazer) {
-                    allBP![0].Mods = allBP![0].Mods.Filter(x => !x.IsClassic).ToArray();
+
+                OSU.Models.ScoreMod[] firstbpmods;
+                if (islazer) {
+                    firstbpmods = allBP![0].Mods;
+                } else {
+                    firstbpmods = allBP![0].Mods.Filter(x => !x.IsClassic).ToArray();
                 }
                 
-                if (allBP![0].Mods.Length > 0)
+                if (firstbpmods.Length > 0)
                 {
                     textOptions.Origin = new PointF(
                         1945 + TextMeasurer.MeasureSize(title, textOptions).Width + 25,
@@ -1781,7 +1785,7 @@ namespace KanonBot.DrawV2
                     );
                     textOptions.Font = new Font(TorusRegular, 40);
                     var mainscoremods = "+";
-                    foreach (var x in allBP![0].Mods)
+                    foreach (var x in firstbpmods)
                     {
                         mainscoremods += $"{x.Acronym}, ";
                     }
@@ -1860,7 +1864,7 @@ namespace KanonBot.DrawV2
                 );
 
                 //get stars from rosupp
-                var ppinfo = await PerformanceCalculator.CalculatePanelData(allBP[0]);
+                var ppinfo = await PerformanceCalculator.CalculatePanelDataAuto(allBP[0]);
                 textOptions.Origin = new PointF(2657, 1668);
                 info.Mutate(
                     x =>
@@ -2108,7 +2112,7 @@ namespace KanonBot.DrawV2
                         textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
 
                     //star
-                    var ppinfo1 = await PerformanceCalculator.CalculatePanelData(allBP[i]);
+                    var ppinfo1 = await PerformanceCalculator.CalculatePanelDataAuto(allBP[i]);
                     textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
                     info.Mutate(
                         x =>
@@ -2189,10 +2193,18 @@ namespace KanonBot.DrawV2
                             )
                     );
                     //shdklahdksadkjkcna5hoacsporjasldjlksakdlsa
-                    if (allBP![i].Mods.Length > 0)
+
+                    OSU.Models.ScoreMod[] bpmods;
+                    if (islazer) {
+                        bpmods = allBP![i].Mods;
+                    } else {
+                        bpmods = allBP![i].Mods.Filter(x => !x.IsClassic).ToArray();
+                    }
+
+                    if (bpmods.Length > 0)
                     {
                         var otherbp_mods_pos_x = 2580;
-                        foreach (var x in allBP![i].Mods)
+                        foreach (var x in bpmods)
                         {
                             if (!File.Exists($"./work/mods_v2/2x/{x.Acronym}.png")) continue;
                             using var modicon = await Img.LoadAsync($"./work/mods_v2/2x/{x.Acronym}.png");
@@ -3221,6 +3233,10 @@ namespace KanonBot.DrawV2
                             new ResizeOptions() { Size = new Size(1920, 0), Mode = ResizeMode.Max }
                         )
                 );
+
+            // 不知道为啥更新了imagesharp后对比度变了
+            info.Mutate(x => x.Contrast(0.988f));
+
             return info;
         }
 

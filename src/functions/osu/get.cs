@@ -207,7 +207,7 @@ namespace KanonBot.Functions.OSUBot
             //从数据库获取相似的谱面
             var randBP = allBP![new Random().Next(0, 19)];
             //get stars from rosupp
-            var ppinfo = await PerformanceCalculator.CalculatePanelData(randBP);
+            var ppinfo = await PerformanceCalculator.CalculatePanelDataAuto(randBP);
 
             var data = new List<Database.Model.OsuStandardBeatmapTechData>();
 

@@ -364,7 +364,7 @@ namespace KanonBot.Functions.OSU
             }
         }
 
-        async public static Task<Draw.ScorePanelData> CalculatePanelDataNext(API.OSU.Models.ScoreLazer score)
+        async public static Task<Draw.ScorePanelData> CalculatePanelDataLazer(API.OSU.Models.ScoreLazer score)
         {
             var data = new Draw.ScorePanelData
             {
@@ -442,10 +442,16 @@ namespace KanonBot.Functions.OSU
             return data;
         }
 
-        async public static Task<Draw.ScorePanelData> CalculatePanelData(API.OSU.Models.ScoreLazer score)
-        {
-            if (!score.IsClassic) return await CalculatePanelDataNext(score);
+        async public static Task<Draw.ScorePanelData> CalculatePanelDataAuto(API.OSU.Models.ScoreLazer score) {
+            if (score.IsClassic) {
+                return await CalculatePanelDataRosu(score);
+            } else {
+                return await CalculatePanelDataLazer(score);
+            }
+        }
 
+        async public static Task<Draw.ScorePanelData> CalculatePanelDataRosu(API.OSU.Models.ScoreLazer score)
+        {
             var data = new Draw.ScorePanelData
             {
                 scoreInfo = score

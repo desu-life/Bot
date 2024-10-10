@@ -124,14 +124,14 @@ namespace KanonBot.Functions.OSUBot
             {
                 LegacyImage.Draw.ScorePanelData data;
                 if (command.lazer) {
-                    data = await PerformanceCalculator.CalculatePanelDataNext(scoreInfos[0]);
+                    data = await PerformanceCalculator.CalculatePanelDataLazer(scoreInfos[0]);
                 } else {
-                    data = await PerformanceCalculator.CalculatePanelData(scoreInfos[0]);
+                    data = await PerformanceCalculator.CalculatePanelDataRosu(scoreInfos[0]);
                 }
                 using var stream = new MemoryStream();
                 using var img = (Config.inner != null && Config.inner.debug) ? await DrawV3.OsuScorePanelV3.Draw(data) : await LegacyImage.Draw.DrawScore(data);
 
-                await img.SaveAsync(stream, new PngEncoder());
+                await img.SaveAsync(stream, new JpegEncoder());
                 await target.reply(
                     new Chain().image(
                         Convert.ToBase64String(stream.ToArray(), 0, (int)stream.Length),
@@ -145,7 +145,7 @@ namespace KanonBot.Functions.OSUBot
                     if (x.Rank.ToUpper() != "F")
                     {
                         //计算pp数据
-                        data = await PerformanceCalculator.CalculatePanelData(x);
+                        data = await PerformanceCalculator.CalculatePanelDataRosu(x);
 
                         //季票信息
                         if (DBOsuInfo != null)

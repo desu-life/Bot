@@ -143,14 +143,14 @@ namespace KanonBot.Functions.OSUBot
 
             LegacyImage.Draw.ScorePanelData data;
             if (command.lazer) {
-                data = await PerformanceCalculator.CalculatePanelDataNext(scoreData.Score);
+                data = await PerformanceCalculator.CalculatePanelDataLazer(scoreData.Score);
             } else {
-                data = await PerformanceCalculator.CalculatePanelData(scoreData.Score);
+                data = await PerformanceCalculator.CalculatePanelDataRosu(scoreData.Score);
             }
 
             using var stream = new MemoryStream();
             using var img = await LegacyImage.Draw.DrawScore(data);
-            await img.SaveAsync(stream, new PngEncoder());
+            await img.SaveAsync(stream, new JpegEncoder());
             await target.reply(
                 new Chain().image(
                     Convert.ToBase64String(stream.ToArray(), 0, (int)stream.Length),

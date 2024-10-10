@@ -62,7 +62,7 @@ if (config.dev)
     // API.OSU.BeatmapFileChecker(score.Score.Beatmap!.BeatmapId).Wait();
     // Console.WriteLine("pp {0}", score.Score.PP);
     // Console.WriteLine("acc {0}", score.Score.Accuracy);
-    // var data = PerformanceCalculator.CalculatePanelData(score.Score).Result;
+    // var data = PerformanceCalculator.CalculatePanelDataAuto(score.Score).Result;
     // Console.WriteLine("cal pp {0}", data.ppInfo.ppStat.total);
     // Console.WriteLine("cal data {0}", Json.Serialize(data.ppInfo));
 
