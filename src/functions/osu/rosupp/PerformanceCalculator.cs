@@ -373,7 +373,6 @@ namespace KanonBot.Functions.OSU
             var statistics = data.scoreInfo.Statistics;
 
             var b = await LoadBeatmap(data.scoreInfo.Beatmap!);
-            var beatmap = new OsuPP.CalculatorWorkingBeatmap(b);
             var rosubeatmap = Beatmap.FromBytes(b);
 
             Mode rmode = data.scoreInfo.Mode.ToRosu();
@@ -388,6 +387,7 @@ namespace KanonBot.Functions.OSU
             var bpm = bmAttr.clock_rate * rosubeatmap.Bpm();
             clockRate = bmAttr.clock_rate;
 
+            var beatmap = new OsuPP.CalculatorWorkingBeatmap(b);
             var c = OsuPP.Calculater.New(beatmap);
 
             c.Mode(0);

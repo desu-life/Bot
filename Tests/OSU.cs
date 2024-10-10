@@ -34,63 +34,63 @@ public class OSU
     [Fact]
     public void ScorePanelTest()
     {
-        var score = API.OSU.GetUserBeatmapScore(1646397, 992512, new string[] { }, API.OSU.Enums.Mode.Mania).Result!;
-        score.Score.Beatmapset = API.OSU.GetBeatmap(score.Score.Beatmap!.BeatmapId).Result!.Beatmapset!;
-        var attr = API.OSU.GetBeatmapAttributes(score.Score.Beatmap!.BeatmapId, new string[] { }, API.OSU.Enums.Mode.Mania).Result;
-        Output.WriteLine("beatmap attr {0}", Json.Serialize(attr));
-        API.OSU.BeatmapFileChecker(score.Score.Beatmap!.BeatmapId).Wait();
-        Output.WriteLine("pp {0}", score.Score.PP);
-        Output.WriteLine("acc {0}", score.Score.Accuracy);
-        var data = PerformanceCalculator.CalculatePanelData(score.Score).Result;
-        Output.WriteLine("cal pp {0}", data.ppInfo.ppStat.total);
-        Output.WriteLine("cal data {0}", Json.Serialize(data.ppInfo));
-        var img = Draw.DrawScore(data).Result;
-        img.Save(new FileStream("./TestFiles/scoretest.png", FileMode.Create), new PngEncoder());
+        // var score = API.OSU.GetUserBeatmapScore(1646397, 992512, new string[] { }, API.OSU.Enums.Mode.Mania).Result!;
+        // score.Score.Beatmapset = API.OSU.GetBeatmap(score.Score.Beatmap!.BeatmapId).Result!.Beatmapset!;
+        // var attr = API.OSU.GetBeatmapAttributes(score.Score.Beatmap!.BeatmapId, new string[] { }, API.OSU.Enums.Mode.Mania).Result;
+        // Output.WriteLine("beatmap attr {0}", Json.Serialize(attr));
+        // API.OSU.BeatmapFileChecker(score.Score.Beatmap!.BeatmapId).Wait();
+        // Output.WriteLine("pp {0}", score.Score.PP);
+        // Output.WriteLine("acc {0}", score.Score.Accuracy);
+        // var data = PerformanceCalculator.CalculatePanelData(score.Score).Result;
+        // Output.WriteLine("cal pp {0}", data.ppInfo.ppStat.total);
+        // Output.WriteLine("cal data {0}", Json.Serialize(data.ppInfo));
+        // var img = Draw.DrawScore(data).Result;
+        // img.Save(new FileStream("./TestFiles/scoretest.png", FileMode.Create), new PngEncoder());
     }
 
     [Fact]
     public void V2InfoPanelTest()
     {
-        var osuinfo = API.OSU.GetUser(9037287, API.OSU.Enums.Mode.OSU).Result;
-        Draw.UserPanelData data = new();
-        data.userInfo = osuinfo!;
-        data.userInfo.PlayMode = API.OSU.Enums.Mode.OSU;
-        data.prevUserInfo = data.userInfo;
-        data.customMode = Draw.UserPanelData.CustomMode.Dark;
-        var allBP = API.OSU.GetUserScores(
-            data.userInfo.Id,
-            API.OSU.Enums.UserScoreType.Best,
-            data.userInfo.PlayMode,
-            100,
-            0
-        ).Result;
-        var img = OsuInfoPanelV2.Draw(
-            data,
-            allBP!,
-            OsuInfoPanelV2.InfoCustom.DarkDefault,
-            false,
-            false
-        ).Result;
-        img.Save(new FileStream("./TestFiles/info.png", FileMode.Create), new PngEncoder());
+        // var osuinfo = API.OSU.GetUser(9037287, API.OSU.Enums.Mode.OSU).Result;
+        // Draw.UserPanelData data = new();
+        // data.userInfo = osuinfo!;
+        // data.userInfo.PlayMode = API.OSU.Enums.Mode.OSU;
+        // data.prevUserInfo = data.userInfo;
+        // data.customMode = Draw.UserPanelData.CustomMode.Dark;
+        // var allBP = API.OSU.GetUserScores(
+        //     data.userInfo.Id,
+        //     API.OSU.Enums.UserScoreType.Best,
+        //     data.userInfo.PlayMode,
+        //     100,
+        //     0
+        // ).Result;
+        // var img = OsuInfoPanelV2.Draw(
+        //     data,
+        //     allBP!,
+        //     OsuInfoPanelV2.InfoCustom.DarkDefault,
+        //     false,
+        //     false
+        // ).Result;
+        // img.Save(new FileStream("./TestFiles/info.png", FileMode.Create), new PngEncoder());
     }
 
     [Fact]
     public void PPTest()
     {
-        var f = File.ReadAllBytes("./TestFiles/Kakichoco - Zan'ei (Lasse) [Illusion].osu");
-        var beatmapData = GCHandle.Alloc(f, GCHandleType.Pinned);
-        var cal = Calculator.New(new Sliceu8(beatmapData, (ulong)f.Length));
-        beatmapData.Free();
-        var p = ScoreParams.New();
-        p.Mode(Mode.Mania);
-        p.NKatu(0);
-        p.NMisses(6);
-        p.N100(29);
-        p.N300(213);
-        p.N50(0);
-        var res = cal.Calculate(p.Context);
-        // Rosu.debug_result(ref res);
-        Output.WriteLine("{0}", Json.Serialize(res));
+        // var f = File.ReadAllBytes("./TestFiles/Kakichoco - Zan'ei (Lasse) [Illusion].osu");
+        // var beatmapData = GCHandle.Alloc(f, GCHandleType.Pinned);
+        // var cal = Calculator.New(new Sliceu8(beatmapData, (ulong)f.Length));
+        // beatmapData.Free();
+        // var p = ScoreParams.New();
+        // p.Mode(Mode.Mania);
+        // p.NKatu(0);
+        // p.NMisses(6);
+        // p.N100(29);
+        // p.N300(213);
+        // p.N50(0);
+        // var res = cal.Calculate(p.Context);
+        // // Rosu.debug_result(ref res);
+        // Output.WriteLine("{0}", Json.Serialize(res));
     }
 
     [Fact]

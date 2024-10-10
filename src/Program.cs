@@ -42,8 +42,11 @@ else
     var log = new LoggerConfiguration().WriteTo
         .Async(a => a.Console())
         .WriteTo.Async(a => a.File("logs/log-.log", rollingInterval: RollingInterval.Day));
-    if (config.debug)
+    if (config.debug) {
         log = log.MinimumLevel.Debug();
+    } else {
+        log = log.MinimumLevel.Information();
+    }
     Log.Logger = log.CreateLogger();
 }
 Log.Information("初始化成功 {@config}", config);

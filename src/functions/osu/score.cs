@@ -141,7 +141,13 @@ namespace KanonBot.Functions.OSUBot
             var beatmapSetInfo = await API.OSU.GetBeatmap(scoreData!.Score.Beatmap!.BeatmapId);
             scoreData.Score.Beatmapset = beatmapSetInfo!.Beatmapset;
 
-            var data = await PerformanceCalculator.CalculatePanelData(scoreData.Score);
+            LegacyImage.Draw.ScorePanelData data;
+            if (command.lazer) {
+                data = await PerformanceCalculator.CalculatePanelDataNext(scoreData.Score);
+            } else {
+                data = await PerformanceCalculator.CalculatePanelData(scoreData.Score);
+            }
+
             using var stream = new MemoryStream();
             using var img = await LegacyImage.Draw.DrawScore(data);
             await img.SaveAsync(stream, new PngEncoder());
