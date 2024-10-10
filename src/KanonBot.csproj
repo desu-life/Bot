@@ -47,5 +47,6 @@
 	<!-- RosuPP -->
 	<ItemGroup>
 	  <ProjectReference Include="../rosu-pp-ffi/RosuPP/RosuPP.csproj" />
+	  <ProjectReference Include="../osu-pp/osu-pp.csproj" />
 	</ItemGroup>
 </Project>

@@ -35,6 +35,118 @@ namespace KanonBot.Functions.OSU
                     flashlight;
             }
 
+            public static PPInfo New(
+                API.OSU.Models.ScoreLazer score, 
+                osu.Game.Rulesets.Difficulty.PerformanceAttributes result, 
+                osu.Game.Rulesets.Difficulty.DifficultyAttributes dAttr, 
+                BeatmapAttributes bmAttr,
+                double bpm,
+                double clockrate
+            ) 
+            {
+                if (result is osu.Game.Rulesets.Osu.Difficulty.OsuPerformanceAttributes osu) {
+                    var dosu = (dAttr as osu.Game.Rulesets.Osu.Difficulty.OsuDifficultyAttributes)!;
+                    return new PPInfo()
+                    {
+                        star = dosu.StarRating,
+                        CS = bmAttr.cs,
+                        HP = bmAttr.hp,
+                        AR = bmAttr.ar,
+                        OD = bmAttr.od,
+                        accuracy = osu.Accuracy,
+                        maxCombo = (uint)dosu.MaxCombo,
+                        bpm = bpm,
+                        clockrate = clockrate,
+                        ppStat = new PPInfo.PPStat()
+                        {
+                            total = osu.Total,
+                            aim = osu.Aim,
+                            speed = osu.Speed,
+                            acc = osu.Accuracy,
+                            strain = null,
+                            flashlight = osu.Flashlight,
+                        },
+                        ppStats = null
+                    };
+                }
+                if (result is osu.Game.Rulesets.Taiko.Difficulty.TaikoPerformanceAttributes taiko) {
+                    var dtaiko = (dAttr as osu.Game.Rulesets.Taiko.Difficulty.TaikoDifficultyAttributes)!;
+                    return new PPInfo()
+                    {
+                        star = dtaiko.StarRating,
+                        CS = bmAttr.cs,
+                        HP = bmAttr.hp,
+                        AR = bmAttr.ar,
+                        OD = bmAttr.od,
+                        accuracy = taiko.Accuracy,
+                        maxCombo = (uint)dtaiko.MaxCombo,
+                        bpm = bpm,
+                        clockrate = clockrate,
+                        ppStat = new PPInfo.PPStat()
+                        {
+                            total = taiko.Total,
+                            aim = null,
+                            speed = null,
+                            acc = taiko.Accuracy,
+                            strain = taiko.Difficulty,
+                            flashlight = null,
+                        },
+                        ppStats = null
+                    };
+                }
+                if (result is osu.Game.Rulesets.Mania.Difficulty.ManiaPerformanceAttributes mania) {
+                    var dmania = (dAttr as osu.Game.Rulesets.Mania.Difficulty.ManiaDifficultyAttributes)!;
+                    return new PPInfo()
+                    {
+                        star = dmania.StarRating,
+                        CS = bmAttr.cs,
+                        HP = bmAttr.hp,
+                        AR = bmAttr.ar,
+                        OD = bmAttr.od,
+                        accuracy = null,
+                        maxCombo = (uint)dmania.MaxCombo,
+                        bpm = bpm,
+                        clockrate = clockrate,
+                        ppStat = new PPInfo.PPStat()
+                        {
+                            total = mania.Total,
+                            aim = null,
+                            speed = null,
+                            acc = null,
+                            strain = mania.Difficulty,
+                            flashlight = null,
+                        },
+                        ppStats = null
+                    };
+                }
+                if (result is osu.Game.Rulesets.Catch.Difficulty.CatchPerformanceAttributes fruit) {
+                    var dfruit = (dAttr as osu.Game.Rulesets.Catch.Difficulty.CatchDifficultyAttributes)!;
+                    return new PPInfo()
+                    {
+                        star = dfruit.StarRating,
+                        CS = bmAttr.cs,
+                        HP = bmAttr.hp,
+                        AR = bmAttr.ar,
+                        OD = bmAttr.od,
+                        accuracy = null,
+                        maxCombo = (uint)dfruit.MaxCombo,
+                        bpm = bpm,
+                        clockrate = clockrate,
+                        ppStat = new PPInfo.PPStat()
+                        {
+                            total = fruit.Total,
+                            aim = null,
+                            speed = null,
+                            acc = null,
+                            strain = null,
+                            flashlight = null,
+                        },
+                        ppStats = null
+                    };
+                }
+                throw new ArgumentOutOfRangeException();
+            }
+
             public static PPInfo New(PerformanceAttributes result, BeatmapAttributes bmAttr, double bpm) {
                 switch (result.mode)
                 {
@@ -155,7 +267,9 @@ namespace KanonBot.Functions.OSU
         async public static Task<Draw.ScorePanelData> CalculatePanelSSData(API.OSU.Models.Beatmap map)
         {
             
-            Beatmap beatmap = await LoadBeatmap(map);
+            Beatmap beatmap = Beatmap.FromBytes(
+                await LoadBeatmap(map)
+            );;
             var builder = BeatmapAttributesBuilder.New();
             var bmAttr = builder.Build(beatmap);
             var bpm = bmAttr.clock_rate * beatmap.Bpm();
@@ -210,7 +324,7 @@ namespace KanonBot.Functions.OSU
             return data;
         }
 
-        async public static Task<Beatmap> LoadBeatmap(API.OSU.Models.Beatmap bm)
+        async public static Task<byte[]> LoadBeatmap(API.OSU.Models.Beatmap bm)
         {
             try
             {   
@@ -240,9 +354,7 @@ namespace KanonBot.Functions.OSU
                 }
 
                 // 读取铺面
-                return Beatmap.FromBytes(
-                    f
-                );
+                return f!;
             }
             catch
             {
@@ -252,7 +364,7 @@ namespace KanonBot.Functions.OSU
             }
         }
 
-        async public static Task<Draw.ScorePanelData> CalculatePanelData(API.OSU.Models.ScoreLazer score)
+        async public static Task<Draw.ScorePanelData> CalculatePanelDataNext(API.OSU.Models.ScoreLazer score)
         {
             var data = new Draw.ScorePanelData
             {
@@ -260,21 +372,96 @@ namespace KanonBot.Functions.OSU
             };
             var statistics = data.scoreInfo.Statistics;
 
-            Beatmap beatmap = await LoadBeatmap(data.scoreInfo.Beatmap!);
+            var b = await LoadBeatmap(data.scoreInfo.Beatmap!);
+            var beatmap = new OsuPP.CalculatorWorkingBeatmap(b);
+            var rosubeatmap = Beatmap.FromBytes(b);
+
+            Mode rmode = data.scoreInfo.Mode.ToRosu();
+            
+            var clockRate = 1.0;
+            var mods = Mods.FromJson(Serializer.Json.Serialize(data.scoreInfo.Mods), rmode);
 
             var builder = BeatmapAttributesBuilder.New();
+            builder.Mode(rmode);
+            builder.Mods(mods);
+            var bmAttr = builder.Build(rosubeatmap);
+            var bpm = bmAttr.clock_rate * rosubeatmap.Bpm();
+            clockRate = bmAttr.clock_rate;
 
-            var mode = API.OSU.Enums.Int2Mode(data.scoreInfo.ModeInt);
-            Mode rmode;
-            if (mode is null)
+            var c = OsuPP.Calculater.New(beatmap);
+
+            c.Mode(0);
+            c.Mods(Serializer.Json.Serialize(data.scoreInfo.Mods));
+            c.combo = data.scoreInfo.MaxCombo;
+            c.N300 = statistics.CountGreat;
+            c.N100 = statistics.CountOk;
+            c.N50 = statistics.CountMeh;
+            c.NMiss = statistics.CountMiss;
+            c.NKatu = statistics.CountKatu;
+            c.accuracy = data.scoreInfo.Accuracy * 100.00;
+            var dAttr = c.CalculateDifficulty();
+            var bAttr = c.Calculate();
+
+            // 开始计算
+            data.ppInfo = PPInfo.New(score, bAttr, dAttr, bmAttr, bpm, clockRate);
+
+            // 5种acc + 全连
+            double[] accs =
             {
-                rmode = beatmap.Mode();
-            } else {
-                rmode = mode.Value.ToRosu();
-            }
+                100.00,
+                99.00,
+                98.00,
+                97.00,
+                95.00,
+                data.scoreInfo.Accuracy * 100.00
+            };
+            data.ppInfo.ppStats = accs.Select(acc =>
+                {
+                    var p = Performance.New();
+                    p.Mode(rmode);
+                    p.Mods(mods);
+                    p.Accuracy(acc);
+                    var state = p.GenerateState(rosubeatmap);
+                    c.accuracy = acc;
+                    c.N50 = state.n50;
+                    c.N100 = state.n100;
+                    c.N300 = state.n300;
+                    c.NKatu = state.n_katu;
+                    c.NGeki = state.n_geki;
+                    c.NMiss = state.misses;
+                    c.combo = state.max_combo;
+
+                    bAttr = c.Calculate();
+
+                    return PPInfo.New(score, bAttr, dAttr, bmAttr, bpm, clockRate).ppStat;
+                })
+                .ToList();
+
+            data.mode = data.scoreInfo.Mode.ToRosu();
+
+            return data;
+        }
+
+        async public static Task<Draw.ScorePanelData> CalculatePanelData(API.OSU.Models.ScoreLazer score)
+        {
+            if (!score.IsClassic) return await CalculatePanelDataNext(score);
+
+            var data = new Draw.ScorePanelData
+            {
+                scoreInfo = score
+            };
+            var statistics = data.scoreInfo.Statistics;
+
+            Beatmap beatmap = Beatmap.FromBytes(
+                await LoadBeatmap(data.scoreInfo.Beatmap!)
+            );
+
+
+            Mode rmode = data.scoreInfo.Mode.ToRosu();
 
             var mods = Mods.FromJson(Serializer.Json.Serialize(data.scoreInfo.Mods), rmode);
 
+            var builder = BeatmapAttributesBuilder.New();
             builder.Mode(rmode);
             builder.Mods(mods);
             var bmAttr = builder.Build(beatmap);
@@ -289,6 +476,7 @@ namespace KanonBot.Functions.OSU
             p.N50(statistics.CountMeh);
             p.Misses(statistics.CountMiss);
             p.NKatu(statistics.CountKatu);
+            p.NGeki(statistics.CountGeki);
             // 开始计算
             data.ppInfo = PPInfo.New(p.Calculate(beatmap), bmAttr, bpm);
 
