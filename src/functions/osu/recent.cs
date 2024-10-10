@@ -149,16 +149,16 @@ namespace KanonBot.Functions.OSUBot
                             bool temp_abletoinsert = true;
                             foreach (var c in x.Mods)
                             {
-                                if (c.ToUpper() == "AP")
+                                if (c.Acronym.ToUpper() == "AP")
                                     temp_abletoinsert = false;
-                                if (c.ToUpper() == "RX")
+                                if (c.Acronym.ToUpper() == "RX")
                                     temp_abletoinsert = false;
                             }
                             if (temp_abletoinsert)
                                 await Seasonalpass.Update(osuID!.Value, data);
                         }
                         //std推图
-                        if (x.Mode == API.OSU.Enums.Mode.OSU)
+                        if (API.OSU.Enums.Int2Mode(x.ModeInt) == API.OSU.Enums.Mode.OSU)
                         {
                             if (
                                 x.Beatmap!.Status == API.OSU.Enums.Status.ranked
@@ -183,7 +183,7 @@ namespace KanonBot.Functions.OSUBot
                                         (int)data.ppInfo.ppStats![2].total,
                                         (int)data.ppInfo.ppStats![3].total,
                                         (int)data.ppInfo.ppStats![4].total,
-                                        x.Mods
+                                        x.Mods.Map(c => c.Acronym).ToArray()
                                     );
                                 }
                         }

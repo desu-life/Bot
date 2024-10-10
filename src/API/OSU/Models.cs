@@ -973,6 +973,168 @@ namespace KanonBot.API
                 [JsonProperty("score")]
                 public Score Score { get; set; }
             }
+
+            public class ScoreMod
+            {
+                [JsonProperty("acronym")]
+                public string Acronym { get; set; }
+                [JsonProperty("settings", NullValueHandling = NullValueHandling.Ignore)]
+                public JObject? Settings { get; set; }
+
+                public static ScoreMod FromString(string mod) {
+                    return new ScoreMod { Acronym = mod };
+                }
+            }
+
+            public class ScoreLazer
+            {
+                [JsonProperty("accuracy")]
+                public double Accuracy { get; set; }
+
+                [JsonProperty("beatmap_id")]
+                public long BeatmapId { get; set; }
+
+                [JsonProperty("best_id", NullValueHandling = NullValueHandling.Ignore)]
+                public long? BestId { get; set; }
+
+                [JsonProperty("build_id", NullValueHandling = NullValueHandling.Ignore)]
+                public long? BuildId { get; set; }
+
+                [JsonProperty("classic_total_score")]
+                public uint ClassicTotalScore { get; set; }
+
+                [JsonProperty("ended_at")]
+                public DateTimeOffset EndedAt { get; set; }
+
+                [JsonProperty("has_replay")]
+                public bool HasReplay { get; set; }
+
+                [JsonProperty("id")]
+                public long Id { get; set; }
+
+                [JsonProperty("is_perfect_combo")]
+                public bool IsPerfectCombo { get; set; }
+
+                [JsonProperty("legacy_perfect")]
+                public bool LegacyPerfect { get; set; }
+
+                [JsonProperty("legacy_score_id", NullValueHandling = NullValueHandling.Ignore)]
+                public long? LegacyScoreId { get; set; }
+
+                [JsonProperty("legacy_total_score")]
+                public uint LegacyTotalScore { get; set; }
+
+                [JsonProperty("max_combo")]
+                public uint MaxCombo { get; set; }
+
+                [JsonProperty("maximum_statistics")]
+                public ScoreStatisticsLazer MaximumStatistics { get; set; }
+
+                [JsonProperty("mods")]
+                public ScoreMod[] Mods { get; set; }
+
+                [JsonProperty("passed")]
+                public bool Passed { get; set; }
+
+                [JsonProperty("pp", NullValueHandling = NullValueHandling.Ignore)]
+                public double? pp { get; set; }
+
+                [JsonProperty("preserve")]
+                public bool Preserve { get; set; }
+
+                [JsonProperty("processed")]
+                public bool Processed { get; set; }
+
+                [JsonProperty("rank")]
+                public string Rank { get; set; }
+
+                [JsonProperty("ranked")]
+                public bool Ranked { get; set; }
+
+                [JsonProperty("ruleset_id")]
+                public int ModeInt { get; set; }
+
+                [JsonProperty("started_at", NullValueHandling = NullValueHandling.Ignore)]
+                public DateTimeOffset? StartedAt { get; set; }
+
+                [JsonProperty("statistics")]
+                public ScoreStatisticsLazer Statistics { get; set; }
+
+                [JsonProperty("total_score")]
+                public uint Score { get; set; }
+
+                [JsonProperty("type")]
+                public string Kind { get; set; }
+
+                [JsonProperty("user_id")]
+                public long UserId { get; set; }
+
+                // 下面是可选内容
+
+                // SoloScoreJsonAttributesMultiplayer
+
+                [JsonProperty("playlist_item_id", NullValueHandling = NullValueHandling.Ignore)]
+                public long? PlaylistItemId { get; set; }
+
+                [JsonProperty("room_id", NullValueHandling = NullValueHandling.Ignore)]
+                public long? RoomId { get; set; }
+
+                [JsonProperty("solo_score_id", NullValueHandling = NullValueHandling.Ignore)]
+                public long? SoloScoreId { get; set; }
+
+                // ScoreJsonAvailableIncludes
+
+                [JsonProperty("beatmap", NullValueHandling = NullValueHandling.Ignore)]
+                public Beatmap? Beatmap { get; set; }
+
+                [JsonProperty("beatmapset", NullValueHandling = NullValueHandling.Ignore)]
+                public Beatmapset? Beatmapset { get; set; }
+
+                [JsonProperty("user", NullValueHandling = NullValueHandling.Ignore)]
+                public User? User { get; set; }
+
+                [JsonProperty("weight", NullValueHandling = NullValueHandling.Ignore)]
+                public ScoreWeight? Weight { get; set; }
+                
+                [JsonProperty("match", NullValueHandling = NullValueHandling.Ignore)]
+                public Match? Match { get; set; }
+
+                [JsonProperty("rank_country", NullValueHandling = NullValueHandling.Ignore)]
+                public long? RankCountry { get; set; }
+
+                [JsonProperty("rank_global", NullValueHandling = NullValueHandling.Ignore)]
+                public long? RankGlobal { get; set; }
+
+                // ScoreJsonDefaultIncludes
+
+                [JsonProperty("current_user_attributes", NullValueHandling = NullValueHandling.Ignore)]
+                public CurrentUserAttributes? CurrentUserAttributes { get; set; }
+
+                public Enums.Mode Mode => Enums.Int2Mode(ModeInt) ?? Enums.Mode.Unknown;
+                public bool IsClassic => Mods.Any(it => it.Acronym == "CL");
+            }
+
+            public class Match {
+                [JsonProperty("pass")]
+                public bool Pass { get; set; }
+                [JsonProperty("slot")]
+                public uint Slot { get; set; }
+                [JsonProperty("team")]
+                public uint Team { get; set; }
+            }
+
+            public class CurrentUserAttributes {
+                [JsonProperty("pin", NullValueHandling = NullValueHandling.Ignore)]
+                public CurrentUserPin? Pin { get; set; }
+            }
+
+            public class CurrentUserPin {
+                [JsonProperty("is_pinned")]
+                public bool IsPinned { get; set; }
+                [JsonProperty("score_id")]
+                public long ScoreId { get; set; }
+            }
+
             public class Score
             {
                 [JsonProperty("accuracy")]
@@ -1016,7 +1178,7 @@ namespace KanonBot.API
                 public bool Replay { get; set; }
 
                 [JsonProperty("score")]
-                public int Scores { get; set; }
+                public uint Scores { get; set; }
 
                 [JsonProperty("statistics")]
                 public ScoreStatistics Statistics { get; set; }
@@ -1035,6 +1197,30 @@ namespace KanonBot.API
 
                 [JsonProperty("weight", NullValueHandling = NullValueHandling.Ignore)]
                 public ScoreWeight? Weight { get; set; }
+
+                public static implicit operator ScoreLazer(Score s) {
+                    return new ScoreLazer
+                    {
+                        Accuracy = s.Accuracy,
+                        BestId = s.BestId,
+                        EndedAt = s.CreatedAt,
+                        Id = s.Id,
+                        MaxCombo = s.MaxCombo,
+                        ModeInt = s.Mode.ToNum(),
+                        Mods = s.Mods.Map(ScoreMod.FromString).ToArray(),
+                        Passed = s.Passed,
+                        pp = s.PP,
+                        Rank = s.Rank,
+                        HasReplay = s.Replay,
+                        Score = s.Scores,
+                        Statistics = s.Statistics,
+                        UserId = s.UserId,
+                        Beatmap = s.Beatmap,
+                        Beatmapset = s.Beatmapset,
+                        User = s.User,
+                        Weight = s.Weight
+                    };
+                }
             }
 
             public class ScoreStatistics
@@ -1056,6 +1242,71 @@ namespace KanonBot.API
 
                 [JsonProperty("count_miss", NullValueHandling = NullValueHandling.Ignore)]
                 public uint CountMiss { get; set; }
+
+                public static implicit operator ScoreStatisticsLazer(ScoreStatistics s) {
+                    return new ScoreStatisticsLazer
+                    {
+                        CountOk = s.CountOk,
+                        CountGreat = s.CountGreat,
+                        CountMeh = s.CountMeh,
+                        CountGeki = s.CountGeki,
+                        CountKatu = s.CountKatu,
+                        CountMiss = s.CountMiss
+                    };
+                }
+            }
+
+            public class ScoreStatisticsLazer
+            {
+                [JsonProperty("ok", NullValueHandling = NullValueHandling.Ignore)]
+                public uint CountOk { get; set; }
+
+                [JsonProperty("great", NullValueHandling = NullValueHandling.Ignore)]
+                public uint CountGreat { get; set; }
+
+                [JsonProperty("meh", NullValueHandling = NullValueHandling.Ignore)]
+                public uint CountMeh { get; set; }
+
+                [JsonProperty("perfect", NullValueHandling = NullValueHandling.Ignore)]
+                public uint CountGeki { get; set; }
+
+                [JsonProperty("good", NullValueHandling = NullValueHandling.Ignore)]
+                public uint CountKatu { get; set; }
+
+                [JsonProperty("miss", NullValueHandling = NullValueHandling.Ignore)]
+                public uint CountMiss { get; set; }
+                [JsonProperty("large_tick_hit", NullValueHandling = NullValueHandling.Ignore)]
+                public uint large_tick_hit { get; set; }
+
+                [JsonProperty("large_tick_miss", NullValueHandling = NullValueHandling.Ignore)]
+                public uint large_tick_miss { get; set; }
+
+                [JsonProperty("small_tick_hit", NullValueHandling = NullValueHandling.Ignore)]
+                public uint small_tick_hit { get; set; }
+
+                [JsonProperty("small_tick_miss", NullValueHandling = NullValueHandling.Ignore)]
+                public uint small_tick_miss { get; set; }
+
+                [JsonProperty("ignore_hit", NullValueHandling = NullValueHandling.Ignore)]
+                public uint ignore_hit { get; set; }
+
+                [JsonProperty("ignore_miss", NullValueHandling = NullValueHandling.Ignore)]
+                public uint ignore_miss { get; set; }
+
+                [JsonProperty("large_bonus", NullValueHandling = NullValueHandling.Ignore)]
+                public uint large_bonus { get; set; }
+
+                [JsonProperty("small_bonus", NullValueHandling = NullValueHandling.Ignore)]
+                public uint small_bonus { get; set; }
+
+                [JsonProperty("slider_tail_hit", NullValueHandling = NullValueHandling.Ignore)]
+                public uint slider_tail_hit { get; set; }
+
+                [JsonProperty("combo_break", NullValueHandling = NullValueHandling.Ignore)]
+                public uint combo_break { get; set; }
+                
+                [JsonProperty("legacy_combo_increase", NullValueHandling = NullValueHandling.Ignore)]
+                public uint legacy_combo_increase { get; set; }
             }
 
             public class ScoreWeight

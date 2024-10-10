@@ -339,7 +339,7 @@ namespace KanonBot.DrawV3
                     x.DrawText(
                         drawOptions,
                         textOptions,
-                        data.scoreInfo.CreatedAt.AddHours(8).ToString("yyyy/MM/dd HH:mm"),
+                        data.scoreInfo.EndedAt.AddHours(8).ToString("yyyy/MM/dd HH:mm"),
                         new SolidBrush(Color.ParseHex("#333333")),
                         null
                     )
@@ -349,11 +349,11 @@ namespace KanonBot.DrawV3
             if (data.scoreInfo.Mods.Length > 0)
             {
                 var username_measure = TextMeasurer.MeasureSize(data.scoreInfo.User!.Username, textOptions);
-                var archived_time_measure = TextMeasurer.MeasureSize(data.scoreInfo.CreatedAt.AddHours(8).ToString("yyyy/MM/dd HH:mm"), textOptions);
+                var archived_time_measure = TextMeasurer.MeasureSize(data.scoreInfo.EndedAt.AddHours(8).ToString("yyyy/MM/dd HH:mm"), textOptions);
                 var ModAreaStartPos = 90 + 198 + (int)Math.Max(username_measure.Width, archived_time_measure.Width);
                 foreach (var x in data.scoreInfo.Mods)
                 {
-                    using var modicon = await Img.LoadAsync($"./work/mods_v2/2x/{x}.png");
+                    using var modicon = await Img.LoadAsync($"./work/mods_v2/2x/{x.Acronym.ToUpper()}.png");
                     modicon.Mutate(x => x.Resize(90, 90));
                     scoreimg.Mutate(
                                 x =>

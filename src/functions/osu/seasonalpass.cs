@@ -135,7 +135,7 @@ namespace KanonBot.Functions.OSU
                     //mod加成
                     foreach (var x in score.scoreInfo.Mods)
                     {
-                        switch (x.ToUpper())
+                        switch (x.Acronym.ToUpper())
                         {
                             case "DT":
                                 //DT加成

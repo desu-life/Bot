@@ -39,7 +39,8 @@ namespace KanonBot.LegacyImage
         public class ScorePanelData
         {
             public PerformanceCalculator.PPInfo ppInfo;
-            public OSU.Models.Score scoreInfo;
+            public OSU.Models.ScoreLazer scoreInfo;
+            public RosuPP.Mode mode;
         }
 
         public class PPVSPanelData
@@ -683,11 +684,11 @@ namespace KanonBot.LegacyImage
                     return await ReadImageRgba(avatarPath); // 下载后再读取
                 });
 
-            using var panel = data.scoreInfo.Mode switch
+            using var panel = data.mode switch
             {
-                OSU.Enums.Mode.Fruits
+                RosuPP.Mode.Catch
                     => await Img.LoadAsync("work/legacy/v2_scorepanel/default-score-v2-fruits.png"),
-                OSU.Enums.Mode.Mania
+                RosuPP.Mode.Mania
                     => await Img.LoadAsync("work/legacy/v2_scorepanel/default-score-v2-mania.png"),
                 _ => await Img.LoadAsync("work/legacy/v2_scorepanel/default-score-v2.png")
             };
@@ -719,9 +720,9 @@ namespace KanonBot.LegacyImage
             // green, blue, yellow, red, purple, black
             // [0,2), [2,3), [3,4), [4,5), [5,7), [7,?)
             var ringFile = new string[6];
-            switch (data.scoreInfo.Mode)
+            switch (data.mode)
             {
-                case OSU.Enums.Mode.OSU:
+                case RosuPP.Mode.Osu:
                     ringFile[0] = "std-easy.png";
                     ringFile[1] = "std-normal.png";
                     ringFile[2] = "std-hard.png";
@@ -729,7 +730,7 @@ namespace KanonBot.LegacyImage
                     ringFile[4] = "std-expert.png";
                     ringFile[5] = "std-expertplus.png";
                     break;
-                case OSU.Enums.Mode.Fruits:
+                case RosuPP.Mode.Catch:
                     ringFile[0] = "ctb-easy.png";
                     ringFile[1] = "ctb-normal.png";
                     ringFile[2] = "ctb-hard.png";
@@ -737,7 +738,7 @@ namespace KanonBot.LegacyImage
                     ringFile[4] = "ctb-expert.png";
                     ringFile[5] = "ctb-expertplus.png";
                     break;
-                case OSU.Enums.Mode.Taiko:
+                case RosuPP.Mode.Taiko:
                     ringFile[0] = "taiko-easy.png";
                     ringFile[1] = "taiko-normal.png";
                     ringFile[2] = "taiko-hard.png";
@@ -745,7 +746,7 @@ namespace KanonBot.LegacyImage
                     ringFile[4] = "taiko-expert.png";
                     ringFile[5] = "taiko-expertplus.png";
                     break;
-                case OSU.Enums.Mode.Mania:
+                case RosuPP.Mode.Mania:
                     ringFile[0] = "mania-easy.png";
                     ringFile[1] = "mania-normal.png";
                     ringFile[2] = "mania-hard.png";
@@ -806,7 +807,7 @@ namespace KanonBot.LegacyImage
             {
                 try
                 {
-                    using var modPic = await Img.LoadAsync($"./work/mods/{mod}.png");
+                    using var modPic = await Img.LoadAsync($"./work/mods/{mod.Acronym.ToUpper()}.png");
                     modPic.Mutate(x => x.Resize(200, 61));
                     score.Mutate(x => x.DrawImage(modPic, new Point((modp * 160) + 440, 440), 1));
                     modp += 1;
@@ -922,7 +923,7 @@ namespace KanonBot.LegacyImage
             var color = Color.ParseHex("#f1ce59");
             textOptions.Font = new Font(TorusRegular, 24.25f);
             // time
-            var song_time = Utils.Duration2TimeString(data.scoreInfo.Beatmap.TotalLength);
+            var song_time = Utils.Duration2TimeString((long)Math.Round((data.scoreInfo.Beatmap.TotalLength - 1.0) / data.ppInfo.clockrate));
             textOptions.Origin = new PointF(1741, 127);
             score.Mutate(
                 x =>
@@ -939,7 +940,7 @@ namespace KanonBot.LegacyImage
                 x => x.DrawText(drawOptions, textOptions, song_time, new SolidBrush(color), null)
             );
             // bpm
-            var bpm = data.ppInfo.bpm!.Value.ToString("0.##");
+            var bpm = data.ppInfo.bpm.ToString("0.##");
             textOptions.Origin = new PointF(1457, 127);
             score.Mutate(
                 x => x.DrawText(drawOptions, textOptions, bpm, new SolidBrush(Color.Black), null)
@@ -1057,8 +1058,8 @@ namespace KanonBot.LegacyImage
             );
             // time
             textOptions.Font = new Font(TorusRegular, 27.61f);
-            data.scoreInfo.CreatedAt.AddHours(8); //to UTC+8
-            var time = data.scoreInfo.CreatedAt.ToString("yyyy/MM/dd HH:mm:ss");
+            data.scoreInfo.EndedAt.AddHours(8); //to UTC+8
+            var time = data.scoreInfo.EndedAt.ToString("yyyy/MM/dd HH:mm:ss");
             textOptions.Origin = new PointF(145, 505);
             score.Mutate(
                 x => x.DrawText(drawOptions, textOptions, time, new SolidBrush(Color.Black), null)
@@ -1188,17 +1189,31 @@ namespace KanonBot.LegacyImage
             textOptions.HorizontalAlignment = HorizontalAlignment.Center;
             textOptions.Font = new Font(TorusRegular, 40);
             textOptions.Origin = new PointF(980, 750);
-            score.Mutate(
-                x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        data.scoreInfo.Scores.ToString("N0"),
-                        new SolidBrush(Color.White),
-                        null
-                    )
-            );
-            if (data.scoreInfo.Mode is OSU.Enums.Mode.Fruits)
+            if (data.scoreInfo.IsClassic) {
+                score.Mutate(
+                    x =>
+                        x.DrawText(
+                            drawOptions,
+                            textOptions,
+                            data.scoreInfo.LegacyTotalScore.ToString("N0"),
+                            new SolidBrush(Color.White),
+                            null
+                        )
+                );
+            } else {
+                score.Mutate(
+                    x =>
+                        x.DrawText(
+                            drawOptions,
+                            textOptions,
+                            data.scoreInfo.Score.ToString("N0"),
+                            new SolidBrush(Color.White),
+                            null
+                        )
+                );
+            }
+
+            if (data.mode is RosuPP.Mode.Catch)
             {
                 textOptions.Font = new Font(TorusRegular, 40.00f);
                 var great = data.scoreInfo.Statistics.CountGreat.ToString();
@@ -1273,7 +1288,7 @@ namespace KanonBot.LegacyImage
                         )
                 );
             }
-            else if (data.scoreInfo.Mode is OSU.Enums.Mode.Mania)
+            else if (data.mode is RosuPP.Mode.Mania)
             {
                 textOptions.Font = new Font(TorusRegular, 35.00f);
                 var great = data.scoreInfo.Statistics.CountGreat.ToString();

@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System.Net;
 using KanonBot.Serializer;
 using System.IO;
+using Org.BouncyCastle.Ocsp;
 
 namespace KanonBot.API
 {
@@ -19,6 +20,10 @@ namespace KanonBot.API
             CheckToken().Wait();
             var ep = config.osu?.v2EndPoint;
             return (ep ?? EndPointV2).WithHeader("Authorization", $"Bearer {Token}").AllowHttpStatus(HttpStatusCode.NotFound);
+        }
+
+        static IFlurlRequest withLazerScore(IFlurlRequest req) {
+            return req.WithHeader("x-api-version", "20220705");
         }
 
         async private static Task<bool> GetToken()
@@ -112,7 +117,29 @@ namespace KanonBot.API
         // 获取用户成绩
         // Score type. Must be one of these: best, firsts, recent.
         // 默认 best
-        async public static Task<Models.Score[]?> GetUserScores(long userId, Enums.UserScoreType scoreType = Enums.UserScoreType.Best, Enums.Mode mode = Enums.Mode.OSU, int limit = 1, int offset = 0, bool includeFails = true)
+        async public static Task<Models.ScoreLazer[]?> GetUserScores(long userId, Enums.UserScoreType scoreType = Enums.UserScoreType.Best, Enums.Mode mode = Enums.Mode.OSU, int limit = 1, int offset = 0, bool includeFails = true)
+        {
+            var res = await withLazerScore(http())
+                .AppendPathSegments(new object[] { "users", userId, "scores", scoreType.ToStr() })
+                .SetQueryParams(new
+                {
+                    include_fails = includeFails ? 1 : 0,
+                    limit,
+                    offset,
+                    mode = mode.ToStr()
+                })
+                .GetAsync();
+
+            if (res.StatusCode == 404)
+                return null;
+            else
+                return await res.GetJsonAsync<Models.ScoreLazer[]>();
+        }
+
+        // 获取用户成绩
+        // Score type. Must be one of these: best, firsts, recent.
+        // 默认 best
+        async public static Task<Models.Score[]?> GetUserScoresLeagcy(long userId, Enums.UserScoreType scoreType = Enums.UserScoreType.Best, Enums.Mode mode = Enums.Mode.OSU, int limit = 1, int offset = 0, bool includeFails = true)
         {
             var res = await http()
                 .AppendPathSegments(new object[] { "users", userId, "scores", scoreType.ToStr() })
@@ -125,7 +152,6 @@ namespace KanonBot.API
                 })
                 .GetAsync();
 
-            //Log.Information(await res.GetStringAsync());
             if (res.StatusCode == 404)
                 return null;
             else

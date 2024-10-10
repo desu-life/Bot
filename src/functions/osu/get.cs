@@ -186,7 +186,7 @@ namespace KanonBot.Functions.OSUBot
 
 
             //获取前50bp
-            var allBP = await API.OSU.GetUserScores(
+            var allBP = await API.OSU.GetUserScoresLeagcy(
                 OnlineOsuInfo.Id,
                 API.OSU.Enums.UserScoreType.Best,
                 API.OSU.Enums.Mode.OSU,
@@ -520,7 +520,7 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
             // 因为上面确定过模式，这里就直接用userdata里的mode了
-            var allBP = await API.OSU.GetUserScores(
+            var allBP = await API.OSU.GetUserScoresLeagcy(
                 OnlineOsuInfo.Id,
                 API.OSU.Enums.UserScoreType.Best,
                 mode!.Value,
@@ -1012,7 +1012,7 @@ namespace KanonBot.Functions.OSUBot
                     break;
                 ////////////////////////////////////////////////////////////////////////////////////////
                 case "zkfc":
-                    var scores = await API.OSU.GetUserScores(
+                    var scores = await API.OSU.GetUserScoresLeagcy(
                                                          osuID!.Value,
                                                          API.OSU.Enums.UserScoreType.Best,
                                                          API.OSU.Enums.Mode.OSU,
@@ -1140,7 +1140,7 @@ namespace KanonBot.Functions.OSUBot
             OnlineOsuInfo.PlayMode = mode!.Value;
             #endregion
 
-            var allBP = await API.OSU.GetUserScores(
+            var allBP = await API.OSU.GetUserScoresLeagcy(
                 OnlineOsuInfo!.Id,
                 API.OSU.Enums.UserScoreType.Best,
                 mode!.Value,
@@ -1279,7 +1279,7 @@ namespace KanonBot.Functions.OSUBot
             OnlineOsuInfo.PlayMode = mode!.Value;
             #endregion
 
-            var allBP = await API.OSU.GetUserScores(
+            var allBP = await API.OSU.GetUserScoresLeagcy(
                 OnlineOsuInfo!.Id,
                 API.OSU.Enums.UserScoreType.Best,
                 mode!.Value,
@@ -1588,7 +1588,7 @@ namespace KanonBot.Functions.OSUBot
             OnlineOsuInfo.PlayMode = mode!.Value;
             #endregion
 
-            var allBP = await API.OSU.GetUserScores(
+            var allBP = await API.OSU.GetUserScoresLeagcy(
                 OnlineOsuInfo!.Id,
                 API.OSU.Enums.UserScoreType.Best,
                 mode!.Value,

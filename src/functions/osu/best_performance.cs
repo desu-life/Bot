@@ -151,7 +151,7 @@ namespace KanonBot.Functions.OSUBot
                             (int)data.ppInfo.ppStats![2].total,
                             (int)data.ppInfo.ppStats![3].total,
                             (int)data.ppInfo.ppStats![4].total,
-                            scores[0].Mods
+                            scores[0].Mods.Map(c => c.Acronym).ToArray()
                         );
                     }
                 }

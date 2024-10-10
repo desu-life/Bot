@@ -19,7 +19,8 @@ namespace KanonBot.Functions.OSU
                 OD;
             public double? accuracy;
             public uint? maxCombo;
-            public double? bpm;
+            public double bpm;
+            public double clockrate;
             public required PPStat ppStat;
             public List<PPStat>? ppStats;
 
@@ -48,6 +49,7 @@ namespace KanonBot.Functions.OSU
                             accuracy = attr.pp_acc,
                             maxCombo = attr.max_combo,
                             bpm = bpm,
+                            clockrate = bmAttr.clock_rate,
                             ppStat = new PPInfo.PPStat()
                             {
                                 total = attr.pp,
@@ -72,6 +74,7 @@ namespace KanonBot.Functions.OSU
                             accuracy = attr.pp_acc,
                             maxCombo = attr.max_combo,
                             bpm = bpm,
+                            clockrate = bmAttr.clock_rate,
                             ppStat = new PPInfo.PPStat()
                             {
                                 total = attr.pp,
@@ -96,6 +99,7 @@ namespace KanonBot.Functions.OSU
                             accuracy = null,
                             maxCombo = attr.max_combo,
                             bpm = bpm,
+                            clockrate = bmAttr.clock_rate,
                             ppStat = new PPInfo.PPStat()
                             {
                                 total = attr.pp,
@@ -120,6 +124,7 @@ namespace KanonBot.Functions.OSU
                             accuracy = null,
                             maxCombo = attr.max_combo,
                             bpm = bpm,
+                            clockrate = bmAttr.clock_rate,
                             ppStat = new PPInfo.PPStat()
                             {
                                 total = attr.pp,
@@ -177,12 +182,12 @@ namespace KanonBot.Functions.OSU
             var res = p.Calculate(beatmap);
             var data = new Draw.ScorePanelData
             {
-                scoreInfo = new API.OSU.Models.Score
+                scoreInfo = new API.OSU.Models.ScoreLazer
                 {
                     Accuracy = 1.0,
                     Beatmap = map,
                     MaxCombo = (uint)map.MaxCombo,
-                    Statistics = new API.OSU.Models.ScoreStatistics 
+                    Statistics = new API.OSU.Models.ScoreStatisticsLazer 
                     {
                         CountGreat = (uint)(map.CountCircles + map.CountSliders),
                         CountMeh = 0,
@@ -190,9 +195,9 @@ namespace KanonBot.Functions.OSU
                         CountKatu = 0,
                         CountOk = 0,
                     },
-                    Mods = new string[0],
-                    Mode = map.Mode,
-                    Scores = 1000000,
+                    Mods = [],
+                    ModeInt = map.Mode.ToNum(),
+                    Score = 1000000,
                     Passed = true,
                     Rank = "X",
                 }
@@ -212,17 +217,17 @@ namespace KanonBot.Functions.OSU
             data.ppInfo.ppStats = accs.Select(acc =>
                 {
                     var p = Performance.New();
-                    p.Mode(data.scoreInfo.Mode.ToRosu());
-                    p.Mods(data.scoreInfo.Mods);
                     p.Accuracy(acc);
                     return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm).ppStat;
                 })
                 .ToList();
 
+            data.mode = map.Mode.ToRosu();
+
             return data;
         }
 
-        async public static Task<Draw.ScorePanelData> CalculatePanelData(API.OSU.Models.Score score)
+        async public static Task<Draw.ScorePanelData> CalculatePanelData(API.OSU.Models.ScoreLazer score)
         {
             var data = new Draw.ScorePanelData
             {
@@ -250,14 +255,27 @@ namespace KanonBot.Functions.OSU
 
 
             var builder = BeatmapAttributesBuilder.New();
-            builder.Mode(data.scoreInfo.Mode.ToRosu());
-            builder.Mods(data.scoreInfo.Mods);
+
+
+            var mode = API.OSU.Enums.Int2Mode(data.scoreInfo.ModeInt);
+            Mode rmode;
+            if (mode is null)
+            {
+                rmode = beatmap.Mode();
+            } else {
+                rmode = mode.Value.ToRosu();
+            }
+
+            var mods = Mods.FromJson(Serializer.Json.Serialize(data.scoreInfo.Mods), rmode);
+
+            builder.Mode(rmode);
+            builder.Mods(mods);
             var bmAttr = builder.Build(beatmap);
             var bpm = bmAttr.clock_rate * beatmap.Bpm();
 
             var p = Performance.New();
-            p.Mode(data.scoreInfo.Mode.ToRosu());
-            p.Mods(data.scoreInfo.Mods);
+            p.Mode(rmode);
+            p.Mods(mods);
             p.Combo(data.scoreInfo.MaxCombo);
             p.N300(statistics.CountGreat);
             p.N100(statistics.CountOk);
@@ -280,13 +298,14 @@ namespace KanonBot.Functions.OSU
             data.ppInfo.ppStats = accs.Select(acc =>
                 {
                     var p = Performance.New();
-                    p.Mode(data.scoreInfo.Mode.ToRosu());
-                    p.Mods(data.scoreInfo.Mods);
+                    p.Mode(rmode);
+                    p.Mods(mods);
                     p.Accuracy(acc);
                     return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm).ppStat;
                 })
                 .ToList();            
 
+            data.mode = rmode;
             return data;
         }
     }

@@ -278,7 +278,7 @@ namespace KanonBot.Functions.OSUBot
                         LegacyImage.Draw.UserPanelData.CustomMode.Dark => DrawV2.OsuInfoPanelV2.InfoCustom.DarkDefault,
                         _ => throw new ArgumentOutOfRangeException("未知的自定义模式")
                     };
-                    allBP = await API.OSU.GetUserScores(
+                    allBP = await API.OSU.GetUserScoresLeagcy(
                         data.userInfo.Id,
                         API.OSU.Enums.UserScoreType.Best,
                         data.userInfo.PlayMode,
@@ -317,7 +317,7 @@ namespace KanonBot.Functions.OSUBot
                         await InsertBeatmapTechInfo(allBP);
                     else
                     {
-                        allBP = await API.OSU.GetUserScores(
+                        allBP = await API.OSU.GetUserScoresLeagcy(
                         data.userInfo.Id,
                         API.OSU.Enums.UserScoreType.Best,
                         API.OSU.Enums.Mode.OSU,
