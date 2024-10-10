@@ -639,8 +639,8 @@ namespace KanonBot.LegacyImage
             );
             info.Mutate(x => x.RoundCorner(new Size(1200, 857), 24));
 
-            // 不知道为啥更新了imagesharp后对比度变了
-            info.Mutate(x => x.Contrast(0.988f));
+            // 不知道为啥更新了imagesharp后对比度(亮度)变了
+            info.Mutate(x => x.Brightness(0.997f));
 
             return info;
         }
@@ -1644,8 +1644,8 @@ namespace KanonBot.LegacyImage
                 );
             }
 
-            // 不知道为啥更新了imagesharp后对比度变了
-            score.Mutate(x => x.Contrast(0.988f));
+            // 不知道为啥更新了imagesharp后对比度(亮度)变了
+            score.Mutate(x => x.Brightness(0.997f));
 
             return score;
         }
