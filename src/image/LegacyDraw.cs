@@ -1058,7 +1058,7 @@ namespace KanonBot.LegacyImage
             );
             // time
             textOptions.Font = new Font(TorusRegular, 27.61f);
-            data.scoreInfo.EndedAt.AddHours(8); //to UTC+8
+            data.scoreInfo.EndedAt = data.scoreInfo.EndedAt.ToLocalTime(); //to UTC+8
             var time = data.scoreInfo.EndedAt.ToString("yyyy/MM/dd HH:mm:ss");
             textOptions.Origin = new PointF(145, 505);
             score.Mutate(
@@ -1189,29 +1189,16 @@ namespace KanonBot.LegacyImage
             textOptions.HorizontalAlignment = HorizontalAlignment.Center;
             textOptions.Font = new Font(TorusRegular, 40);
             textOptions.Origin = new PointF(980, 750);
-            if (data.scoreInfo.IsClassic) {
-                score.Mutate(
-                    x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            data.scoreInfo.LegacyTotalScore.ToString("N0"),
-                            new SolidBrush(Color.White),
-                            null
-                        )
-                );
-            } else {
-                score.Mutate(
-                    x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            data.scoreInfo.Score.ToString("N0"),
-                            new SolidBrush(Color.White),
-                            null
-                        )
-                );
-            }
+            score.Mutate(
+                x =>
+                    x.DrawText(
+                        drawOptions,
+                        textOptions,
+                        data.scoreInfo.ScoreAuto.ToString("N0"),
+                        new SolidBrush(Color.White),
+                        null
+                    )
+            );
 
             if (data.mode is RosuPP.Mode.Catch)
             {

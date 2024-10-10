@@ -144,7 +144,7 @@ namespace KanonBot.Functions.OSUBot
             var data = await PerformanceCalculator.CalculatePanelData(scoreData.Score);
             using var stream = new MemoryStream();
             using var img = await LegacyImage.Draw.DrawScore(data);
-            await img.SaveAsync(stream, command.res ? new PngEncoder() : new JpegEncoder());
+            await img.SaveAsync(stream, new PngEncoder());
             await target.reply(
                 new Chain().image(
                     Convert.ToBase64String(stream.ToArray(), 0, (int)stream.Length),

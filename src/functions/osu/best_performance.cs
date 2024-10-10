@@ -112,7 +112,8 @@ namespace KanonBot.Functions.OSUBot
                 API.OSU.Enums.UserScoreType.Best,
                 mode!.Value,
                 1,
-                command.order_number - 1
+                command.order_number - 1,
+                LegacyOnly: command.lazer
             );
             if (scores == null)
             {
@@ -126,7 +127,7 @@ namespace KanonBot.Functions.OSUBot
     
                 using var img = (Config.inner != null && Config.inner.debug) ? await DrawV3.OsuScorePanelV3.Draw(data) : await LegacyImage.Draw.DrawScore(data);
 
-                await img.SaveAsync(stream, command.res ? new PngEncoder() : new JpegEncoder());
+                await img.SaveAsync(stream, new PngEncoder());
                 await target.reply(
                     new Chain().image(
                         Convert.ToBase64String(stream.ToArray(), 0, (int)stream.Length),
@@ -151,7 +152,7 @@ namespace KanonBot.Functions.OSUBot
                             (int)data.ppInfo.ppStats![2].total,
                             (int)data.ppInfo.ppStats![3].total,
                             (int)data.ppInfo.ppStats![4].total,
-                            scores[0].Mods.Map(c => c.Acronym).ToArray()
+                            scores[0].Mods.Map(m => m.Acronym).ToArray()
                         );
                     }
                 }

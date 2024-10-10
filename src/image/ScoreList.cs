@@ -31,9 +31,10 @@ namespace KanonBot.image
 
         public static async Task<Img> Draw(
             Type type,
-            List<OSU.Models.Score> TBP,
+            List<OSU.Models.ScoreLazer> TBP,
             List<int> Rank,
-            OSU.Models.User userInfo
+            OSU.Models.User userInfo,
+            bool lazer = false
         )
         {
             //设定textOption/drawOption
@@ -186,6 +187,11 @@ namespace KanonBot.image
                     )
             );
             //mods
+
+            if (!lazer) {
+                TBP[0].Mods = TBP[0].Mods.Filter(x => !x.IsClassic).ToArray();
+            }
+
             if (TBP[0].Mods.Length > 0)
             {
                 textOptions.Origin = new PointF(
@@ -194,8 +200,9 @@ namespace KanonBot.image
                 );
                 textOptions.Font = new Font(TorusRegular, 40);
                 var mainscoremods = "+";
-                foreach (var x in TBP[0].Mods)
-                    mainscoremods += $"{x}, ";
+                foreach (var x in TBP[0].Mods) {
+                    mainscoremods += $"{x.Acronym}, ";
+                }
                 image.Mutate(
                     x =>
                         x.DrawText(
@@ -338,13 +345,13 @@ namespace KanonBot.image
                     x.DrawText(
                         drawOptions,
                         textOptions,
-                        string.Format("{0:N1}", TBP[0].PP),
+                        string.Format("{0:N1}", TBP[0].pp),
                         new SolidBrush(Color.ParseHex("#364a75")),
                         null
                     )
             );
             var bp1pptextMeasure = TextMeasurer.MeasureSize(
-                string.Format("{0:N1}", TBP[0].PP),
+                string.Format("{0:N1}", TBP[0].pp),
                 textOptions
             );
             int bp1pptextpos = 1790 - (int)bp1pptextMeasure.Width / 2;
@@ -594,6 +601,10 @@ namespace KanonBot.image
                 );
 
                 //mods
+                if (!lazer) {
+                    TBP[i].Mods = TBP[i].Mods.Filter(x => !x.IsClassic).ToArray();
+                }
+
                 if (TBP[i].Mods.Length > 0)
                 {
                     var mods_pos_x = 1043;
@@ -602,7 +613,8 @@ namespace KanonBot.image
                         //大于6个
                         foreach (var x in TBP[i].Mods)
                         {
-                            using var modicon = await Img.LoadAsync($"./work/mods_v2/2x/{x}.png");
+                            if (!File.Exists($"./work/mods_v2/2x/{x.Acronym}.png")) continue;
+                            using var modicon = await Img.LoadAsync($"./work/mods_v2/2x/{x.Acronym}.png");
                             modicon.Mutate(x => x.Resize(90, 90));
                             SubPic.Mutate(x => x.DrawImage(modicon, new Point(mods_pos_x, 48), 1));
                             mods_pos_x += 70 - (TBP[i].Mods.Length - 7) * 9;
@@ -613,7 +625,8 @@ namespace KanonBot.image
                         //等于6个
                         foreach (var x in TBP[i].Mods)
                         {
-                            using var modicon = await Img.LoadAsync($"./work/mods_v2/2x/{x}.png");
+                            if (!File.Exists($"./work/mods_v2/2x/{x.Acronym}.png")) continue;
+                            using var modicon = await Img.LoadAsync($"./work/mods_v2/2x/{x.Acronym}.png");
                             modicon.Mutate(x => x.Resize(90, 90));
                             SubPic.Mutate(x => x.DrawImage(modicon, new Point(mods_pos_x, 48), 1));
                             mods_pos_x += 84;
@@ -624,7 +637,8 @@ namespace KanonBot.image
                         //小于6个
                         foreach (var x in TBP[i].Mods)
                         {
-                            using var modicon = await Img.LoadAsync($"./work/mods_v2/2x/{x}.png");
+                            if (!File.Exists($"./work/mods_v2/2x/{x.Acronym}.png")) continue;
+                            using var modicon = await Img.LoadAsync($"./work/mods_v2/2x/{x.Acronym}.png");
                             modicon.Mutate(x => x.Resize(90, 90));
                             SubPic.Mutate(x => x.DrawImage(modicon, new Point(mods_pos_x, 48), 1));
                             mods_pos_x += 105;
@@ -641,7 +655,7 @@ namespace KanonBot.image
                         x.DrawText(
                             drawOptions,
                             textOptions,
-                            string.Format("{0:N0}pp", TBP[i].PP),
+                            string.Format("{0:N0}pp", TBP[i].pp),
                             new SolidBrush(Color.ParseHex("#ff7bac")),
                             null
                         )

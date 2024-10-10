@@ -745,12 +745,13 @@ namespace KanonBot.DrawV2
 
         public static async Task<Img> Draw(
             UserPanelData data,
-            OSU.Models.Score[] allBP,
+            OSU.Models.ScoreLazer[] allBP,
             InfoCustom v2Options,
             bool isBonded = false,
             bool eventmode = false,
             bool isDataOfDayAvaiavle = true,
-            bool output4k = false
+            bool output4k = false,
+            bool islazer = false
         )
         {
             var ColorMode = data.customMode;
@@ -933,9 +934,9 @@ namespace KanonBot.DrawV2
                 List<double> ys = new();
                 for (int i = 0; i < allBP.Length; ++i)
                 {
-                    var tmp = allBP[i].PP * Math.Pow(0.95, i);
+                    var tmp = (allBP[i].pp ?? 0.0) * Math.Pow(0.95, i);
                     scorePP += tmp;
-                    ys.Add(Math.Log10(tmp) / Math.Log10(100));
+                    ys.Add(Math.Log10(tmp) / Math.Log10(100.0));
                 }
                 // calculateLinearRegression
                 for (int i = 1; i <= ys.Count; ++i)
@@ -1768,6 +1769,10 @@ namespace KanonBot.DrawV2
                         )
                 );
                 //mods
+                if (!islazer) {
+                    allBP![0].Mods = allBP![0].Mods.Filter(x => !x.IsClassic).ToArray();
+                }
+                
                 if (allBP![0].Mods.Length > 0)
                 {
                     textOptions.Origin = new PointF(
@@ -1777,7 +1782,9 @@ namespace KanonBot.DrawV2
                     textOptions.Font = new Font(TorusRegular, 40);
                     var mainscoremods = "+";
                     foreach (var x in allBP![0].Mods)
-                        mainscoremods += $"{x}, ";
+                    {
+                        mainscoremods += $"{x.Acronym}, ";
+                    }
                     info.Mutate(
                         x =>
                             x.DrawText(
@@ -2187,7 +2194,8 @@ namespace KanonBot.DrawV2
                         var otherbp_mods_pos_x = 2580;
                         foreach (var x in allBP![i].Mods)
                         {
-                            using var modicon = await Img.LoadAsync($"./work/mods_v2/2x/{x}.png");
+                            if (!File.Exists($"./work/mods_v2/2x/{x.Acronym}.png")) continue;
+                            using var modicon = await Img.LoadAsync($"./work/mods_v2/2x/{x.Acronym}.png");
                             modicon.Mutate(x => x.Resize(90, 90).Brightness(ModIconBrightness));
                             modicon.Mutate(
                                 x =>
@@ -2291,14 +2299,14 @@ namespace KanonBot.DrawV2
                 textOptions.Font = new Font(TorusRegular, 90);
                 textOptions.HorizontalAlignment = HorizontalAlignment.Center;
                 textOptions.Origin = new PointF(3642, 1670);
-                var bppp = 0.00;
+                var bppp = 0.0;
                 try
                 {
-                    bppp = allBP![0].PP;
+                    bppp = allBP![0].pp ?? 0.0;
                 }
                 catch
                 {
-                    bppp = 0.00;
+                    bppp = 0.0;
                 }
                 info.Mutate(
                     x =>
@@ -2311,7 +2319,7 @@ namespace KanonBot.DrawV2
                         )
                 );
                 var bp1pptextMeasure = TextMeasurer.MeasureSize(
-                    string.Format("{0:N1}", allBP![0].PP),
+                    string.Format("{0:N1}", allBP![0].pp ?? 0.0),
                     textOptions
                 );
                 int bp1pptextpos = 3642 - (int)bp1pptextMeasure.Width / 2;
@@ -2333,7 +2341,7 @@ namespace KanonBot.DrawV2
                 textOptions.Origin = new PointF(3642, 1895);
                 try
                 {
-                    bppp = allBP![1].PP;
+                    bppp = allBP![1].pp ?? 0.0;
                 }
                 catch
                 {
@@ -2352,7 +2360,7 @@ namespace KanonBot.DrawV2
                 textOptions.Origin = new PointF(3642, 2081);
                 try
                 {
-                    bppp = allBP![2].PP;
+                    bppp = allBP![2].pp ?? 0.0;
                 }
                 catch
                 {
@@ -2371,7 +2379,7 @@ namespace KanonBot.DrawV2
                 textOptions.Origin = new PointF(3642, 2266);
                 try
                 {
-                    bppp = allBP![3].PP;
+                    bppp = allBP![3].pp ?? 0.0;
                 }
                 catch
                 {
@@ -2391,7 +2399,7 @@ namespace KanonBot.DrawV2
                 textOptions.Origin = new PointF(3642, 2450);
                 try
                 {
-                    bppp = allBP![4].PP;
+                    bppp = allBP![4].pp ?? 0.0;
                 }
                 catch
                 {

@@ -185,7 +185,7 @@ namespace KanonBot.Functions.OSUBot
             #endregion
 
 
-            //获取前50bp
+            //获取前20bp
             var allBP = await API.OSU.GetUserScoresLeagcy(
                 OnlineOsuInfo.Id,
                 API.OSU.Enums.UserScoreType.Best,
@@ -520,12 +520,13 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
             // 因为上面确定过模式，这里就直接用userdata里的mode了
-            var allBP = await API.OSU.GetUserScoresLeagcy(
+            var allBP = await API.OSU.GetUserScores(
                 OnlineOsuInfo.Id,
                 API.OSU.Enums.UserScoreType.Best,
                 mode!.Value,
                 100,
-                0
+                0,
+                LegacyOnly: command.lazer
             );
             if (allBP == null)
             {
@@ -548,7 +549,7 @@ namespace KanonBot.Functions.OSUBot
             List<double> ys = new();
             for (int i = 0; i < allBP.Length; ++i)
             {
-                var tmp = allBP[i].PP * Math.Pow(0.95, i);
+                var tmp = (allBP[i].pp ?? 0.0) * Math.Pow(0.95, i);
                 scorePP += tmp;
                 ys.Add(Math.Log10(tmp) / Math.Log10(100));
             }
@@ -1140,12 +1141,13 @@ namespace KanonBot.Functions.OSUBot
             OnlineOsuInfo.PlayMode = mode!.Value;
             #endregion
 
-            var allBP = await API.OSU.GetUserScoresLeagcy(
+            var allBP = await API.OSU.GetUserScores(
                 OnlineOsuInfo!.Id,
                 API.OSU.Enums.UserScoreType.Best,
                 mode!.Value,
                 100,
-                0
+                0,
+                LegacyOnly: command.lazer
             );
             if (allBP == null)
             {
@@ -1164,22 +1166,22 @@ namespace KanonBot.Functions.OSUBot
             }
             foreach (var item in allBP)
             {
-                totalPP += item.PP;
+                totalPP += item.pp ?? 0.0;
             }
             var last = allBP.Length;
             var str =
                 $"{OnlineOsuInfo.Username} 在 {OnlineOsuInfo.PlayMode.ToStr()} 模式中:"
-                + $"\n你的 bp1 有 {allBP[0].PP:0.##}pp"
-                + $"\n你的 bp2 有 {allBP[1].PP:0.##}pp"
+                + $"\n你的 bp1 有 {allBP[0].pp:0.##}pp"
+                + $"\n你的 bp2 有 {allBP[1].pp:0.##}pp"
                 + $"\n..."
-                + $"\n你的 bp{last - 1} 有 {allBP[last - 2].PP:0.##}pp"
-                + $"\n你的 bp{last} 有 {allBP[last - 1].PP:0.##}pp"
-                + $"\n你 bp1 与 bp{last} 相差了有 {allBP[0].PP - allBP[last - 1].PP:0.##}pp"
+                + $"\n你的 bp{last - 1} 有 {allBP[last - 2].pp:0.##}pp"
+                + $"\n你的 bp{last} 有 {allBP[last - 1].pp:0.##}pp"
+                + $"\n你 bp1 与 bp{last} 相差了有 {allBP[0].pp - allBP[last - 1].pp:0.##}pp"
                 + $"\n你的 bp 榜上所有成绩的平均值为 {totalPP / allBP.Length:0.##}pp";
             await target.reply(str);
         }
 
-        async private static Task TodayBP(Target target, string cmd)
+        async public static Task TodayBP(Target target, string cmd)
         {
             #region 验证
             long? osuID = null;
@@ -1279,7 +1281,7 @@ namespace KanonBot.Functions.OSUBot
             OnlineOsuInfo.PlayMode = mode!.Value;
             #endregion
 
-            var allBP = await API.OSU.GetUserScoresLeagcy(
+            var allBP = await API.OSU.GetUserScores(
                 OnlineOsuInfo!.Id,
                 API.OSU.Enums.UserScoreType.Best,
                 mode!.Value,
@@ -1291,40 +1293,29 @@ namespace KanonBot.Functions.OSUBot
                 await target.reply("查询成绩时出错。");
                 return;
             }
-            List<API.OSU.Models.Score> TBP = new();
+            List<API.OSU.Models.ScoreLazer> TBP = new();
             List<int> Rank = new();
 
-            //test codes
-            //foreach (var x in allBP) TBP.Add(x);
-            //for (int i = 0; i < allBP.Length; ++i) Rank.Add(i + 1);
-            //var image1 = await KanonBot.image.TodaysBP.Draw(TBP.Take(10).ToList(), Rank, OnlineOsuInfo);
-            //using var stream1 = new MemoryStream();
-            //await image1.SaveAsync(stream1, new PngEncoder());
-            //await target.reply(
-            //    new Chain().image(
-            //    Convert.ToBase64String(stream1.ToArray(), 0, (int)stream1.Length),
-            //        ImageSegment.Type.Base64
-            //));
-            //return;
-            //test end
-
-
+            var now = DateTime.Now;
             var t =
-                DateTime.Now.Hour < 4
-                    ? DateTime.Now.Date.AddDays(-1).AddHours(4)
-                    : DateTime.Now.Date.AddHours(4);
+                now.Hour < 4
+                    ? now.Date.AddDays(-1).AddHours(4)
+                    : now.Date.AddHours(4);
+            
+            t = t.AddDays(-command.order_number);
+
             for (int i = 0; i < allBP.Length; i++)
             {
                 var item = allBP[i];
-                var ts = (item.CreatedAt - t).Days;
-                if (0 <= ts && ts < 1)
+                var bp_time = item.EndedAt.ToLocalTime();
+
+                if (bp_time >= t)
                 {
                     TBP.Add(item);
                     Rank.Add(i + 1);
-                    //str += $"\n#{i + 1} {item.Rank} {item.Accuracy * 100:0.##}% {item.PP:0.##}pp";
-                    //if (item.Mods.Length > 0) str += $" +{string.Join(',', item.Mods)}";
                 }
             }
+            
             if (TBP.Count == 0)
             {
                 if (cmd == "")
@@ -1588,12 +1579,13 @@ namespace KanonBot.Functions.OSUBot
             OnlineOsuInfo.PlayMode = mode!.Value;
             #endregion
 
-            var allBP = await API.OSU.GetUserScoresLeagcy(
+            var allBP = await API.OSU.GetUserScores(
                 OnlineOsuInfo!.Id,
                 API.OSU.Enums.UserScoreType.Best,
                 mode!.Value,
                 100,
-                0
+                0,
+                LegacyOnly: command.lazer
             );
             if (allBP == null)
             {
@@ -1631,7 +1623,7 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
 
-            List<API.OSU.Models.Score> TBP = new();
+            List<API.OSU.Models.ScoreLazer> TBP = new();
             List<int> Rank = new();
             for (int i = StartAt - 1; i < (allBP.Length > EndAt ? EndAt : allBP.Length); ++i)
                 TBP.Add(allBP[i]);
@@ -1653,7 +1645,8 @@ namespace KanonBot.Functions.OSUBot
                     ScoreList.Type.BPLIST,
                     TBP,
                     Rank,
-                    OnlineOsuInfo
+                    OnlineOsuInfo,
+                    lazer: false
                 );
                 using var stream = new MemoryStream();
                 await image.SaveAsync(stream, new PngEncoder());

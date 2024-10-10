@@ -159,6 +159,9 @@ namespace KanonBot.command_parser
                         case "get":
                             await Get.Execute(target, childCmd);
                             return; // get bonuspp/elo/rolecost/bpht/todaybp/annualpass
+                        case "todaybp":
+                            await Get.TodayBP(target, childCmd);
+                            return;
                         case "badge":
                             await Badge.Execute(target, childCmd);
                             return;
@@ -182,8 +185,7 @@ namespace KanonBot.command_parser
                         case "su": //超级管理员
                             await Su.Execute(target, childCmd);
                             return;
-                        case "dailyupdate":
-                            return;
+                        
                         default:
                             return;
                     }

@@ -117,7 +117,7 @@ namespace KanonBot.API
         // 获取用户成绩
         // Score type. Must be one of these: best, firsts, recent.
         // 默认 best
-        async public static Task<Models.ScoreLazer[]?> GetUserScores(long userId, Enums.UserScoreType scoreType = Enums.UserScoreType.Best, Enums.Mode mode = Enums.Mode.OSU, int limit = 1, int offset = 0, bool includeFails = true)
+        async public static Task<Models.ScoreLazer[]?> GetUserScores(long userId, Enums.UserScoreType scoreType = Enums.UserScoreType.Best, Enums.Mode mode = Enums.Mode.OSU, int limit = 1, int offset = 0, bool includeFails = true, bool LegacyOnly = false)
         {
             var res = await withLazerScore(http())
                 .AppendPathSegments(new object[] { "users", userId, "scores", scoreType.ToStr() })
@@ -126,7 +126,8 @@ namespace KanonBot.API
                     include_fails = includeFails ? 1 : 0,
                     limit,
                     offset,
-                    mode = mode.ToStr()
+                    mode = mode.ToStr(),
+                    legacy_only = LegacyOnly ? 1 : 0
                 })
                 .GetAsync();
 
@@ -148,7 +149,8 @@ namespace KanonBot.API
                     include_fails = includeFails ? 1 : 0,
                     limit,
                     offset,
-                    mode = mode.ToStr()
+                    mode = mode.ToStr(),
+                    legacy_only = 1
                 })
                 .GetAsync();
 
@@ -159,11 +161,30 @@ namespace KanonBot.API
         }
 
         // 获取用户在特定谱面上的成绩
-        async public static Task<Models.BeatmapScore?> GetUserBeatmapScore(long UserId, long bid, string[] mods, Enums.Mode mode = Enums.Mode.OSU)
+        async public static Task<Models.BeatmapScoreLazer?> GetUserBeatmapScore(long UserId, long bid, string[] mods, Enums.Mode mode = Enums.Mode.OSU, bool LegacyOnly = false)
+        {
+            var req = withLazerScore(http())
+                .AppendPathSegments(new object[] { "beatmaps", bid, "scores", "users", UserId })
+                .SetQueryParam("mode", mode.ToStr())
+                .SetQueryParam("legacy_only", LegacyOnly ? 1 : 0);
+
+
+            req.SetQueryParam("mods[]", mods);
+            var res = await req.GetAsync();
+            if (res.StatusCode == 404)
+                return null;
+            else
+                return await res.GetJsonAsync<Models.BeatmapScoreLazer>();
+        }
+
+        // 获取用户在特定谱面上的成绩
+        async public static Task<Models.BeatmapScore?> GetUserBeatmapScoreLeagcy(long UserId, long bid, string[] mods, Enums.Mode mode = Enums.Mode.OSU)
         {
             var req = http()
                 .AppendPathSegments(new object[] { "beatmaps", bid, "scores", "users", UserId })
-                .SetQueryParam("mode", mode.ToStr());
+                .SetQueryParam("mode", mode.ToStr())
+                .SetQueryParam("legacy_only", 1);
+
 
             req.SetQueryParam("mods[]", mods);
             var res = await req.GetAsync();

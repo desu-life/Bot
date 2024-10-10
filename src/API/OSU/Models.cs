@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using KanonBot.Serializer;
 using Newtonsoft.Json.Linq;
 using NullValueHandling = Newtonsoft.Json.NullValueHandling;
+using RosuPP;
 
 namespace KanonBot.API
 {
@@ -974,6 +975,14 @@ namespace KanonBot.API
                 public Score Score { get; set; }
             }
 
+            public class BeatmapScoreLazer   // 只是比score多了个当前bid的排名
+            {
+                [JsonProperty("position")]
+                public int Position { get; set; }
+                [JsonProperty("score")]
+                public ScoreLazer Score { get; set; }
+            }
+
             public class ScoreMod
             {
                 [JsonProperty("acronym")]
@@ -984,6 +993,8 @@ namespace KanonBot.API
                 public static ScoreMod FromString(string mod) {
                     return new ScoreMod { Acronym = mod };
                 }
+
+                public bool IsClassic => Acronym == "CL";
             }
 
             public class ScoreLazer
@@ -1111,7 +1122,8 @@ namespace KanonBot.API
                 public CurrentUserAttributes? CurrentUserAttributes { get; set; }
 
                 public Enums.Mode Mode => Enums.Int2Mode(ModeInt) ?? Enums.Mode.Unknown;
-                public bool IsClassic => Mods.Any(it => it.Acronym == "CL");
+                public bool IsClassic => Mods.Any(it => it.IsClassic);
+                public uint ScoreAuto => IsClassic ? LegacyTotalScore : Score;
             }
 
             public class Match {
@@ -1199,6 +1211,8 @@ namespace KanonBot.API
                 public ScoreWeight? Weight { get; set; }
 
                 public static implicit operator ScoreLazer(Score s) {
+                    var mods = s.Mods.Map(ScoreMod.FromString).ToList();
+                    mods.Add(ScoreMod.FromString("CL"));
                     return new ScoreLazer
                     {
                         Accuracy = s.Accuracy,
@@ -1207,12 +1221,13 @@ namespace KanonBot.API
                         Id = s.Id,
                         MaxCombo = s.MaxCombo,
                         ModeInt = s.Mode.ToNum(),
-                        Mods = s.Mods.Map(ScoreMod.FromString).ToArray(),
+                        Mods = mods.ToArray(),
                         Passed = s.Passed,
                         pp = s.PP,
                         Rank = s.Rank,
                         HasReplay = s.Replay,
-                        Score = s.Scores,
+                        Score = 0,
+                        LegacyTotalScore = s.Scores,
                         Statistics = s.Statistics,
                         UserId = s.UserId,
                         Beatmap = s.Beatmap,

@@ -17,7 +17,7 @@ namespace KanonBot
                 osu_user_id,
                 bid;
             public int order_number;//用于info的查询n天之前、pr，bp的序号，score的bid，如未提供则返回0
-            public bool res; //是否输出高精度图片
+            public bool lazer; //是否获取lazer数据
             public bool self_query;
             public Option<int> StartAt;
             public Option<int> EndAt;
@@ -39,7 +39,7 @@ namespace KanonBot
         public static BotParameter CmdParser(string cmd, FuncType type)
         {
             cmd = cmd.Trim().ToLower();
-            BotParameter param = new() { res = false, self_query = false };
+            BotParameter param = new() { lazer = false, self_query = false };
             if (cmd != null)
             {
                 string arg1 = "", arg2 = "", arg3 = "", arg4 = "";
@@ -63,7 +63,7 @@ namespace KanonBot
                             arg4 += cmd[i]; // +
                             break;
                         case 4:
-                            param.res = true;
+                            param.lazer = true;
                             break;
                         default:
                             arg1 += cmd[i];

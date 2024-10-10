@@ -258,7 +258,7 @@ namespace KanonBot.Functions.OSUBot
             using var stream = new MemoryStream();
             //info默认输出高质量图片？
             SixLabors.ImageSharp.Image img;
-            API.OSU.Models.Score[]? allBP = System.Array.Empty<API.OSU.Models.Score>();
+            API.OSU.Models.ScoreLazer[]? allBP = System.Array.Empty<API.OSU.Models.ScoreLazer>();
             switch (custominfoengineVer) //0=null 1=v1 2=v2
             {
                 case 1:
@@ -267,7 +267,6 @@ namespace KanonBot.Functions.OSUBot
                         DBOsuInfo != null,
                         isDataOfDayAvaiavle
                     );
-                    //await img.SaveAsync(stream, command.res ? new PngEncoder() : new JpegEncoder());
                     await img.SaveAsync(stream, new PngEncoder());
                     break;
                 case 2:
@@ -278,12 +277,13 @@ namespace KanonBot.Functions.OSUBot
                         LegacyImage.Draw.UserPanelData.CustomMode.Dark => DrawV2.OsuInfoPanelV2.InfoCustom.DarkDefault,
                         _ => throw new ArgumentOutOfRangeException("未知的自定义模式")
                     };
-                    allBP = await API.OSU.GetUserScoresLeagcy(
+                    allBP = await API.OSU.GetUserScores(
                         data.userInfo.Id,
                         API.OSU.Enums.UserScoreType.Best,
                         data.userInfo.PlayMode,
-                        100,
-                        0
+                        20,
+                        0,
+                        LegacyOnly: command.lazer
                     );
 
                     img = await DrawV2.OsuInfoPanelV2.Draw(
@@ -293,7 +293,8 @@ namespace KanonBot.Functions.OSUBot
                         DBOsuInfo != null,
                         false,
                         isDataOfDayAvaiavle,
-                        command.res
+                        false,
+                        islazer: false
                     );
                     await img.SaveAsync(stream, new PngEncoder());
                     break;
@@ -317,11 +318,11 @@ namespace KanonBot.Functions.OSUBot
                         await InsertBeatmapTechInfo(allBP);
                     else
                     {
-                        allBP = await API.OSU.GetUserScoresLeagcy(
+                        allBP = await API.OSU.GetUserScores(
                         data.userInfo.Id,
                         API.OSU.Enums.UserScoreType.Best,
                         API.OSU.Enums.Mode.OSU,
-                        100,
+                        20,
                         0
                     );
                         if (allBP!.Length > 0)
@@ -331,7 +332,7 @@ namespace KanonBot.Functions.OSUBot
             catch { }
         }
 
-        async public static Task InsertBeatmapTechInfo(API.OSU.Models.Score[] allbp)
+        async public static Task InsertBeatmapTechInfo(API.OSU.Models.ScoreLazer[] allbp)
         {
             foreach (var score in allbp)
             {
@@ -356,7 +357,7 @@ namespace KanonBot.Functions.OSUBot
                                     (int)data.ppInfo.ppStats![2].total,
                                     (int)data.ppInfo.ppStats![3].total,
                                     (int)data.ppInfo.ppStats![4].total,
-                                    score.Mods
+                                    score.Mods.Map(x => x.Acronym).ToArray()
                                 );
                     }
                 }
