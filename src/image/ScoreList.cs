@@ -671,7 +671,7 @@ namespace KanonBot.image
             );
 
             // 不知道为啥更新了imagesharp后对比度(亮度)变了
-            image.Mutate(x => x.Brightness(0.997f));
+            image.Mutate(x => x.Brightness(0.998f));
 
             return image;
         }
