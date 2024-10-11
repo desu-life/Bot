@@ -35,6 +35,24 @@ public static class BotCmdHelper
         BPList,
     }
 
+    public static string? ParseString(string? input) {
+        input = input?.Trim();
+        if (String.IsNullOrEmpty(input)) {
+            return null;
+        }
+
+        var startquote = input.IndexOf('\"');
+        if (startquote >= 0 && startquote < input.Length - 1) {
+            var endquote = input.LastIndexOf('\"');
+            if (endquote > startquote) {
+                // 找到并提取出来
+                return input.Substring(startquote + 1, endquote - startquote - 1);
+            }
+        }
+
+        return input;
+    }
+
     public static (string? arg1, int? arg2) ParseArg1(string? input) {
         input = input?.Trim();
         if (String.IsNullOrEmpty(input)) {
@@ -206,8 +224,7 @@ public static class BotCmdHelper
 
                 // order_number 解析成功
                 if (arg3 != "" && int.TryParse(arg3[1..], out param.order_number)) {
-                    var tmp = ParseArg1(arg1);
-                    param.osu_username = tmp.arg1 ?? String.Empty;
+                    param.osu_username = ParseString(arg1) ?? String.Empty;
                 } else {
                     // arg1的处理
                     var tmp = ParseArg1(arg1);
@@ -266,7 +283,7 @@ public static class BotCmdHelper
 
                 // bid 解析成功
                 if (arg3 != "" && int.TryParse(arg3[1..], out param.order_number)) {
-                    param.osu_username = arg1;
+                    param.osu_username = ParseString(arg1) ?? String.Empty;
                 } else {
                     // arg1的处理
                     var tmp = ParseArg1(arg1);
