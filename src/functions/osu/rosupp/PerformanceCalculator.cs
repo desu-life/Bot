@@ -364,6 +364,14 @@ namespace KanonBot.Functions.OSU
             }
         }
 
+        async public static Task<Draw.ScorePanelData> CalculatePanelDataAuto(API.OSU.Models.ScoreLazer score) {
+            if (score.IsClassic) {
+                return await CalculatePanelDataRosu(score);
+            } else {
+                return await CalculatePanelDataLazer(score);
+            }
+        }
+
         async public static Task<Draw.ScorePanelData> CalculatePanelDataLazer(API.OSU.Models.ScoreLazer score)
         {
             var data = new Draw.ScorePanelData
@@ -442,14 +450,6 @@ namespace KanonBot.Functions.OSU
             return data;
         }
 
-        async public static Task<Draw.ScorePanelData> CalculatePanelDataAuto(API.OSU.Models.ScoreLazer score) {
-            if (score.IsClassic) {
-                return await CalculatePanelDataRosu(score);
-            } else {
-                return await CalculatePanelDataLazer(score);
-            }
-        }
-
         async public static Task<Draw.ScorePanelData> CalculatePanelDataRosu(API.OSU.Models.ScoreLazer score)
         {
             var data = new Draw.ScorePanelData
@@ -509,6 +509,85 @@ namespace KanonBot.Functions.OSU
             data.mode = rmode;
 
             return data;
+        }
+
+        
+        async public static Task<PPInfo> CalculateDataAuto(API.OSU.Models.ScoreLazer score) {
+            if (score.IsClassic) {
+                return await CalculateDataRosu(score);
+            } else {
+                return await CalculateDataLazer(score);
+            }
+        }
+
+        async public static Task<PPInfo> CalculateDataLazer(API.OSU.Models.ScoreLazer score)
+        {
+            var statistics = score.Statistics;
+
+            var b = await LoadBeatmap(score.Beatmap!);
+            var rosubeatmap = Beatmap.FromBytes(b);
+
+            Mode rmode = score.Mode.ToRosu();
+            
+            var mods_str = Serializer.Json.Serialize(score.Mods);
+            var mods = Mods.FromJson(mods_str, rmode);
+
+            var builder = BeatmapAttributesBuilder.New();
+            builder.Mode(rmode);
+            builder.Mods(mods);
+            var bmAttr = builder.Build(rosubeatmap);
+            
+            var bpm = bmAttr.clock_rate * rosubeatmap.Bpm();
+            var clockRate = bmAttr.clock_rate;
+
+            var beatmap = new OsuPP.CalculatorWorkingBeatmap(b);
+            var c = OsuPP.Calculater.New(beatmap);
+
+            c.Mode(0);
+            c.Mods(mods_str);
+            c.combo = score.MaxCombo;
+            c.N300 = statistics.CountGreat;
+            c.N100 = statistics.CountOk;
+            c.N50 = statistics.CountMeh;
+            c.NMiss = statistics.CountMiss;
+            c.NKatu = statistics.CountKatu;
+            c.accuracy = score.Accuracy * 100.00;
+            var dAttr = c.CalculateDifficulty();
+            var bAttr = c.Calculate();
+
+            return PPInfo.New(score, bAttr, dAttr, bmAttr, bpm, clockRate);
+        }
+
+
+        async public static Task<PPInfo> CalculateDataRosu(API.OSU.Models.ScoreLazer score)
+        {
+            var statistics = score.Statistics;
+
+            Beatmap beatmap = Beatmap.FromBytes(
+                await LoadBeatmap(score.Beatmap!)
+            );
+
+            Mode rmode = score.Mode.ToRosu();
+
+            var mods = Mods.FromJson(Serializer.Json.Serialize(score.Mods), rmode);
+
+            var builder = BeatmapAttributesBuilder.New();
+            builder.Mode(rmode);
+            builder.Mods(mods);
+            var bmAttr = builder.Build(beatmap);
+            var bpm = bmAttr.clock_rate * beatmap.Bpm();
+
+            var p = Performance.New();
+            p.Mode(rmode);
+            p.Mods(mods);
+            p.Combo(score.MaxCombo);
+            p.N300(statistics.CountGreat);
+            p.N100(statistics.CountOk);
+            p.N50(statistics.CountMeh);
+            p.Misses(statistics.CountMiss);
+            p.NKatu(statistics.CountKatu);
+            p.NGeki(statistics.CountGeki);
+            return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm);
         }
     }
 }

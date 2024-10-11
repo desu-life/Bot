@@ -145,7 +145,7 @@ namespace KanonBot.Functions.OSUBot
             if (command.lazer) {
                 data = await PerformanceCalculator.CalculatePanelDataLazer(scoreData.Score);
             } else {
-                data = await PerformanceCalculator.CalculatePanelDataRosu(scoreData.Score);
+                data = await PerformanceCalculator.CalculatePanelDataAuto(scoreData.Score);
             }
 
             using var stream = new MemoryStream();

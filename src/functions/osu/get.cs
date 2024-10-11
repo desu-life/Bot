@@ -1331,7 +1331,8 @@ namespace KanonBot.Functions.OSUBot
                     ScoreList.Type.TODAYBP,
                     TBP,
                     Rank,
-                    OnlineOsuInfo
+                    OnlineOsuInfo,
+                    command.lazer
                 );
                 using var stream = new MemoryStream();
                 await image.SaveAsync(stream, new PngEncoder());
@@ -1584,8 +1585,7 @@ namespace KanonBot.Functions.OSUBot
                 API.OSU.Enums.UserScoreType.Best,
                 mode!.Value,
                 100,
-                0,
-                LegacyOnly: command.lazer
+                0
             );
             if (allBP == null)
             {
@@ -1646,7 +1646,7 @@ namespace KanonBot.Functions.OSUBot
                     TBP,
                     Rank,
                     OnlineOsuInfo,
-                    lazer: false
+                    command.lazer
                 );
                 using var stream = new MemoryStream();
                 await image.SaveAsync(stream, new PngEncoder());

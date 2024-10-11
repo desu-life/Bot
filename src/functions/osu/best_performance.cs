@@ -112,8 +112,7 @@ namespace KanonBot.Functions.OSUBot
                 API.OSU.Enums.UserScoreType.Best,
                 mode!.Value,
                 1,
-                command.order_number - 1,
-                LegacyOnly: command.lazer
+                command.order_number - 1
             );
             if (scores == null)
             {
@@ -122,7 +121,12 @@ namespace KanonBot.Functions.OSUBot
             }
             if (scores!.Length > 0)
             {
-                var data = await PerformanceCalculator.CalculatePanelDataAuto(scores![0]);
+                LegacyImage.Draw.ScorePanelData data;
+                if (command.lazer) {
+                    data = await PerformanceCalculator.CalculatePanelDataLazer(scores[0]);
+                } else {
+                    data = await PerformanceCalculator.CalculatePanelDataAuto(scores[0]);
+                }
                 using var stream = new MemoryStream();
     
                 using var img = (Config.inner != null && Config.inner.debug) ? await DrawV3.OsuScorePanelV3.Draw(data) : await LegacyImage.Draw.DrawScore(data);

@@ -126,7 +126,7 @@ namespace KanonBot.Functions.OSUBot
                 if (command.lazer) {
                     data = await PerformanceCalculator.CalculatePanelDataLazer(scoreInfos[0]);
                 } else {
-                    data = await PerformanceCalculator.CalculatePanelDataRosu(scoreInfos[0]);
+                    data = await PerformanceCalculator.CalculatePanelDataAuto(scoreInfos[0]);
                 }
                 using var stream = new MemoryStream();
                 using var img = (Config.inner != null && Config.inner.debug) ? await DrawV3.OsuScorePanelV3.Draw(data) : await LegacyImage.Draw.DrawScore(data);

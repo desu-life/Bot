@@ -282,8 +282,7 @@ namespace KanonBot.Functions.OSUBot
                         API.OSU.Enums.UserScoreType.Best,
                         data.userInfo.PlayMode,
                         20,
-                        0,
-                        LegacyOnly: command.lazer
+                        0
                     );
 
                     img = await DrawV2.OsuInfoPanelV2.Draw(
@@ -294,7 +293,7 @@ namespace KanonBot.Functions.OSUBot
                         false,
                         isDataOfDayAvaiavle,
                         false,
-                        islazer: false
+                        islazer: command.lazer
                     );
                     await img.SaveAsync(stream, new PngEncoder());
                     break;
