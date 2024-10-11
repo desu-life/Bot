@@ -73,11 +73,11 @@ public static class BotCmdHelper
                     s = input.Substring(startquote + 1, endquote - startquote - 1);
 
                     // 这里处理数字
-                    if (startquote > 0) {
+                    if (startquote > 0 && number.IsNone) {
                         number = parseInt(input[..startquote]);
                     }
 
-                    if (endquote < input.Length - 1) {
+                    if (endquote < input.Length - 1 && number.IsNone) {
                         number = parseInt(input[(endquote + 1)..]);
                     }
                 }
@@ -87,19 +87,21 @@ public static class BotCmdHelper
             if (String.IsNullOrEmpty(s)) {
                 string[] args = input.Split(' ');
                 if (args.Length == 2) {
-                    // 第一位为数字，第二位就为字符串
-                    number = parseInt(args[0]);
-                    if (number.IsSome) {
+                    if (number.IsNone) {
+                        // 第一位为数字，第二位就为字符串
+                        number = parseInt(args[0]);
                         s = args[1];
-                    } else {
+                    }
+
+                    if (number.IsNone) {
                         // 第一位不为数字，尝试解析第二位
                         number = parseInt(args[1]);
-                        if (number.IsSome) {
-                            s = args[0];
-                        } else {
-                            // 都不为数字，全部直接取
-                            s = input;
-                        }
+                        s = args[0];
+                    }
+                    
+                    if (number.IsNone) {
+                        // 都不为数字，全部直接取
+                        s = input;
                     }
                 } else {
                     // 如果只有一位或大于两位，全部直接取
