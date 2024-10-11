@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using KanonBot.API;
+using LanguageExt.UnsafeValueAccess;
 
 namespace KanonBot
 {
@@ -32,6 +33,64 @@ public static class BotCmdHelper
         Leeway,
         RoleCost,
         BPList,
+    }
+
+    public static (string? arg1, int? arg2) ParseArg1(string? input) {
+        input = input?.Trim();
+        if (String.IsNullOrEmpty(input)) {
+            return (null, null);
+        }
+
+        // 先检查这边是不是数字
+        Option<int> number = parseInt(input);
+        string? s = null;
+        
+        if (number.IsNone) {
+            // 先处理有引号的字符串
+            var startquote = input.IndexOf('\"');
+            if (startquote >= 0 && startquote < input.Length - 1) {
+                var endquote = input.LastIndexOf('\"');
+                if (endquote > startquote) {
+                    // 找到并提取出来
+                    s = input.Substring(startquote + 1, endquote - startquote - 1);
+
+                    // 这里处理数字
+                    if (startquote > 0) {
+                        number = parseInt(input[..startquote]);
+                    }
+
+                    if (endquote < input.Length - 1) {
+                        number = parseInt(input[(endquote + 1)..]);
+                    }
+                }
+            }
+
+            // 如果没找出引号，继续处理
+            if (String.IsNullOrEmpty(s)) {
+                string[] args = input.Split(' ');
+                if (args.Length == 2) {
+                    // 第一位为数字，第二位就为字符串
+                    number = parseInt(args[0]);
+                    if (number.IsSome) {
+                        s = args[1];
+                    } else {
+                        // 第一位不为数字，尝试解析第二位
+                        number = parseInt(args[1]);
+                        if (number.IsSome) {
+                            s = args[0];
+                        } else {
+                            // 都不为数字，全部直接取
+                            s = input;
+                        }
+                    }
+                } else {
+                    // 如果只有一位或大于两位，全部直接取
+                    s = input;
+                }
+            }
+        }
+
+        return (s, number.ToNullable());
     }
 
     public static BotParameter CmdParser(string? cmd, FuncType type)
@@ -72,12 +131,14 @@ public static class BotCmdHelper
                         break;
                 }
             }
+
             arg1 = arg1.Trim();
             arg2 = arg2.Trim();
             arg3 = arg3.Trim();
             arg4 = arg4.Trim();
-            // 处理info解析
+
             if (type == FuncType.BPList) {
+                // bplist处理
                 // arg1 = username
                 // arg2 = osu_mode
                 // arg3 = osu_days_before_to_query
@@ -142,25 +203,19 @@ public static class BotCmdHelper
                 // arg1 = username / order_number
                 // arg2 = osu_mode
                 // arg3 = order_number (序号)
-                if (!int.TryParse(arg1, out param.order_number)) {
-                    param.osu_username = arg1;
 
-                    //成绩必须为1
-                    if (arg3 == "" || param.osu_username == null) {
-                        param.order_number = 1;
-                    } else {
-                        try {
-                            var t = param.order_number = int.Parse(arg3[1..]);
-                            if (t > 100 || t < 1) param.order_number = 1;
-                        } catch {
-                            param.order_number = 0;
-                        }
-                    }
-
-                    if (String.IsNullOrEmpty(param.osu_username)) {
-                        param.self_query = true;
-                    }
+                // order_number 解析成功
+                if (arg3 != "" && int.TryParse(arg3[1..], out param.order_number)) {
+                    var tmp = ParseArg1(arg1);
+                    param.osu_username = tmp.arg1 ?? String.Empty;
                 } else {
+                    // arg1的处理
+                    var tmp = ParseArg1(arg1);
+                    param.osu_username = tmp.arg1 ?? String.Empty;
+                    param.order_number = tmp.arg2 ?? -1;
+                }
+
+                if (String.IsNullOrEmpty(param.osu_username)) {
                     param.self_query = true;
                 }
 
@@ -209,38 +264,18 @@ public static class BotCmdHelper
                 // arg3 = bid #
                 // arg4 = mods +
 
-                //没提供用户名
-                if (arg3 == "" || param.osu_username == null) {
-                    param.osu_username = "";
-
-                     //bid必须有效，否则返回 -1
-                    if (arg1 == "") {
-                        param.order_number = -1;
-                    } else {
-                        try {
-                            var index = int.Parse(arg1);
-                            param.order_number = index < 1 ? -1 : index;
-                            param.extra_args = arg1;
-                        } catch {
-                            param.order_number = -1;
-                        }
-                    }
-                } else {
-                    //提供了用户名
+                // bid 解析成功
+                if (arg3 != "" && int.TryParse(arg3[1..], out param.order_number)) {
                     param.osu_username = arg1;
+                } else {
+                    // arg1的处理
+                    var tmp = ParseArg1(arg1);
+                    param.osu_username = tmp.arg1 ?? String.Empty;
+                    param.order_number = tmp.arg2 ?? -1;
+                }
 
-                     //bid必须有效，否则返回 -1
-                    if (arg3 == "" || param.osu_username == null) {
-                        param.order_number = -1;
-                    } else {
-                        try {
-                            var index = int.Parse(arg3[1..]);
-                            param.order_number = index < 1 ? -1 : index;
-                            param.extra_args = arg3[1..];
-                        } catch {
-                            param.order_number = -1;
-                        }
-                    }
+                if (String.IsNullOrEmpty(param.osu_username)) {
+                    param.self_query = true;
                 }
 
                 if (arg2 != "") {
@@ -251,10 +286,49 @@ public static class BotCmdHelper
                     }
                 }
 
-                param.osu_mods = arg4 != "" ? arg4[1..] : "";
-                if (String.IsNullOrEmpty(param.osu_username)) {
-                    param.self_query = true;
+                //没提供用户名
+                // if (arg3 == "" || param.osu_username == null) {
+                //     param.osu_username = "";
+
+                //      //bid必须有效，否则返回 -1
+                //     if (arg1 == "") {
+                //         param.order_number = -1;
+                //     } else {
+                //         try {
+                //             var index = int.Parse(arg1);
+                //             param.order_number = index < 1 ? -1 : index;
+                //             param.extra_args = arg1;
+                //         } catch {
+                //             param.order_number = -1;
+                //         }
+                //     }
+                // } else {
+                //     //提供了用户名
+                //     param.osu_username = arg1;
+
+                //      //bid必须有效，否则返回 -1
+                //     if (arg3 == "" || param.osu_username == null) {
+                //         param.order_number = -1;
+                //     } else {
+                //         try {
+                //             var index = int.Parse(arg3[1..]);
+                //             param.order_number = index < 1 ? -1 : index;
+                //             param.extra_args = arg3[1..];
+                //         } catch {
+                //             param.order_number = -1;
+                //         }
+                //     }
+                // }
+
+                if (arg2 != "") {
+                    try {
+                        param.osu_mode = OSU.Enums.Int2Mode(int.Parse(arg2[1..]));
+                    } catch {
+                        param.osu_mode = null;
+                    }
                 }
+
+                param.osu_mods = arg4 != "" ? arg4[1..] : "";
             } else if (type == FuncType.Leeway) {
                 // arg1 = bid
                 // arg2 = osu_mode

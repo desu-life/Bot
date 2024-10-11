@@ -107,6 +107,12 @@ namespace KanonBot.Functions.OSUBot
 
             #endregion
 
+            // 输入检查
+            if (command.order_number < 1 && command.order_number > 100) {
+                command.order_number = 1;
+            }
+
+
             var scores = await API.OSU.GetUserScores(
                 osuID!.Value,
                 API.OSU.Enums.UserScoreType.Best,
