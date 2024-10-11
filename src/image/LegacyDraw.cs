@@ -822,7 +822,7 @@ namespace KanonBot.LegacyImage
                 }
             }
             // rankings
-            var ranking = data.scoreInfo.Passed ? data.scoreInfo.Rank : "F";
+            var ranking = data.scoreInfo.Passed ? data.scoreInfo.RankAuto : "F";
             using var rankPic = await Img.LoadAsync($"./work/ranking/ranking-{ranking}.png");
             score.Mutate(x => x.DrawImage(rankPic, new Point(913, 874), 1));
             // text part (文字部分)
@@ -1480,7 +1480,7 @@ namespace KanonBot.LegacyImage
 
             // acc
             textOptions.Font = new Font(TorusRegular, 53.56f);
-            var acc = data.scoreInfo.Accuracy * 100f;
+            var acc = data.scoreInfo.AccAuto * 100f;
             var hsl = new Hsl(150, 1, 1);
             // ("#ffbd1f") idk?
             color = Color.ParseHex("#87ff6a");

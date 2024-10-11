@@ -990,11 +990,15 @@ namespace KanonBot.API
                 [JsonProperty("settings", NullValueHandling = NullValueHandling.Ignore)]
                 public JObject? Settings { get; set; }
 
+                [JsonIgnore]
+                public bool IsClassic => Acronym == "CL";
+
+                [JsonIgnore]
+                public bool IsVisualMod => Acronym == "HD" || Acronym == "FL";
+
                 public static ScoreMod FromString(string mod) {
                     return new ScoreMod { Acronym = mod };
                 }
-
-                public bool IsClassic => Acronym == "CL";
             }
 
             public class ScoreLazer
@@ -1121,9 +1125,112 @@ namespace KanonBot.API
                 [JsonProperty("current_user_attributes", NullValueHandling = NullValueHandling.Ignore)]
                 public CurrentUserAttributes? CurrentUserAttributes { get; set; }
 
+                [JsonIgnore]
+                public bool ConvertFromOld { get; set; } = false;
+
+                [JsonIgnore]
                 public Enums.Mode Mode => Enums.Int2Mode(ModeInt) ?? Enums.Mode.Unknown;
+
+                [JsonIgnore]
                 public bool IsClassic => Mods.Any(it => it.IsClassic);
+
+                [JsonIgnore]
                 public uint ScoreAuto => IsClassic ? LegacyTotalScore : Score;
+
+                [JsonIgnore]
+                public string RankAuto => IsClassic ? LeagcyRank : Rank;
+
+                [JsonIgnore]
+                public double AccAuto => IsClassic ? LeagcyAcc : Accuracy;
+
+                [JsonIgnore]
+                public string LeagcyRank => GetRank();
+
+                [JsonIgnore]
+                public double LeagcyAcc => Statistics.Accuracy(Mode);
+
+                public string GetRank() {
+                    if (this.Rank == "F") {
+                        return "F";
+                    }
+
+                    switch (this.Mode) {
+                        case Enums.Mode.OSU: {
+                            var totalHits = Statistics.TotalHits(this.Mode);
+                            var greatRate = totalHits > 0 ? (double)Statistics.CountGreat / totalHits : 1.0;
+                            var mehRate = totalHits > 0 ? (double)Statistics.CountMeh / totalHits : 1.0;
+
+                            if (greatRate == 1.0) {
+                                return Mods.Any(it => it.IsVisualMod) ? "XH" : "X";
+                            } else if (greatRate > 0.9 && mehRate <= 0.01 && Statistics.CountMiss == 0) {
+                                return Mods.Any(it => it.IsVisualMod) ? "SH" : "S";
+                            } else if ((greatRate > 0.8 && Statistics.CountMiss == 0) || greatRate > 0.9) {
+                                return "A";
+                            } else if ((greatRate > 0.7 && Statistics.CountMiss == 0) || greatRate > 0.8) {
+                                return "B";
+                            } else if (greatRate > 0.6) {
+                                return "C";
+                            } else {
+                                return "D";
+                            }
+                        }
+                        case Enums.Mode.Taiko: {
+                            var totalHits = Statistics.TotalHits(this.Mode);
+                            var greatRate = totalHits > 0 ? (double)Statistics.CountGreat / totalHits : 1.0;
+                            var acc = Statistics.Accuracy(this.Mode);
+
+                            if (greatRate == 1.0) {
+                                return Mods.Any(it => it.IsVisualMod) ? "XH" : "X";
+                            } else if (greatRate > 0.9 && Statistics.CountMiss == 0) {
+                                return Mods.Any(it => it.IsVisualMod) ? "SH" : "S";
+                            } else if ((greatRate > 0.8 && Statistics.CountMiss == 0) || greatRate > 0.9) {
+                                return "A";
+                            } else if ((greatRate > 0.7 && Statistics.CountMiss == 0) || greatRate > 0.8) {
+                                return "B";
+                            } else if (greatRate > 0.6) {
+                                return "C";
+                            } else {
+                                return "D";
+                            }
+                        }
+                        case Enums.Mode.Fruits: {
+                            var acc = Statistics.Accuracy(this.Mode);
+
+                            if (acc == 1.0) {
+                                return Mods.Any(it => it.IsVisualMod) ? "XH" : "X";
+                            } else if (acc > 0.98) {
+                                return Mods.Any(it => it.IsVisualMod) ? "SH" : "S";
+                            } else if (acc > 0.94) {
+                                return "A";
+                            } else if (acc > 0.9) {
+                                return "B";
+                            } else if (acc > 0.85) {
+                                return "C";
+                            } else {
+                                return "D";
+                            }
+                        }
+                        case Enums.Mode.Mania: {
+                            var acc = Statistics.Accuracy(this.Mode);
+
+                            if (acc == 1.0) {
+                                return Mods.Any(it => it.IsVisualMod) ? "XH" : "X";
+                            } else if (acc > 0.95) {
+                                return Mods.Any(it => it.IsVisualMod) ? "SH" : "S";
+                            } else if (acc > 0.9) {
+                                return "A";
+                            } else if (acc > 0.8) {
+                                return "B";
+                            } else if (acc > 0.7) {
+                                return "C";
+                            } else {
+                                return "D";
+                            }
+                        }
+                    }
+
+                    return this.Rank;
+                }
             }
 
             public class Match {
@@ -1233,7 +1340,8 @@ namespace KanonBot.API
                         Beatmap = s.Beatmap,
                         Beatmapset = s.Beatmapset,
                         User = s.User,
-                        Weight = s.Weight
+                        Weight = s.Weight,
+                        ConvertFromOld = true
                     };
                 }
             }
@@ -1322,6 +1430,32 @@ namespace KanonBot.API
                 
                 [JsonProperty("legacy_combo_increase", NullValueHandling = NullValueHandling.Ignore)]
                 public uint legacy_combo_increase { get; set; }
+
+                public uint TotalHits(Enums.Mode mode) {
+                    return mode switch {
+                        Enums.Mode.OSU => CountGreat + CountOk + CountMeh + CountMiss,
+                        Enums.Mode.Taiko => CountGreat + CountOk + CountMiss,
+                        Enums.Mode.Fruits => CountKatu + CountGreat + CountOk + CountMeh + CountMiss,
+                        Enums.Mode.Mania => CountGeki + CountKatu + CountGreat + CountOk + CountMeh + CountMiss,
+                        _ => 0
+                    };
+                }
+
+                public double Accuracy(Enums.Mode mode) {
+                    var todalHits = TotalHits(mode);
+
+                    if (todalHits == 0) {
+                        return 0.0;
+                    }
+
+                    return mode switch {
+                        Enums.Mode.OSU => (double)((6 * CountGreat) + (2 * CountOk) + CountMeh) / (double)(6 * todalHits),
+                        Enums.Mode.Taiko => (double)((2 * CountGreat) + CountOk) / (double)(2 * todalHits),
+                        Enums.Mode.Fruits => (double)(CountMeh + CountOk + CountGreat) / (double)todalHits,
+                        Enums.Mode.Mania => (double)(6 * (CountGeki + CountGreat) + 4 * CountKatu + 2 * CountOk + CountMeh) / (double)(6 * todalHits),
+                        _ => 0
+                    };
+                }
             }
 
             public class ScoreWeight

@@ -330,7 +330,7 @@ namespace KanonBot.image
                     x.DrawText(
                         drawOptions,
                         textOptions,
-                        scoreList[0].Accuracy.ToString("0.##%"),
+                        scoreList[0].AccAuto.ToString("0.##%"),
                         new SolidBrush(Color.ParseHex("#656b6d")),
                         null
                     )
@@ -343,7 +343,7 @@ namespace KanonBot.image
                     x.DrawText(
                         drawOptions,
                         textOptions,
-                        scoreList[0].Rank,
+                        scoreList[0].RankAuto,
                         new SolidBrush(Color.ParseHex("#656b6d")),
                         null
                     )
@@ -575,14 +575,14 @@ namespace KanonBot.image
                         x.DrawText(
                             drawOptions,
                             textOptions,
-                            scoreList[i].Accuracy.ToString("0.##%"),
+                            scoreList[i].AccAuto.ToString("0.##%"),
                             new SolidBrush(Color.ParseHex("#ffcd22")),
                             null
                         )
                 );
                 textMeasurePos =
                     textMeasurePos
-                    + TextMeasurer.MeasureSize(scoreList[i].Accuracy.ToString("0.##%"), textOptions).Width
+                    + TextMeasurer.MeasureSize(scoreList[i].AccAuto.ToString("0.##%"), textOptions).Width
                     + 5;
 
                 //split
@@ -607,7 +607,7 @@ namespace KanonBot.image
                         x.DrawText(
                             drawOptions,
                             textOptions,
-                            scoreList[i].Rank,
+                            scoreList[i].RankAuto,
                             new SolidBrush(Color.ParseHex("#656b6d")),
                             null
                         )

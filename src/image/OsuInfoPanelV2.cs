@@ -1897,7 +1897,7 @@ namespace KanonBot.DrawV2
                             x.DrawText(
                                 drawOptions,
                                 textOptions,
-                                allBP![0].Accuracy.ToString("0.##%"),
+                                allBP![0].AccAuto.ToString("0.##%"),
                                 new SolidBrush(MainBPAccColor),
                                 null
                             )
@@ -1910,7 +1910,7 @@ namespace KanonBot.DrawV2
                             x.DrawText(
                                 drawOptions,
                                 textOptions,
-                                allBP![0].Rank,
+                                allBP![0].RankAuto,
                                 new SolidBrush(MainBPRankColor),
                                 null
                             )
@@ -2318,7 +2318,7 @@ namespace KanonBot.DrawV2
                                 x.DrawText(
                                     drawOptions,
                                     textOptions,
-                                    allBP![i].Accuracy.ToString("0.##%"),
+                                    allBP![i].AccAuto.ToString("0.##%"),
                                     new SolidBrush(accC),
                                     null
                                 )
@@ -2326,7 +2326,7 @@ namespace KanonBot.DrawV2
                         textMeasurePos =
                             textMeasurePos
                             + TextMeasurer
-                                .MeasureSize(allBP![i].Accuracy.ToString("0.##%"), textOptions)
+                                .MeasureSize(allBP![i].AccAuto.ToString("0.##%"), textOptions)
                                 .Width
                             + 5;
 
@@ -2352,7 +2352,7 @@ namespace KanonBot.DrawV2
                                 x.DrawText(
                                     drawOptions,
                                     textOptions,
-                                    allBP![i].Rank,
+                                    allBP![i].RankAuto,
                                     new SolidBrush(rankC),
                                     null
                                 )
