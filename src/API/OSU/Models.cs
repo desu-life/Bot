@@ -1126,13 +1126,13 @@ namespace KanonBot.API
                 public CurrentUserAttributes? CurrentUserAttributes { get; set; }
 
                 [JsonIgnore]
-                public bool ConvertFromOld { get; set; } = false;
+                public bool ConvertFromOld { get; init; } = false;
 
                 [JsonIgnore]
                 public Enums.Mode Mode => Enums.Int2Mode(ModeInt) ?? Enums.Mode.Unknown;
 
                 [JsonIgnore]
-                public bool IsClassic => Mods.Any(it => it.IsClassic);
+                public bool IsClassic => !StartedAt.HasValue;
 
                 [JsonIgnore]
                 public uint ScoreAuto => IsClassic ? LegacyTotalScore : Score;
