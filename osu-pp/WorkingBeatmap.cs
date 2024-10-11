@@ -18,6 +18,7 @@ public class CalculatorWorkingBeatmap : WorkingBeatmap
     public CalculatorWorkingBeatmap(Ruleset ruleset, Stream beatmapStream) : this(ruleset, ReadFromStream(beatmapStream)) { }
     public CalculatorWorkingBeatmap(Stream beatmapStream) : this(ReadFromStream(beatmapStream)) { }
     public CalculatorWorkingBeatmap(byte[] b) : this(ReadFromBytes(b)) { }
+    public CalculatorWorkingBeatmap(Ruleset ruleset, byte[] b) : this(ruleset, ReadFromBytes(b)) { }
 
     private CalculatorWorkingBeatmap(Beatmap beatmap) : base(beatmap.BeatmapInfo, null)
     {

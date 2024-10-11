@@ -120,6 +120,7 @@ namespace KanonBot.Functions.OSUBot
                 1,
                 command.order_number - 1
             );
+
             if (scores == null)
             {
                 await target.reply("查询成绩时出错。");

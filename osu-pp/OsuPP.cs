@@ -38,6 +38,19 @@ public static class Utils {
 
         return (double)((6 * countGreat) + (2 * countOk) + countMeh) / (6 * total);
     }
+
+    public static Ruleset? ParseRuleset(int mode) {
+        if (mode == 0) {
+            return new OsuRuleset();
+        } else if (mode == 1) {
+            return new TaikoRuleset();
+        } else if (mode == 2) {
+            return new CatchRuleset();
+        } else if (mode == 3) {
+            return new ManiaRuleset();
+        }
+        return null;
+    }
 }
 
 public class OsuMods {
@@ -57,7 +70,7 @@ public class OsuMods {
 public class Calculater {
     public required WorkingBeatmap beatmap { get; set; }
     public required OsuMods? mods { get; set; }
-    public required Ruleset? ruleset { get; set; }
+    public required Ruleset ruleset { get; set; }
     public required osu.Game.Rulesets.Difficulty.DifficultyAttributes? difficultyAttributes { get; set; }
 
     public double? accuracy { get; set; }
@@ -69,36 +82,15 @@ public class Calculater {
     public uint? NGeki { get; set; }
     public uint? NMiss { get; set; }
 
-    public static Calculater New(WorkingBeatmap beatmap) {
+    public static Calculater New(Ruleset ruleset, WorkingBeatmap beatmap) {
         return new Calculater {
             beatmap = beatmap,
             mods = null,
-            ruleset = null,
+            ruleset = ruleset,
             difficultyAttributes = null
         };
     }
 
-    public void Mode(int mode) {
-        if (mode == 0) {
-            ruleset = new OsuRuleset();
-            beatmap.BeatmapInfo.Ruleset = ruleset!.RulesetInfo;
-        } else if (mode == 1) {
-            ruleset = new TaikoRuleset();
-            beatmap.BeatmapInfo.Ruleset = ruleset!.RulesetInfo;
-        } else if (mode == 2) {
-            ruleset = new CatchRuleset();
-            beatmap.BeatmapInfo.Ruleset = ruleset!.RulesetInfo;
-        } else if (mode == 3) {
-            ruleset = new ManiaRuleset();
-            beatmap.BeatmapInfo.Ruleset = ruleset!.RulesetInfo;
-        }
-
-    }
-
-    public Ruleset GetRuleSet() {
-        ruleset ??= beatmap.BeatmapInfo.Ruleset.CreateInstance();
-        return ruleset;
-    }
     public osu.Game.Rulesets.Mods.Mod[]? GetMods() {
         if (mods is not null) {
             return mods.Mods;
@@ -108,11 +100,11 @@ public class Calculater {
     }
 
     public void Mods(string json) {
-        mods = OsuMods.FromJson(GetRuleSet(), json);
+        mods = OsuMods.FromJson(ruleset, json);
     }
 
     public osu.Game.Rulesets.Difficulty.DifficultyAttributes CalculateDifficulty() {
-        var difficultyCalculator = GetRuleSet().CreateDifficultyCalculator(beatmap);
+        var difficultyCalculator = ruleset.CreateDifficultyCalculator(beatmap);
 
         if (mods is not null) {
             difficultyAttributes = difficultyCalculator.Calculate(mods.Mods);
@@ -124,7 +116,7 @@ public class Calculater {
     }
 
     public osu.Game.Beatmaps.BeatmapDifficulty CalculateBeatmap() {
-        var playable_beatmap = beatmap.GetPlayableBeatmap(GetRuleSet().RulesetInfo, GetMods());
+        var playable_beatmap = beatmap.GetPlayableBeatmap(ruleset.RulesetInfo, GetMods());
         return playable_beatmap.Difficulty;
     }
 
@@ -179,7 +171,7 @@ public class Calculater {
 
         scoreInfo.Statistics = statistics;
 
-        var ppcalc = GetRuleSet().CreatePerformanceCalculator()!;
+        var ppcalc = ruleset.CreatePerformanceCalculator()!;
         return ppcalc.Calculate(scoreInfo, difficultyAttributes!);
     }
 }

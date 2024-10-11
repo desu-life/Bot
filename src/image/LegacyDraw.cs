@@ -1290,7 +1290,7 @@ namespace KanonBot.LegacyImage
                 var katu = data.scoreInfo.Statistics.CountKatu.ToString();
 
                 // great
-                textOptions.Origin = new PointF(790, 837);
+                textOptions.Origin = new PointF(790, 834);
                 score.Mutate(
                     x =>
                         x.DrawText(
@@ -1301,7 +1301,7 @@ namespace KanonBot.LegacyImage
                             null
                         )
                 );
-                textOptions.Origin = new PointF(790, 834);
+                textOptions.Origin = new PointF(790, 832);
                 score.Mutate(
                     x =>
                         x.DrawText(
@@ -1313,7 +1313,7 @@ namespace KanonBot.LegacyImage
                         )
                 );
                 // geki
-                textOptions.Origin = new PointF(1156, 837);
+                textOptions.Origin = new PointF(1156, 836);
                 score.Mutate(
                     x =>
                         x.DrawText(
@@ -1336,7 +1336,7 @@ namespace KanonBot.LegacyImage
                         )
                 );
                 // katu
-                textOptions.Origin = new PointF(790, 910);
+                textOptions.Origin = new PointF(790, 909);
                 score.Mutate(
                     x =>
                         x.DrawText(
@@ -1359,7 +1359,7 @@ namespace KanonBot.LegacyImage
                         )
                 );
                 // ok
-                textOptions.Origin = new PointF(1156, 910);
+                textOptions.Origin = new PointF(1156, 909);
                 score.Mutate(
                     x => x.DrawText(drawOptions, textOptions, ok, new SolidBrush(Color.Black), null)
                 );
@@ -1368,7 +1368,7 @@ namespace KanonBot.LegacyImage
                     x => x.DrawText(drawOptions, textOptions, ok, new SolidBrush(Color.White), null)
                 );
                 // meh
-                textOptions.Origin = new PointF(790, 985);
+                textOptions.Origin = new PointF(790, 984);
                 score.Mutate(
                     x =>
                         x.DrawText(drawOptions, textOptions, meh, new SolidBrush(Color.Black), null)
@@ -1379,7 +1379,7 @@ namespace KanonBot.LegacyImage
                         x.DrawText(drawOptions, textOptions, meh, new SolidBrush(Color.White), null)
                 );
                 // miss
-                textOptions.Origin = new PointF(1156, 985);
+                textOptions.Origin = new PointF(1156, 984);
                 score.Mutate(
                     x =>
                         x.DrawText(

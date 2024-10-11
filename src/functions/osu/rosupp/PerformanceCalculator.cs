@@ -395,17 +395,17 @@ namespace KanonBot.Functions.OSU
             var bpm = bmAttr.clock_rate * rosubeatmap.Bpm();
             clockRate = bmAttr.clock_rate;
 
-            var beatmap = new OsuPP.CalculatorWorkingBeatmap(b);
-            var c = OsuPP.Calculater.New(beatmap);
-
-            c.Mode(0);
+            var ruleset = OsuPP.Utils.ParseRuleset(data.scoreInfo.ModeInt)!;
+            var beatmap = new OsuPP.CalculatorWorkingBeatmap(ruleset, b);
+            var c = OsuPP.Calculater.New(ruleset, beatmap);
             c.Mods(Serializer.Json.Serialize(data.scoreInfo.Mods));
             c.combo = data.scoreInfo.MaxCombo;
-            c.N300 = statistics.CountGreat;
-            c.N100 = statistics.CountOk;
             c.N50 = statistics.CountMeh;
-            c.NMiss = statistics.CountMiss;
+            c.N100 = statistics.CountOk;
+            c.N300 = statistics.CountGreat;
             c.NKatu = statistics.CountKatu;
+            c.NGeki = statistics.CountGeki;
+            c.NMiss = statistics.CountMiss;
             c.accuracy = data.scoreInfo.Accuracy * 100.00;
             var dAttr = c.CalculateDifficulty();
             var bAttr = c.Calculate();
@@ -477,12 +477,12 @@ namespace KanonBot.Functions.OSU
             p.Mode(rmode);
             p.Mods(mods);
             p.Combo(data.scoreInfo.MaxCombo);
-            p.N300(statistics.CountGreat);
-            p.N100(statistics.CountOk);
             p.N50(statistics.CountMeh);
-            p.Misses(statistics.CountMiss);
+            p.N100(statistics.CountOk);
+            p.N300(statistics.CountGreat);
             p.NKatu(statistics.CountKatu);
             p.NGeki(statistics.CountGeki);
+            p.Misses(statistics.CountMiss);
             // 开始计算
             data.ppInfo = PPInfo.New(p.Calculate(beatmap), bmAttr, bpm);
 
@@ -540,17 +540,18 @@ namespace KanonBot.Functions.OSU
             var bpm = bmAttr.clock_rate * rosubeatmap.Bpm();
             var clockRate = bmAttr.clock_rate;
 
-            var beatmap = new OsuPP.CalculatorWorkingBeatmap(b);
-            var c = OsuPP.Calculater.New(beatmap);
+            var ruleset = OsuPP.Utils.ParseRuleset(score.ModeInt)!;
+            var beatmap = new OsuPP.CalculatorWorkingBeatmap(ruleset, b);
+            var c = OsuPP.Calculater.New(ruleset, beatmap);
 
-            c.Mode(0);
             c.Mods(mods_str);
             c.combo = score.MaxCombo;
-            c.N300 = statistics.CountGreat;
-            c.N100 = statistics.CountOk;
             c.N50 = statistics.CountMeh;
-            c.NMiss = statistics.CountMiss;
+            c.N100 = statistics.CountOk;
+            c.N300 = statistics.CountGreat;
             c.NKatu = statistics.CountKatu;
+            c.NGeki = statistics.CountGeki;
+            c.NMiss = statistics.CountMiss;
             c.accuracy = score.Accuracy * 100.00;
             var dAttr = c.CalculateDifficulty();
             var bAttr = c.Calculate();
@@ -581,12 +582,12 @@ namespace KanonBot.Functions.OSU
             p.Mode(rmode);
             p.Mods(mods);
             p.Combo(score.MaxCombo);
-            p.N300(statistics.CountGreat);
-            p.N100(statistics.CountOk);
             p.N50(statistics.CountMeh);
-            p.Misses(statistics.CountMiss);
+            p.N100(statistics.CountOk);
+            p.N300(statistics.CountGreat);
             p.NKatu(statistics.CountKatu);
             p.NGeki(statistics.CountGeki);
+            p.Misses(statistics.CountMiss);
             return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm);
         }
     }
