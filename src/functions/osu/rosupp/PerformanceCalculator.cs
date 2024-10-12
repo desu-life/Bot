@@ -281,6 +281,7 @@ namespace KanonBot.Functions.OSU
             {
                 scoreInfo = new API.OSU.Models.ScoreLazer
                 {
+                    ConvertFromOld = true,
                     Accuracy = 1.0,
                     Beatmap = map,
                     MaxCombo = (uint)map.MaxCombo,
@@ -378,7 +379,7 @@ namespace KanonBot.Functions.OSU
             {
                 scoreInfo = score
             };
-            var statistics = data.scoreInfo.Statistics;
+            var statistics = data.scoreInfo.ConvertStatistics;
 
             var b = await LoadBeatmap(data.scoreInfo.Beatmap!);
             var rosubeatmap = Beatmap.FromBytes(b);
@@ -406,7 +407,7 @@ namespace KanonBot.Functions.OSU
             c.NKatu = statistics.CountKatu;
             c.NGeki = statistics.CountGeki;
             c.NMiss = statistics.CountMiss;
-            c.accuracy = data.scoreInfo.Accuracy * 100.00;
+            c.accuracy = data.scoreInfo.AccAuto * 100.00;
             var dAttr = c.CalculateDifficulty();
             var bAttr = c.Calculate();
 
@@ -421,7 +422,7 @@ namespace KanonBot.Functions.OSU
                 98.00,
                 97.00,
                 95.00,
-                data.scoreInfo.Accuracy * 100.00
+                data.scoreInfo.AccAuto * 100.00
             };
             data.ppInfo.ppStats = accs.Select(acc =>
                 {
@@ -456,7 +457,7 @@ namespace KanonBot.Functions.OSU
             {
                 scoreInfo = score
             };
-            var statistics = data.scoreInfo.Statistics;
+            var statistics = data.scoreInfo.ConvertStatistics;
 
             Beatmap beatmap = Beatmap.FromBytes(
                 await LoadBeatmap(data.scoreInfo.Beatmap!)
@@ -494,7 +495,7 @@ namespace KanonBot.Functions.OSU
                 98.00,
                 97.00,
                 95.00,
-                data.scoreInfo.Accuracy * 100.00
+                data.scoreInfo.AccAuto * 100.00
             };
             data.ppInfo.ppStats = accs.Select(acc =>
                 {
@@ -522,7 +523,7 @@ namespace KanonBot.Functions.OSU
 
         async public static Task<PPInfo> CalculateDataLazer(API.OSU.Models.ScoreLazer score)
         {
-            var statistics = score.Statistics;
+            var statistics = score.ConvertStatistics;
 
             var b = await LoadBeatmap(score.Beatmap!);
             var rosubeatmap = Beatmap.FromBytes(b);
@@ -562,7 +563,7 @@ namespace KanonBot.Functions.OSU
 
         async public static Task<PPInfo> CalculateDataRosu(API.OSU.Models.ScoreLazer score)
         {
-            var statistics = score.Statistics;
+            var statistics = score.ConvertStatistics;
 
             Beatmap beatmap = Beatmap.FromBytes(
                 await LoadBeatmap(score.Beatmap!)

@@ -1125,6 +1125,8 @@ namespace KanonBot.API
                 [JsonProperty("current_user_attributes", NullValueHandling = NullValueHandling.Ignore)]
                 public CurrentUserAttributes? CurrentUserAttributes { get; set; }
 
+                // tool
+
                 [JsonIgnore]
                 public bool ConvertFromOld { get; init; } = false;
 
@@ -1144,12 +1146,34 @@ namespace KanonBot.API
                 public double AccAuto => IsClassic ? LeagcyAcc : Accuracy;
 
                 [JsonIgnore]
+                public ScoreStatisticsLazer ConvertStatistics => GetStatistics();
+
+                [JsonIgnore]
                 public string LeagcyRank => GetRank();
 
                 [JsonIgnore]
                 public double LeagcyAcc => Statistics.Accuracy(Mode);
 
-                public string GetRank() {
+                private ScoreStatisticsLazer GetStatistics() {
+                    if (ConvertFromOld) {
+                        return Statistics;
+                    }
+
+                    if (Mode is Enums.Mode.Fruits) {
+                        return new ScoreStatisticsLazer() {
+                            CountGreat = Statistics.CountGreat,
+                            CountOk = Statistics.LargeTickHit,
+                            CountMeh = Statistics.SmallTickHit,
+                            CountKatu = Statistics.SmallTickMiss,
+                            CountGeki = Statistics.CountGeki,
+                            CountMiss = Statistics.CountMiss + Statistics.LargeTickMiss,
+                        };
+                    }
+
+                    return Statistics;
+                }
+
+                private string GetRank() {
                     if (this.Rank == "F") {
                         return "F";
                     }
@@ -1399,43 +1423,43 @@ namespace KanonBot.API
                 [JsonProperty("miss", NullValueHandling = NullValueHandling.Ignore)]
                 public uint CountMiss { get; set; }
                 [JsonProperty("large_tick_hit", NullValueHandling = NullValueHandling.Ignore)]
-                public uint large_tick_hit { get; set; }
+                public uint LargeTickHit { get; set; }
 
                 [JsonProperty("large_tick_miss", NullValueHandling = NullValueHandling.Ignore)]
-                public uint large_tick_miss { get; set; }
+                public uint LargeTickMiss { get; set; }
 
                 [JsonProperty("small_tick_hit", NullValueHandling = NullValueHandling.Ignore)]
-                public uint small_tick_hit { get; set; }
+                public uint SmallTickHit { get; set; }
 
                 [JsonProperty("small_tick_miss", NullValueHandling = NullValueHandling.Ignore)]
-                public uint small_tick_miss { get; set; }
+                public uint SmallTickMiss { get; set; }
 
                 [JsonProperty("ignore_hit", NullValueHandling = NullValueHandling.Ignore)]
-                public uint ignore_hit { get; set; }
+                public uint IgnoreHit { get; set; }
 
                 [JsonProperty("ignore_miss", NullValueHandling = NullValueHandling.Ignore)]
-                public uint ignore_miss { get; set; }
+                public uint IgnoreMiss { get; set; }
 
                 [JsonProperty("large_bonus", NullValueHandling = NullValueHandling.Ignore)]
-                public uint large_bonus { get; set; }
+                public uint LargeBonus { get; set; }
 
                 [JsonProperty("small_bonus", NullValueHandling = NullValueHandling.Ignore)]
-                public uint small_bonus { get; set; }
+                public uint SmallBonus { get; set; }
 
                 [JsonProperty("slider_tail_hit", NullValueHandling = NullValueHandling.Ignore)]
-                public uint slider_tail_hit { get; set; }
+                public uint SliderTailHit { get; set; }
 
                 [JsonProperty("combo_break", NullValueHandling = NullValueHandling.Ignore)]
-                public uint combo_break { get; set; }
+                public uint ComboBreak { get; set; }
                 
                 [JsonProperty("legacy_combo_increase", NullValueHandling = NullValueHandling.Ignore)]
-                public uint legacy_combo_increase { get; set; }
+                public uint LegacyComboIncrease { get; set; }
 
                 public uint TotalHits(Enums.Mode mode) {
                     return mode switch {
                         Enums.Mode.OSU => CountGreat + CountOk + CountMeh + CountMiss,
                         Enums.Mode.Taiko => CountGreat + CountOk + CountMiss,
-                        Enums.Mode.Fruits => CountKatu + CountGreat + CountOk + CountMeh + CountMiss,
+                        Enums.Mode.Fruits => SmallTickHit + LargeTickHit + CountGreat + CountMiss + SmallTickMiss + LargeTickMiss,
                         Enums.Mode.Mania => CountGeki + CountKatu + CountGreat + CountOk + CountMeh + CountMiss,
                         _ => 0
                     };
@@ -1451,7 +1475,7 @@ namespace KanonBot.API
                     return mode switch {
                         Enums.Mode.OSU => (double)((6 * CountGreat) + (2 * CountOk) + CountMeh) / (double)(6 * todalHits),
                         Enums.Mode.Taiko => (double)((2 * CountGreat) + CountOk) / (double)(2 * todalHits),
-                        Enums.Mode.Fruits => (double)(CountMeh + CountOk + CountGreat) / (double)todalHits,
+                        Enums.Mode.Fruits => (double)(SmallTickHit + LargeTickHit + CountGreat) / (double)todalHits,
                         Enums.Mode.Mania => (double)(6 * (CountGeki + CountGreat) + 4 * CountKatu + 2 * CountOk + CountMeh) / (double)(6 * todalHits),
                         _ => 0
                     };

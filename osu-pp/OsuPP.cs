@@ -126,9 +126,7 @@ public class Calculater {
             CalculateDifficulty();
         }
 
-        var scoreInfo = new ScoreInfo();
-
-       
+        var scoreInfo = new ScoreInfo(beatmap.BeatmapInfo, ruleset.RulesetInfo, null);
 
         if (mods is not null) {
             scoreInfo.Mods = mods.Mods;
@@ -136,20 +134,34 @@ public class Calculater {
 
         var statistics = new Dictionary<HitResult, int>();
 
+        if (ruleset is CatchRuleset) {
+            if (N100 is not null) {
+                statistics[HitResult.LargeTickHit] = (int)N100;
+            }
+
+            if (N50 is not null) {
+                statistics[HitResult.SmallTickHit] = (int)N50;
+            }
+
+            if (NKatu is not null) {
+                statistics[HitResult.SmallTickMiss] = (int)NKatu;
+            }
+        } else {
+            if (N100 is not null) {
+                statistics[HitResult.Ok] = (int)N100;
+            }
+
+            if (N50 is not null) {
+                statistics[HitResult.Meh] = (int)N50;
+            }
+
+            if (NKatu is not null) {
+                statistics[HitResult.Good] = (int)NKatu;
+            }
+        }
+
         if (N300 is not null) {
             statistics[HitResult.Great] = (int)N300;
-        }
-
-        if (N100 is not null) {
-            statistics[HitResult.Ok] = (int)N100;
-        }
-
-        if (N50 is not null) {
-            statistics[HitResult.Meh] = (int)N50;
-        }
-
-        if (NKatu is not null) {
-            statistics[HitResult.Good] = (int)NKatu;
         }
 
         if (NGeki is not null) {

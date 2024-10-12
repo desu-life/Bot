@@ -1207,10 +1207,11 @@ namespace KanonBot.LegacyImage
             if (data.mode is RosuPP.Mode.Catch)
             {
                 textOptions.Font = new Font(TorusRegular, 40.00f);
-                var great = data.scoreInfo.Statistics.CountGreat.ToString();
-                var ok = data.scoreInfo.Statistics.CountOk.ToString();
-                var meh = data.scoreInfo.Statistics.CountMeh.ToString();
-                var miss = data.scoreInfo.Statistics.CountMiss.ToString();
+                var statistics = data.scoreInfo.ConvertStatistics;
+                var great = statistics.CountGreat.ToString();
+                var ok = statistics.CountOk.ToString();
+                var meh = statistics.CountMeh.ToString();
+                var miss = statistics.CountMiss.ToString();
 
                 // great
                 textOptions.Origin = new PointF(790, 852);
