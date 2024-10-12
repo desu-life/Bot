@@ -422,29 +422,42 @@ namespace KanonBot.Functions.OSU
                 98.00,
                 97.00,
                 95.00,
-                data.scoreInfo.AccAuto * 100.00
+                data.scoreInfo.LeagcyAcc * 100.00 // if fc使用旧版acc计算，现在不知道怎么按新的lazer acc来模拟成绩
             };
-            data.ppInfo.ppStats = accs.Select(acc =>
-                {
-                    var p = Performance.New();
-                    p.Mode(rmode);
-                    p.Mods(mods);
-                    p.Accuracy(acc);
-                    var state = p.GenerateState(rosubeatmap);
+
+            data.ppInfo.ppStats = [];
+
+            for (int i = 0; i < accs.Length; i++)
+            {
+                ref var acc = ref accs[i];
+                
+                var p = Performance.New();
+                p.Mode(rmode);
+                p.Mods(mods);
+                p.Accuracy(acc);
+                var state = p.GenerateState(rosubeatmap);
+
+                c.N50 = state.n50;
+                c.N100 = state.n100;
+                c.N300 = state.n300;
+                c.NKatu = state.n_katu;
+                c.NGeki = state.n_geki;
+                c.NMiss = state.misses;
+                c.combo = state.max_combo;
+
+                if (i == 5) {
+                    c.accuracy = data.scoreInfo.AccAuto * 100.00;
+                } else {
                     c.accuracy = acc;
-                    c.N50 = state.n50;
-                    c.N100 = state.n100;
-                    c.N300 = state.n300;
-                    c.NKatu = state.n_katu;
-                    c.NGeki = state.n_geki;
-                    c.NMiss = state.misses;
-                    c.combo = state.max_combo;
+                }
 
-                    bAttr = c.Calculate();
+                bAttr = c.Calculate();
 
-                    return PPInfo.New(score, bAttr, dAttr, bmAttr, bpm, clockRate).ppStat;
-                })
-                .ToList();
+                data.ppInfo.ppStats.Add(PPInfo.New(score, bAttr, dAttr, bmAttr, bpm, clockRate).ppStat);
+            }
+
+            
+            
 
             data.mode = data.scoreInfo.Mode.ToRosu();
 
@@ -497,15 +510,16 @@ namespace KanonBot.Functions.OSU
                 95.00,
                 data.scoreInfo.AccAuto * 100.00
             };
+
             data.ppInfo.ppStats = accs.Select(acc =>
-                {
-                    var p = Performance.New();
-                    p.Mode(rmode);
-                    p.Mods(mods);
-                    p.Accuracy(acc);
-                    return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm).ppStat;
-                })
-                .ToList();            
+            {
+                var p = Performance.New();
+                p.Mode(rmode);
+                p.Mods(mods);
+                p.Accuracy(acc);
+                return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm).ppStat;
+            })
+            .ToList();            
 
             data.mode = rmode;
 

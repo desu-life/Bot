@@ -1152,15 +1152,45 @@ namespace KanonBot.API
                 public string LeagcyRank => GetRank();
 
                 [JsonIgnore]
-                public double LeagcyAcc => Statistics.Accuracy(Mode);
+                public double LeagcyAcc => GetLeagcyAcc();
+
+                // private
+
+                [JsonIgnore]
+                private double? _LeagcyAcc { get; set; } = null;
+
+                [JsonIgnore]
+                private string? _LeagcyRank { get; set; } = null;
+
+                [JsonIgnore]
+                private ScoreStatisticsLazer? _ConvertStatistics { get; set; } = null;
+
+                private double GetLeagcyAcc() {
+                    if (_LeagcyAcc is not null) {
+                        return _LeagcyAcc.Value;
+                    }
+
+                    if (ConvertFromOld) {
+                        _LeagcyAcc = Accuracy;
+                        return Accuracy;
+                    }
+
+                    _LeagcyAcc = Statistics.Accuracy(Mode);
+                    return _LeagcyAcc.Value;
+                }
 
                 private ScoreStatisticsLazer GetStatistics() {
+                    if (_ConvertStatistics is not null) {
+                        return _ConvertStatistics;
+                    }
+
                     if (ConvertFromOld) {
+                        _ConvertStatistics = Statistics;
                         return Statistics;
                     }
 
                     if (Mode is Enums.Mode.Fruits) {
-                        return new ScoreStatisticsLazer() {
+                        _ConvertStatistics = new ScoreStatisticsLazer() {
                             CountGreat = Statistics.CountGreat,
                             CountOk = Statistics.LargeTickHit,
                             CountMeh = Statistics.SmallTickHit,
@@ -1168,14 +1198,21 @@ namespace KanonBot.API
                             CountGeki = Statistics.CountGeki,
                             CountMiss = Statistics.CountMiss + Statistics.LargeTickMiss,
                         };
+                    } else {
+                        _ConvertStatistics = Statistics;
                     }
 
-                    return Statistics;
+                    return _ConvertStatistics;
                 }
 
                 private string GetRank() {
+                    if (_LeagcyRank is not null) {
+                        return _LeagcyRank;
+                    }
+
                     if (this.Rank == "F") {
-                        return "F";
+                        _LeagcyRank = "F";
+                        return _LeagcyRank;
                     }
 
                     switch (this.Mode) {
@@ -1185,18 +1222,19 @@ namespace KanonBot.API
                             var mehRate = totalHits > 0 ? (double)Statistics.CountMeh / totalHits : 1.0;
 
                             if (greatRate == 1.0) {
-                                return Mods.Any(it => it.IsVisualMod) ? "XH" : "X";
+                                _LeagcyRank = Mods.Any(it => it.IsVisualMod) ? "XH" : "X";
                             } else if (greatRate > 0.9 && mehRate <= 0.01 && Statistics.CountMiss == 0) {
-                                return Mods.Any(it => it.IsVisualMod) ? "SH" : "S";
+                                _LeagcyRank = Mods.Any(it => it.IsVisualMod) ? "SH" : "S";
                             } else if ((greatRate > 0.8 && Statistics.CountMiss == 0) || greatRate > 0.9) {
-                                return "A";
+                                _LeagcyRank = "A";
                             } else if ((greatRate > 0.7 && Statistics.CountMiss == 0) || greatRate > 0.8) {
-                                return "B";
+                                _LeagcyRank = "B";
                             } else if (greatRate > 0.6) {
-                                return "C";
+                                _LeagcyRank = "C";
                             } else {
-                                return "D";
+                                _LeagcyRank = "D";
                             }
+                            break;
                         }
                         case Enums.Mode.Taiko: {
                             var totalHits = Statistics.TotalHits(this.Mode);
@@ -1204,56 +1242,63 @@ namespace KanonBot.API
                             var acc = Statistics.Accuracy(this.Mode);
 
                             if (greatRate == 1.0) {
-                                return Mods.Any(it => it.IsVisualMod) ? "XH" : "X";
+                                _LeagcyRank = Mods.Any(it => it.IsVisualMod) ? "XH" : "X";
                             } else if (greatRate > 0.9 && Statistics.CountMiss == 0) {
-                                return Mods.Any(it => it.IsVisualMod) ? "SH" : "S";
+                                _LeagcyRank = Mods.Any(it => it.IsVisualMod) ? "SH" : "S";
                             } else if ((greatRate > 0.8 && Statistics.CountMiss == 0) || greatRate > 0.9) {
-                                return "A";
+                                _LeagcyRank = "A";
                             } else if ((greatRate > 0.7 && Statistics.CountMiss == 0) || greatRate > 0.8) {
-                                return "B";
+                                _LeagcyRank = "B";
                             } else if (greatRate > 0.6) {
-                                return "C";
+                                _LeagcyRank = "C";
                             } else {
-                                return "D";
+                                _LeagcyRank = "D";
                             }
+                            break;
                         }
                         case Enums.Mode.Fruits: {
                             var acc = Statistics.Accuracy(this.Mode);
 
                             if (acc == 1.0) {
-                                return Mods.Any(it => it.IsVisualMod) ? "XH" : "X";
+                                _LeagcyRank = Mods.Any(it => it.IsVisualMod) ? "XH" : "X";
                             } else if (acc > 0.98) {
-                                return Mods.Any(it => it.IsVisualMod) ? "SH" : "S";
+                                _LeagcyRank = Mods.Any(it => it.IsVisualMod) ? "SH" : "S";
                             } else if (acc > 0.94) {
-                                return "A";
+                                _LeagcyRank = "A";
                             } else if (acc > 0.9) {
-                                return "B";
+                                _LeagcyRank = "B";
                             } else if (acc > 0.85) {
-                                return "C";
+                                _LeagcyRank = "C";
                             } else {
-                                return "D";
+                                _LeagcyRank = "D";
                             }
+                            break;
                         }
                         case Enums.Mode.Mania: {
                             var acc = Statistics.Accuracy(this.Mode);
 
                             if (acc == 1.0) {
-                                return Mods.Any(it => it.IsVisualMod) ? "XH" : "X";
+                                _LeagcyRank = Mods.Any(it => it.IsVisualMod) ? "XH" : "X";
                             } else if (acc > 0.95) {
-                                return Mods.Any(it => it.IsVisualMod) ? "SH" : "S";
+                                _LeagcyRank = Mods.Any(it => it.IsVisualMod) ? "SH" : "S";
                             } else if (acc > 0.9) {
-                                return "A";
+                                _LeagcyRank = "A";
                             } else if (acc > 0.8) {
-                                return "B";
+                                _LeagcyRank = "B";
                             } else if (acc > 0.7) {
-                                return "C";
+                                _LeagcyRank = "C";
                             } else {
-                                return "D";
+                                _LeagcyRank = "D";
                             }
+                            break;
+                        }
+                        default: {
+                            _LeagcyRank = Rank;
+                            break;
                         }
                     }
 
-                    return this.Rank;
+                    return _LeagcyRank;
                 }
             }
 
