@@ -805,14 +805,15 @@ namespace KanonBot.LegacyImage
                 score.Mutate(x => x.DrawImage(c, new Point(415, 16), 1));
             }
             // mods
-            var mods = data.scoreInfo.Mods;
+            var mods = data.scoreInfo.Mods.ToList();
+            // mods.Sort((a, b) => a.IsSpeedChangeMod ? 1 : -1);
             var modp = 0;
             foreach (var mod in mods)
             {
                 try
                 {
                     using var modPic = await Img.LoadAsync($"./work/mods/{mod.Acronym.ToUpper()}.png");
-                    modPic.Mutate(x => x.Resize(200, 61));
+                    modPic.Mutate(x => x.Resize(200, 0));
                     score.Mutate(x => x.DrawImage(modPic, new Point((modp * 160) + 440, 440), 1));
                     modp += 1;
                 }

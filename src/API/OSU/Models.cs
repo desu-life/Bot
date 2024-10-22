@@ -996,6 +996,9 @@ namespace KanonBot.API
                 [JsonIgnore]
                 public bool IsVisualMod => Acronym == "HD" || Acronym == "FL";
 
+                [JsonIgnore]
+                public bool IsSpeedChangeMod => Acronym == "DT" || Acronym == "NC" || Acronym == "HT" || Acronym == "DC";
+
                 public static ScoreMod FromString(string mod) {
                     return new ScoreMod { Acronym = mod };
                 }
@@ -1016,7 +1019,7 @@ namespace KanonBot.API
                 public long? BuildId { get; set; }
 
                 [JsonProperty("classic_total_score")]
-                public uint ClassicTotalScore { get; set; }
+                public long ClassicTotalScore { get; set; }
 
                 [JsonProperty("ended_at")]
                 public DateTimeOffset EndedAt { get; set; }

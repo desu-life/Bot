@@ -133,6 +133,9 @@ public partial class OneBot
                 this.Disconnect(socket.ConnectionInfo.Id);
                 Log.Information($"[{OneBot.platform} Core] {socket.ConnectionInfo.ClientIpAddress}:{socket.ConnectionInfo.ClientPort} 连接断开");
             };
+            // socket.OnBinary = (_) => {
+            //     Log.Information($"[{OneBot.platform} Core] Binary");
+            // };
             socket.OnMessage = message => Task.Run(() =>
             {
                 try
@@ -153,6 +156,7 @@ public partial class OneBot
 
         void Parse(string msg, Socket socket)
         {
+            // Log.Debug($"[{OneBot.platform} Core] Raw: {msg}");
             var m = Json.ToLinq(msg);
             if (m != null)
             {
