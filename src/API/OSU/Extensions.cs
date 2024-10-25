@@ -57,13 +57,23 @@ public static class OSUExtensions
             "osu" => Mode.OSU,
             "taiko" => Mode.Taiko,
             "fruits" => Mode.Fruits,
-            "catch" => Mode.Fruits,
             "mania" => Mode.Mania,
             _ => null
         };
     }
 
-    
+    public static Mode? ParseMode(this string value)
+    {
+        value = value.ToLower(); // 大写字符转小写
+        return value switch
+        {
+            "0" or "osu" or "std" => Mode.OSU,
+            "1" or "taiko" or "tko" => Mode.Taiko,
+            "2" or "fruits" or "catch" or "ctb" => Mode.Fruits,
+            "3" or "mania" or "m" => Mode.Mania,
+            _ => null
+        };
+    }
 
     public static Mode? ToMode(this int value)
     {

@@ -167,7 +167,7 @@ public static class BotCmdHelper
                 // #1-100
                 if (arg2 != "") {
                     try {
-                        param.osu_mode = int.Parse(arg2[1..]).ToMode();
+                        param.osu_mode = arg2[1..].Trim().ParseMode();
                     } catch {
                         param.osu_mode = null;
                     }
@@ -201,7 +201,7 @@ public static class BotCmdHelper
                 param.osu_username = arg1;
                 if (arg2 != "") {
                     try {
-                        param.osu_mode = int.Parse(arg2[1..]).ToMode();
+                        param.osu_mode = arg2[1..].Trim().ParseMode();
                     } catch {
                         param.osu_mode = null;
                     }
@@ -242,7 +242,7 @@ public static class BotCmdHelper
 
                 if (arg2 != "") {
                     try {
-                        param.osu_mode = int.Parse(arg2[1..]).ToMode();
+                        param.osu_mode = arg2[1..].Trim().ParseMode();
                     } catch {
                         param.osu_mode = null;
                     }
@@ -255,7 +255,7 @@ public static class BotCmdHelper
                 param.osu_username = arg1;
                 if (arg2 != "") {
                     try {
-                        param.osu_mode = int.Parse(arg2[1..]).ToMode();
+                        param.osu_mode = arg2[1..].Trim().ParseMode();
                     } catch {
                         param.osu_mode = null;
                     }
@@ -301,7 +301,7 @@ public static class BotCmdHelper
 
                 if (arg2 != "") {
                     try {
-                        param.osu_mode = int.Parse(arg2[1..]).ToMode();
+                        param.osu_mode = arg2[1..].Trim().ParseMode();
                     } catch {
                         param.osu_mode = null;
                     }
@@ -343,7 +343,7 @@ public static class BotCmdHelper
 
                 if (arg2 != "") {
                     try {
-                        param.osu_mode = int.Parse(arg2[1..]).ToMode();
+                        param.osu_mode = arg2[1..].Trim().ParseMode();
                     } catch {
                         param.osu_mode = null;
                     }
@@ -370,7 +370,7 @@ public static class BotCmdHelper
 
                 if (arg2 != "") {
                     try {
-                        param.osu_mode = int.Parse(arg2[1..]).ToMode();
+                        param.osu_mode = arg2[1..].Trim().ParseMode();
                     } catch {
                         param.osu_mode = null;
                     }

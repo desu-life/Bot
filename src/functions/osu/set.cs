@@ -199,14 +199,8 @@ namespace KanonBot.Functions.OSUBot
             }
 
             cmd = cmd.ToLower().Trim();
-            Mode? mode = null;
 
-            var i = parseInt(cmd);
-            if (i.IsSome) {
-                mode ??= i.Value().ToMode();
-            };
-
-            mode ??= cmd.ToMode();
+            var mode = cmd.ParseMode();
             if (mode == null)
             {
                 await target.reply("提供的模式不正确，请重新确认 (osu/taiko/fruits/mania)");
