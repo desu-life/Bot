@@ -12,4 +12,3 @@ global using static LanguageExt.Prelude;
 
 global using KanonBot;
 global using static KanonBot.API.OSU.OSUExtensions;
-global using static KanonBot.Utils;

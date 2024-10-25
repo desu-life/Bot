@@ -39,7 +39,7 @@ namespace KanonBot.LegacyImage
 
         public class ScorePanelData
         {
-            public PerformanceCalculator.PPInfo ppInfo;
+            public OsuPerformance.PPInfo ppInfo;
             public OSU.Models.ScoreLazer scoreInfo;
             public RosuPP.Mode mode;
         }
@@ -113,7 +113,7 @@ namespace KanonBot.LegacyImage
 
             //avatar
             var avatarPath = $"./work/avatar/{data.userInfo.Id}.png";
-            using var avatar = await TryAsync(ReadImageRgba(avatarPath))
+            using var avatar = await TryAsync(Utils.ReadImageRgba(avatarPath))
                 .IfFail(async () =>
                 {
                     try
@@ -129,7 +129,7 @@ namespace KanonBot.LegacyImage
                         Log.Error(msg);
                         throw; // 下载失败直接抛出error
                     }
-                    return await ReadImageRgba(avatarPath); // 下载后再读取
+                    return await Utils.ReadImageRgba(avatarPath); // 下载后再读取
                 });
 
             avatar.Mutate(x => x.Resize(190, 190).RoundCorner(new Size(190, 190), 40));
@@ -670,7 +670,7 @@ namespace KanonBot.LegacyImage
             }
 
             var avatarPath = $"./work/avatar/{data.scoreInfo.UserId}.png";
-            using var avatar = await TryAsync(ReadImageRgba(avatarPath))
+            using var avatar = await TryAsync(Utils.ReadImageRgba(avatarPath))
                 .IfFail(async () =>
                 {
                     try
@@ -686,7 +686,7 @@ namespace KanonBot.LegacyImage
                         Log.Error(msg);
                         throw; // 下载失败直接抛出error
                     }
-                    return await ReadImageRgba(avatarPath); // 下载后再读取
+                    return await Utils.ReadImageRgba(avatarPath); // 下载后再读取
                 });
 
             using var panel = data.mode switch

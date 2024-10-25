@@ -7,6 +7,7 @@ using KanonBot.Functions.OSU;
 using System.IO;
 using LanguageExt.UnsafeValueAccess;
 using KanonBot.API.OSU;
+using KanonBot.OsuPerformance;
 
 namespace KanonBot.Functions.OSUBot
 {
@@ -143,9 +144,9 @@ namespace KanonBot.Functions.OSUBot
 
             LegacyImage.Draw.ScorePanelData data;
             if (command.lazer) {
-                data = await PerformanceCalculator.CalculatePanelDataLazer(scoreData.Score);
+                data = await OsuCalculator.CalculatePanelData(scoreData.Score);
             } else {
-                data = await PerformanceCalculator.CalculatePanelDataAuto(scoreData.Score);
+                data = await UniversalCalculator.CalculatePanelDataAuto(scoreData.Score);
             }
 
             using var stream = new MemoryStream();

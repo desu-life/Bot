@@ -394,12 +394,14 @@ namespace KanonBot.API.OSU
             }
         }
 
-        async public static Task BeatmapFileChecker(long bid)
+        async public static Task DownloadBeatmapFile(long bid)
         {
-            if (!File.Exists($"./work/beatmap/{bid}.osu"))
+            if (File.Exists($"./work/beatmap/{bid}.osu"))
             {
-                await Http.DownloadFile($"http://osu.ppy.sh/osu/{bid}", $"./work/beatmap/{bid}.osu");
+                File.Delete($"./work/beatmap/{bid}.osu");
             }
+            
+            await Http.DownloadFile($"http://osu.ppy.sh/osu/{bid}", $"./work/beatmap/{bid}.osu");
         }
     }
 }

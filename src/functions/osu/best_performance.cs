@@ -9,6 +9,7 @@ using SixLabors.ImageSharp.Formats.Jpeg;
 using System.IO;
 using LanguageExt.UnsafeValueAccess;
 using KanonBot.API.OSU;
+using KanonBot.OsuPerformance;
 
 namespace KanonBot.Functions.OSUBot
 {
@@ -130,9 +131,9 @@ namespace KanonBot.Functions.OSUBot
             {
                 LegacyImage.Draw.ScorePanelData data;
                 if (command.lazer) {
-                    data = await PerformanceCalculator.CalculatePanelDataLazer(scores[0]);
+                    data = await OsuCalculator.CalculatePanelData(scores[0]);
                 } else {
-                    data = await PerformanceCalculator.CalculatePanelDataAuto(scores[0]);
+                    data = await UniversalCalculator.CalculatePanelDataAuto(scores[0]);
                 }
                 using var stream = new MemoryStream();
     

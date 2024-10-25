@@ -56,7 +56,7 @@ namespace KanonBot.DrawV3
 
             //下载头像
             var avatarPath = $"./work/avatar/{data.scoreInfo.UserId}.png";
-            using var avatar = await TryAsync(ReadImageRgba(avatarPath))
+            using var avatar = await TryAsync(Utils.ReadImageRgba(avatarPath))
                 .IfFail(async () =>
                 {
                     try
@@ -72,7 +72,7 @@ namespace KanonBot.DrawV3
                         Log.Error(msg);
                         throw;
                     }
-                    return await ReadImageRgba(avatarPath); // 下载后再读取
+                    return await Utils.ReadImageRgba(avatarPath); // 下载后再读取
                 });
 
             //panel
@@ -85,10 +85,10 @@ namespace KanonBot.DrawV3
                 scoreimg.Mutate(x => x.DrawImage(panel, 1));
 
             // bg
-            using var bg = await TryAsync(ReadImageRgba(bgPath!))
+            using var bg = await TryAsync(Utils.ReadImageRgba(bgPath!))
                 .IfFail(async () =>
                 {
-                    return await ReadImageRgba("./work/legacy/load-failed-img.png"); // 下载后再读取
+                    return await Utils.ReadImageRgba("./work/legacy/load-failed-img.png"); // 下载后再读取
                 });
 
             using var bgarea = new Image<Rgba32>(631, 444);
@@ -111,11 +111,11 @@ namespace KanonBot.DrawV3
             //TODO beatmap status icon
 
             //beatmap difficulty icon
-            using var osuscoremode_icon = await ReadImageRgba(
+            using var osuscoremode_icon = await Utils.ReadImageRgba(
                         $"./work/panelv2/icons/mode_icon/score/{data.scoreInfo.Mode.ToStr()}.png"
             );
             osuscoremode_icon.Mutate(x => x.Resize(110, 110));
-            var modeC = ForStarDifficulty(data.ppInfo.star);
+            var modeC = Utils.ForStarDifficulty(data.ppInfo.star);
             osuscoremode_icon.Mutate(
                 x =>
                     x.ProcessPixelRowsAsVector4(row =>
@@ -256,7 +256,7 @@ namespace KanonBot.DrawV3
             var stars_i = (int)Math.Floor(data.ppInfo.star);
             var stars_d = data.ppInfo.star - Math.Truncate(data.ppInfo.star);
             int stars_pos = 924 + (int)stars_measure.Width + 10;
-            using var stars_icon = await ReadImageRgba(
+            using var stars_icon = await Utils.ReadImageRgba(
                     $"./work/panelv2/score_panel/Star.png"
             );
             stars_icon.Mutate(x => x.Resize(30, 30));
@@ -401,7 +401,7 @@ namespace KanonBot.DrawV3
             //length graph 70x? -50    max 2708
             textOptions.Font = new Font(TorusRegular, 30);
             textOptions.Origin = new PointF(2750, 747);
-            var beatmap_length_text = Duration2TimeString_ForScoreV3(data.scoreInfo.Beatmap.TotalLength);
+            var beatmap_length_text = Utils.Duration2TimeStringForScoreV3(data.scoreInfo.Beatmap.TotalLength);
             var beatmap_length_text_measure = TextMeasurer.MeasureSize(beatmap_length_text, textOptions);
             var length_graph_length = 2708;
 

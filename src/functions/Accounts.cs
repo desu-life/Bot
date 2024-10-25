@@ -289,7 +289,7 @@ namespace KanonBot.Functions
             }
         }
         public static async Task<(Option<API.OSU.Models.User>, Option<Database.Model.User>)> ParseAt(string atmsg) {
-            var res = SplitKvp(atmsg);
+            var res = Utils.SplitKvp(atmsg);
             if (res.IsNone)
                 return (None, None);
 

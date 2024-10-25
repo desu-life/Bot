@@ -90,7 +90,7 @@ namespace KanonBot.Functions.OSUBot
             try
             {
                 // 下载谱面
-                await API.OSU.Client.BeatmapFileChecker(bid);
+                await API.OSU.Client.DownloadBeatmapFile(bid);
                 beatmap = File.ReadAllText($"./work/beatmap/{bid}.osu");
             }
             catch (Exception)

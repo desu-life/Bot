@@ -19,6 +19,7 @@ using SixLabors.ImageSharp.Formats.Png;
 using static KanonBot.API.OSU.Models;
 using static KanonBot.API.OSU.Models.PPlusData;
 using static KanonBot.API.OSU.OSUExtensions;
+using KanonBot.OsuPerformance;
 
 namespace KanonBot.Functions.OSUBot
 {
@@ -208,7 +209,7 @@ namespace KanonBot.Functions.OSUBot
             //从数据库获取相似的谱面
             var randBP = allBP![new Random().Next(0, 19)];
             //get stars from rosupp
-            var ppinfo = await PerformanceCalculator.CalculatePanelDataAuto(randBP);
+            var ppinfo = await UniversalCalculator.CalculatePanelDataAuto(randBP);
 
             var data = new List<Database.Model.OsuStandardBeatmapTechData>();
 

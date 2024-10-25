@@ -287,7 +287,7 @@ namespace KanonBot.Functions.OSUBot
             try
             {
                 image = new Image<Rgba32>(1382, 2456);
-                var temppic = await ReadImageRgba(imagePath);
+                var temppic = await Utils.ReadImageRgba(imagePath);
                 temppic.Mutate(
                     x =>
                         x.Resize(
@@ -397,7 +397,7 @@ namespace KanonBot.Functions.OSUBot
             try
             {
                 image = new Image<Rgba32>(1200, 350);
-                var temppic = await ReadImageRgba(imagePath);
+                var temppic = await Utils.ReadImageRgba(imagePath);
                 temppic.Mutate(
                     x =>
                         x.Resize(
@@ -506,7 +506,7 @@ namespace KanonBot.Functions.OSUBot
             try
             {
                 
-                var (temppic, format) = await ReadImageRgbaWithFormat(imagePath);
+                var (temppic, format) = await Utils.ReadImageRgbaWithFormat(imagePath);
                 using var pic = temppic;
                 //检测上传的infopanel尺寸、开孔是否正确
                 bool isok = true;
@@ -663,7 +663,7 @@ namespace KanonBot.Functions.OSUBot
             }
             try
             {
-                var (temppic, format) = await ReadImageRgbaWithFormat(imagePath);
+                var (temppic, format) = await Utils.ReadImageRgbaWithFormat(imagePath);
                 using var pic = temppic;
                 //检测上传的infopanel尺寸是否正确
                 if (

@@ -5,6 +5,7 @@ using KanonBot.API.OSU;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
 using KanonBot.Message;
+using KanonBot.OsuPerformance;
 using LanguageExt.UnsafeValueAccess;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
@@ -345,7 +346,7 @@ namespace KanonBot.Functions.OSUBot
                            score.Rank.ToUpper() == "S" ||
                            score.Rank.ToUpper() == "A")
                     {
-                        var data = await PerformanceCalculator.CalculatePanelDataRosu(score);
+                        var data = await RosuCalculator.CalculatePanelData(score);
                         await Database.Client.InsertOsuStandardBeatmapTechData(
                         score.Beatmap!.BeatmapId,
                         data.ppInfo.star,

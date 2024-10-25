@@ -6,6 +6,7 @@ using KanonBot.Functions.OSU;
 using System.IO;
 using LanguageExt.UnsafeValueAccess;
 using KanonBot.API.OSU;
+using KanonBot.OsuPerformance;
 
 namespace KanonBot.Functions.OSUBot
 {
@@ -123,9 +124,9 @@ namespace KanonBot.Functions.OSUBot
             {
                 LegacyImage.Draw.ScorePanelData data;
                 if (command.lazer) {
-                    data = await PerformanceCalculator.CalculatePanelDataLazer(scoreInfos[0]);
+                    data = await OsuCalculator.CalculatePanelData(scoreInfos[0]);
                 } else {
-                    data = await PerformanceCalculator.CalculatePanelDataAuto(scoreInfos[0]);
+                    data = await UniversalCalculator.CalculatePanelDataAuto(scoreInfos[0]);
                 }
                 using var stream = new MemoryStream();
                 using var img = (Config.inner != null && Config.inner.debug) ? await DrawV3.OsuScorePanelV3.Draw(data) : await LegacyImage.Draw.DrawScore(data);
@@ -144,7 +145,7 @@ namespace KanonBot.Functions.OSUBot
                     if (x.Rank.ToUpper() != "F")
                     {
                         //计算pp数据
-                        data = await PerformanceCalculator.CalculatePanelDataRosu(x);
+                        data = await RosuCalculator.CalculatePanelData(x);
 
                         //季票信息
                         if (DBOsuInfo != null)
