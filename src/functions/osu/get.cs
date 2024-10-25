@@ -614,138 +614,6 @@ namespace KanonBot.Functions.OSUBot
             await target.reply(str);
         }
 
-        async private static Task Elo(Target target, string cmd)
-        {
-            #region 验证
-            long? osuID = null;
-            API.OSU.Mode? mode;
-            Database.Model.User? DBUser = null;
-            Database.Model.UserOSU? DBOsuInfo = null;
-
-            // 解析指令
-            var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Info);
-            mode = command.osu_mode;
-
-            // 解析指令
-            if (command.self_query)
-            {
-                // 验证账户
-                var AccInfo = Accounts.GetAccInfo(target);
-                DBUser = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
-                if (DBUser == null)
-                // { await target.reply("您还没有绑定Kanon账户，请使用!reg 您的邮箱来进行绑定或注册。"); return; }    // 这里引导到绑定osu
-                {
-                    await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
-                    return;
-                }
-                // 验证账号信息
-                DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
-                if (DBOsuInfo == null)
-                {
-                    await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
-                    return;
-                }
-
-                mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value; // 从数据库解析，理论上不可能错
-                osuID = DBOsuInfo.osu_uid;
-            }
-            else
-            {
-                // 查询用户是否绑定
-                // 这里先按照at方法查询，查询不到就是普通用户查询
-                var (atOSU, atDBUser) = await Accounts.ParseAt(command.osu_username);
-                if (atOSU.IsNone && !atDBUser.IsNone)
-                {
-                    await target.reply("ta还没有绑定osu账户呢。");
-                    return;
-                }
-                else if (!atOSU.IsNone && atDBUser.IsNone)
-                {
-                    var _osuinfo = atOSU.ValueUnsafe();
-                    mode ??= _osuinfo.PlayMode;
-                    osuID = _osuinfo.Id;
-                }
-                else if (!atOSU.IsNone && !atDBUser.IsNone)
-                {
-                    DBUser = atDBUser.ValueUnsafe();
-                    DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
-                    var _osuinfo = atOSU.ValueUnsafe();
-                    mode ??= DBOsuInfo!.osu_mode?.ToMode()!.Value;
-                    osuID = _osuinfo.Id;
-                }
-                else
-                {
-                    // 普通查询
-                    var tempOsuInfo = await API.OSU.Client.GetUser(
-                        command.osu_username,
-                        command.osu_mode ?? API.OSU.Mode.OSU
-                    );
-                    if (tempOsuInfo != null)
-                    {
-                        DBOsuInfo = await Database.Client.GetOsuUser(tempOsuInfo.Id);
-                        if (DBOsuInfo != null)
-                        {
-                            DBUser = await Accounts.GetAccountByOsuUid(tempOsuInfo.Id);
-                            mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value;
-                        }
-                        mode ??= tempOsuInfo.PlayMode;
-                        osuID = tempOsuInfo.Id;
-                    }
-                    else
-                    {
-                        // 直接取消查询，简化流程
-                        await target.reply("猫猫没有找到此用户。");
-                        return;
-                    }
-                }
-            }
-
-            // 验证osu信息
-            var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
-            if (OnlineOsuInfo == null)
-            {
-                if (DBOsuInfo != null)
-                    await target.reply("被办了。");
-                else
-                    await target.reply("猫猫没有找到此用户。");
-                // 中断查询
-                return;
-            }
-            OnlineOsuInfo.PlayMode = mode!.Value;
-            #endregion
-
-            try
-            {
-                JObject? eloInfo = await API.OSU.Client.GetUserEloInfo(OnlineOsuInfo!.Id);
-                foreach (var key in eloInfo!)
-                {
-                    switch (key.Key)
-                    {
-                        case "code":
-                            switch ((int)eloInfo["code"]!)
-                            {
-                                case 40009:
-                                    await target.reply(eloInfo["message"]!.ToString());
-                                    break;
-                                case 40004:
-                                    await target.reply(
-                                        $"{(string)eloInfo["message"]!}\n{OnlineOsuInfo.Username}的初始ELO为: {eloInfo["elo"]}"
-                                    );
-                                    break;
-                            }
-                            return;
-                        case "elo":
-                            await target.reply($"{OnlineOsuInfo.Username}的ELO为: {eloInfo["elo"]}");
-                            return;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                await target.reply($"查询失败, 失败信息: {ex.Message}");
-            }
-        }
-
         async private static Task Rolecost(Target target, string cmd)
         {
             cmd = cmd.ToLower().Trim();
@@ -784,40 +652,40 @@ namespace KanonBot.Functions.OSUBot
                     return -1;
                 }
             }
-            static double ostcost(long rank, int elo)
-            {
-                double rankelo,
-                    cost;
-                if (elo == 0)
-                {
-                    elo = (int)(1500 - 600 * (Math.Log((rank + 500) / 8500.0) / Math.Log(4.0)));
-                }
-                else
-                {
-                    rankelo = 1500 - 600 * (Math.Log((rank + 500) / 8500.0) / Math.Log(4.0));
-                    if (elo > rankelo)
-                    {
-                        rankelo = elo;
-                    }
-                    else
-                    {
-                        elo = (int)(0.8 * rankelo + 0.2 * elo);
-                    }
-                }
-                if (elo > 850)
-                {
-                    cost = 27 * (elo - 700) / 3200.0;
-                }
-                else
-                {
-                    cost = 3 * Math.Pow(((elo - 400) / 600.0), 3);
-                    if (cost <= 0)
-                    {
-                        cost = 0;
-                    }
-                }
-                return Math.Round(cost, 2);
-            }
+            // static double ostcost(long rank, int elo)
+            // {
+            //     double rankelo,
+            //         cost;
+            //     if (elo == 0)
+            //     {
+            //         elo = (int)(1500 - 600 * (Math.Log((rank + 500) / 8500.0) / Math.Log(4.0)));
+            //     }
+            //     else
+            //     {
+            //         rankelo = 1500 - 600 * (Math.Log((rank + 500) / 8500.0) / Math.Log(4.0));
+            //         if (elo > rankelo)
+            //         {
+            //             rankelo = elo;
+            //         }
+            //         else
+            //         {
+            //             elo = (int)(0.8 * rankelo + 0.2 * elo);
+            //         }
+            //     }
+            //     if (elo > 850)
+            //     {
+            //         cost = 27 * (elo - 700) / 3200.0;
+            //     }
+            //     else
+            //     {
+            //         cost = 3 * Math.Pow(((elo - 400) / 600.0), 3);
+            //         if (cost <= 0)
+            //         {
+            //             cost = 0;
+            //         }
+            //     }
+            //     return Math.Round(cost, 2);
+            // }
 
             static double zkfccost(User userInfo, API.OSU.Models.Score score)
             {
@@ -958,62 +826,6 @@ namespace KanonBot.Functions.OSUBot
                         await target.reply($"在ONC中，{OnlineOsuInfo.Username} 的cost为：{onc}");
                     break;
                 ////////////////////////////////////////////////////////////////////////////////////////
-                case "ost":
-                    try
-                    {
-                        var eloInfo = await API.OSU.Client.GetUserEloInfo(OnlineOsuInfo.Id);
-                        int elo = 0;
-                        foreach (var key in eloInfo!)
-                        {
-                            switch (key.Key)
-                            {
-                                case "code":
-                                    switch ((int)eloInfo["code"]!)
-                                    {
-                                        case 40009:
-                                            await target.reply(eloInfo["message"]!.ToString());
-                                            break;
-                                        case 40004:
-                                            elo = 0;
-                                            break;
-                                    }
-                                    break;
-                                case "elo":
-                                    elo = int.Parse(eloInfo["elo"]!.ToString());
-                                    break;
-                            }
-                        }
-                        if (elo != 0)
-                        {
-                            var matchId = await API.OSU.Client.GetUserEloRecentPlay(OnlineOsuInfo.Id);
-                            var body = (await API.OSU.Client.GetMatchInfo(matchId.Value))![
-                                "result"
-                            ]!.ToObject<JObject>();
-                            TimeSpan ts = new();
-                            foreach (var item in body!)
-                            {
-                                var dt = DateTimeOffset.Parse(
-                                    item.Value!["start_time"]!.ToString()
-                                );
-                                ts = DateTime.Now - dt;
-                                break;
-                            }
-                            if (ts.Days > 365)
-                            {
-                                elo = 0;
-                            }
-                        }
-                        await target.reply(
-                            $"在OST中，{OnlineOsuInfo.Username} 的cost为：{ostcost(OnlineOsuInfo.Statistics.GlobalRank, elo)}"
-                        );
-                    }
-                    catch
-                    {
-                        await target.reply($"获取elo失败");
-                        return;
-                    }
-                    break;
-                ////////////////////////////////////////////////////////////////////////////////////////
                 case "zkfc":
                     var scores = await API.OSU.Client.GetUserScoresLeagcy(
                                                          osuID!.Value,
@@ -1037,7 +849,7 @@ namespace KanonBot.Functions.OSUBot
                 ////////////////////////////////////////////////////////////////////////////////////////
                 default:
                     await target.reply(
-                        $"请输入要查询cost的比赛名称的缩写。\n当前已支持的比赛：onc/occ/ost/zkfc\n其他比赛请联系赛事主办方提供cost算法"
+                        $"请输入要查询cost的比赛名称的缩写。\n当前已支持的比赛：onc/occ/zkfc\n其他比赛请联系赛事主办方提供cost算法"
                     );
                     break;
             }

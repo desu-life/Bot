@@ -334,25 +334,6 @@ namespace KanonBot.API.OSU
             return body["user"] as JObject;
         }
 
-        // 获取用户Elo信息
-        async public static Task<JObject?> GetUserEloInfo(long uid)
-        {
-            return await $"http://api.osuwiki.cn:5005/api/users/elo/{uid}".GetJsonAsync<JObject>();
-        }
-
-        // 获取用户最近的elo游戏记录
-        async public static Task<int?> GetUserEloRecentPlay(long uid)
-        {
-            var body = await $"http://api.osuwiki.cn:5005/api/users/recentPlay/{uid}".GetJsonAsync<JObject>();
-            return (int?)body["match_id"];
-        }
-
-        // 获取比赛信息
-        async public static Task<JObject?> GetMatchInfo(long matchId)
-        {
-            return await $"http://api.osuwiki.cn:5005/api/matches/{matchId}".GetJsonAsync<JObject>();
-        }
-
         // 获取pp+数据
         async public static Task<Models.PPlusData> GetUserPlusData(long uid)
         {
