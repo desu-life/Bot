@@ -274,7 +274,7 @@ namespace KanonBot.Functions
                 try
                 {
                     // 没被他人绑定，开始绑定流程
-                    if (await Database.Client.InsertOsuUser(DBUser.uid, online_osu_userinfo.Id, online_osu_userinfo.Cover!.Url.ToString() == "" ? 0 : 2))   //?这里url真的能为空吗  我不到啊
+                    if (await Database.Client.InsertOsuUser(DBUser.uid, online_osu_userinfo.Id))
                     {
                         await target.reply($"绑定成功，已将osu用户 {online_osu_userinfo.Id} 绑定至Kanon账户 {DBUser.uid} 。");
                         await GeneralUpdate.UpdateUser(online_osu_userinfo.Id, true); //插入用户每日数据记录

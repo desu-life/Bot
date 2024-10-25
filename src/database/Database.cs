@@ -134,8 +134,7 @@ public class Client
 
     public static async Task<bool> InsertOsuUser(
         long kanon_uid,
-        long osu_uid,
-        int customBannerStatus
+        long osu_uid
     )
     {
         using var db = GetInstance();

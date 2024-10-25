@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 
 namespace KanonBot.Message;
 
-public interface IMsgSegment
+public interface IMsgSegment : IEquatable<IMsgSegment>
 {
     string Build();
 }
