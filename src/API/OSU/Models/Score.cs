@@ -84,8 +84,8 @@ public partial class Models
 
         public static implicit operator ScoreLazer(Score s)
         {
-            var mods = s.Mods.Map(ScoreMod.FromString).ToList();
-            mods.Add(ScoreMod.FromString("CL"));
+            var mods = s.Mods.Map(Mod.FromString).ToList();
+            mods.Add(Mod.FromString("CL"));
             return new ScoreLazer
             {
                 Accuracy = s.Accuracy,

@@ -1784,7 +1784,7 @@ namespace KanonBot.DrawV2
 
 
                     //mods
-                    OSU.Models.ScoreMod[] firstbpmods;
+                    OSU.Models.Mod[] firstbpmods;
                     if (islazer) {
                         firstbpmods = allBP![0].Mods;
                     } else {
@@ -2359,7 +2359,7 @@ namespace KanonBot.DrawV2
                         );
                         //shdklahdksadkjkcna5hoacsporjasldjlksakdlsa
 
-                        OSU.Models.ScoreMod[] bpmods;
+                        OSU.Models.Mod[] bpmods;
                         if (islazer) {
                             bpmods = allBP![i].Mods;
                         } else {

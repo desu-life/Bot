@@ -1,16 +1,11 @@
 #pragma warning disable CS8618 // 非null 字段未初始化
-using KanonBot.Serializer;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NullValueHandling = Newtonsoft.Json.NullValueHandling;
 
 namespace KanonBot.API.OSU;
 
 public partial class Models
 {
-
-
-
     public class BeatmapScoreLazer // 只是比score多了个当前bid的排名
     {
         [JsonProperty("position")]
@@ -18,30 +13,6 @@ public partial class Models
 
         [JsonProperty("score")]
         public ScoreLazer Score { get; set; }
-    }
-
-    public class ScoreMod
-    {
-        [JsonProperty("acronym")]
-        public string Acronym { get; set; }
-
-        [JsonProperty("settings", NullValueHandling = NullValueHandling.Ignore)]
-        public JObject? Settings { get; set; }
-
-        [JsonIgnore]
-        public bool IsClassic => Acronym == "CL";
-
-        [JsonIgnore]
-        public bool IsVisualMod => Acronym == "HD" || Acronym == "FL";
-
-        [JsonIgnore]
-        public bool IsSpeedChangeMod =>
-            Acronym == "DT" || Acronym == "NC" || Acronym == "HT" || Acronym == "DC";
-
-        public static ScoreMod FromString(string mod)
-        {
-            return new ScoreMod { Acronym = mod };
-        }
     }
 
     public class ScoreLazer
@@ -89,7 +60,7 @@ public partial class Models
         public ScoreStatisticsLazer MaximumStatistics { get; set; }
 
         [JsonProperty("mods")]
-        public ScoreMod[] Mods { get; set; }
+        public Mod[] Mods { get; set; }
 
         [JsonProperty("passed")]
         public bool Passed { get; set; }
