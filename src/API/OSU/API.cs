@@ -27,8 +27,8 @@ namespace KanonBot.API.OSU
         static IFlurlRequest http()
         {
             CheckToken().Wait();
-            var ep = config.osu?.v2EndPoint;
-            return (ep ?? EndPointV2).WithHeader("Authorization", $"Bearer {Token}").AllowHttpStatus(HttpStatusCode.NotFound);
+            var ep = config.osu?.v2EndPoint ?? EndPointV2;
+            return ep.WithHeader("Authorization", $"Bearer {Token}").AllowHttpStatus("404");
         }
 
         static IFlurlRequest withLazerScore(IFlurlRequest req) {
@@ -47,8 +47,6 @@ namespace KanonBot.API.OSU
             };
 
             var result = await "https://osu.ppy.sh/oauth/token".PostJsonAsync(j);
-
-
             var body = await result.GetJsonAsync<JObject>();
             try
             {
@@ -236,10 +234,10 @@ namespace KanonBot.API.OSU
             }
         }
         // 通过osu uid获取用户信息
-        async public static Task<Models.User?> GetUser(long userId, Mode mode = Mode.OSU)
+        async public static Task<Models.UserExtended?> GetUser(long userId, Mode mode = Mode.OSU)
         {
             var res = await http()
-                .AppendPathSegments(new object[] { "users", userId, mode.ToStr() })
+                .AppendPathSegments(["users", userId, mode.ToStr()])
                 .GetAsync();
 
             //Log.Information(await res.GetStringAsync());
@@ -248,7 +246,7 @@ namespace KanonBot.API.OSU
             else
                 try
                 {
-                    return await res.GetJsonAsync<Models.User>();
+                    return await res.GetJsonAsync<Models.UserExtended>();
                 }
                 catch (Exception ex) {
                     Log.Debug(ex.Message);
@@ -260,10 +258,10 @@ namespace KanonBot.API.OSU
         }
 
         // 通过osu username获取用户信息
-        async public static Task<Models.User?> GetUser(string userName, Mode mode = Mode.OSU)
+        async public static Task<Models.UserExtended?> GetUser(string userName, Mode mode = Mode.OSU)
         {
             var res = await http()
-                .AppendPathSegments(new object[] { "users", userName, mode.ToStr() })
+                .AppendPathSegments(["users", userName, mode.ToStr()])
                 .SetQueryParam("key", "username")
                 .GetAsync();
 
@@ -271,7 +269,7 @@ namespace KanonBot.API.OSU
             if (res.StatusCode == 404)
                 return null;
             else
-                return await res.GetJsonAsync<Models.User>();
+                return await res.GetJsonAsync<Models.UserExtended>();
         }
 
         // 获取谱面参数
@@ -284,7 +282,7 @@ namespace KanonBot.API.OSU
             };
 
             var res = await http()
-                .AppendPathSegments(new object[] { "beatmaps", bid, "attributes" })
+                .AppendPathSegments(["beatmaps", bid, "attributes"])
                 .PostJsonAsync(j);
 
             if (res.StatusCode == 404)

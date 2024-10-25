@@ -122,14 +122,11 @@ namespace KanonBot.Functions.OSUBot
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, API.OSU.Mode.OSU); //取osu模式的值
             if (OnlineOsuInfo == null)
             {
-                if (DBOsuInfo != null)
-                    await target.reply("被办了。");
-                else
-                    await target.reply("猫猫没有找到此用户。");
+                await target.reply("猫猫没有找到此用户。");
                 // 中断查询
                 return;
             }
-            OnlineOsuInfo.PlayMode = mode!.Value;
+            OnlineOsuInfo.Mode = mode!.Value;
             #endregion
             await target.reply(
                 $"{OnlineOsuInfo.Username}\nhttps://osu.ppy.sh/u/{OnlineOsuInfo.Id}"
@@ -176,14 +173,11 @@ namespace KanonBot.Functions.OSUBot
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, API.OSU.Mode.OSU); //取osu模式的值
             if (OnlineOsuInfo == null)
             {
-                if (DBOsuInfo != null)
-                    await target.reply("被办了。");
-                else
-                    await target.reply("猫猫没有找到此用户。");
+                await target.reply("猫猫没有找到此用户。");
                 // 中断查询
                 return;
             }
-            OnlineOsuInfo.PlayMode = mode!.Value;
+            OnlineOsuInfo.Mode = mode!.Value;
             #endregion
 
 
@@ -457,13 +451,22 @@ namespace KanonBot.Functions.OSUBot
                 var (atOSU, atDBUser) = await Accounts.ParseAt(command.osu_username);
                 if (atOSU.IsNone && !atDBUser.IsNone)
                 {
-                    await target.reply("ta还没有绑定osu账户呢。");
+                    DBUser = atDBUser.ValueUnsafe();
+                    DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
+                    if (DBOsuInfo == null)
+                    {
+                        await target.reply("ta还没有绑定osu账户呢。");
+                    }
+                    else
+                    {
+                        await target.reply("被办了。");
+                    }
                     return;
                 }
                 else if (!atOSU.IsNone && atDBUser.IsNone)
                 {
                     var _osuinfo = atOSU.ValueUnsafe();
-                    mode ??= _osuinfo.PlayMode;
+                    mode ??= _osuinfo.Mode;
                     osuID = _osuinfo.Id;
                 }
                 else if (!atOSU.IsNone && !atDBUser.IsNone)
@@ -489,7 +492,7 @@ namespace KanonBot.Functions.OSUBot
                             DBUser = await Accounts.GetAccountByOsuUid(tempOsuInfo.Id);
                             mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value;
                         }
-                        mode ??= tempOsuInfo.PlayMode;
+                        mode ??= tempOsuInfo.Mode;
                         osuID = tempOsuInfo.Id;
                     }
                     else
@@ -505,20 +508,17 @@ namespace KanonBot.Functions.OSUBot
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (OnlineOsuInfo == null)
             {
-                if (DBOsuInfo != null)
-                    await target.reply("被办了。");
-                else
-                    await target.reply("猫猫没有找到此用户。");
+                await target.reply("猫猫没有找到此用户。");
                 // 中断查询
                 return;
             }
-            OnlineOsuInfo.PlayMode = mode!.Value;
+            OnlineOsuInfo.Mode = mode!.Value;
             #endregion
 
             // 计算bonuspp
             if (OnlineOsuInfo!.Statistics.PP == 0)
             {
-                await target.reply($"你最近还没有玩过{OnlineOsuInfo.PlayMode.ToStr()}模式呢。。");
+                await target.reply($"你最近还没有玩过{OnlineOsuInfo.Mode.ToStr()}模式呢。。");
                 return;
             }
             // 因为上面确定过模式，这里就直接用userdata里的mode了
@@ -606,7 +606,7 @@ namespace KanonBot.Functions.OSUBot
                 rankedScores = 0;
             }
             var str =
-                $"{OnlineOsuInfo.Username} ({OnlineOsuInfo.PlayMode.ToStr()})\n"
+                $"{OnlineOsuInfo.Username} ({OnlineOsuInfo.Mode.ToStr()})\n"
                 + $"总PP：{OnlineOsuInfo.Statistics.PP:0.##}pp\n"
                 + $"原始PP：{scorePP:0.##}pp\n"
                 + $"Bonus PP：{bounsPP:0.##}pp\n"
@@ -743,13 +743,22 @@ namespace KanonBot.Functions.OSUBot
                 var (atOSU, atDBUser) = await Accounts.ParseAt(command.osu_username);
                 if (atOSU.IsNone && !atDBUser.IsNone)
                 {
-                    await target.reply("ta还没有绑定osu账户呢。");
+                    DBUser = atDBUser.ValueUnsafe();
+                    DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
+                    if (DBOsuInfo == null)
+                    {
+                        await target.reply("ta还没有绑定osu账户呢。");
+                    }
+                    else
+                    {
+                        await target.reply("被办了。");
+                    }
                     return;
                 }
                 else if (!atOSU.IsNone && atDBUser.IsNone)
                 {
                     var _osuinfo = atOSU.ValueUnsafe();
-                    mode ??= _osuinfo.PlayMode;
+                    mode ??= _osuinfo.Mode;
                     osuID = _osuinfo.Id;
                 }
                 else if (!atOSU.IsNone && !atDBUser.IsNone)
@@ -775,7 +784,7 @@ namespace KanonBot.Functions.OSUBot
                             DBUser = await Accounts.GetAccountByOsuUid(tempOsuInfo.Id);
                             mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value;
                         }
-                        mode ??= tempOsuInfo.PlayMode;
+                        mode ??= tempOsuInfo.Mode;
                         osuID = tempOsuInfo.Id;
                     }
                     else
@@ -791,14 +800,11 @@ namespace KanonBot.Functions.OSUBot
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (OnlineOsuInfo == null)
             {
-                if (DBOsuInfo != null)
-                    await target.reply("被办了。");
-                else
-                    await target.reply("猫猫没有找到此用户。");
+                await target.reply("猫猫没有找到此用户。");
                 // 中断查询
                 return;
             }
-            OnlineOsuInfo.PlayMode = mode!.Value;
+            OnlineOsuInfo.Mode = mode!.Value;
             #endregion
 
             switch (command.match_name)
@@ -897,13 +903,22 @@ namespace KanonBot.Functions.OSUBot
                 var (atOSU, atDBUser) = await Accounts.ParseAt(command.osu_username);
                 if (atOSU.IsNone && !atDBUser.IsNone)
                 {
-                    await target.reply("ta还没有绑定osu账户呢。");
+                    DBUser = atDBUser.ValueUnsafe();
+                    DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
+                    if (DBOsuInfo == null)
+                    {
+                        await target.reply("ta还没有绑定osu账户呢。");
+                    }
+                    else
+                    {
+                        await target.reply("被办了。");
+                    }
                     return;
                 }
                 else if (!atOSU.IsNone && atDBUser.IsNone)
                 {
                     var _osuinfo = atOSU.ValueUnsafe();
-                    mode ??= _osuinfo.PlayMode;
+                    mode ??= _osuinfo.Mode;
                     osuID = _osuinfo.Id;
                 }
                 else if (!atOSU.IsNone && !atDBUser.IsNone)
@@ -929,7 +944,7 @@ namespace KanonBot.Functions.OSUBot
                             DBUser = await Accounts.GetAccountByOsuUid(tempOsuInfo.Id);
                             mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value;
                         }
-                        mode ??= tempOsuInfo.PlayMode;
+                        mode ??= tempOsuInfo.Mode;
                         osuID = tempOsuInfo.Id;
                     }
                     else
@@ -945,14 +960,11 @@ namespace KanonBot.Functions.OSUBot
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (OnlineOsuInfo == null)
             {
-                if (DBOsuInfo != null)
-                    await target.reply("被办了。");
-                else
-                    await target.reply("猫猫没有找到此用户。");
+                await target.reply("猫猫没有找到此用户。");
                 // 中断查询
                 return;
             }
-            OnlineOsuInfo.PlayMode = mode!.Value;
+            OnlineOsuInfo.Mode = mode!.Value;
             #endregion
 
             var allBP = await API.OSU.Client.GetUserScores(
@@ -984,7 +996,7 @@ namespace KanonBot.Functions.OSUBot
             }
             var last = allBP.Length;
             var str =
-                $"{OnlineOsuInfo.Username} 在 {OnlineOsuInfo.PlayMode.ToStr()} 模式中:"
+                $"{OnlineOsuInfo.Username} 在 {OnlineOsuInfo.Mode.ToStr()} 模式中:"
                 + $"\n你的 bp1 有 {allBP[0].pp:0.##}pp"
                 + $"\n你的 bp2 有 {allBP[1].pp:0.##}pp"
                 + $"\n..."
@@ -1037,13 +1049,22 @@ namespace KanonBot.Functions.OSUBot
                 var (atOSU, atDBUser) = await Accounts.ParseAt(command.osu_username);
                 if (atOSU.IsNone && !atDBUser.IsNone)
                 {
-                    await target.reply("ta还没有绑定osu账户呢。");
+                    DBUser = atDBUser.ValueUnsafe();
+                    DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
+                    if (DBOsuInfo == null)
+                    {
+                        await target.reply("ta还没有绑定osu账户呢。");
+                    }
+                    else
+                    {
+                        await target.reply("被办了。");
+                    }
                     return;
                 }
                 else if (!atOSU.IsNone && atDBUser.IsNone)
                 {
                     var _osuinfo = atOSU.ValueUnsafe();
-                    mode ??= _osuinfo.PlayMode;
+                    mode ??= _osuinfo.Mode;
                     osuID = _osuinfo.Id;
                 }
                 else if (!atOSU.IsNone && !atDBUser.IsNone)
@@ -1069,7 +1090,7 @@ namespace KanonBot.Functions.OSUBot
                             DBUser = await Accounts.GetAccountByOsuUid(tempOsuInfo.Id);
                             mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value;
                         }
-                        mode ??= tempOsuInfo.PlayMode;
+                        mode ??= tempOsuInfo.Mode;
                         osuID = tempOsuInfo.Id;
                     }
                     else
@@ -1085,14 +1106,11 @@ namespace KanonBot.Functions.OSUBot
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (OnlineOsuInfo == null)
             {
-                if (DBOsuInfo != null)
-                    await target.reply("被办了。");
-                else
-                    await target.reply("猫猫没有找到此用户。");
+                await target.reply("猫猫没有找到此用户。");
                 // 中断查询
                 return;
             }
-            OnlineOsuInfo.PlayMode = mode!.Value;
+            OnlineOsuInfo.Mode = mode!.Value;
             #endregion
 
             var allBP = await API.OSU.Client.GetUserScores(
@@ -1133,10 +1151,10 @@ namespace KanonBot.Functions.OSUBot
             if (TBP.Count == 0)
             {
                 if (cmd == "")
-                    await target.reply($"你今天在 {OnlineOsuInfo.PlayMode.ToStr()} 模式上还没有新bp呢。。");
+                    await target.reply($"你今天在 {OnlineOsuInfo.Mode.ToStr()} 模式上还没有新bp呢。。");
                 else
                     await target.reply(
-                        $"{OnlineOsuInfo.Username} 今天在 {OnlineOsuInfo.PlayMode.ToStr()} 模式上还没有新bp呢。。"
+                        $"{OnlineOsuInfo.Username} 今天在 {OnlineOsuInfo.Mode.ToStr()} 模式上还没有新bp呢。。"
                     );
             }
             else
@@ -1199,19 +1217,16 @@ namespace KanonBot.Functions.OSUBot
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (OnlineOsuInfo == null)
             {
-                if (DBOsuInfo != null)
-                    await target.reply("被办了。");
-                else
-                    await target.reply("猫猫没有找到此用户。");
+                await target.reply("猫猫没有找到此用户。");
                 // 中断查询
                 return;
             }
-            OnlineOsuInfo.PlayMode = mode!.Value;
+            OnlineOsuInfo.Mode = mode!.Value;
             #endregion
 
             var seasonalpassinfo = await Database.Client.GetSeasonalPassInfo(
                 OnlineOsuInfo!.Id,
-                OnlineOsuInfo!.PlayMode!.ToStr()
+                OnlineOsuInfo!.Mode!.ToStr()
             )!;
             if (seasonalpassinfo == null)
             {
@@ -1248,7 +1263,7 @@ namespace KanonBot.Functions.OSUBot
 
             string str;
             str =
-                $"{OnlineOsuInfo.Username}\n自2023年7月15日以来\n您在{OnlineOsuInfo!.PlayMode!.ToStr()}模式下的等级为{levelcount}级 "
+                $"{OnlineOsuInfo.Username}\n自2023年7月15日以来\n您在{OnlineOsuInfo!.Mode!.ToStr()}模式下的等级为{levelcount}级 "
                 + $"({t}%)"
                 + $"\n共获得了了{seasonalpassinfo.point}pt\n距离升级大约还需要{Math.Abs(temppoint)}pt";
             await target.reply(str);
@@ -1336,13 +1351,22 @@ namespace KanonBot.Functions.OSUBot
                 var (atOSU, atDBUser) = await Accounts.ParseAt(command.osu_username);
                 if (atOSU.IsNone && !atDBUser.IsNone)
                 {
-                    await target.reply("ta还没有绑定osu账户呢。");
+                    DBUser = atDBUser.ValueUnsafe();
+                    DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
+                    if (DBOsuInfo == null)
+                    {
+                        await target.reply("ta还没有绑定osu账户呢。");
+                    }
+                    else
+                    {
+                        await target.reply("被办了。");
+                    }
                     return;
                 }
                 else if (!atOSU.IsNone && atDBUser.IsNone)
                 {
                     var _osuinfo = atOSU.ValueUnsafe();
-                    mode ??= _osuinfo.PlayMode;
+                    mode ??= _osuinfo.Mode;
                     osuID = _osuinfo.Id;
                 }
                 else if (!atOSU.IsNone && !atDBUser.IsNone)
@@ -1368,7 +1392,7 @@ namespace KanonBot.Functions.OSUBot
                             DBUser = await Accounts.GetAccountByOsuUid(tempOsuInfo.Id);
                             mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value;
                         }
-                        mode ??= tempOsuInfo.PlayMode;
+                        mode ??= tempOsuInfo.Mode;
                         osuID = tempOsuInfo.Id;
                     }
                     else
@@ -1384,14 +1408,11 @@ namespace KanonBot.Functions.OSUBot
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (OnlineOsuInfo == null)
             {
-                if (DBOsuInfo != null)
-                    await target.reply("被办了。");
-                else
-                    await target.reply("猫猫没有找到此用户。");
+                await target.reply("猫猫没有找到此用户。");
                 // 中断查询
                 return;
             }
-            OnlineOsuInfo.PlayMode = mode!.Value;
+            OnlineOsuInfo.Mode = mode!.Value;
             #endregion
 
             var allBP = await API.OSU.Client.GetUserScores(
@@ -1447,10 +1468,10 @@ namespace KanonBot.Functions.OSUBot
             if (TBP.Count == 0)
             {
                 if (cmd == "")
-                    await target.reply($"你在 {OnlineOsuInfo.PlayMode.ToStr()} 模式上还没有bp呢。。");
+                    await target.reply($"你在 {OnlineOsuInfo.Mode.ToStr()} 模式上还没有bp呢。。");
                 else
                     await target.reply(
-                        $"{OnlineOsuInfo.Username} 在 {OnlineOsuInfo.PlayMode.ToStr()} 模式上还没有bp呢。。"
+                        $"{OnlineOsuInfo.Username} 在 {OnlineOsuInfo.Mode.ToStr()} 模式上还没有bp呢。。"
                     );
             }
             else

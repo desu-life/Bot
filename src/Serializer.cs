@@ -25,7 +25,7 @@ internal static class Settings
     public static readonly JsonSerializerSettings Json = new()
     {
         MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
-        DateParseHandling = DateParseHandling.None,
+        DateParseHandling = DateParseHandling.DateTimeOffset,
         Formatting = Formatting.None,
         Converters = {
             new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal }

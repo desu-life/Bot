@@ -145,7 +145,7 @@ public partial class Models
         public bool ConvertFromOld { get; init; } = false;
 
         [JsonIgnore]
-        public Mode Mode => ModeInt.ToMode() ?? Mode.Unknown;
+        public Mode Mode => ModeInt.ToMode() ?? Mode.OSU;
 
         [JsonIgnore]
         public bool IsClassic => !StartedAt.HasValue;

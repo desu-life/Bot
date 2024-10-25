@@ -10,6 +10,7 @@ using KanonBot.Functions.OSU;
 using KanonBot.Image;
 using KanonBot.LegacyImage;
 using KanonBot.Message;
+using LanguageExt.UnsafeValueAccess;
 using Serilog;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -198,8 +199,14 @@ namespace KanonBot.Functions.OSUBot
             }
 
             cmd = cmd.ToLower().Trim();
+            Mode? mode = null;
 
-            var mode = cmd.ToMode();
+            var i = parseInt(cmd);
+            if (i.IsSome) {
+                mode ??= i.Value().ToMode();
+            };
+
+            mode ??= cmd.ToMode();
             if (mode == null)
             {
                 await target.reply("提供的模式不正确，请重新确认 (osu/taiko/fruits/mania)");
@@ -210,7 +217,7 @@ namespace KanonBot.Functions.OSUBot
                 try
                 {
                     await Database.Client.SetOsuUserMode(DBOsuInfo.osu_uid, mode.Value);
-                    await target.reply("成功设置模式为 " + cmd);
+                    await target.reply("成功设置模式为 " + mode.Value.ToDisplay());
                 }
                 catch
                 {

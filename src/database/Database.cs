@@ -280,7 +280,7 @@ public class Client
     }
 
     //返回值为天数（几天前）
-    public static async Task<(int, API.OSU.Models.User?)> GetOsuUserData(
+    public static async Task<(int, API.OSU.Models.UserExtended?)> GetOsuUserData(
         long oid,
         API.OSU.Mode mode,
         int days = 0
@@ -288,7 +288,7 @@ public class Client
     {
         OsuArchivedRec? data;
         using var db = GetInstance();
-        var ui = new API.OSU.Models.User();
+        var ui = new API.OSU.Models.UserExtended();
         if (days <= 0)
         {
             var q =
@@ -332,7 +332,7 @@ public class Client
         if (data == null)
             return (-1, null);
 
-        ui.Statistics = new() { GradeCounts = new(), Level = new() };
+        ui.StatisticsCurrent = new() { GradeCounts = new(), Level = new() };
         ui.Id = oid;
         ui.Statistics.TotalScore = data.total_score;
         ui.Statistics.TotalHits = data.total_hit;
@@ -349,7 +349,7 @@ public class Client
         ui.Statistics.Level.Current = data.level;
         ui.Statistics.Level.Progress = data.level_percent;
         ui.Statistics.PP = data.performance_point;
-        ui.PlayMode = mode;
+        ui.Mode = mode;
         ui.Statistics.PlayTime = data.playtime;
         //ui.daysBefore = (t - data.lastupdate).Days;
         return ((DateTime.Today - data.lastupdate).Days, ui);

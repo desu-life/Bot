@@ -57,13 +57,22 @@ namespace KanonBot.Functions.OSUBot
                 var (atOSU, atDBUser) = await Accounts.ParseAt(command.osu_username);
                 if (atOSU.IsNone && !atDBUser.IsNone)
                 {
-                    await target.reply("ta还没有绑定osu账户呢。");
+                    DBUser = atDBUser.ValueUnsafe();
+                    DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
+                    if (DBOsuInfo == null)
+                    {
+                        await target.reply("ta还没有绑定osu账户呢。");
+                    }
+                    else
+                    {
+                        await target.reply("被办了。");
+                    }
                     return;
                 }
                 else if (!atOSU.IsNone && atDBUser.IsNone)
                 {
                     var _osuinfo = atOSU.ValueUnsafe();
-                    mode ??= _osuinfo.PlayMode;
+                    mode ??= _osuinfo.Mode;
                     osuID = _osuinfo.Id;
                 }
                 else if (!atOSU.IsNone && !atDBUser.IsNone)
@@ -89,7 +98,7 @@ namespace KanonBot.Functions.OSUBot
                             DBUser = await Accounts.GetAccountByOsuUid(OnlineOsuInfo.Id);
                             mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value;
                         }
-                        mode ??= OnlineOsuInfo.PlayMode;
+                        mode ??= OnlineOsuInfo.Mode;
                         osuID = OnlineOsuInfo.Id;
                     }
                     else
@@ -105,10 +114,7 @@ namespace KanonBot.Functions.OSUBot
             var tempOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (tempOsuInfo == null)
             {
-                if (DBOsuInfo != null)
-                    await target.reply("被办了。");
-                else
-                    await target.reply("猫猫没有找到此用户。");
+                await target.reply("猫猫没有找到此用户。");
                 // 中断查询
                 return;
             }
@@ -121,7 +127,7 @@ namespace KanonBot.Functions.OSUBot
                 userInfo = tempOsuInfo!
             };
             // 覆写
-            data.userInfo.PlayMode = mode!.Value;
+            data.userInfo.Mode = mode!.Value;
             // 查询
 
             if (DBOsuInfo != null)
@@ -131,7 +137,7 @@ namespace KanonBot.Functions.OSUBot
                     // 从数据库取指定天数前的记录
                     (data.daysBefore, data.prevUserInfo) = await Database.Client.GetOsuUserData(
                         DBOsuInfo!.osu_uid,
-                        data.userInfo.PlayMode,
+                        data.userInfo.Mode,
                         command.order_number
                     );
                     if (data.daysBefore > 0)
@@ -144,7 +150,7 @@ namespace KanonBot.Functions.OSUBot
                     {
                         (data.daysBefore, data.prevUserInfo) = await Database.Client.GetOsuUserData(
                             DBOsuInfo!.osu_uid,
-                            data.userInfo.PlayMode,
+                            data.userInfo.Mode,
                             0
                         );
                         if (data.daysBefore > 0)
@@ -282,7 +288,7 @@ namespace KanonBot.Functions.OSUBot
                     allBP = await API.OSU.Client.GetUserScores(
                         data.userInfo.Id,
                         API.OSU.UserScoreType.Best,
-                        data.userInfo.PlayMode,
+                        data.userInfo.Mode,
                         20,
                         0
                     );
@@ -314,7 +320,7 @@ namespace KanonBot.Functions.OSUBot
             );
             try
             {
-                if (data.userInfo.PlayMode == API.OSU.Mode.OSU) //只存std的
+                if (data.userInfo.Mode == API.OSU.Mode.OSU) //只存std的
                     if (allBP!.Length > 0)
                         await InsertBeatmapTechInfo(allBP);
                     else

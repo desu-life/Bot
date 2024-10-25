@@ -1,4 +1,5 @@
 using System.IO;
+using Flurl.Http.Newtonsoft;
 using KanonBot.command_parser;
 using KanonBot.Drivers;
 using KanonBot.Event;
@@ -25,10 +26,14 @@ else
     Config.inner = Config.Base.Default();
     Config.inner.save(configPath);
 }
-FlurlHttp.GlobalSettings.Redirects.Enabled = true;
-FlurlHttp.GlobalSettings.Redirects.MaxAutoRedirects = 10;
-FlurlHttp.GlobalSettings.Redirects.ForwardAuthorizationHeader = true;
-FlurlHttp.GlobalSettings.Redirects.AllowSecureToInsecure = true;
+
+FlurlHttp.Clients.UseNewtonsoft().WithDefaults(c => {
+    c.Settings.Redirects.Enabled = true;
+    c.Settings.Redirects.MaxAutoRedirects = 10;
+    c.Settings.Redirects.ForwardAuthorizationHeader = true;
+    c.Settings.Redirects.AllowSecureToInsecure = true;
+});
+
 var config = Config.inner!;
 
 if (config.dev)

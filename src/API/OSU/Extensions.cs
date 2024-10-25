@@ -9,7 +9,7 @@ public static class OSUExtensions
             UserScoreType.Firsts => "firsts",
             UserScoreType.Recent => "recent",
             UserScoreType.Best => "best",
-            _ => throw new ArgumentException(),
+            _ => throw new ArgumentOutOfRangeException(),
         };
     }
 
@@ -21,7 +21,19 @@ public static class OSUExtensions
             Mode.Taiko => "taiko",
             Mode.Fruits => "fruits",
             Mode.Mania => "mania",
-            _ => throw new NotSupportedException("未知的模式"),
+            _ => throw new ArgumentOutOfRangeException(),
+        };
+    }
+    
+    public static string ToDisplay(this Mode mode)
+    {
+        return mode switch
+        {
+            Mode.OSU => "osu!",
+            Mode.Taiko => "osu!taiko",
+            Mode.Fruits => "osu!catch",
+            Mode.Mania => "osu!mania",
+            _ => throw new ArgumentOutOfRangeException(),
         };
     }
     
@@ -33,7 +45,7 @@ public static class OSUExtensions
             Mode.Taiko => 1,
             Mode.Fruits => 2,
             Mode.Mania => 3,
-            _ => throw new NotSupportedException("未知的模式")
+            _ => throw new ArgumentOutOfRangeException()
         };
     }
 
@@ -50,6 +62,8 @@ public static class OSUExtensions
             _ => null
         };
     }
+
+    
 
     public static Mode? ToMode(this int value)
     {

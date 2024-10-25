@@ -20,7 +20,7 @@ namespace KanonBot.LegacyImage
     {
         public class UserPanelData
         {
-            public OSU.Models.User userInfo;
+            public OSU.Models.UserExtended userInfo;
             public OSU.Models.User? prevUserInfo;
             public OSU.Models.PPlusData.UserData? pplusInfo;
             public string? customPanel;
@@ -86,7 +86,7 @@ namespace KanonBot.LegacyImage
                 {
                     try
                     {
-                        coverPath = await data.userInfo.CoverUrl.DownloadFileAsync(
+                        coverPath = await data.userInfo.Cover!.Url.DownloadFileAsync(
                             "./work/legacy/v1_cover/osu!web/",
                             $"{data.userInfo.Id}.png"
                         );
@@ -169,16 +169,16 @@ namespace KanonBot.LegacyImage
                 GraphicsOptions = new GraphicsOptions { Antialias = true }
             };
 
-            using var flags = await Img.LoadAsync($"./work/flags/{data.userInfo.Country.Code}.png");
+            using var flags = await Img.LoadAsync($"./work/flags/{data.userInfo.Country!.Code}.png");
             info.Mutate(x => x.DrawImage(flags, new Point(272, 212), 1));
             using var modeicon = await Img.LoadAsync(
-                $"./work/legacy/mode_icon/{data.userInfo.PlayMode.ToStr()}.png"
+                $"./work/legacy/mode_icon/{data.userInfo.Mode.ToStr()}.png"
             );
             modeicon.Mutate(x => x.Resize(64, 64));
             info.Mutate(x => x.DrawImage(modeicon, new Point(1125, 10), 1));
 
             // pp+
-            if (data.userInfo.PlayMode is OSU.Mode.OSU)
+            if (data.userInfo.Mode is OSU.Mode.OSU)
             {
                 using var ppdataPanel = await Img.LoadAsync("./work/legacy/pp+-v1.png");
                 info.Mutate(x => x.DrawImage(ppdataPanel, new Point(0, 0), 1));

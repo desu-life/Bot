@@ -43,11 +43,20 @@ namespace KanonBot.Functions.OSUBot
                 // 查询用户是否绑定
                 var (atOSU, atDBUser) = await Accounts.ParseAt(command.osu_username);
                 if (atOSU.IsNone && !atDBUser.IsNone) {
-                    await target.reply("ta还没有绑定osu账户呢。");
+                    DBUser = atDBUser.ValueUnsafe();
+                    DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
+                    if (DBOsuInfo == null)
+                    {
+                        await target.reply("ta还没有绑定osu账户呢。");
+                    }
+                    else
+                    {
+                        await target.reply("被办了。");
+                    }
                     return;
                 } else if (!atOSU.IsNone && atDBUser.IsNone) {
                     var _osuinfo = atOSU.ValueUnsafe();
-                    mode ??= _osuinfo.PlayMode;
+                    mode ??= _osuinfo.Mode;
                     osuID = _osuinfo.Id;
                 } else if (!atOSU.IsNone && !atDBUser.IsNone) {
                     DBUser = atDBUser.ValueUnsafe();
@@ -66,7 +75,7 @@ namespace KanonBot.Functions.OSUBot
                             DBUser = await Accounts.GetAccountByOsuUid(tempOsuInfo.Id);
                             mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value;
                         }
-                        mode ??= tempOsuInfo.PlayMode;
+                        mode ??= tempOsuInfo.Mode;
                         osuID = tempOsuInfo.Id;
                     }
                     else
@@ -82,14 +91,11 @@ namespace KanonBot.Functions.OSUBot
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (OnlineOsuInfo == null)
             {
-                if (DBOsuInfo != null)
-                    await target.reply("被办了。");
-                else
-                    await target.reply("猫猫没有找到此用户。");
+                await target.reply("猫猫没有找到此用户。");
                 // 中断查询
                 return;
             }
-            OnlineOsuInfo.PlayMode = mode!.Value;
+            OnlineOsuInfo.Mode = mode!.Value;
             #endregion
 
             await target.reply("少女祈祷中...");

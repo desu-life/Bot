@@ -1165,7 +1165,7 @@ namespace KanonBot.DrawV2
             );
 
             //country_flag
-            using var flags = await Img.LoadAsync($"./work/flags/{data.userInfo.Country.Code}.png");
+            using var flags = await Img.LoadAsync($"./work/flags/{data.userInfo.Country!.Code}.png");
             flags.Mutate(x => x.Resize(100, 67).Brightness(CountryFlagBrightness));
             flags.Mutate(
                 x =>
@@ -2398,7 +2398,7 @@ namespace KanonBot.DrawV2
 
                         //mode_icon
                         using var osuscoremode_icon = await Utils.ReadImageRgba(
-                            $"./work/panelv2/icons/mode_icon/score/{data.userInfo.PlayMode.ToStr()}.png"
+                            $"./work/panelv2/icons/mode_icon/score/{data.userInfo.Mode.ToStr()}.png"
                         );
                         osuscoremode_icon.Mutate(x => x.Resize(92, 92));
                         if (FixedScoreModeIconColor)
@@ -2911,10 +2911,10 @@ namespace KanonBot.DrawV2
 
             //osu!mode
             using var osuprofilemode_icon = await Utils.ReadImageRgba(
-                $"./work/panelv2/icons/mode_icon/profile/{data.userInfo.PlayMode.ToStr()}.png"
+                $"./work/panelv2/icons/mode_icon/profile/{data.userInfo.Mode.ToStr()}.png"
             );
             var osuprofilemode_text = "";
-            switch (data.userInfo.PlayMode)
+            switch (data.userInfo.Mode)
             {
                 case OSU.Mode.OSU:
                     osuprofilemode_text = "osu!standard";
