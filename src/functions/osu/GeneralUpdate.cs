@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using static KanonBot.Database.Model;
 using CronNET.Impl;
 using System.IO;
+using static KanonBot.API.OSU.OSUExtensions;
 
 namespace KanonBot.Functions.OSU
 {
@@ -78,7 +79,7 @@ namespace KanonBot.Functions.OSU
             foreach (var mode in modes)
             {
                 Log.Information($"正在更新用户数据....[{userID}/{mode}]");
-                var userInfo = await API.OSU.GetUser(userID, mode);
+                var userInfo = await API.OSU.Client.GetUser(userID, mode);
                 OsuArchivedRec rec = new()
                 {
                     uid = (int)userInfo!.Id,

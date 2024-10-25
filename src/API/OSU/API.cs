@@ -5,9 +5,9 @@ using KanonBot.Serializer;
 using System.IO;
 using Org.BouncyCastle.Ocsp;
 
-namespace KanonBot.API
+namespace KanonBot.API.OSU
 {
-    public partial class OSU
+    public partial class Client
     {
         private static Config.Base config = Config.inner!;
         private static string Token = "";

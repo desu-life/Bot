@@ -6,6 +6,7 @@ using KanonBot.LegacyImage;
 using LanguageExt.ClassInstances.Pred;
 using System.Security.Cryptography;
 using RosuPP;
+using static KanonBot.API.OSU.OSUExtensions;
 
 namespace KanonBot.Functions.OSU
 {
@@ -350,7 +351,7 @@ namespace KanonBot.Functions.OSU
 
                 if (f is null) {
                     // 下载谱面
-                    await API.OSU.BeatmapFileChecker(bm.BeatmapId);
+                    await API.OSU.Client.BeatmapFileChecker(bm.BeatmapId);
                     f = await File.ReadAllBytesAsync($"./work/beatmap/{bm.BeatmapId}.osu");
                 }
 

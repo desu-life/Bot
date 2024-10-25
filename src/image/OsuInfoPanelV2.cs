@@ -1,6 +1,7 @@
 using System.IO;
 using System.Numerics;
-using KanonBot.API;
+using OSU = KanonBot.API.OSU;
+using static KanonBot.API.OSU.OSUExtensions;
 using KanonBot.Functions.OSU;
 using KanonBot.Image;
 using KanonBot.LegacyImage;
@@ -1069,7 +1070,7 @@ namespace KanonBot.DrawV2
                 {
                     try
                     {
-                        bp1bgPath = await OSU.SayoDownloadBeatmapBackgroundImg(
+                        bp1bgPath = await OSU.Client.SayoDownloadBeatmapBackgroundImg(
                             allBP![0].Beatmapset!.Id,
                             allBP![0].Beatmap!.BeatmapId,
                             "./work/background/"

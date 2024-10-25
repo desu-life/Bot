@@ -22,6 +22,8 @@ using SixLabors.ImageSharp.Diagnostics;
 using KanonBot.Functions.OSUBot;
 using static KanonBot.API.OSU.Models;
 using LanguageExt.ClassInstances;
+using OSU = KanonBot.API.OSU;
+using static KanonBot.API.OSU.OSUExtensions;
 
 namespace KanonBot.DrawV3
 {
@@ -39,7 +41,7 @@ namespace KanonBot.DrawV3
             {
                 try
                 {
-                    bgPath = await OSU.SayoDownloadBeatmapBackgroundImg(
+                    bgPath = await OSU.Client.SayoDownloadBeatmapBackgroundImg(
                         data.scoreInfo.Beatmap.BeatmapsetId,
                         data.scoreInfo.Beatmap.BeatmapId,
                         "./work/background/"

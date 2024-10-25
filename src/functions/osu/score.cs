@@ -66,7 +66,7 @@ namespace KanonBot.Functions.OSUBot
                     osuID = _osuinfo.Id;
                 } else {
                     // 普通查询
-                    var OnlineOsuInfo = await API.OSU.GetUser(
+                    var OnlineOsuInfo = await API.OSU.Client.GetUser(
                         command.osu_username,
                         command.osu_mode ?? API.OSU.Enums.Mode.OSU
                     );
@@ -91,7 +91,7 @@ namespace KanonBot.Functions.OSUBot
             }
 
             // 验证osu信息
-            var tempOsuInfo = await API.OSU.GetUser(osuID!.Value, mode!.Value);
+            var tempOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (tempOsuInfo == null)
             {
                 if (DBOsuInfo != null)
@@ -122,7 +122,7 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
 
-            var scoreData = await API.OSU.GetUserBeatmapScore(
+            var scoreData = await API.OSU.Client.GetUserBeatmapScore(
                 osuID!.Value,
                 command.order_number,
                 mods.ToArray(),
@@ -138,7 +138,7 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
             //ppy的getscore api不会返回beatmapsets信息，需要手动获取
-            var beatmapSetInfo = await API.OSU.GetBeatmap(scoreData!.Score.Beatmap!.BeatmapId);
+            var beatmapSetInfo = await API.OSU.Client.GetBeatmap(scoreData!.Score.Beatmap!.BeatmapId);
             scoreData.Score.Beatmapset = beatmapSetInfo!.Beatmapset;
 
             LegacyImage.Draw.ScorePanelData data;

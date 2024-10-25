@@ -1,7 +1,8 @@
 #pragma warning disable CS8618 // 非null 字段未初始化
 using System.IO;
 using System.Numerics;
-using KanonBot.API;
+using OSU = KanonBot.API.OSU;
+using static KanonBot.API.OSU.OSUExtensions;
 using KanonBot.Functions.OSU;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -655,7 +656,7 @@ namespace KanonBot.LegacyImage
             {
                 try
                 {
-                    bgPath = await OSU.SayoDownloadBeatmapBackgroundImg(
+                    bgPath = await OSU.Client.SayoDownloadBeatmapBackgroundImg(
                         data.scoreInfo.Beatmap.BeatmapsetId,
                         data.scoreInfo.Beatmap.BeatmapId,
                         "./work/background/"

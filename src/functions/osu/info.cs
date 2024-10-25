@@ -75,7 +75,7 @@ namespace KanonBot.Functions.OSUBot
                 else
                 {
                     // 普通查询
-                    var OnlineOsuInfo = await API.OSU.GetUser(
+                    var OnlineOsuInfo = await API.OSU.Client.GetUser(
                         command.osu_username,
                         command.osu_mode ?? API.OSU.Enums.Mode.OSU
                     );
@@ -100,7 +100,7 @@ namespace KanonBot.Functions.OSUBot
             }
 
             // 验证osu信息
-            var tempOsuInfo = await API.OSU.GetUser(osuID!.Value, mode!.Value);
+            var tempOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (tempOsuInfo == null)
             {
                 if (DBOsuInfo != null)
@@ -169,7 +169,7 @@ namespace KanonBot.Functions.OSUBot
                         try
                         {
                             await Database.Client.UpdateOsuPPlusData(
-                                (await API.OSU.TryGetUserPlusData(tempOsuInfo!))!.User,
+                                (await API.OSU.Client.TryGetUserPlusData(tempOsuInfo!))!.User,
                                 tempOsuInfo!.Id
                             );
                         }
@@ -220,7 +220,7 @@ namespace KanonBot.Functions.OSUBot
                     {
                         try
                         {
-                            var temppppinfo = await API.OSU.TryGetUserPlusData(tempOsuInfo!);
+                            var temppppinfo = await API.OSU.Client.TryGetUserPlusData(tempOsuInfo!);
                             if (temppppinfo == null)
                                 return;
                             await Database.Client.UpdateOsuPPlusData(
@@ -277,7 +277,7 @@ namespace KanonBot.Functions.OSUBot
                         LegacyImage.Draw.UserPanelData.CustomMode.Dark => DrawV2.OsuInfoPanelV2.InfoCustom.DarkDefault,
                         _ => throw new ArgumentOutOfRangeException("未知的自定义模式")
                     };
-                    allBP = await API.OSU.GetUserScores(
+                    allBP = await API.OSU.Client.GetUserScores(
                         data.userInfo.Id,
                         API.OSU.Enums.UserScoreType.Best,
                         data.userInfo.PlayMode,
@@ -317,7 +317,7 @@ namespace KanonBot.Functions.OSUBot
                         await InsertBeatmapTechInfo(allBP);
                     else
                     {
-                        allBP = await API.OSU.GetUserScores(
+                        allBP = await API.OSU.Client.GetUserScores(
                         data.userInfo.Id,
                         API.OSU.Enums.UserScoreType.Best,
                         API.OSU.Enums.Mode.OSU,

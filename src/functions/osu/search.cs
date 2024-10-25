@@ -20,7 +20,7 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
 
-            var beatmaps = await API.OSU.SearchBeatmap(cmd);
+            var beatmaps = await API.OSU.Client.SearchBeatmap(cmd);
 
             var beatmapset = beatmaps!.Beatmapsets[0];
             var beatmap = beatmapset.Beatmaps!.First();
@@ -29,7 +29,7 @@ namespace KanonBot.Functions.OSUBot
             var data = await PerformanceCalculator.CalculatePanelSSData(beatmap);
             
             data.scoreInfo.UserId = 3;  // bancho bot
-            data.scoreInfo.User = await API.OSU.GetUser(data.scoreInfo.UserId);
+            data.scoreInfo.User = await API.OSU.Client.GetUser(data.scoreInfo.UserId);
             data.scoreInfo.Beatmapset = beatmapset;
             data.scoreInfo.Beatmap = beatmap;
             

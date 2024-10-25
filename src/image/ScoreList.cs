@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Numerics;
-using KanonBot.API;
+using OSU = KanonBot.API.OSU;
+using static KanonBot.API.OSU.OSUExtensions;
 using KanonBot.Image;
 using KanonBot.LegacyImage;
 using SixLabors.Fonts;
@@ -98,7 +99,7 @@ namespace KanonBot.image
             {
                 try
                 {
-                    scorebgPath = await OSU.SayoDownloadBeatmapBackgroundImg(
+                    scorebgPath = await OSU.Client.SayoDownloadBeatmapBackgroundImg(
                         scoreList[0].Beatmapset!.Id,
                         scoreList[0].Beatmap!.BeatmapId,
                         "./work/background/"

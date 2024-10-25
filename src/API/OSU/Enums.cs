@@ -4,137 +4,116 @@
 #pragma warning disable CS8618 // 非null 字段未初始化
 using System.ComponentModel;
 
-
-namespace KanonBot.API
+namespace KanonBot.API.OSU
 {
-    public static class OSUExtensions
+    public class Enums
     {
-        public static string ToStr(this OSU.Enums.UserScoreType type)
-        {
-            return Utils.GetObjectDescription(type)!;
-        }
-        public static string ToStr(this OSU.Enums.Mode mode)
-        {
-            return Utils.GetObjectDescription(mode)!;
-        }
-
-        public static int ToNum(this OSU.Enums.Mode mode)
+        // 方法部分
+        public static string Mode2String(Mode mode)
         {
             return mode switch
             {
-                OSU.Enums.Mode.OSU => 0,
-                OSU.Enums.Mode.Taiko => 1,
-                OSU.Enums.Mode.Fruits => 2,
-                OSU.Enums.Mode.Mania => 3,
-                _ => throw new ArgumentException("UNKNOWN MODE")
+                Mode.OSU => "osu",
+                Mode.Taiko => "taiko",
+                Mode.Fruits => "fruits",
+                Mode.Mania => "mania",
+                _ => throw new NotSupportedException("未知的模式"),
             };
         }
-    }
 
-    public partial class OSU
-    {
-        public class Enums
+        public static Mode? String2Mode(string? value)
         {
-            // 方法部分
-            public static string Mode2String(Mode mode)
+            value = value?.ToLower(); // 大写字符转小写
+            return value switch
             {
-                return mode switch
-                {
-                    Mode.OSU => "osu",
-                    Mode.Taiko => "taiko",
-                    Mode.Fruits => "fruits",
-                    Mode.Mania => "mania",
-                    _ => throw new NotSupportedException("未知的模式"),
-                };
-            }
+                "osu" => OSU.Enums.Mode.OSU,
+                "taiko" => OSU.Enums.Mode.Taiko,
+                "fruits" => OSU.Enums.Mode.Fruits,
+                "mania" => OSU.Enums.Mode.Mania,
+                _ => null
+            };
+        }
 
-            public static Mode? String2Mode(string? value)
+        public static Mode? Int2Mode(int value)
+        {
+            return value switch
             {
-                value = value?.ToLower();    // 大写字符转小写
-                return value switch
-                {
-                    "osu" => OSU.Enums.Mode.OSU,
-                    "taiko" => OSU.Enums.Mode.Taiko,
-                    "fruits" => OSU.Enums.Mode.Fruits,
-                    "mania" => OSU.Enums.Mode.Mania,
-                    _ => null
-                };
-            }
+                0 => OSU.Enums.Mode.OSU,
+                1 => OSU.Enums.Mode.Taiko,
+                2 => OSU.Enums.Mode.Fruits,
+                3 => OSU.Enums.Mode.Mania,
+                _ => null
+            };
+        }
 
-            public static Mode? Int2Mode(int value)
-            {
-                return value switch
-                {
-                    0 => OSU.Enums.Mode.OSU,
-                    1 => OSU.Enums.Mode.Taiko,
-                    2 => OSU.Enums.Mode.Fruits,
-                    3 => OSU.Enums.Mode.Mania,
-                    _ => null
-                };
-            }
+        // 枚举部分
+        [DefaultValue(Unknown)] // 解析失败就unknown
+        public enum Mode
+        {
+            /// <summary>
+            /// 未知，在转换错误时为此值
+            /// </summary>
+            [Description("")]
+            Unknown,
 
-            // 枚举部分
-            [DefaultValue(Unknown)] // 解析失败就unknown
-            public enum Mode
-            {
-                /// <summary>
-                /// 未知，在转换错误时为此值
-                /// </summary>
-                [Description("")]
-                Unknown,
-                [Description("osu")]
-                OSU,
-                [Description("taiko")]
-                Taiko,
-                [Description("fruits")]
-                Fruits,
-                [Description("mania")]
-                Mania,
-            }
+            [Description("osu")]
+            OSU,
 
-            // 成绩类型，用作API查询
-            // 共可以是 best, firsts, recent
-            // 默认为best（bp查询）
-            [DefaultValue(Best)]
-            public enum UserScoreType
-            {
-                [Description("best")]
-                Best,
-                [Description("firsts")]
-                Firsts,
-                [Description("recent")]
-                Recent,
-            }
+            [Description("taiko")]
+            Taiko,
 
-            [DefaultValue(Unknown)]
-            public enum Status
-            {
-                /// <summary>
-                /// 未知，在转换错误时为此值
-                /// </summary>
-                [Description("")]
-                Unknown,
+            [Description("fruits")]
+            Fruits,
 
-                [Description("graveyard")]
-                Graveyard,
+            [Description("mania")]
+            Mania,
+        }
 
-                [Description("wip")]
-                WIP,
+        // 成绩类型，用作API查询
+        // 共可以是 best, firsts, recent
+        // 默认为best（bp查询）
+        [DefaultValue(Best)]
+        public enum UserScoreType
+        {
+            [Description("best")]
+            Best,
 
-                [Description("pending")]
-                pending,
+            [Description("firsts")]
+            Firsts,
 
-                [Description("ranked")]
-                ranked,
+            [Description("recent")]
+            Recent,
+        }
 
-                [Description("approved")]
-                approved,
+        [DefaultValue(Unknown)]
+        public enum Status
+        {
+            /// <summary>
+            /// 未知，在转换错误时为此值
+            /// </summary>
+            [Description("")]
+            Unknown,
 
-                [Description("qualified")]
-                qualified,
-                [Description("loved")]
-                loved
-            }
+            [Description("graveyard")]
+            Graveyard,
+
+            [Description("wip")]
+            WIP,
+
+            [Description("pending")]
+            pending,
+
+            [Description("ranked")]
+            ranked,
+
+            [Description("approved")]
+            approved,
+
+            [Description("qualified")]
+            qualified,
+
+            [Description("loved")]
+            loved
         }
     }
 }

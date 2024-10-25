@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using KanonBot.API;
 using LanguageExt.UnsafeValueAccess;
+using OSU = KanonBot.API.OSU;
+using static KanonBot.API.OSU.OSUExtensions;
 
 namespace KanonBot
 {
@@ -12,7 +14,7 @@ public static class BotCmdHelper
 {
     public struct BotParameter
     {
-        public OSU.Enums.Mode? osu_mode;
+        public API.OSU.Enums.Mode? osu_mode;
         public string osu_username, osu_mods, match_name;           //用于获取具体要查询的模式，未提供返回osu
         public long osu_user_id, bid;
         public int order_number;//用于info的查询n天之前、pr，bp的序号，score的bid，如未提供则返回0

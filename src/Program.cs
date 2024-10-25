@@ -55,9 +55,9 @@ if (config.dev)
 {
     // var res = API.OSU.SearchBeatmap("exit this ato").Result;
     // Log.Information("{@res}", res);
-    // var score = API.OSU.GetUserBeatmapScore(1646397, 992512, new string[] { }, API.OSU.Enums.Mode.Mania).Result!;
-    // score.Score.Beatmapset = API.OSU.GetBeatmap(score.Score.Beatmap!.BeatmapId).Result!.Beatmapset!;
-    // var attr = API.OSU.GetBeatmapAttributes(score.Score.Beatmap!.BeatmapId, new string[] { }, API.OSU.Enums.Mode.Mania).Result;
+    // var score = API.OSU.Client.GetUserBeatmapScore(1646397, 992512, new string[] { }, API.OSU.Enums.Mode.Mania).Result!;
+    // score.Score.Beatmapset = API.OSU.Client.GetBeatmap(score.Score.Beatmap!.BeatmapId).Result!.Beatmapset!;
+    // var attr = API.OSU.Client.GetBeatmapAttributes(score.Score.Beatmap!.BeatmapId, new string[] { }, API.OSU.Enums.Mode.Mania).Result;
     // Console.WriteLine("beatmap attr {0}", Json.Serialize(attr));
     // API.OSU.BeatmapFileChecker(score.Score.Beatmap!.BeatmapId).Wait();
     // Console.WriteLine("pp {0}", score.Score.PP);

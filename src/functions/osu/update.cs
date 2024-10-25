@@ -57,7 +57,7 @@ namespace KanonBot.Functions.OSUBot
                     osuID = _osuinfo.Id;
                 } else {
                     // 普通查询
-                    var tempOsuInfo = await API.OSU.GetUser(command.osu_username, command.osu_mode ?? API.OSU.Enums.Mode.OSU);
+                    var tempOsuInfo = await API.OSU.Client.GetUser(command.osu_username, command.osu_mode ?? API.OSU.Enums.Mode.OSU);
                     if (tempOsuInfo != null)
                     {
                         DBOsuInfo = await Database.Client.GetOsuUser(tempOsuInfo.Id);
@@ -79,7 +79,7 @@ namespace KanonBot.Functions.OSUBot
             }
 
             // 验证osu信息
-            var OnlineOsuInfo = await API.OSU.GetUser(osuID!.Value, mode!.Value);
+            var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (OnlineOsuInfo == null)
             {
                 if (DBOsuInfo != null)
@@ -98,7 +98,7 @@ namespace KanonBot.Functions.OSUBot
             try { File.Delete($"./work/legacy/v1_cover/osu!web/{OnlineOsuInfo!.Id}.png"); } catch { }
             await target.reply("主要数据已更新完毕，pp+数据正在后台更新，请稍后使用info功能查看结果。");
 
-            try { await Database.Client.UpdateOsuPPlusData((await API.OSU.TryGetUserPlusData(OnlineOsuInfo!))!.User, OnlineOsuInfo!.Id); }
+            try { await Database.Client.UpdateOsuPPlusData((await API.OSU.Client.TryGetUserPlusData(OnlineOsuInfo!))!.User, OnlineOsuInfo!.Id); }
             catch { }//更新pp+失败，不返回信息
         }
     }

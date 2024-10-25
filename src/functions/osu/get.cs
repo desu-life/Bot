@@ -18,6 +18,7 @@ using Newtonsoft.Json.Linq;
 using SixLabors.ImageSharp.Formats.Png;
 using static KanonBot.API.OSU.Models;
 using static KanonBot.API.OSU.Models.PPlusData;
+using static KanonBot.API.OSU.OSUExtensions;
 
 namespace KanonBot.Functions.OSUBot
 {
@@ -117,7 +118,7 @@ namespace KanonBot.Functions.OSUBot
             osuID = DBOsuInfo.osu_uid;
 
             // 验证osu信息
-            var OnlineOsuInfo = await API.OSU.GetUser(osuID!.Value, API.OSU.Enums.Mode.OSU); //取osu模式的值
+            var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, API.OSU.Enums.Mode.OSU); //取osu模式的值
             if (OnlineOsuInfo == null)
             {
                 if (DBOsuInfo != null)
@@ -171,7 +172,7 @@ namespace KanonBot.Functions.OSUBot
             osuID = DBOsuInfo.osu_uid;
 
             // 验证osu信息
-            var OnlineOsuInfo = await API.OSU.GetUser(osuID!.Value, API.OSU.Enums.Mode.OSU); //取osu模式的值
+            var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, API.OSU.Enums.Mode.OSU); //取osu模式的值
             if (OnlineOsuInfo == null)
             {
                 if (DBOsuInfo != null)
@@ -186,7 +187,7 @@ namespace KanonBot.Functions.OSUBot
 
 
             //获取前20bp
-            var allBP = await API.OSU.GetUserScoresLeagcy(
+            var allBP = await API.OSU.Client.GetUserScoresLeagcy(
                 OnlineOsuInfo.Id,
                 API.OSU.Enums.UserScoreType.Best,
                 API.OSU.Enums.Mode.OSU,
@@ -475,7 +476,7 @@ namespace KanonBot.Functions.OSUBot
                 else
                 {
                     // 普通查询
-                    var tempOsuInfo = await API.OSU.GetUser(
+                    var tempOsuInfo = await API.OSU.Client.GetUser(
                         command.osu_username,
                         command.osu_mode ?? API.OSU.Enums.Mode.OSU
                     );
@@ -500,7 +501,7 @@ namespace KanonBot.Functions.OSUBot
             }
 
             // 验证osu信息
-            var OnlineOsuInfo = await API.OSU.GetUser(osuID!.Value, mode!.Value);
+            var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (OnlineOsuInfo == null)
             {
                 if (DBOsuInfo != null)
@@ -520,7 +521,7 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
             // 因为上面确定过模式，这里就直接用userdata里的mode了
-            var allBP = await API.OSU.GetUserScores(
+            var allBP = await API.OSU.Client.GetUserScores(
                 OnlineOsuInfo.Id,
                 API.OSU.Enums.UserScoreType.Best,
                 mode!.Value,
@@ -674,7 +675,7 @@ namespace KanonBot.Functions.OSUBot
                 else
                 {
                     // 普通查询
-                    var tempOsuInfo = await API.OSU.GetUser(
+                    var tempOsuInfo = await API.OSU.Client.GetUser(
                         command.osu_username,
                         command.osu_mode ?? API.OSU.Enums.Mode.OSU
                     );
@@ -699,7 +700,7 @@ namespace KanonBot.Functions.OSUBot
             }
 
             // 验证osu信息
-            var OnlineOsuInfo = await API.OSU.GetUser(osuID!.Value, mode!.Value);
+            var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (OnlineOsuInfo == null)
             {
                 if (DBOsuInfo != null)
@@ -714,7 +715,7 @@ namespace KanonBot.Functions.OSUBot
 
             try
             {
-                JObject? eloInfo = await API.OSU.GetUserEloInfo(OnlineOsuInfo!.Id);
+                JObject? eloInfo = await API.OSU.Client.GetUserEloInfo(OnlineOsuInfo!.Id);
                 foreach (var key in eloInfo!)
                 {
                     switch (key.Key)
@@ -893,7 +894,7 @@ namespace KanonBot.Functions.OSUBot
                 else
                 {
                     // 普通查询
-                    var tempOsuInfo = await API.OSU.GetUser(
+                    var tempOsuInfo = await API.OSU.Client.GetUser(
                         command.osu_username,
                         command.osu_mode ?? API.OSU.Enums.Mode.OSU
                     );
@@ -918,7 +919,7 @@ namespace KanonBot.Functions.OSUBot
             }
 
             // 验证osu信息
-            var OnlineOsuInfo = await API.OSU.GetUser(osuID!.Value, mode!.Value);
+            var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (OnlineOsuInfo == null)
             {
                 if (DBOsuInfo != null)
@@ -936,7 +937,7 @@ namespace KanonBot.Functions.OSUBot
                 case "occ":
                     try
                     {
-                        var pppData = await API.OSU.GetUserPlusData(OnlineOsuInfo.Id);
+                        var pppData = await API.OSU.Client.GetUserPlusData(OnlineOsuInfo.Id);
                         await target.reply(
                             $"在猫猫杯S1中，{OnlineOsuInfo.Username} 的cost为：{occost(OnlineOsuInfo, pppData.User)}"
                         );
@@ -959,7 +960,7 @@ namespace KanonBot.Functions.OSUBot
                 case "ost":
                     try
                     {
-                        var eloInfo = await API.OSU.GetUserEloInfo(OnlineOsuInfo.Id);
+                        var eloInfo = await API.OSU.Client.GetUserEloInfo(OnlineOsuInfo.Id);
                         int elo = 0;
                         foreach (var key in eloInfo!)
                         {
@@ -983,8 +984,8 @@ namespace KanonBot.Functions.OSUBot
                         }
                         if (elo != 0)
                         {
-                            var matchId = await API.OSU.GetUserEloRecentPlay(OnlineOsuInfo.Id);
-                            var body = (await API.OSU.GetMatchInfo(matchId.Value))![
+                            var matchId = await API.OSU.Client.GetUserEloRecentPlay(OnlineOsuInfo.Id);
+                            var body = (await API.OSU.Client.GetMatchInfo(matchId.Value))![
                                 "result"
                             ]!.ToObject<JObject>();
                             TimeSpan ts = new();
@@ -1013,7 +1014,7 @@ namespace KanonBot.Functions.OSUBot
                     break;
                 ////////////////////////////////////////////////////////////////////////////////////////
                 case "zkfc":
-                    var scores = await API.OSU.GetUserScoresLeagcy(
+                    var scores = await API.OSU.Client.GetUserScoresLeagcy(
                                                          osuID!.Value,
                                                          API.OSU.Enums.UserScoreType.Best,
                                                          API.OSU.Enums.Mode.OSU,
@@ -1103,7 +1104,7 @@ namespace KanonBot.Functions.OSUBot
                 else
                 {
                     // 普通查询
-                    var tempOsuInfo = await API.OSU.GetUser(
+                    var tempOsuInfo = await API.OSU.Client.GetUser(
                         command.osu_username,
                         command.osu_mode ?? API.OSU.Enums.Mode.OSU
                     );
@@ -1128,7 +1129,7 @@ namespace KanonBot.Functions.OSUBot
             }
 
             // 验证osu信息
-            var OnlineOsuInfo = await API.OSU.GetUser(osuID!.Value, mode!.Value);
+            var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (OnlineOsuInfo == null)
             {
                 if (DBOsuInfo != null)
@@ -1141,7 +1142,7 @@ namespace KanonBot.Functions.OSUBot
             OnlineOsuInfo.PlayMode = mode!.Value;
             #endregion
 
-            var allBP = await API.OSU.GetUserScores(
+            var allBP = await API.OSU.Client.GetUserScores(
                 OnlineOsuInfo!.Id,
                 API.OSU.Enums.UserScoreType.Best,
                 mode!.Value,
@@ -1243,7 +1244,7 @@ namespace KanonBot.Functions.OSUBot
                 else
                 {
                     // 普通查询
-                    var tempOsuInfo = await API.OSU.GetUser(
+                    var tempOsuInfo = await API.OSU.Client.GetUser(
                         command.osu_username,
                         command.osu_mode ?? API.OSU.Enums.Mode.OSU
                     );
@@ -1268,7 +1269,7 @@ namespace KanonBot.Functions.OSUBot
             }
 
             // 验证osu信息
-            var OnlineOsuInfo = await API.OSU.GetUser(osuID!.Value, mode!.Value);
+            var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (OnlineOsuInfo == null)
             {
                 if (DBOsuInfo != null)
@@ -1281,7 +1282,7 @@ namespace KanonBot.Functions.OSUBot
             OnlineOsuInfo.PlayMode = mode!.Value;
             #endregion
 
-            var allBP = await API.OSU.GetUserScores(
+            var allBP = await API.OSU.Client.GetUserScores(
                 OnlineOsuInfo!.Id,
                 API.OSU.Enums.UserScoreType.Best,
                 mode!.Value,
@@ -1382,7 +1383,7 @@ namespace KanonBot.Functions.OSUBot
             osuID = DBOsuInfo.osu_uid;
 
             // 验证osu信息
-            var OnlineOsuInfo = await API.OSU.GetUser(osuID!.Value, mode!.Value);
+            var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (OnlineOsuInfo == null)
             {
                 if (DBOsuInfo != null)
@@ -1542,7 +1543,7 @@ namespace KanonBot.Functions.OSUBot
                 else
                 {
                     // 普通查询
-                    var tempOsuInfo = await API.OSU.GetUser(
+                    var tempOsuInfo = await API.OSU.Client.GetUser(
                         command.osu_username,
                         command.osu_mode ?? API.OSU.Enums.Mode.OSU
                     );
@@ -1567,7 +1568,7 @@ namespace KanonBot.Functions.OSUBot
             }
 
             // 验证osu信息
-            var OnlineOsuInfo = await API.OSU.GetUser(osuID!.Value, mode!.Value);
+            var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (OnlineOsuInfo == null)
             {
                 if (DBOsuInfo != null)
@@ -1580,7 +1581,7 @@ namespace KanonBot.Functions.OSUBot
             OnlineOsuInfo.PlayMode = mode!.Value;
             #endregion
 
-            var allBP = await API.OSU.GetUserScores(
+            var allBP = await API.OSU.Client.GetUserScores(
                 OnlineOsuInfo!.Id,
                 API.OSU.Enums.UserScoreType.Best,
                 mode!.Value,
