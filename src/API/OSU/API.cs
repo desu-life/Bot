@@ -3,10 +3,19 @@ using Newtonsoft.Json.Linq;
 using System.Net;
 using KanonBot.Serializer;
 using System.IO;
-using Org.BouncyCastle.Ocsp;
 
 namespace KanonBot.API.OSU
 {
+    // 成绩类型，用作API查询
+    // 共可以是 best, firsts, recent
+    // 默认为best（bp查询）
+    public enum UserScoreType
+    {
+        Best,
+        Firsts,
+        Recent,
+    }
+
     public partial class Client
     {
         private static Config.Base config = Config.inner!;
@@ -117,7 +126,7 @@ namespace KanonBot.API.OSU
         // 获取用户成绩
         // Score type. Must be one of these: best, firsts, recent.
         // 默认 best
-        async public static Task<Models.ScoreLazer[]?> GetUserScores(long userId, Enums.UserScoreType scoreType = Enums.UserScoreType.Best, Enums.Mode mode = Enums.Mode.OSU, int limit = 1, int offset = 0, bool includeFails = true, bool LegacyOnly = false)
+        async public static Task<Models.ScoreLazer[]?> GetUserScores(long userId, UserScoreType scoreType = UserScoreType.Best, Mode mode = Mode.OSU, int limit = 1, int offset = 0, bool includeFails = true, bool LegacyOnly = false)
         {
             var res = await withLazerScore(http())
                 .AppendPathSegments(new object[] { "users", userId, "scores", scoreType.ToStr() })
@@ -140,7 +149,7 @@ namespace KanonBot.API.OSU
         // 获取用户成绩
         // Score type. Must be one of these: best, firsts, recent.
         // 默认 best
-        async public static Task<Models.Score[]?> GetUserScoresLeagcy(long userId, Enums.UserScoreType scoreType = Enums.UserScoreType.Best, Enums.Mode mode = Enums.Mode.OSU, int limit = 1, int offset = 0, bool includeFails = true)
+        async public static Task<Models.Score[]?> GetUserScoresLeagcy(long userId, UserScoreType scoreType = UserScoreType.Best, Mode mode = Mode.OSU, int limit = 1, int offset = 0, bool includeFails = true)
         {
             var res = await http()
                 .AppendPathSegments(new object[] { "users", userId, "scores", scoreType.ToStr() })
@@ -161,7 +170,7 @@ namespace KanonBot.API.OSU
         }
 
         // 获取用户在特定谱面上的成绩
-        async public static Task<Models.BeatmapScoreLazer?> GetUserBeatmapScore(long UserId, long bid, string[] mods, Enums.Mode mode = Enums.Mode.OSU, bool LegacyOnly = false)
+        async public static Task<Models.BeatmapScoreLazer?> GetUserBeatmapScore(long UserId, long bid, string[] mods, Mode mode = Mode.OSU, bool LegacyOnly = false)
         {
             var req = withLazerScore(http())
                 .AppendPathSegments(new object[] { "beatmaps", bid, "scores", "users", UserId })
@@ -178,7 +187,7 @@ namespace KanonBot.API.OSU
         }
 
         // 获取用户在特定谱面上的成绩
-        async public static Task<Models.BeatmapScore?> GetUserBeatmapScoreLeagcy(long UserId, long bid, string[] mods, Enums.Mode mode = Enums.Mode.OSU)
+        async public static Task<Models.BeatmapScore?> GetUserBeatmapScoreLeagcy(long UserId, long bid, string[] mods, Mode mode = Mode.OSU)
         {
             var req = http()
                 .AppendPathSegments(new object[] { "beatmaps", bid, "scores", "users", UserId })
@@ -197,7 +206,7 @@ namespace KanonBot.API.OSU
         // 获取用户在特定谱面上的成绩
         // 返回null代表找不到beatmap / beatmap无排行榜
         // 返回[]则用户无在此谱面的成绩
-        async public static Task<Models.Score[]?> GetUserBeatmapScores(long UserId, long bid, Enums.Mode mode = Enums.Mode.OSU)
+        async public static Task<Models.Score[]?> GetUserBeatmapScores(long UserId, long bid, Mode mode = Mode.OSU)
         {
             var res = await http()
                 .AppendPathSegments(new object[] { "beatmaps", bid, "scores", "users", UserId, "all" })
@@ -211,7 +220,7 @@ namespace KanonBot.API.OSU
         }
 
         // 通过osuv1 api osu uid获取用户信息
-        async public static Task<List<Models.UserV1>?> GetUserWithV1API(long userId, Enums.Mode mode = Enums.Mode.OSU)
+        async public static Task<List<Models.UserV1>?> GetUserWithV1API(long userId, Mode mode = Mode.OSU)
         {
             var url = $"{EndPointV1}get_user?k={config.osu!.v1key}&u={userId}&m={mode.ToNum()}";
             try
@@ -227,7 +236,7 @@ namespace KanonBot.API.OSU
             }
         }
         // 通过osu uid获取用户信息
-        async public static Task<Models.User?> GetUser(long userId, Enums.Mode mode = Enums.Mode.OSU)
+        async public static Task<Models.User?> GetUser(long userId, Mode mode = Mode.OSU)
         {
             var res = await http()
                 .AppendPathSegments(new object[] { "users", userId, mode.ToStr() })
@@ -251,7 +260,7 @@ namespace KanonBot.API.OSU
         }
 
         // 通过osu username获取用户信息
-        async public static Task<Models.User?> GetUser(string userName, Enums.Mode mode = Enums.Mode.OSU)
+        async public static Task<Models.User?> GetUser(string userName, Mode mode = Mode.OSU)
         {
             var res = await http()
                 .AppendPathSegments(new object[] { "users", userName, mode.ToStr() })
@@ -266,7 +275,7 @@ namespace KanonBot.API.OSU
         }
 
         // 获取谱面参数
-        async public static Task<Models.BeatmapAttributes?> GetBeatmapAttributes(long bid, string[] mods, Enums.Mode mode = Enums.Mode.OSU)
+        async public static Task<Models.BeatmapAttributes?> GetBeatmapAttributes(long bid, string[] mods, Mode mode = Mode.OSU)
         {
             JObject j = new()
             {

@@ -4,6 +4,7 @@ using KanonBot.API;
 using KanonBot.Functions.OSU;
 using System.IO;
 using LanguageExt.UnsafeValueAccess;
+using KanonBot.API.OSU;
 
 namespace KanonBot.Functions.OSUBot
 {
@@ -13,7 +14,7 @@ namespace KanonBot.Functions.OSUBot
         {
             #region 验证
             long? osuID = null;
-            API.OSU.Enums.Mode? mode;
+            API.OSU.Mode? mode;
             Database.Model.User? DBUser = null;
             Database.Model.UserOSU? DBOsuInfo = null;
 
@@ -34,8 +35,7 @@ namespace KanonBot.Functions.OSUBot
                 DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
                 if (DBOsuInfo == null)
                 { await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。"); return; }
-
-                mode ??= API.OSU.Enums.String2Mode(DBOsuInfo.osu_mode)!.Value;    // 从数据库解析，理论上不可能错
+                mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value;    // 从数据库解析，理论上不可能错
                 osuID = DBOsuInfo.osu_uid;
             }
             else
@@ -53,18 +53,18 @@ namespace KanonBot.Functions.OSUBot
                     DBUser = atDBUser.ValueUnsafe();
                     DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
                     var _osuinfo = atOSU.ValueUnsafe();
-                    mode ??= API.OSU.Enums.String2Mode(DBOsuInfo!.osu_mode)!.Value;
+                    mode ??= DBOsuInfo!.osu_mode?.ToMode()!.Value;
                     osuID = _osuinfo.Id;
                 } else {
                     // 普通查询
-                    var tempOsuInfo = await API.OSU.Client.GetUser(command.osu_username, command.osu_mode ?? API.OSU.Enums.Mode.OSU);
+                    var tempOsuInfo = await API.OSU.Client.GetUser(command.osu_username, command.osu_mode ?? API.OSU.Mode.OSU);
                     if (tempOsuInfo != null)
                     {
                         DBOsuInfo = await Database.Client.GetOsuUser(tempOsuInfo.Id);
                         if (DBOsuInfo != null)
                         {
                             DBUser = await Accounts.GetAccountByOsuUid(tempOsuInfo.Id);
-                            mode ??= API.OSU.Enums.String2Mode(DBOsuInfo.osu_mode)!.Value;
+                            mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value;
                         }
                         mode ??= tempOsuInfo.PlayMode;
                         osuID = tempOsuInfo.Id;

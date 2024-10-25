@@ -15,7 +15,7 @@ namespace KanonBot.Functions.OSU
         public static async Task Update(long oid, LegacyImage.Draw.ScorePanelData score)
         {
             //只记录ranked谱面
-            if (score.scoreInfo.Beatmap!.Status == API.OSU.Enums.Status.ranked || score.scoreInfo.Beatmap!.Status == API.OSU.Enums.Status.approved)
+            if (score.scoreInfo.Beatmap!.Status == API.OSU.Models.Status.ranked || score.scoreInfo.Beatmap!.Status == API.OSU.Models.Status.approved)
             {
                 //检查成绩是否已被记录
                 if (await Database.Client.SeasonalPass_Query_Score_Status(score.scoreInfo.Mode.ToStr(), score.scoreInfo.Id))

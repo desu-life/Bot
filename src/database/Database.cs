@@ -3,6 +3,7 @@
 using System;
 using System.Runtime.ConstrainedExecution;
 using System.Security.Cryptography;
+using KanonBot.API.OSU;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSUBot;
 using LinqToDB;
@@ -16,7 +17,6 @@ using Polly.Caching;
 using RosuPP;
 using Serilog;
 using Tomlyn.Model;
-using static KanonBot.API.OSU.Enums;
 using static KanonBot.API.OSU.Models;
 using static KanonBot.Database.Model;
 using static LinqToDB.Reflection.Methods.LinqToDB.Insert;
@@ -269,12 +269,12 @@ public class Client
         return await db.InsertAsync(rec);
     }
 
-    public static async Task<bool> SetOsuUserMode(long osu_uid, API.OSU.Enums.Mode mode)
+    public static async Task<bool> SetOsuUserMode(long osu_uid, API.OSU.Mode mode)
     {
         using var db = GetInstance();
         var result = await db.UserOSU
             .Where(it => it.osu_uid == osu_uid)
-            .Set(it => it.osu_mode, API.OSU.Enums.Mode2String(mode))
+            .Set(it => it.osu_mode, mode.ToStr())
             .UpdateAsync();
         return result > -1;
     }
@@ -282,7 +282,7 @@ public class Client
     //返回值为天数（几天前）
     public static async Task<(int, API.OSU.Models.User?)> GetOsuUserData(
         long oid,
-        API.OSU.Enums.Mode mode,
+        API.OSU.Mode mode,
         int days = 0
     )
     {
@@ -293,7 +293,7 @@ public class Client
         {
             var q =
                 from p in db.OsuArchivedRec
-                where p.uid == oid && p.gamemode == API.OSU.Enums.Mode2String(mode)
+                where p.uid == oid && p.gamemode == mode.ToStr()
                 orderby p.lastupdate descending
                 select p;
             
@@ -314,7 +314,7 @@ public class Client
                 from p in db.OsuArchivedRec
                 where
                     p.uid == oid
-                    && p.gamemode == API.OSU.Enums.Mode2String(mode)
+                    && p.gamemode == mode.ToStr()
                     && p.lastupdate <= date
                 orderby p.lastupdate descending
                 select p;
@@ -323,7 +323,7 @@ public class Client
             {
                 var tq =
                     from p in db.OsuArchivedRec
-                    where p.uid == oid && p.gamemode == API.OSU.Enums.Mode2String(mode)
+                    where p.uid == oid && p.gamemode == mode.ToStr()
                     orderby p.lastupdate
                     select p;
                 data = await tq.FirstOrDefaultAsync();

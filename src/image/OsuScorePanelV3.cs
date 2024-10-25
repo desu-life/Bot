@@ -98,9 +98,9 @@ namespace KanonBot.DrawV3
             using var bgstatus = new Image<Rgba32>(619, 80);
             var beatmap_status_color = data.scoreInfo.Beatmap.Status switch
             {
-                OSU.Enums.Status.approved => Color.ParseHex("#14b400"),
-                OSU.Enums.Status.ranked => Color.ParseHex("#66bdff"),
-                OSU.Enums.Status.loved => Color.ParseHex("#ff66aa"),
+                OSU.Models.Status.approved => Color.ParseHex("#14b400"),
+                OSU.Models.Status.ranked => Color.ParseHex("#66bdff"),
+                OSU.Models.Status.loved => Color.ParseHex("#ff66aa"),
                 _ => Color.ParseHex("#e08918")
             };
             bgstatus.Mutate(x => x.Fill(beatmap_status_color).RoundCorner(new Size(619, 80), 20));
@@ -412,7 +412,7 @@ namespace KanonBot.DrawV3
                     double online_obj_count = (double)(data.scoreInfo.Beatmap.CountCircles + data.scoreInfo.Beatmap.CountSliders + data.scoreInfo.Beatmap.CountSpinners);
                     double score_obj_count = 0;
 
-                    if (data.scoreInfo.Mode == OSU.Enums.Mode.Mania)
+                    if (data.scoreInfo.Mode == OSU.Mode.Mania)
                     {
                         score_obj_count = (int)(data.scoreInfo.Statistics.CountGeki
                             + data.scoreInfo.Statistics.CountKatu

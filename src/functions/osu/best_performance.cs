@@ -2,13 +2,13 @@ using KanonBot.Drivers;
 using KanonBot.Message;
 using KanonBot.API;
 using System.Security.Cryptography;
-using static KanonBot.API.OSU.Enums;
 using KanonBot.Functions.OSU;
 using RosuPP;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using System.IO;
 using LanguageExt.UnsafeValueAccess;
+using KanonBot.API.OSU;
 
 namespace KanonBot.Functions.OSUBot
 {
@@ -18,7 +18,7 @@ namespace KanonBot.Functions.OSUBot
         {
             #region 验证
             long? osuID = null;
-            API.OSU.Enums.Mode? mode;
+            API.OSU.Mode? mode;
             Database.Model.User? DBUser = null;
             Database.Model.UserOSU? DBOsuInfo = null;
 
@@ -46,7 +46,7 @@ namespace KanonBot.Functions.OSUBot
                     return;
                 }
 
-                mode ??= API.OSU.Enums.String2Mode(DBOsuInfo.osu_mode)!.Value; // 从数据库解析，理论上不可能错
+                mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value; // 从数据库解析，理论上不可能错
                 osuID = DBOsuInfo.osu_uid;
             }
             else
@@ -65,13 +65,13 @@ namespace KanonBot.Functions.OSUBot
                     DBUser = atDBUser.ValueUnsafe();
                     DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
                     var _osuinfo = atOSU.ValueUnsafe();
-                    mode ??= API.OSU.Enums.String2Mode(DBOsuInfo!.osu_mode)!.Value ;
+                    mode ??= DBOsuInfo!.osu_mode?.ToMode()!.Value ;
                     osuID = _osuinfo.Id;
                 } else {
                     // 普通查询
                     var OnlineOsuInfo = await API.OSU.Client.GetUser(
                         command.osu_username,
-                        command.osu_mode ?? API.OSU.Enums.Mode.OSU
+                        command.osu_mode ?? API.OSU.Mode.OSU
                     );
                     if (OnlineOsuInfo != null)
                     {
@@ -79,7 +79,7 @@ namespace KanonBot.Functions.OSUBot
                         if (DBOsuInfo != null)
                         {
                             DBUser = await Accounts.GetAccountByOsuUid(OnlineOsuInfo.Id);
-                            mode ??= API.OSU.Enums.String2Mode(DBOsuInfo.osu_mode)!.Value;
+                            mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value;
                         }
                         mode ??= OnlineOsuInfo.PlayMode;
                         osuID = OnlineOsuInfo.Id;
@@ -115,7 +115,7 @@ namespace KanonBot.Functions.OSUBot
 
             var scores = await API.OSU.Client.GetUserScores(
                 osuID!.Value,
-                API.OSU.Enums.UserScoreType.Best,
+                API.OSU.UserScoreType.Best,
                 mode!.Value,
                 1,
                 command.order_number - 1
@@ -145,11 +145,11 @@ namespace KanonBot.Functions.OSUBot
                         ImageSegment.Type.Base64
                     )
                 );
-                if (scores![0].Mode == API.OSU.Enums.Mode.OSU)
+                if (scores![0].Mode == API.OSU.Mode.OSU)
                 {
                     if (
-                        scores[0].Beatmap!.Status == API.OSU.Enums.Status.ranked
-                        || scores[0].Beatmap!.Status == API.OSU.Enums.Status.approved
+                        scores[0].Beatmap!.Status == API.OSU.Models.Status.ranked
+                        || scores[0].Beatmap!.Status == API.OSU.Models.Status.approved
                     )
                     {
                         await Database.Client.InsertOsuStandardBeatmapTechData(

@@ -256,12 +256,12 @@ namespace KanonBot.Functions.OSU
             }
         }
 
-        public static RosuPP.Mode ToRosu(this API.OSU.Enums.Mode mode) => mode switch
+        public static RosuPP.Mode ToRosu(this API.OSU.Mode mode) => mode switch
         {
-            API.OSU.Enums.Mode.OSU => RosuPP.Mode.Osu,
-            API.OSU.Enums.Mode.Taiko => RosuPP.Mode.Taiko,
-            API.OSU.Enums.Mode.Fruits => RosuPP.Mode.Catch,
-            API.OSU.Enums.Mode.Mania => RosuPP.Mode.Mania,
+            API.OSU.Mode.OSU => RosuPP.Mode.Osu,
+            API.OSU.Mode.Taiko => RosuPP.Mode.Taiko,
+            API.OSU.Mode.Fruits => RosuPP.Mode.Catch,
+            API.OSU.Mode.Mania => RosuPP.Mode.Mania,
             _ => throw new ArgumentException()
         };
 

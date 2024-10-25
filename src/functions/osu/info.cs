@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using KanonBot.API;
+using KanonBot.API.OSU;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
 using KanonBot.Message;
@@ -17,7 +18,7 @@ namespace KanonBot.Functions.OSUBot
         {
             #region 验证
             long? osuID = null;
-            API.OSU.Enums.Mode? mode;
+            API.OSU.Mode? mode;
             Database.Model.User? DBUser = null;
             Database.Model.UserOSU? DBOsuInfo = null;
 
@@ -44,8 +45,8 @@ namespace KanonBot.Functions.OSUBot
                     await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
                     return;
                 }
-
-                mode ??= API.OSU.Enums.String2Mode(DBOsuInfo.osu_mode)!.Value; // 从数据库解析，理论上不可能错
+                    
+                mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value; // 从数据库解析，理论上不可能错
                 osuID = DBOsuInfo.osu_uid;
             }
             else
@@ -69,7 +70,7 @@ namespace KanonBot.Functions.OSUBot
                     DBUser = atDBUser.ValueUnsafe();
                     DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
                     var _osuinfo = atOSU.ValueUnsafe();
-                    mode ??= API.OSU.Enums.String2Mode(DBOsuInfo!.osu_mode)!.Value;
+                    mode ??= DBOsuInfo!.osu_mode?.ToMode()!.Value;
                     osuID = _osuinfo.Id;
                 }
                 else
@@ -77,7 +78,7 @@ namespace KanonBot.Functions.OSUBot
                     // 普通查询
                     var OnlineOsuInfo = await API.OSU.Client.GetUser(
                         command.osu_username,
-                        command.osu_mode ?? API.OSU.Enums.Mode.OSU
+                        command.osu_mode ?? API.OSU.Mode.OSU
                     );
                     if (OnlineOsuInfo != null)
                     {
@@ -85,7 +86,7 @@ namespace KanonBot.Functions.OSUBot
                         if (DBOsuInfo != null)
                         {
                             DBUser = await Accounts.GetAccountByOsuUid(OnlineOsuInfo.Id);
-                            mode ??= API.OSU.Enums.String2Mode(DBOsuInfo.osu_mode)!.Value;
+                            mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value;
                         }
                         mode ??= OnlineOsuInfo.PlayMode;
                         osuID = OnlineOsuInfo.Id;
@@ -279,7 +280,7 @@ namespace KanonBot.Functions.OSUBot
                     };
                     allBP = await API.OSU.Client.GetUserScores(
                         data.userInfo.Id,
-                        API.OSU.Enums.UserScoreType.Best,
+                        API.OSU.UserScoreType.Best,
                         data.userInfo.PlayMode,
                         20,
                         0
@@ -312,15 +313,15 @@ namespace KanonBot.Functions.OSUBot
             );
             try
             {
-                if (data.userInfo.PlayMode == API.OSU.Enums.Mode.OSU) //只存std的
+                if (data.userInfo.PlayMode == API.OSU.Mode.OSU) //只存std的
                     if (allBP!.Length > 0)
                         await InsertBeatmapTechInfo(allBP);
                     else
                     {
                         allBP = await API.OSU.Client.GetUserScores(
                         data.userInfo.Id,
-                        API.OSU.Enums.UserScoreType.Best,
-                        API.OSU.Enums.Mode.OSU,
+                        API.OSU.UserScoreType.Best,
+                        API.OSU.Mode.OSU,
                         20,
                         0
                     );

@@ -75,7 +75,7 @@ namespace KanonBot.Functions.OSU
 
         async public static Task UpdateUser(long userID, bool is_newuser)
         {
-            var modes = new API.OSU.Enums.Mode[] { API.OSU.Enums.Mode.OSU, API.OSU.Enums.Mode.Taiko, API.OSU.Enums.Mode.Fruits, API.OSU.Enums.Mode.Mania };
+            var modes = new API.OSU.Mode[] { API.OSU.Mode.OSU, API.OSU.Mode.Taiko, API.OSU.Mode.Fruits, API.OSU.Mode.Mania };
             foreach (var mode in modes)
             {
                 Log.Information($"正在更新用户数据....[{userID}/{mode}]");

@@ -2917,16 +2917,16 @@ namespace KanonBot.DrawV2
             var osuprofilemode_text = "";
             switch (data.userInfo.PlayMode)
             {
-                case OSU.Enums.Mode.OSU:
+                case OSU.Mode.OSU:
                     osuprofilemode_text = "osu!standard";
                     break;
-                case OSU.Enums.Mode.Taiko:
+                case OSU.Mode.Taiko:
                     osuprofilemode_text = "osu!taiko";
                     break;
-                case OSU.Enums.Mode.Fruits:
+                case OSU.Mode.Fruits:
                     osuprofilemode_text = "osu!catch";
                     break;
-                case OSU.Enums.Mode.Mania:
+                case OSU.Mode.Mania:
                     osuprofilemode_text = "osu!mania";
                     break;
             }

@@ -4,6 +4,7 @@ using Flurl;
 using Flurl.Http;
 using Flurl.Util;
 using KanonBot.API;
+using KanonBot.API.OSU;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
 using KanonBot.Image;
@@ -198,7 +199,7 @@ namespace KanonBot.Functions.OSUBot
 
             cmd = cmd.ToLower().Trim();
 
-            var mode = API.OSU.Enums.String2Mode(cmd);
+            var mode = cmd.ToMode();
             if (mode == null)
             {
                 await target.reply("提供的模式不正确，请重新确认 (osu/taiko/fruits/mania)");

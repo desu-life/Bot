@@ -178,7 +178,7 @@ namespace KanonBot.LegacyImage
             info.Mutate(x => x.DrawImage(modeicon, new Point(1125, 10), 1));
 
             // pp+
-            if (data.userInfo.PlayMode is OSU.Enums.Mode.OSU)
+            if (data.userInfo.PlayMode is OSU.Mode.OSU)
             {
                 using var ppdataPanel = await Img.LoadAsync("./work/legacy/pp+-v1.png");
                 info.Mutate(x => x.DrawImage(ppdataPanel, new Point(0, 0), 1));
@@ -790,17 +790,17 @@ namespace KanonBot.LegacyImage
             diffCircle.Mutate(x => x.Resize(65, 65));
             score.Mutate(x => x.DrawImage(diffCircle, new Point(512, 257), 1));
             // beatmap_status
-            if (data.scoreInfo.Beatmap.Status is OSU.Enums.Status.ranked)
+            if (data.scoreInfo.Beatmap.Status is OSU.Models.Status.ranked)
             {
                 using var c = await Img.LoadAsync("./work/icons/ranked.png");
                 score.Mutate(x => x.DrawImage(c, new Point(415, 16), 1));
             }
-            if (data.scoreInfo.Beatmap.Status is OSU.Enums.Status.approved)
+            if (data.scoreInfo.Beatmap.Status is OSU.Models.Status.approved)
             {
                 using var c = await Img.LoadAsync("./work/icons/approved.png");
                 score.Mutate(x => x.DrawImage(c, new Point(415, 16), 1));
             }
-            if (data.scoreInfo.Beatmap.Status is OSU.Enums.Status.loved)
+            if (data.scoreInfo.Beatmap.Status is OSU.Models.Status.loved)
             {
                 using var c = await Img.LoadAsync("./work/icons/loved.png");
                 score.Mutate(x => x.DrawImage(c, new Point(415, 16), 1));
@@ -1121,7 +1121,7 @@ namespace KanonBot.LegacyImage
                 x => x.DrawText(drawOptions, textOptions, "pp", new SolidBrush(ppTColor), null)
             );
 
-            // if (data.scoreInfo.Mode is OSU.Enums.Mode.Mania)
+            // if (data.scoreInfo.Mode is OSU.Mode.Mania)
             // {
             //     pptext = "-";
             //     metric = TextMeasurer.MeasureSize(pptext, textOptions);
