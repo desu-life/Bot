@@ -396,12 +396,16 @@ namespace KanonBot.API.OSU
 
         async public static Task DownloadBeatmapFile(long bid)
         {
-            if (File.Exists($"./work/beatmap/{bid}.osu"))
+            var filePath = $"./work/beatmap/{bid}.osu";
+            if (File.Exists(filePath))
             {
-                File.Delete($"./work/beatmap/{bid}.osu");
+                File.Delete(filePath);
             }
             
-            await Http.DownloadFile($"http://osu.ppy.sh/osu/{bid}", $"./work/beatmap/{bid}.osu");
+            var result = await $"http://osu.ppy.sh/osu/{bid}".GetBytesAsync();
+            using var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write);
+            await fs.WriteAsync(result!);
+            fs.Close();
         }
     }
 }
