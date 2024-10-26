@@ -60,7 +60,7 @@ namespace KanonBot.Functions.OSUBot
             if (command.order_number == 0) // 检查玩家是否指定bid
             {
                 var scoreInfos = await API.OSU.Client.GetUserScores(OnlineOsuInfo.Id, API.OSU.UserScoreType.Recent, command.osu_mode ?? API.OSU.Mode.OSU, 1, command.order_number - 1, true);
-                if (scoreInfos == null) {await target.reply("获取成绩时出错。"); return;};    // 正常是找不到玩家，但是上面有验证，这里做保险
+                if (scoreInfos == null) { await target.reply("获取成绩时出错。"); return; };    // 正常是找不到玩家，但是上面有验证，这里做保险
                 if (scoreInfos!.Length > 0) { bid = scoreInfos[0].Beatmap!.BeatmapId; }
                 else { await target.reply("猫猫找不到你最近游玩的成绩。"); return; }
             }
@@ -73,15 +73,11 @@ namespace KanonBot.Functions.OSUBot
             long score;
             var empty_mods = System.Array.Empty<string>(); // 要的是最高分，直接给传一个空集合得了
             var scoreData = await API.OSU.Client.GetUserBeatmapScore(OnlineOsuInfo.Id, bid, empty_mods, command.osu_mode ?? API.OSU.Mode.OSU);
-            if (scoreData == null)
-            {
-                await target.reply("猫猫找不到你的成绩。"); return;
-            }
-            else
+            if (scoreData == !null)
             {
                 score = scoreData.Score.ScoreAuto;
+                if (scoreData.Score.Mode is not API.OSU.Mode.OSU) { await target.reply("Leeway仅支持osu!std模式。"); return; } // 检查谱面是否是std
             }
-            if (scoreData.Score.Mode is not API.OSU.Mode.OSU) { await target.reply("Leeway仅支持osu!std模式。"); return; } // 检查谱面是否是std
 
 
             // LeewayCalculator
@@ -123,7 +119,7 @@ namespace KanonBot.Functions.OSUBot
             {
                 string scoreModsString = lc.GetModsString(scoreData.Score.Mods.Map(m => m.Acronym).ToArray());
                 int scoreAdvantage = (int)score - maxScore;
-                str += string.Format("\n你的成绩：{0:n0} ({1}) {2}", (int)score, scoreModsString != "" ? $"+{scoreModsString}" : "None", scoreAdvantage < 0 ? scoreAdvantage : $"+{scoreAdvantage}");
+                str += string.Format("\n你的成绩：{0:n0} ({1}) [{2}]", (int)score, scoreModsString != "" ? $"+{scoreModsString}" : "None", scoreAdvantage < 0 ? scoreAdvantage : $"+{scoreAdvantage}");
             }
             else
             {
