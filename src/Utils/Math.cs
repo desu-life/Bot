@@ -106,9 +106,32 @@ public static partial class Utils
         (9.0f, Rgba32.ParseHex("#000000").ToVector4()),
     ];
 
+    private static readonly IReadOnlyList<(float position, Vector4 colour)> GradientMapScore =
+    [
+        (0.1f, Rgba32.ParseHex("#AAAAAA").ToVector4()),
+        (0.1f, Rgba32.ParseHex("#4290FB").ToVector4()),
+        (1.25f, Rgba32.ParseHex("#4FC0FF").ToVector4()),
+        (2.0f, Rgba32.ParseHex("#4FFFD5").ToVector4()),
+        (2.5f, Rgba32.ParseHex("#7CFF4F").ToVector4()),
+        (3.3f, Rgba32.ParseHex("#F6F05C").ToVector4()),
+        (4.2f, Rgba32.ParseHex("#FF8068").ToVector4()),
+        (4.9f, Rgba32.ParseHex("#FF4E6F").ToVector4()),
+        (5.7f, Rgba32.ParseHex("#C645B8").ToVector4()),
+        (6.2f, Rgba32.ParseHex("#6563DE").ToVector4()),
+        (7.0f, Rgba32.ParseHex("#18158E").ToVector4()),
+        (8.4f, Rgba32.ParseHex("#000000").ToVector4()),
+    ];
+
     public static Color ForStarDifficulty(double starDifficulty) =>
         SampleFromLinearGradient(
                 GradientMap,
+                (float)Math.Round(starDifficulty, 2, MidpointRounding.AwayFromZero)
+            )
+            .ToColor();
+
+    public static Color ForStarDifficultyScore(double starDifficulty) =>
+        SampleFromLinearGradient(
+                GradientMapScore,
                 (float)Math.Round(starDifficulty, 2, MidpointRounding.AwayFromZero)
             )
             .ToColor();

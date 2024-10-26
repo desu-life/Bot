@@ -64,8 +64,14 @@ namespace KanonBot.LegacyImage
             "./work/fonts/AvenirLTStd-Medium.ttf"
         );
 
-        
-        public static async Task<Img?> DrawMod(OSU.Models.Mod mod) {
+        public static FontFamily Mizolet = fonts.Add(
+            "./work/fonts/mizolet.ttf"
+        );
+        public static FontFamily MizoletBokutoh = fonts.Add(
+            "./work/fonts/mizolet-bokutoh.ttf"
+        );
+
+        public static async Task<Img> DrawMod(OSU.Models.Mod mod) {
             var modName = mod.Acronym.ToUpper();
             var modPath = $"./work/mods/{modName}.png";
             if (File.Exists(modPath)) {
@@ -73,21 +79,22 @@ namespace KanonBot.LegacyImage
                 modPic.Mutate(x => x.Resize(200, 0));
                 return modPic;
             } else {
-                // var drawOptions = new DrawingOptions
-                // {
-                //     GraphicsOptions = new GraphicsOptions { Antialias = true }
-                // };
-                // var textOptions = new RichTextOptions(new Font(TorusRegular, 10))
-                // {
-                //     VerticalAlignment = VerticalAlignment.Center,
-                //     HorizontalAlignment = HorizontalAlignment.Center
-                // };
-                // textOptions.Origin = new PointF(100, 110);
-                // var modPic = await Img.LoadAsync($"./work/mods/Unknown.png");
-                // modPic.Mutate(x => x.Resize(200, 0));
-                // modPic.Mutate(x => x.DrawText(drawOptions, textOptions, "123", new SolidBrush(Color.White), null));
-                // return modPic;
-                return null;
+                var drawOptions = new DrawingOptions
+                {
+                    GraphicsOptions = new GraphicsOptions { Antialias = true }
+                };
+                var textOptions = new RichTextOptions(new Font(Mizolet, 40))
+                {
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                };
+                var modPic = await Img.LoadAsync($"./work/mods/Unknown.png");
+                modPic.Mutate(x => x.Resize(200, 0));
+                textOptions.Origin = new PointF(96, 34);
+                modPic.Mutate(x => x.DrawText(drawOptions, textOptions, modName, new SolidBrush(Color.Black), null));
+                textOptions.Origin = new PointF(96, 33);
+                modPic.Mutate(x => x.DrawText(drawOptions, textOptions, modName, new SolidBrush(Color.White), null));
+                return modPic;
             }
         }
 
@@ -102,7 +109,7 @@ namespace KanonBot.LegacyImage
             };
 
             using var color = new Image<Rgba32>(128, 128);
-            color.Mutate(x => x.Fill(Utils.ForStarDifficulty(star)));
+            color.Mutate(x => x.Fill(Utils.ForStarDifficultyScore(star)));
 
             using var cover = await Image<Rgba32>.LoadAsync($"./work/icons/ringcontent.png");
             cover.Mutate(x => x.Resize(128, 128));
@@ -826,18 +833,34 @@ namespace KanonBot.LegacyImage
                 score.Mutate(x => x.DrawImage(c, new Point(415, 16), 1));
             }
             // mods
-            var mods = data.scoreInfo.Mods.ToList();
+            var me = data.scoreInfo.Mods.AsEnumerable();
             // mods.Sort((a, b) => a.IsSpeedChangeMod ? 1 : -1);
+
+            // 筛选classic成绩
+            if (data.scoreInfo.IsClassic) {
+                me = me.Filter(x => !x.IsClassic);
+            }
+
+            var mods = me.ToList();
             var modp = 0;
-            foreach (var mod in mods)
-            {
-                // 筛选classic成绩
-                if (data.scoreInfo.IsClassic && mod.IsClassic) continue;
-                var modPic = await DrawMod(mod);
-                if (modPic is null) continue;
-                modPic.Mutate(x => x.Resize(200, 0));
-                score.Mutate(x => x.DrawImage(modPic, new Point((modp * 160) + 440, 440), 1));
-                modp += 1;
+            if (mods.Count > 7) {
+                foreach (var mod in mods)
+                {
+                    var modPic = await DrawMod(mod);
+                    if (modPic is null) continue;
+                    modPic.Mutate(x => x.Resize(200, 0));
+                    score.Mutate(x => x.DrawImage(modPic, new Point(modp + 440, 440), 1));
+                    modp += 120;
+                }
+            } else {
+                foreach (var mod in mods)
+                {
+                    var modPic = await DrawMod(mod);
+                    if (modPic is null) continue;
+                    modPic.Mutate(x => x.Resize(200, 0));
+                    score.Mutate(x => x.DrawImage(modPic, new Point(modp + 440, 440), 1));
+                    modp += 160;
+                }
             }
             // rankings
             var ranking = data.scoreInfo.Passed ? data.scoreInfo.RankAuto : "F";
