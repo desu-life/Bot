@@ -90,22 +90,25 @@ public static partial class Utils
         return gradient[^1].colour;
     }
 
+    private static readonly IReadOnlyList<(float position, Vector4 colour)> GradientMap =
+    [
+        (0.1f, Rgba32.ParseHex("#AAAAAA").ToVector4()),
+        (0.1f, Rgba32.ParseHex("#4290FB").ToVector4()),
+        (1.25f, Rgba32.ParseHex("#4FC0FF").ToVector4()),
+        (2.0f, Rgba32.ParseHex("#4FFFD5").ToVector4()),
+        (2.5f, Rgba32.ParseHex("#7CFF4F").ToVector4()),
+        (3.3f, Rgba32.ParseHex("#F6F05C").ToVector4()),
+        (4.2f, Rgba32.ParseHex("#FF8068").ToVector4()),
+        (4.9f, Rgba32.ParseHex("#FF4E6F").ToVector4()),
+        (5.8f, Rgba32.ParseHex("#C645B8").ToVector4()),
+        (6.7f, Rgba32.ParseHex("#6563DE").ToVector4()),
+        (7.7f, Rgba32.ParseHex("#18158E").ToVector4()),
+        (9.0f, Rgba32.ParseHex("#000000").ToVector4()),
+    ];
+
     public static Color ForStarDifficulty(double starDifficulty) =>
         SampleFromLinearGradient(
-                [
-                    (0.1f, Rgba32.ParseHex("#aaaaaa").ToVector4()),
-                    (0.1f, Rgba32.ParseHex("#4290fb").ToVector4()),
-                    (1.25f, Rgba32.ParseHex("#4fc0ff").ToVector4()),
-                    (2.0f, Rgba32.ParseHex("#4fffd5").ToVector4()),
-                    (2.5f, Rgba32.ParseHex("#7cff4f").ToVector4()),
-                    (3.3f, Rgba32.ParseHex("#f6f05c").ToVector4()),
-                    (4.2f, Rgba32.ParseHex("#ff8068").ToVector4()),
-                    (4.9f, Rgba32.ParseHex("#ff4e6f").ToVector4()),
-                    (5.8f, Rgba32.ParseHex("#c645b8").ToVector4()),
-                    (6.7f, Rgba32.ParseHex("#6563de").ToVector4()),
-                    (7.7f, Rgba32.ParseHex("#18158e").ToVector4()),
-                    (9.0f, Rgba32.ParseHex("#000000").ToVector4()),
-                ],
+                GradientMap,
                 (float)Math.Round(starDifficulty, 2, MidpointRounding.AwayFromZero)
             )
             .ToColor();
