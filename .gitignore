@@ -370,3 +370,4 @@ work/
 target/
 Cargo.lock
 work.7z
+work.bak/
