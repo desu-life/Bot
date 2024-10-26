@@ -3,6 +3,7 @@
 using System;
 using System.Runtime.ConstrainedExecution;
 using System.Security.Cryptography;
+using KanonBot.API.OSU;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSUBot;
 using LinqToDB;
@@ -16,7 +17,6 @@ using Polly.Caching;
 using RosuPP;
 using Serilog;
 using Tomlyn.Model;
-using static KanonBot.API.OSU.Enums;
 using static KanonBot.API.OSU.Models;
 using static KanonBot.Database.Model;
 using static LinqToDB.Reflection.Methods.LinqToDB.Insert;
@@ -134,8 +134,7 @@ public class Client
 
     public static async Task<bool> InsertOsuUser(
         long kanon_uid,
-        long osu_uid,
-        int customBannerStatus
+        long osu_uid
     )
     {
         using var db = GetInstance();
@@ -269,31 +268,31 @@ public class Client
         return await db.InsertAsync(rec);
     }
 
-    public static async Task<bool> SetOsuUserMode(long osu_uid, API.OSU.Enums.Mode mode)
+    public static async Task<bool> SetOsuUserMode(long osu_uid, API.OSU.Mode mode)
     {
         using var db = GetInstance();
         var result = await db.UserOSU
             .Where(it => it.osu_uid == osu_uid)
-            .Set(it => it.osu_mode, API.OSU.Enums.Mode2String(mode))
+            .Set(it => it.osu_mode, mode.ToStr())
             .UpdateAsync();
         return result > -1;
     }
 
     //返回值为天数（几天前）
-    public static async Task<(int, API.OSU.Models.User?)> GetOsuUserData(
+    public static async Task<(int, API.OSU.Models.UserExtended?)> GetOsuUserData(
         long oid,
-        API.OSU.Enums.Mode mode,
+        API.OSU.Mode mode,
         int days = 0
     )
     {
         OsuArchivedRec? data;
         using var db = GetInstance();
-        var ui = new API.OSU.Models.User();
+        var ui = new API.OSU.Models.UserExtended();
         if (days <= 0)
         {
             var q =
                 from p in db.OsuArchivedRec
-                where p.uid == oid && p.gamemode == API.OSU.Enums.Mode2String(mode)
+                where p.uid == oid && p.gamemode == mode.ToStr()
                 orderby p.lastupdate descending
                 select p;
             
@@ -314,7 +313,7 @@ public class Client
                 from p in db.OsuArchivedRec
                 where
                     p.uid == oid
-                    && p.gamemode == API.OSU.Enums.Mode2String(mode)
+                    && p.gamemode == mode.ToStr()
                     && p.lastupdate <= date
                 orderby p.lastupdate descending
                 select p;
@@ -323,7 +322,7 @@ public class Client
             {
                 var tq =
                     from p in db.OsuArchivedRec
-                    where p.uid == oid && p.gamemode == API.OSU.Enums.Mode2String(mode)
+                    where p.uid == oid && p.gamemode == mode.ToStr()
                     orderby p.lastupdate
                     select p;
                 data = await tq.FirstOrDefaultAsync();
@@ -332,7 +331,7 @@ public class Client
         if (data == null)
             return (-1, null);
 
-        ui.Statistics = new() { GradeCounts = new(), Level = new() };
+        ui.StatisticsCurrent = new() { GradeCounts = new(), Level = new() };
         ui.Id = oid;
         ui.Statistics.TotalScore = data.total_score;
         ui.Statistics.TotalHits = data.total_hit;
@@ -349,7 +348,7 @@ public class Client
         ui.Statistics.Level.Current = data.level;
         ui.Statistics.Level.Progress = data.level_percent;
         ui.Statistics.PP = data.performance_point;
-        ui.PlayMode = mode;
+        ui.Mode = mode;
         ui.Statistics.PlayTime = data.playtime;
         //ui.daysBefore = (t - data.lastupdate).Days;
         return ((DateTime.Today - data.lastupdate).Days, ui);

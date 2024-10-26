@@ -22,6 +22,8 @@ using SixLabors.ImageSharp.Diagnostics;
 using KanonBot.Functions.OSUBot;
 using static KanonBot.API.OSU.Models;
 using LanguageExt.ClassInstances;
+using OSU = KanonBot.API.OSU;
+using static KanonBot.API.OSU.OSUExtensions;
 
 namespace KanonBot.DrawV3
 {
@@ -39,7 +41,7 @@ namespace KanonBot.DrawV3
             {
                 try
                 {
-                    bgPath = await OSU.SayoDownloadBeatmapBackgroundImg(
+                    bgPath = await OSU.Client.SayoDownloadBeatmapBackgroundImg(
                         data.scoreInfo.Beatmap.BeatmapsetId,
                         data.scoreInfo.Beatmap.BeatmapId,
                         "./work/background/"
@@ -54,7 +56,7 @@ namespace KanonBot.DrawV3
 
             //下载头像
             var avatarPath = $"./work/avatar/{data.scoreInfo.UserId}.png";
-            using var avatar = await TryAsync(ReadImageRgba(avatarPath))
+            using var avatar = await TryAsync(Utils.ReadImageRgba(avatarPath))
                 .IfFail(async () =>
                 {
                     try
@@ -70,7 +72,7 @@ namespace KanonBot.DrawV3
                         Log.Error(msg);
                         throw;
                     }
-                    return await ReadImageRgba(avatarPath); // 下载后再读取
+                    return await Utils.ReadImageRgba(avatarPath); // 下载后再读取
                 });
 
             //panel
@@ -83,10 +85,10 @@ namespace KanonBot.DrawV3
                 scoreimg.Mutate(x => x.DrawImage(panel, 1));
 
             // bg
-            using var bg = await TryAsync(ReadImageRgba(bgPath!))
+            using var bg = await TryAsync(Utils.ReadImageRgba(bgPath!))
                 .IfFail(async () =>
                 {
-                    return await ReadImageRgba("./work/legacy/load-failed-img.png"); // 下载后再读取
+                    return await Utils.ReadImageRgba("./work/legacy/load-failed-img.png"); // 下载后再读取
                 });
 
             using var bgarea = new Image<Rgba32>(631, 444);
@@ -96,9 +98,9 @@ namespace KanonBot.DrawV3
             using var bgstatus = new Image<Rgba32>(619, 80);
             var beatmap_status_color = data.scoreInfo.Beatmap.Status switch
             {
-                OSU.Enums.Status.approved => Color.ParseHex("#14b400"),
-                OSU.Enums.Status.ranked => Color.ParseHex("#66bdff"),
-                OSU.Enums.Status.loved => Color.ParseHex("#ff66aa"),
+                OSU.Models.Status.approved => Color.ParseHex("#14b400"),
+                OSU.Models.Status.ranked => Color.ParseHex("#66bdff"),
+                OSU.Models.Status.loved => Color.ParseHex("#ff66aa"),
                 _ => Color.ParseHex("#e08918")
             };
             bgstatus.Mutate(x => x.Fill(beatmap_status_color).RoundCorner(new Size(619, 80), 20));
@@ -109,11 +111,11 @@ namespace KanonBot.DrawV3
             //TODO beatmap status icon
 
             //beatmap difficulty icon
-            using var osuscoremode_icon = await ReadImageRgba(
+            using var osuscoremode_icon = await Utils.ReadImageRgba(
                         $"./work/panelv2/icons/mode_icon/score/{data.scoreInfo.Mode.ToStr()}.png"
             );
             osuscoremode_icon.Mutate(x => x.Resize(110, 110));
-            var modeC = ForStarDifficulty(data.ppInfo.star);
+            var modeC = Utils.ForStarDifficulty(data.ppInfo.star);
             osuscoremode_icon.Mutate(
                 x =>
                     x.ProcessPixelRowsAsVector4(row =>
@@ -254,7 +256,7 @@ namespace KanonBot.DrawV3
             var stars_i = (int)Math.Floor(data.ppInfo.star);
             var stars_d = data.ppInfo.star - Math.Truncate(data.ppInfo.star);
             int stars_pos = 924 + (int)stars_measure.Width + 10;
-            using var stars_icon = await ReadImageRgba(
+            using var stars_icon = await Utils.ReadImageRgba(
                     $"./work/panelv2/score_panel/Star.png"
             );
             stars_icon.Mutate(x => x.Resize(30, 30));
@@ -399,7 +401,7 @@ namespace KanonBot.DrawV3
             //length graph 70x? -50    max 2708
             textOptions.Font = new Font(TorusRegular, 30);
             textOptions.Origin = new PointF(2750, 747);
-            var beatmap_length_text = Duration2TimeString_ForScoreV3(data.scoreInfo.Beatmap.TotalLength);
+            var beatmap_length_text = Utils.Duration2TimeStringForScoreV3(data.scoreInfo.Beatmap.TotalLength);
             var beatmap_length_text_measure = TextMeasurer.MeasureSize(beatmap_length_text, textOptions);
             var length_graph_length = 2708;
 
@@ -410,7 +412,7 @@ namespace KanonBot.DrawV3
                     double online_obj_count = (double)(data.scoreInfo.Beatmap.CountCircles + data.scoreInfo.Beatmap.CountSliders + data.scoreInfo.Beatmap.CountSpinners);
                     double score_obj_count = 0;
 
-                    if (data.scoreInfo.Mode == OSU.Enums.Mode.Mania)
+                    if (data.scoreInfo.Mode == OSU.Mode.Mania)
                     {
                         score_obj_count = (int)(data.scoreInfo.Statistics.CountGeki
                             + data.scoreInfo.Statistics.CountKatu

@@ -6,6 +6,8 @@ using SixLabors.ImageSharp.Formats.Jpeg;
 using System.IO;
 using LanguageExt.UnsafeValueAccess;
 using KanonBot.Functions.OSU;
+using KanonBot.OsuPerformance;
+
 
 namespace KanonBot.Functions.OSUBot
 {
@@ -20,16 +22,16 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
 
-            var beatmaps = await API.OSU.SearchBeatmap(cmd);
+            var beatmaps = await API.OSU.Client.SearchBeatmap(cmd);
 
             var beatmapset = beatmaps!.Beatmapsets[0];
             var beatmap = beatmapset.Beatmaps!.First();
             beatmap.Beatmapset = beatmaps.Beatmapsets[0];
 
-            var data = await PerformanceCalculator.CalculatePanelSSData(beatmap);
+            var data = await RosuCalculator.CalculatePanelSSData(beatmap);
             
             data.scoreInfo.UserId = 3;  // bancho bot
-            data.scoreInfo.User = await API.OSU.GetUser(data.scoreInfo.UserId);
+            data.scoreInfo.User = await API.OSU.Client.GetUser(data.scoreInfo.UserId);
             data.scoreInfo.Beatmapset = beatmapset;
             data.scoreInfo.Beatmap = beatmap;
             

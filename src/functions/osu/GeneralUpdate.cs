@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using static KanonBot.Database.Model;
 using CronNET.Impl;
 using System.IO;
+using static KanonBot.API.OSU.OSUExtensions;
 
 namespace KanonBot.Functions.OSU
 {
@@ -40,7 +41,7 @@ namespace KanonBot.Functions.OSU
                 var (count, span) = await UpdateUsers();
                 Log.Information("更新完毕，总花费时间 {0}s", span.TotalSeconds);
                 Log.Information("启动检查徽章有效期任务");
-                await OSUBot.Badge.CheckBadgeIsVaild_Job();
+                await OSUBot.Badge.CheckBadgeIsVaildJob();
                 Log.Information("检查徽章有效期任务完成");
                 Environment.Exit(0);
             }, "DailyUpdate", "0 4 * * *"));   // 每天早上4点运行的意思，具体参考https://crontab.cronhub.io/
@@ -74,11 +75,11 @@ namespace KanonBot.Functions.OSU
 
         async public static Task UpdateUser(long userID, bool is_newuser)
         {
-            var modes = new API.OSU.Enums.Mode[] { API.OSU.Enums.Mode.OSU, API.OSU.Enums.Mode.Taiko, API.OSU.Enums.Mode.Fruits, API.OSU.Enums.Mode.Mania };
+            var modes = new API.OSU.Mode[] { API.OSU.Mode.OSU, API.OSU.Mode.Taiko, API.OSU.Mode.Fruits, API.OSU.Mode.Mania };
             foreach (var mode in modes)
             {
                 Log.Information($"正在更新用户数据....[{userID}/{mode}]");
-                var userInfo = await API.OSU.GetUser(userID, mode);
+                var userInfo = await API.OSU.Client.GetUser(userID, mode);
                 OsuArchivedRec rec = new()
                 {
                     uid = (int)userInfo!.Id,

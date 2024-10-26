@@ -1,6 +1,7 @@
 using System.IO;
 using System.Numerics;
-using KanonBot.API;
+using OSU = KanonBot.API.OSU;
+using static KanonBot.API.OSU.OSUExtensions;
 using KanonBot.Functions.OSU;
 using KanonBot.Image;
 using KanonBot.LegacyImage;
@@ -17,8 +18,7 @@ using SixLabors.ImageSharp.Processing;
 using static KanonBot.LegacyImage.Draw;
 using Img = SixLabors.ImageSharp.Image;
 using ResizeOptions = SixLabors.ImageSharp.Processing.ResizeOptions;
-using System.Collections.Generic;
-using SixLabors.ImageSharp.Diagnostics;
+using KanonBot.OsuPerformance;
 
 namespace KanonBot.DrawV2
 {
@@ -901,7 +901,7 @@ namespace KanonBot.DrawV2
                     UserPanelData.CustomMode.Dark => "./work/panelv2/infov2-dark-customimg.png",
                     _ => throw new ArgumentOutOfRangeException("未知的自定义模式")
                 };
-            using var sidePic = await ReadImageRgba(sidePicPath); // 读取
+            using var sidePic = await Utils.ReadImageRgba(sidePicPath); // 读取
             sidePic.Mutate(x => x.Brightness(SideImgBrightness));
             info.Mutate(x => x.DrawImage(sidePic, new Point(90, 72), 1));
 
@@ -1069,7 +1069,7 @@ namespace KanonBot.DrawV2
                 {
                     try
                     {
-                        bp1bgPath = await OSU.SayoDownloadBeatmapBackgroundImg(
+                        bp1bgPath = await OSU.Client.SayoDownloadBeatmapBackgroundImg(
                             allBP![0].Beatmapset!.Id,
                             allBP![0].Beatmap!.BeatmapId,
                             "./work/background/"
@@ -1081,8 +1081,8 @@ namespace KanonBot.DrawV2
                         Log.Warning(msg);
                     }
                 }
-                using var bp1bg = await TryAsync(ReadImageRgba(bp1bgPath!))
-                    .IfFail(await ReadImageRgba("./work/legacy/load-failed-img.png"));
+                using var bp1bg = await TryAsync(Utils.ReadImageRgba(bp1bgPath!))
+                    .IfFail(await Utils.ReadImageRgba("./work/legacy/load-failed-img.png"));
                 //bp1bg.Mutate(x => x.Resize(355, 200));
                 bp1bg.Mutate(
                     x =>
@@ -1146,7 +1146,7 @@ namespace KanonBot.DrawV2
                     UserPanelData.CustomMode.Dark => "./work/panelv2/infov2-dark.png",
                     _ => throw new ArgumentOutOfRangeException("未知的颜色模式"),
                 };
-            using var panel = await ReadImageRgba(panelPath); // 读取
+            using var panel = await Utils.ReadImageRgba(panelPath); // 读取
             info.Mutate(x => x.DrawImage(panel, new Point(0, 0), 1));
 
             //rank
@@ -1165,7 +1165,7 @@ namespace KanonBot.DrawV2
             );
 
             //country_flag
-            using var flags = await Img.LoadAsync($"./work/flags/{data.userInfo.Country.Code}.png");
+            using var flags = await Img.LoadAsync($"./work/flags/{data.userInfo.Country!.Code}.png");
             flags.Mutate(x => x.Resize(100, 67).Brightness(CountryFlagBrightness));
             flags.Mutate(
                 x =>
@@ -1216,7 +1216,7 @@ namespace KanonBot.DrawV2
                                 null
                             )
                     );
-                    using var cr_indicator_icon_increase = await ReadImageRgba(
+                    using var cr_indicator_icon_increase = await Utils.ReadImageRgba(
                         $"./work/panelv2/icons/indicator.png"
                     );
                     cr_indicator_icon_increase.Mutate(x => x.Resize(36, 36));
@@ -1278,7 +1278,7 @@ namespace KanonBot.DrawV2
                                 null
                             )
                     );
-                    using var pp_indicator_icon_increase = await ReadImageRgba(
+                    using var pp_indicator_icon_increase = await Utils.ReadImageRgba(
                         $"./work/panelv2/icons/indicator.png"
                     );
                     pp_indicator_icon_increase.Mutate(x => x.Resize(36, 36));
@@ -1343,7 +1343,7 @@ namespace KanonBot.DrawV2
                                 null
                             )
                     );
-                    using var acc_indicator_icon_increase = await ReadImageRgba(
+                    using var acc_indicator_icon_increase = await Utils.ReadImageRgba(
                         $"./work/panelv2/icons/indicator.png"
                     );
                     acc_indicator_icon_increase.Mutate(x => x.Resize(36, 36));
@@ -1564,11 +1564,11 @@ namespace KanonBot.DrawV2
             if (isBonded)
             {
                 textOptions.Font = new Font(TorusRegular, 36);
-                using var indicator_icon_increase = await ReadImageRgba(
+                using var indicator_icon_increase = await Utils.ReadImageRgba(
                     $"./work/panelv2/icons/indicator.png"
                 );
                 indicator_icon_increase.Mutate(x => x.Resize(42, 42));
-                //Img indicator_icon_decrease = await ReadImageRgba($"./work/panelv2/icons/indicator.png");
+                //Img indicator_icon_decrease = await Utils.ReadImageRgba($"./work/panelv2/icons/indicator.png");
                 //indicator_icon_decrease.Mutate(x => x.Resize(42, 42).Rotate(180));
                 var text = "";
                 //play time
@@ -1741,13 +1741,13 @@ namespace KanonBot.DrawV2
             }
 
 
-                List<PerformanceCalculator.PPInfo> ppinfos = [];
+                List<PPInfo> ppinfos = [];
                 for (int i = 0; i < Math.Min(5, allBP.Length); i++) {
-                    PerformanceCalculator.PPInfo ppinfo;
+                    PPInfo ppinfo;
                     if (islazer) {
-                        ppinfo = await PerformanceCalculator.CalculateDataLazer(allBP[i]);
+                        ppinfo = await OsuCalculator.CalculateData(allBP[i]);
                     } else {
-                        ppinfo = await PerformanceCalculator.CalculateDataAuto(allBP[i]);
+                        ppinfo = await UniversalCalculator.CalculateDataAuto(allBP[i]);
                     }
                     ppinfos.Add(ppinfo);
                 }
@@ -1784,7 +1784,7 @@ namespace KanonBot.DrawV2
 
 
                     //mods
-                    OSU.Models.ScoreMod[] firstbpmods;
+                    OSU.Models.Mod[] firstbpmods;
                     if (islazer) {
                         firstbpmods = allBP![0].Mods;
                     } else {
@@ -2359,7 +2359,7 @@ namespace KanonBot.DrawV2
                         );
                         //shdklahdksadkjkcna5hoacsporjasldjlksakdlsa
 
-                        OSU.Models.ScoreMod[] bpmods;
+                        OSU.Models.Mod[] bpmods;
                         if (islazer) {
                             bpmods = allBP![i].Mods;
                         } else {
@@ -2397,8 +2397,8 @@ namespace KanonBot.DrawV2
                         otherbp_mods_pos_y += 186;
 
                         //mode_icon
-                        using var osuscoremode_icon = await ReadImageRgba(
-                            $"./work/panelv2/icons/mode_icon/score/{data.userInfo.PlayMode.ToStr()}.png"
+                        using var osuscoremode_icon = await Utils.ReadImageRgba(
+                            $"./work/panelv2/icons/mode_icon/score/{data.userInfo.Mode.ToStr()}.png"
                         );
                         osuscoremode_icon.Mutate(x => x.Resize(92, 92));
                         if (FixedScoreModeIconColor)
@@ -2754,7 +2754,7 @@ namespace KanonBot.DrawV2
                         {
                             if (data.badgeId[i] == -9)
                                 continue;
-                            var (_badge, format) = await ReadImageRgbaWithFormat(
+                            var (_badge, format) = await Utils.ReadImageRgbaWithFormat(
                                 $"./work/badges/{data.badgeId[i]}.png"
                             );
                             using var badge = _badge;
@@ -2844,7 +2844,7 @@ namespace KanonBot.DrawV2
             //osu!supporter
             if (data.userInfo.IsSupporter && DisplaySupporterStatus)
             {
-                using var temp = await ReadImageRgba($"./work/panelv2/icons/supporter.png");
+                using var temp = await Utils.ReadImageRgba($"./work/panelv2/icons/supporter.png");
                 temp.Mutate(x => x.Resize(110, 110).Brightness(OsuSupporterIconBrightness));
                 temp.Mutate(
                     x =>
@@ -2860,7 +2860,7 @@ namespace KanonBot.DrawV2
 
             //avatar
             var avatarPath = $"./work/avatar/{data.userInfo.Id}.png";
-            using var avatar = await TryAsync(ReadImageRgba(avatarPath))
+            using var avatar = await TryAsync(Utils.ReadImageRgba(avatarPath))
                 .IfFail(async () =>
                 {
                     try
@@ -2876,7 +2876,7 @@ namespace KanonBot.DrawV2
                         Log.Error(msg);
                         throw; // 下载失败直接抛出error
                     }
-                    return await ReadImageRgba(avatarPath); // 下载后再读取
+                    return await Utils.ReadImageRgba(avatarPath); // 下载后再读取
                 });
 
             // 亮度
@@ -2910,22 +2910,22 @@ namespace KanonBot.DrawV2
             );
 
             //osu!mode
-            using var osuprofilemode_icon = await ReadImageRgba(
-                $"./work/panelv2/icons/mode_icon/profile/{data.userInfo.PlayMode.ToStr()}.png"
+            using var osuprofilemode_icon = await Utils.ReadImageRgba(
+                $"./work/panelv2/icons/mode_icon/profile/{data.userInfo.Mode.ToStr()}.png"
             );
             var osuprofilemode_text = "";
-            switch (data.userInfo.PlayMode)
+            switch (data.userInfo.Mode)
             {
-                case OSU.Enums.Mode.OSU:
+                case OSU.Mode.OSU:
                     osuprofilemode_text = "osu!standard";
                     break;
-                case OSU.Enums.Mode.Taiko:
+                case OSU.Mode.Taiko:
                     osuprofilemode_text = "osu!taiko";
                     break;
-                case OSU.Enums.Mode.Fruits:
+                case OSU.Mode.Fruits:
                     osuprofilemode_text = "osu!catch";
                     break;
-                case OSU.Enums.Mode.Mania:
+                case OSU.Mode.Mania:
                     osuprofilemode_text = "osu!mania";
                     break;
             }

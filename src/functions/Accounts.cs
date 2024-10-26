@@ -250,7 +250,7 @@ namespace KanonBot.Functions
             {
                 // 先检查查询的用户是否有效
                 API.OSU.Models.User? online_osu_userinfo;
-                online_osu_userinfo = await API.OSU.GetUser(childCmd_2);
+                online_osu_userinfo = await API.OSU.Client.GetUser(childCmd_2);
                 if (online_osu_userinfo == null) { await target.reply($"没有找到osu用户名为 {childCmd_2} 的osu用户，绑定失败。"); return; }
 
                 // 检查要绑定的osu是否没有被Kanon用户绑定过
@@ -274,7 +274,7 @@ namespace KanonBot.Functions
                 try
                 {
                     // 没被他人绑定，开始绑定流程
-                    if (await Database.Client.InsertOsuUser(DBUser.uid, online_osu_userinfo.Id, online_osu_userinfo.CoverUrl.ToString() == "" ? 0 : 2))   //?这里url真的能为空吗  我不到啊
+                    if (await Database.Client.InsertOsuUser(DBUser.uid, online_osu_userinfo.Id))
                     {
                         await target.reply($"绑定成功，已将osu用户 {online_osu_userinfo.Id} 绑定至Kanon账户 {DBUser.uid} 。");
                         await GeneralUpdate.UpdateUser(online_osu_userinfo.Id, true); //插入用户每日数据记录
@@ -288,8 +288,8 @@ namespace KanonBot.Functions
                 await target.reply("请按照以下格式进行绑定。\n!bind osu 您的osu用户名 "); return;
             }
         }
-        public static async Task<(Option<API.OSU.Models.User>, Option<Database.Model.User>)> ParseAt(string atmsg) {
-            var res = SplitKvp(atmsg);
+        public static async Task<(Option<API.OSU.Models.UserExtended>, Option<Database.Model.User>)> ParseAt(string atmsg) {
+            var res = Utils.SplitKvp(atmsg);
             if (res.IsNone)
                 return (None, None);
 
@@ -299,7 +299,7 @@ namespace KanonBot.Functions
                 if (uid == 0)
                     return (None, None);
                 
-                var osuacc_ = await API.OSU.GetUser(uid);
+                var osuacc_ = await API.OSU.Client.GetUser(uid);
                 if (osuacc_ is null)
                     return (None, None);
 
@@ -328,7 +328,7 @@ namespace KanonBot.Functions
             if (dbosu is null)
                 return (None, Some(dbuser!));
 
-            var osuacc = await API.OSU.GetUser(dbosu.osu_uid);
+            var osuacc = await API.OSU.Client.GetUser(dbosu.osu_uid);
             if (osuacc is null)
                 return (None, Some(dbuser!));
             else

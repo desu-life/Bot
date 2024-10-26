@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using KanonBot.API;
 using LanguageExt.UnsafeValueAccess;
+using OSU = KanonBot.API.OSU;
+using static KanonBot.API.OSU.OSUExtensions;
 
 namespace KanonBot
 {
@@ -12,7 +14,7 @@ public static class BotCmdHelper
 {
     public struct BotParameter
     {
-        public OSU.Enums.Mode? osu_mode;
+        public API.OSU.Mode? osu_mode;
         public string osu_username, osu_mods, match_name;           //用于获取具体要查询的模式，未提供返回osu
         public long osu_user_id, bid;
         public int order_number;//用于info的查询n天之前、pr，bp的序号，score的bid，如未提供则返回0
@@ -165,7 +167,7 @@ public static class BotCmdHelper
                 // #1-100
                 if (arg2 != "") {
                     try {
-                        param.osu_mode = OSU.Enums.Int2Mode(int.Parse(arg2[1..]));
+                        param.osu_mode = arg2[1..].Trim().ParseMode();
                     } catch {
                         param.osu_mode = null;
                     }
@@ -199,7 +201,7 @@ public static class BotCmdHelper
                 param.osu_username = arg1;
                 if (arg2 != "") {
                     try {
-                        param.osu_mode = OSU.Enums.Int2Mode(int.Parse(arg2[1..]));
+                        param.osu_mode = arg2[1..].Trim().ParseMode();
                     } catch {
                         param.osu_mode = null;
                     }
@@ -240,7 +242,7 @@ public static class BotCmdHelper
 
                 if (arg2 != "") {
                     try {
-                        param.osu_mode = OSU.Enums.Int2Mode(int.Parse(arg2[1..]));
+                        param.osu_mode = arg2[1..].Trim().ParseMode();
                     } catch {
                         param.osu_mode = null;
                     }
@@ -253,7 +255,7 @@ public static class BotCmdHelper
                 param.osu_username = arg1;
                 if (arg2 != "") {
                     try {
-                        param.osu_mode = OSU.Enums.Int2Mode(int.Parse(arg2[1..]));
+                        param.osu_mode = arg2[1..].Trim().ParseMode();
                     } catch {
                         param.osu_mode = null;
                     }
@@ -299,7 +301,7 @@ public static class BotCmdHelper
 
                 if (arg2 != "") {
                     try {
-                        param.osu_mode = OSU.Enums.Int2Mode(int.Parse(arg2[1..]));
+                        param.osu_mode = arg2[1..].Trim().ParseMode();
                     } catch {
                         param.osu_mode = null;
                     }
@@ -341,7 +343,7 @@ public static class BotCmdHelper
 
                 if (arg2 != "") {
                     try {
-                        param.osu_mode = OSU.Enums.Int2Mode(int.Parse(arg2[1..]));
+                        param.osu_mode = arg2[1..].Trim().ParseMode();
                     } catch {
                         param.osu_mode = null;
                     }
@@ -368,7 +370,7 @@ public static class BotCmdHelper
 
                 if (arg2 != "") {
                     try {
-                        param.osu_mode = OSU.Enums.Int2Mode(int.Parse(arg2[1..]));
+                        param.osu_mode = arg2[1..].Trim().ParseMode();
                     } catch {
                         param.osu_mode = null;
                     }

@@ -1,4 +1,5 @@
 using System.IO;
+using Flurl.Http.Newtonsoft;
 using KanonBot.command_parser;
 using KanonBot.Drivers;
 using KanonBot.Event;
@@ -25,10 +26,14 @@ else
     Config.inner = Config.Base.Default();
     Config.inner.save(configPath);
 }
-FlurlHttp.GlobalSettings.Redirects.Enabled = true;
-FlurlHttp.GlobalSettings.Redirects.MaxAutoRedirects = 10;
-FlurlHttp.GlobalSettings.Redirects.ForwardAuthorizationHeader = true;
-FlurlHttp.GlobalSettings.Redirects.AllowSecureToInsecure = true;
+
+FlurlHttp.Clients.UseNewtonsoft().WithDefaults(c => {
+    c.Settings.Redirects.Enabled = true;
+    c.Settings.Redirects.MaxAutoRedirects = 10;
+    c.Settings.Redirects.ForwardAuthorizationHeader = true;
+    c.Settings.Redirects.AllowSecureToInsecure = true;
+});
+
 var config = Config.inner!;
 
 if (config.dev)
@@ -55,14 +60,14 @@ if (config.dev)
 {
     // var res = API.OSU.SearchBeatmap("exit this ato").Result;
     // Log.Information("{@res}", res);
-    // var score = API.OSU.GetUserBeatmapScore(1646397, 992512, new string[] { }, API.OSU.Enums.Mode.Mania).Result!;
-    // score.Score.Beatmapset = API.OSU.GetBeatmap(score.Score.Beatmap!.BeatmapId).Result!.Beatmapset!;
-    // var attr = API.OSU.GetBeatmapAttributes(score.Score.Beatmap!.BeatmapId, new string[] { }, API.OSU.Enums.Mode.Mania).Result;
+    // var score = API.OSU.Client.GetUserBeatmapScore(1646397, 992512, new string[] { }, API.OSU.Mode.Mania).Result!;
+    // score.Score.Beatmapset = API.OSU.Client.GetBeatmap(score.Score.Beatmap!.BeatmapId).Result!.Beatmapset!;
+    // var attr = API.OSU.Client.GetBeatmapAttributes(score.Score.Beatmap!.BeatmapId, new string[] { }, API.OSU.Mode.Mania).Result;
     // Console.WriteLine("beatmap attr {0}", Json.Serialize(attr));
     // API.OSU.BeatmapFileChecker(score.Score.Beatmap!.BeatmapId).Wait();
     // Console.WriteLine("pp {0}", score.Score.PP);
     // Console.WriteLine("acc {0}", score.Score.Accuracy);
-    // var data = PerformanceCalculator.CalculatePanelDataAuto(score.Score).Result;
+    // var data = UniversalCalculator.CalculatePanelDataAuto(score.Score).Result;
     // Console.WriteLine("cal pp {0}", data.ppInfo.ppStat.total);
     // Console.WriteLine("cal data {0}", Json.Serialize(data.ppInfo));
 

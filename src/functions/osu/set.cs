@@ -4,11 +4,13 @@ using Flurl;
 using Flurl.Http;
 using Flurl.Util;
 using KanonBot.API;
+using KanonBot.API.OSU;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
 using KanonBot.Image;
 using KanonBot.LegacyImage;
 using KanonBot.Message;
+using LanguageExt.UnsafeValueAccess;
 using Serilog;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -198,7 +200,7 @@ namespace KanonBot.Functions.OSUBot
 
             cmd = cmd.ToLower().Trim();
 
-            var mode = API.OSU.Enums.String2Mode(cmd);
+            var mode = cmd.ParseMode();
             if (mode == null)
             {
                 await target.reply("提供的模式不正确，请重新确认 (osu/taiko/fruits/mania)");
@@ -209,7 +211,7 @@ namespace KanonBot.Functions.OSUBot
                 try
                 {
                     await Database.Client.SetOsuUserMode(DBOsuInfo.osu_uid, mode.Value);
-                    await target.reply("成功设置模式为 " + cmd);
+                    await target.reply("成功设置模式为 " + mode.Value.ToDisplay());
                 }
                 catch
                 {
@@ -286,7 +288,7 @@ namespace KanonBot.Functions.OSUBot
             try
             {
                 image = new Image<Rgba32>(1382, 2456);
-                var temppic = await ReadImageRgba(imagePath);
+                var temppic = await Utils.ReadImageRgba(imagePath);
                 temppic.Mutate(
                     x =>
                         x.Resize(
@@ -396,7 +398,7 @@ namespace KanonBot.Functions.OSUBot
             try
             {
                 image = new Image<Rgba32>(1200, 350);
-                var temppic = await ReadImageRgba(imagePath);
+                var temppic = await Utils.ReadImageRgba(imagePath);
                 temppic.Mutate(
                     x =>
                         x.Resize(
@@ -505,7 +507,7 @@ namespace KanonBot.Functions.OSUBot
             try
             {
                 
-                var (temppic, format) = await ReadImageRgbaWithFormat(imagePath);
+                var (temppic, format) = await Utils.ReadImageRgbaWithFormat(imagePath);
                 using var pic = temppic;
                 //检测上传的infopanel尺寸、开孔是否正确
                 bool isok = true;
@@ -662,7 +664,7 @@ namespace KanonBot.Functions.OSUBot
             }
             try
             {
-                var (temppic, format) = await ReadImageRgbaWithFormat(imagePath);
+                var (temppic, format) = await Utils.ReadImageRgbaWithFormat(imagePath);
                 using var pic = temppic;
                 //检测上传的infopanel尺寸是否正确
                 if (

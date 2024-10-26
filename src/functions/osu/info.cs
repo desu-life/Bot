@@ -1,9 +1,11 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using KanonBot.API;
+using KanonBot.API.OSU;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
 using KanonBot.Message;
+using KanonBot.OsuPerformance;
 using LanguageExt.UnsafeValueAccess;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
@@ -17,7 +19,7 @@ namespace KanonBot.Functions.OSUBot
         {
             #region 验证
             long? osuID = null;
-            API.OSU.Enums.Mode? mode;
+            API.OSU.Mode? mode;
             Database.Model.User? DBUser = null;
             Database.Model.UserOSU? DBOsuInfo = null;
 
@@ -44,8 +46,8 @@ namespace KanonBot.Functions.OSUBot
                     await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
                     return;
                 }
-
-                mode ??= API.OSU.Enums.String2Mode(DBOsuInfo.osu_mode)!.Value; // 从数据库解析，理论上不可能错
+                    
+                mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value; // 从数据库解析，理论上不可能错
                 osuID = DBOsuInfo.osu_uid;
             }
             else
@@ -55,13 +57,22 @@ namespace KanonBot.Functions.OSUBot
                 var (atOSU, atDBUser) = await Accounts.ParseAt(command.osu_username);
                 if (atOSU.IsNone && !atDBUser.IsNone)
                 {
-                    await target.reply("ta还没有绑定osu账户呢。");
+                    DBUser = atDBUser.ValueUnsafe();
+                    DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
+                    if (DBOsuInfo == null)
+                    {
+                        await target.reply("ta还没有绑定osu账户呢。");
+                    }
+                    else
+                    {
+                        await target.reply("被办了。");
+                    }
                     return;
                 }
                 else if (!atOSU.IsNone && atDBUser.IsNone)
                 {
                     var _osuinfo = atOSU.ValueUnsafe();
-                    mode ??= _osuinfo.PlayMode;
+                    mode ??= _osuinfo.Mode;
                     osuID = _osuinfo.Id;
                 }
                 else if (!atOSU.IsNone && !atDBUser.IsNone)
@@ -69,15 +80,15 @@ namespace KanonBot.Functions.OSUBot
                     DBUser = atDBUser.ValueUnsafe();
                     DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
                     var _osuinfo = atOSU.ValueUnsafe();
-                    mode ??= API.OSU.Enums.String2Mode(DBOsuInfo!.osu_mode)!.Value;
+                    mode ??= DBOsuInfo!.osu_mode?.ToMode()!.Value;
                     osuID = _osuinfo.Id;
                 }
                 else
                 {
                     // 普通查询
-                    var OnlineOsuInfo = await API.OSU.GetUser(
+                    var OnlineOsuInfo = await API.OSU.Client.GetUser(
                         command.osu_username,
-                        command.osu_mode ?? API.OSU.Enums.Mode.OSU
+                        command.osu_mode ?? API.OSU.Mode.OSU
                     );
                     if (OnlineOsuInfo != null)
                     {
@@ -85,9 +96,9 @@ namespace KanonBot.Functions.OSUBot
                         if (DBOsuInfo != null)
                         {
                             DBUser = await Accounts.GetAccountByOsuUid(OnlineOsuInfo.Id);
-                            mode ??= API.OSU.Enums.String2Mode(DBOsuInfo.osu_mode)!.Value;
+                            mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value;
                         }
-                        mode ??= OnlineOsuInfo.PlayMode;
+                        mode ??= OnlineOsuInfo.Mode;
                         osuID = OnlineOsuInfo.Id;
                     }
                     else
@@ -100,13 +111,10 @@ namespace KanonBot.Functions.OSUBot
             }
 
             // 验证osu信息
-            var tempOsuInfo = await API.OSU.GetUser(osuID!.Value, mode!.Value);
+            var tempOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (tempOsuInfo == null)
             {
-                if (DBOsuInfo != null)
-                    await target.reply("被办了。");
-                else
-                    await target.reply("猫猫没有找到此用户。");
+                await target.reply("猫猫没有找到此用户。");
                 // 中断查询
                 return;
             }
@@ -119,7 +127,7 @@ namespace KanonBot.Functions.OSUBot
                 userInfo = tempOsuInfo!
             };
             // 覆写
-            data.userInfo.PlayMode = mode!.Value;
+            data.userInfo.Mode = mode!.Value;
             // 查询
 
             if (DBOsuInfo != null)
@@ -129,7 +137,7 @@ namespace KanonBot.Functions.OSUBot
                     // 从数据库取指定天数前的记录
                     (data.daysBefore, data.prevUserInfo) = await Database.Client.GetOsuUserData(
                         DBOsuInfo!.osu_uid,
-                        data.userInfo.PlayMode,
+                        data.userInfo.Mode,
                         command.order_number
                     );
                     if (data.daysBefore > 0)
@@ -142,7 +150,7 @@ namespace KanonBot.Functions.OSUBot
                     {
                         (data.daysBefore, data.prevUserInfo) = await Database.Client.GetOsuUserData(
                             DBOsuInfo!.osu_uid,
-                            data.userInfo.PlayMode,
+                            data.userInfo.Mode,
                             0
                         );
                         if (data.daysBefore > 0)
@@ -169,7 +177,7 @@ namespace KanonBot.Functions.OSUBot
                         try
                         {
                             await Database.Client.UpdateOsuPPlusData(
-                                (await API.OSU.TryGetUserPlusData(tempOsuInfo!))!.User,
+                                (await API.OSU.Client.TryGetUserPlusData(tempOsuInfo!))!.User,
                                 tempOsuInfo!.Id
                             );
                         }
@@ -220,7 +228,7 @@ namespace KanonBot.Functions.OSUBot
                     {
                         try
                         {
-                            var temppppinfo = await API.OSU.TryGetUserPlusData(tempOsuInfo!);
+                            var temppppinfo = await API.OSU.Client.TryGetUserPlusData(tempOsuInfo!);
                             if (temppppinfo == null)
                                 return;
                             await Database.Client.UpdateOsuPPlusData(
@@ -277,10 +285,10 @@ namespace KanonBot.Functions.OSUBot
                         LegacyImage.Draw.UserPanelData.CustomMode.Dark => DrawV2.OsuInfoPanelV2.InfoCustom.DarkDefault,
                         _ => throw new ArgumentOutOfRangeException("未知的自定义模式")
                     };
-                    allBP = await API.OSU.GetUserScores(
+                    allBP = await API.OSU.Client.GetUserScores(
                         data.userInfo.Id,
-                        API.OSU.Enums.UserScoreType.Best,
-                        data.userInfo.PlayMode,
+                        API.OSU.UserScoreType.Best,
+                        data.userInfo.Mode,
                         20,
                         0
                     );
@@ -312,15 +320,15 @@ namespace KanonBot.Functions.OSUBot
             );
             try
             {
-                if (data.userInfo.PlayMode == API.OSU.Enums.Mode.OSU) //只存std的
+                if (data.userInfo.Mode == API.OSU.Mode.OSU) //只存std的
                     if (allBP!.Length > 0)
                         await InsertBeatmapTechInfo(allBP);
                     else
                     {
-                        allBP = await API.OSU.GetUserScores(
+                        allBP = await API.OSU.Client.GetUserScores(
                         data.userInfo.Id,
-                        API.OSU.Enums.UserScoreType.Best,
-                        API.OSU.Enums.Mode.OSU,
+                        API.OSU.UserScoreType.Best,
+                        API.OSU.Mode.OSU,
                         20,
                         0
                     );
@@ -344,7 +352,7 @@ namespace KanonBot.Functions.OSUBot
                            score.Rank.ToUpper() == "S" ||
                            score.Rank.ToUpper() == "A")
                     {
-                        var data = await PerformanceCalculator.CalculatePanelDataRosu(score);
+                        var data = await RosuCalculator.CalculatePanelData(score);
                         await Database.Client.InsertOsuStandardBeatmapTechData(
                         score.Beatmap!.BeatmapId,
                         data.ppInfo.star,

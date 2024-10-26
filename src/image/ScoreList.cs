@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Numerics;
-using KanonBot.API;
+using OSU = KanonBot.API.OSU;
+using static KanonBot.API.OSU.OSUExtensions;
 using KanonBot.Image;
 using KanonBot.LegacyImage;
 using SixLabors.Fonts;
@@ -16,7 +17,7 @@ using SixLabors.ImageSharp.Processing;
 using static KanonBot.LegacyImage.Draw;
 using Img = SixLabors.ImageSharp.Image;
 using ResizeOptions = SixLabors.ImageSharp.Processing.ResizeOptions;
-using static KanonBot.Functions.OSU.PerformanceCalculator;
+using KanonBot.OsuPerformance;
 
 namespace KanonBot.image
 {
@@ -43,9 +44,9 @@ namespace KanonBot.image
             for (int i = 0; i < scoreList.Count; i++) {
                 PPInfo ppinfo;
                 if (lazer) {
-                    ppinfo = await CalculateDataLazer(scoreList[i]);
+                    ppinfo = await OsuCalculator.CalculateData(scoreList[i]);
                 } else {
-                    ppinfo = await CalculateDataAuto(scoreList[i]);
+                    ppinfo = await UniversalCalculator.CalculateDataAuto(scoreList[i]);
                 }
                 ppinfos.Add(ppinfo);
             }
@@ -90,7 +91,7 @@ namespace KanonBot.image
                     MainPicPath = "./work/panelv2/bplist_main_score.png";
                     break;
             }
-            using var MainPic = await ReadImageRgba(MainPicPath);
+            using var MainPic = await Utils.ReadImageRgba(MainPicPath);
 
             //绘制beatmap图像
             var scorebgPath = $"./work/background/{scoreList[0].Beatmap!.BeatmapId}.png";
@@ -98,7 +99,7 @@ namespace KanonBot.image
             {
                 try
                 {
-                    scorebgPath = await OSU.SayoDownloadBeatmapBackgroundImg(
+                    scorebgPath = await OSU.Client.SayoDownloadBeatmapBackgroundImg(
                         scoreList[0].Beatmapset!.Id,
                         scoreList[0].Beatmap!.BeatmapId,
                         "./work/background/"
@@ -111,8 +112,8 @@ namespace KanonBot.image
                 }
             }
             
-            using var scorebg = await TryAsync(ReadImageRgba(scorebgPath!))
-                .IfFail(await ReadImageRgba("./work/legacy/load-failed-img.png"));
+            using var scorebg = await TryAsync(Utils.ReadImageRgba(scorebgPath!))
+                .IfFail(await Utils.ReadImageRgba("./work/legacy/load-failed-img.png"));
             
             scorebg.Mutate(
                 x =>
@@ -126,7 +127,7 @@ namespace KanonBot.image
 
             //头像、用户名、PP
             var avatarPath = $"./work/avatar/{userInfo.Id}.png";
-            using var avatar = await TryAsync(ReadImageRgba(avatarPath))
+            using var avatar = await TryAsync(Utils.ReadImageRgba(avatarPath))
                 .IfFail(async () =>
                 {
                     try
@@ -142,7 +143,7 @@ namespace KanonBot.image
                         Log.Error(msg);
                         throw; // 下载失败直接抛出error
                     }
-                    return await ReadImageRgba(avatarPath); // 下载后再读取
+                    return await Utils.ReadImageRgba(avatarPath); // 下载后再读取
                 });
             avatar.Mutate(x => x.Resize(160, 160).RoundCorner(new Size(160, 160), 25));
             image.Mutate(x => x.DrawImage(avatar, new Point(56, 60), 1));
@@ -385,13 +386,13 @@ namespace KanonBot.image
             //页中
             for (int i = 1; i < scoreList.Count; ++i)
             {
-                using var SubPic = await ReadImageRgba("./work/panelv2/score_list.png");
-                using var osuscoremode_icon = await ReadImageRgba(
+                using var SubPic = await Utils.ReadImageRgba("./work/panelv2/score_list.png");
+                using var osuscoremode_icon = await Utils.ReadImageRgba(
                     $"./work/panelv2/icons/mode_icon/score/{scoreList[i].Mode.ToStr()}.png"
                 );
 
                 //Difficulty icon
-                Color modeC = ForStarDifficulty(ppinfos[i].star);
+                Color modeC = Utils.ForStarDifficulty(ppinfos[i].star);
                 osuscoremode_icon.Mutate(x => x.Resize(92, 92));
                 osuscoremode_icon.Mutate(
                     x =>
@@ -678,7 +679,7 @@ namespace KanonBot.image
                 image.Mutate(x => x.DrawImage(SubPic, new Point(0, 698 + (i - 1) * 186 + 1), 1));
             }
             //页尾
-            using var FooterPic = await ReadImageRgba("./work/panelv2/score_list_footer.png");
+            using var FooterPic = await Utils.ReadImageRgba("./work/panelv2/score_list_footer.png");
             image.Mutate(
                 x => x.DrawImage(FooterPic, new Point(0, 698 + (scoreList.Count - 1) * 186 + 1), 1)
             );

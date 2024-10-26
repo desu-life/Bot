@@ -172,7 +172,7 @@ namespace KanonBot.Functions.OSUBot
                     if (permissions_flag < 3)
                         await target.reply("权限不足。");
                     await target.reply("开始任务。");
-                    await CheckBadgeIsVaild_Job();
+                    await CheckBadgeIsVaildJob();
                     await target.reply("已完成。");
                     return;
                 default:
@@ -408,7 +408,7 @@ namespace KanonBot.Functions.OSUBot
 
                 var rtmsg = new Chain();
                 using var stream = new MemoryStream();
-                var badge_img = await ReadImageRgba($"./work/badges/{badgeinfo!.id}.png");
+                var badge_img = await Utils.ReadImageRgba($"./work/badges/{badgeinfo!.id}.png");
                 await badge_img.SaveAsync(stream, new PngEncoder());
                 rtmsg.image(Convert.ToBase64String(stream.ToArray(), 0, (int)stream.Length), ImageSegment.Type.Base64).msg(
                     $"徽章信息如下：\n" +
@@ -887,7 +887,7 @@ namespace KanonBot.Functions.OSUBot
 
                     var rtmsg = new Chain();
                     using var stream = new MemoryStream();
-                    var badge_img = await ReadImageRgba($"./work/badges/{badgeinfo!.id}.png");
+                    var badge_img = await Utils.ReadImageRgba($"./work/badges/{badgeinfo!.id}.png");
                     await badge_img.SaveAsync(stream, new PngEncoder());
                     var rtmsg_s = $"已成功兑换徽章。\n" +
                         $"徽章信息如下：\n" +
@@ -963,7 +963,7 @@ namespace KanonBot.Functions.OSUBot
                     var error_count = 0;
                     while (error_count < 4)
                     {
-                        var code = RandomRedemptionCode();
+                        var code = Utils.RandomRedemptionCode();
                         var status = await Database.Client.CreateBadgeRedemptionCode(badge_id, code, can_repeatedly, DateTimeOffset.Parse(DateTime.Now.AddDays(expire_at).ToString()), badge_expire_days);
                         if (status)
                         {
@@ -1075,7 +1075,7 @@ namespace KanonBot.Functions.OSUBot
             return true;
         }
 
-        public static async Task CheckBadgeIsVaild_Job()
+        public static async Task CheckBadgeIsVaildJob()
         {
             //获取全部徽章信息
             var allBadges = await Database.Client.GetAllBadges();
@@ -1132,7 +1132,7 @@ namespace KanonBot.Functions.OSUBot
                 mailmsg += "\n\n desu.life";
                 if (hadbadgeexpired && user.email!.Length > 4)
                 {
-                    SendMail(user.email!, "desu.life - 徽章过期通知", mailmsg, false);
+                    Utils.SendMail(user.email!, "desu.life - 徽章过期通知", mailmsg, false);
                     Log.Information($"已向用户 {user.uid} 发送徽章过期通知邮件。");
                 }
             }
@@ -1178,7 +1178,7 @@ namespace KanonBot.Functions.OSUBot
                     mailmsg += "\n\n desu.life";
                     if (user.email!.Length > 5)
                     {
-                        SendMail(user.email!, "desu.life - 徽章过期通知", mailmsg, false);
+                        Utils.SendMail(user.email!, "desu.life - 徽章过期通知", mailmsg, false);
                         Log.Information($"已向用户 {user.uid} 发送徽章过期通知邮件。");
                     }
                 }

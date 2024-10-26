@@ -32,14 +32,14 @@ namespace KanonBot.Functions.OSUBot
                 { await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。"); return; }
 
                 // 分别获取两位的信息
-                var userSelf = await API.OSU.GetUser(DBOsuInfo.osu_uid);
+                var userSelf = await API.OSU.Client.GetUser(DBOsuInfo.osu_uid);
                 if (userSelf == null)
                 {
                     await target.reply("被办了。");
                     return;
                 }
 
-                var user2 = await API.OSU.GetUser(cmds[0]);
+                var user2 = await API.OSU.Client.GetUser(cmds[0]);
                 if (user2 == null)
                 {
                     await target.reply("猫猫没有找到此用户。");
@@ -53,7 +53,7 @@ namespace KanonBot.Functions.OSUBot
                 var d1 = await Database.Client.GetOsuPPlusData(userSelf.Id);
                 if (d1 == null)
                 {
-                    var d1temp = await API.OSU.TryGetUserPlusData(userSelf);
+                    var d1temp = await API.OSU.Client.TryGetUserPlusData(userSelf);
                     if (d1temp == null)
                     {
                         await target.reply("获取pp+数据时出错，等会儿再试试吧");
@@ -68,7 +68,7 @@ namespace KanonBot.Functions.OSUBot
                 var d2 = await Database.Client.GetOsuPPlusData(user2.Id);
                 if (d2 == null)
                 {
-                    var d2temp = await API.OSU.TryGetUserPlusData(user2);
+                    var d2temp = await API.OSU.Client.TryGetUserPlusData(user2);
                     if (d2temp == null)
                     {
                         await target.reply("获取pp+数据时出错，等会儿再试试吧");
@@ -92,14 +92,14 @@ namespace KanonBot.Functions.OSUBot
                 }
 
                 // 分别获取两位的信息
-                var user1 = await API.OSU.GetUser(cmds[0]);
+                var user1 = await API.OSU.Client.GetUser(cmds[0]);
                 if (user1 == null)
                 {
                     await target.reply($"猫猫没有找到叫 {cmds[0]} 用户。");
                     return;
                 }
 
-                var user2 = await API.OSU.GetUser(cmds[1]);
+                var user2 = await API.OSU.Client.GetUser(cmds[1]);
                 if (user2 == null)
                 {
                     await target.reply($"猫猫没有找到叫 {cmds[1]} 用户。");
@@ -113,7 +113,7 @@ namespace KanonBot.Functions.OSUBot
                 var d1 = await Database.Client.GetOsuPPlusData(user1.Id);
                 if (d1 == null)
                 {
-                    var d1temp = await API.OSU.TryGetUserPlusData(user1);
+                    var d1temp = await API.OSU.Client.TryGetUserPlusData(user1);
                     if (d1temp == null)
                     {
                         await target.reply("获取pp+数据时出错，等会儿再试试吧");
@@ -128,7 +128,7 @@ namespace KanonBot.Functions.OSUBot
                 var d2 = await Database.Client.GetOsuPPlusData(user2.Id);
                 if (d2 == null)
                 {
-                    var d2temp = await API.OSU.TryGetUserPlusData(user2);
+                    var d2temp = await API.OSU.Client.TryGetUserPlusData(user2);
                     if (d2temp == null)
                     {
                         await target.reply("获取pp+数据时出错，等会儿再试试吧");

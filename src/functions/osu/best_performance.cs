@@ -2,13 +2,14 @@ using KanonBot.Drivers;
 using KanonBot.Message;
 using KanonBot.API;
 using System.Security.Cryptography;
-using static KanonBot.API.OSU.Enums;
 using KanonBot.Functions.OSU;
 using RosuPP;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using System.IO;
 using LanguageExt.UnsafeValueAccess;
+using KanonBot.API.OSU;
+using KanonBot.OsuPerformance;
 
 namespace KanonBot.Functions.OSUBot
 {
@@ -18,7 +19,7 @@ namespace KanonBot.Functions.OSUBot
         {
             #region 验证
             long? osuID = null;
-            API.OSU.Enums.Mode? mode;
+            API.OSU.Mode? mode;
             Database.Model.User? DBUser = null;
             Database.Model.UserOSU? DBOsuInfo = null;
 
@@ -46,7 +47,7 @@ namespace KanonBot.Functions.OSUBot
                     return;
                 }
 
-                mode ??= API.OSU.Enums.String2Mode(DBOsuInfo.osu_mode)!.Value; // 从数据库解析，理论上不可能错
+                mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value; // 从数据库解析，理论上不可能错
                 osuID = DBOsuInfo.osu_uid;
             }
             else
@@ -55,23 +56,32 @@ namespace KanonBot.Functions.OSUBot
                 // 这里先按照at方法查询，查询不到就是普通用户查询
                 var (atOSU, atDBUser) = await Accounts.ParseAt(command.osu_username);
                 if (atOSU.IsNone && !atDBUser.IsNone) {
-                    await target.reply("ta还没有绑定osu账户呢。");
+                    DBUser = atDBUser.ValueUnsafe();
+                    DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
+                    if (DBOsuInfo == null)
+                    {
+                        await target.reply("ta还没有绑定osu账户呢。");
+                    }
+                    else
+                    {
+                        await target.reply("被办了。");
+                    }
                     return;
                 } else if (!atOSU.IsNone && atDBUser.IsNone) {
                     var _osuinfo = atOSU.ValueUnsafe();
-                    mode ??= _osuinfo.PlayMode;
+                    mode ??= _osuinfo.Mode;
                     osuID = _osuinfo.Id;
                 } else if (!atOSU.IsNone && !atDBUser.IsNone) {
                     DBUser = atDBUser.ValueUnsafe();
                     DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
                     var _osuinfo = atOSU.ValueUnsafe();
-                    mode ??= API.OSU.Enums.String2Mode(DBOsuInfo!.osu_mode)!.Value ;
+                    mode ??= DBOsuInfo!.osu_mode?.ToMode()!.Value ;
                     osuID = _osuinfo.Id;
                 } else {
                     // 普通查询
-                    var OnlineOsuInfo = await API.OSU.GetUser(
+                    var OnlineOsuInfo = await API.OSU.Client.GetUser(
                         command.osu_username,
-                        command.osu_mode ?? API.OSU.Enums.Mode.OSU
+                        command.osu_mode ?? API.OSU.Mode.OSU
                     );
                     if (OnlineOsuInfo != null)
                     {
@@ -79,9 +89,9 @@ namespace KanonBot.Functions.OSUBot
                         if (DBOsuInfo != null)
                         {
                             DBUser = await Accounts.GetAccountByOsuUid(OnlineOsuInfo.Id);
-                            mode ??= API.OSU.Enums.String2Mode(DBOsuInfo.osu_mode)!.Value;
+                            mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value;
                         }
-                        mode ??= OnlineOsuInfo.PlayMode;
+                        mode ??= OnlineOsuInfo.Mode;
                         osuID = OnlineOsuInfo.Id;
                     }
                     else
@@ -94,13 +104,10 @@ namespace KanonBot.Functions.OSUBot
             }
 
             // 验证osu信息
-            var tempOsuInfo = await API.OSU.GetUser(osuID!.Value, mode!.Value);
+            var tempOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
             if (tempOsuInfo == null)
             {
-                if (DBOsuInfo != null)
-                    await target.reply("被办了。");
-                else
-                    await target.reply("猫猫没有找到此用户。");
+                await target.reply("猫猫没有找到此用户。");
                 // 中断查询
                 return;
             }
@@ -113,9 +120,9 @@ namespace KanonBot.Functions.OSUBot
             }
 
 
-            var scores = await API.OSU.GetUserScores(
+            var scores = await API.OSU.Client.GetUserScores(
                 osuID!.Value,
-                API.OSU.Enums.UserScoreType.Best,
+                API.OSU.UserScoreType.Best,
                 mode!.Value,
                 1,
                 command.order_number - 1
@@ -130,9 +137,9 @@ namespace KanonBot.Functions.OSUBot
             {
                 LegacyImage.Draw.ScorePanelData data;
                 if (command.lazer) {
-                    data = await PerformanceCalculator.CalculatePanelDataLazer(scores[0]);
+                    data = await OsuCalculator.CalculatePanelData(scores[0]);
                 } else {
-                    data = await PerformanceCalculator.CalculatePanelDataAuto(scores[0]);
+                    data = await UniversalCalculator.CalculatePanelDataAuto(scores[0]);
                 }
                 using var stream = new MemoryStream();
     
@@ -145,11 +152,11 @@ namespace KanonBot.Functions.OSUBot
                         ImageSegment.Type.Base64
                     )
                 );
-                if (scores![0].Mode == API.OSU.Enums.Mode.OSU)
+                if (scores![0].Mode == API.OSU.Mode.OSU)
                 {
                     if (
-                        scores[0].Beatmap!.Status == API.OSU.Enums.Status.ranked
-                        || scores[0].Beatmap!.Status == API.OSU.Enums.Status.approved
+                        scores[0].Beatmap!.Status == API.OSU.Models.Status.ranked
+                        || scores[0].Beatmap!.Status == API.OSU.Models.Status.approved
                     )
                     {
                         await Database.Client.InsertOsuStandardBeatmapTechData(
