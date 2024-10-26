@@ -64,6 +64,58 @@ namespace KanonBot.LegacyImage
             "./work/fonts/AvenirLTStd-Medium.ttf"
         );
 
+        
+        public static async Task<Img?> DrawMod(OSU.Models.Mod mod) {
+            var modName = mod.Acronym.ToUpper();
+            var modPath = $"./work/mods/{modName}.png";
+            if (File.Exists(modPath)) {
+                var modPic = await Img.LoadAsync(modPath);
+                modPic.Mutate(x => x.Resize(200, 0));
+                return modPic;
+            } else {
+                // var drawOptions = new DrawingOptions
+                // {
+                //     GraphicsOptions = new GraphicsOptions { Antialias = true }
+                // };
+                // var textOptions = new RichTextOptions(new Font(TorusRegular, 10))
+                // {
+                //     VerticalAlignment = VerticalAlignment.Center,
+                //     HorizontalAlignment = HorizontalAlignment.Center
+                // };
+                // textOptions.Origin = new PointF(100, 110);
+                // var modPic = await Img.LoadAsync($"./work/mods/Unknown.png");
+                // modPic.Mutate(x => x.Resize(200, 0));
+                // modPic.Mutate(x => x.DrawText(drawOptions, textOptions, "123", new SolidBrush(Color.White), null));
+                // return modPic;
+                return null;
+            }
+        }
+
+        public static async Task<Img> DrawDifficultyRing(RosuPP.Mode mode, double star) {
+            var ringFile = mode switch
+            {
+                RosuPP.Mode.Osu => "std-expertplus.png",
+                RosuPP.Mode.Taiko => "taiko-expertplus.png",
+                RosuPP.Mode.Catch => "ctb-expertplus.png",
+                RosuPP.Mode.Mania => "mania-expertplus.png",
+                _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+            };
+
+            using var color = new Image<Rgba32>(128, 128);
+            color.Mutate(x => x.Fill(Utils.ForStarDifficulty(star)));
+
+            using var cover = await Image<Rgba32>.LoadAsync($"./work/icons/ringcontent.png");
+            cover.Mutate(x => x.Resize(128, 128));
+            color.Mutate(x => x.DrawImage(cover, new Point(0, 0), 0.3f));
+            cover.Mutate(x => x.Brightness(0.9f)); // adjust
+            
+            var ring = await Image<Rgba32>.LoadAsync($"./work/icons/{ringFile}");
+            ring.Mutate(x => x.Resize(128, 128));
+            ring.Mutate(x => x.DrawImage(color, new Point(0, 0), PixelColorBlendingMode.Lighten, PixelAlphaCompositionMode.SrcAtop, 1f));
+            return ring;
+        }
+
+
         public static async Task<Img> DrawInfo(
             UserPanelData data,
             bool isBonded = false,
@@ -690,69 +742,71 @@ namespace KanonBot.LegacyImage
             // diff circle
             // green, blue, yellow, red, purple, black
             // [0,2), [2,3), [3,4), [4,5), [5,7), [7,?)
-            var ringFile = new string[6];
-            switch (data.mode)
-            {
-                case RosuPP.Mode.Osu:
-                    ringFile[0] = "std-easy.png";
-                    ringFile[1] = "std-normal.png";
-                    ringFile[2] = "std-hard.png";
-                    ringFile[3] = "std-insane.png";
-                    ringFile[4] = "std-expert.png";
-                    ringFile[5] = "std-expertplus.png";
-                    break;
-                case RosuPP.Mode.Catch:
-                    ringFile[0] = "ctb-easy.png";
-                    ringFile[1] = "ctb-normal.png";
-                    ringFile[2] = "ctb-hard.png";
-                    ringFile[3] = "ctb-insane.png";
-                    ringFile[4] = "ctb-expert.png";
-                    ringFile[5] = "ctb-expertplus.png";
-                    break;
-                case RosuPP.Mode.Taiko:
-                    ringFile[0] = "taiko-easy.png";
-                    ringFile[1] = "taiko-normal.png";
-                    ringFile[2] = "taiko-hard.png";
-                    ringFile[3] = "taiko-insane.png";
-                    ringFile[4] = "taiko-expert.png";
-                    ringFile[5] = "taiko-expertplus.png";
-                    break;
-                case RosuPP.Mode.Mania:
-                    ringFile[0] = "mania-easy.png";
-                    ringFile[1] = "mania-normal.png";
-                    ringFile[2] = "mania-hard.png";
-                    ringFile[3] = "mania-insane.png";
-                    ringFile[4] = "mania-expert.png";
-                    ringFile[5] = "mania-expertplus.png";
-                    break;
-            }
-            string temp;
-            var star = ppInfo.star;
-            if (star < 2)
-            {
-                temp = ringFile[0];
-            }
-            else if (star < 2.7)
-            {
-                temp = ringFile[1];
-            }
-            else if (star < 4)
-            {
-                temp = ringFile[2];
-            }
-            else if (star < 5.3)
-            {
-                temp = ringFile[3];
-            }
-            else if (star < 6.5)
-            {
-                temp = ringFile[4];
-            }
-            else
-            {
-                temp = ringFile[5];
-            }
-            using var diffCircle = await Img.LoadAsync("./work/icons/" + temp);
+            // var ringFile = new string[6];
+            // switch (data.mode)
+            // {
+            //     case RosuPP.Mode.Osu:
+            //         ringFile[0] = "std-easy.png";
+            //         ringFile[1] = "std-normal.png";
+            //         ringFile[2] = "std-hard.png";
+            //         ringFile[3] = "std-insane.png";
+            //         ringFile[4] = "std-expert.png";
+            //         ringFile[5] = "std-expertplus.png";
+            //         break;
+            //     case RosuPP.Mode.Catch:
+            //         ringFile[0] = "ctb-easy.png";
+            //         ringFile[1] = "ctb-normal.png";
+            //         ringFile[2] = "ctb-hard.png";
+            //         ringFile[3] = "ctb-insane.png";
+            //         ringFile[4] = "ctb-expert.png";
+            //         ringFile[5] = "ctb-expertplus.png";
+            //         break;
+            //     case RosuPP.Mode.Taiko:
+            //         ringFile[0] = "taiko-easy.png";
+            //         ringFile[1] = "taiko-normal.png";
+            //         ringFile[2] = "taiko-hard.png";
+            //         ringFile[3] = "taiko-insane.png";
+            //         ringFile[4] = "taiko-expert.png";
+            //         ringFile[5] = "taiko-expertplus.png";
+            //         break;
+            //     case RosuPP.Mode.Mania:
+            //         ringFile[0] = "mania-easy.png";
+            //         ringFile[1] = "mania-normal.png";
+            //         ringFile[2] = "mania-hard.png";
+            //         ringFile[3] = "mania-insane.png";
+            //         ringFile[4] = "mania-expert.png";
+            //         ringFile[5] = "mania-expertplus.png";
+            //         break;
+            // }
+            // string temp;
+            // var star = ppInfo.star;
+            // if (star < 2)
+            // {
+            //     temp = ringFile[0];
+            // }
+            // else if (star < 2.7)
+            // {
+            //     temp = ringFile[1];
+            // }
+            // else if (star < 4)
+            // {
+            //     temp = ringFile[2];
+            // }
+            // else if (star < 5.3)
+            // {
+            //     temp = ringFile[3];
+            // }
+            // else if (star < 6.5)
+            // {
+            //     temp = ringFile[4];
+            // }
+            // else
+            // {
+            //     temp = ringFile[5];
+            // }
+            // using var diffCircle = await Img.LoadAsync("./work/icons/" + temp);
+            // diffCircle.Mutate(x => x.Resize(65, 65));
+            using var diffCircle = await DrawDifficultyRing(data.mode, ppInfo.star);
             diffCircle.Mutate(x => x.Resize(65, 65));
             score.Mutate(x => x.DrawImage(diffCircle, new Point(512, 257), 1));
             // beatmap_status
@@ -777,19 +831,13 @@ namespace KanonBot.LegacyImage
             var modp = 0;
             foreach (var mod in mods)
             {
-                try
-                {
-                    using var modPic = await Img.LoadAsync(
-                        $"./work/mods/{mod.Acronym.ToUpper()}.png"
-                    );
-                    modPic.Mutate(x => x.Resize(200, 0));
-                    score.Mutate(x => x.DrawImage(modPic, new Point((modp * 160) + 440, 440), 1));
-                    modp += 1;
-                }
-                catch
-                {
-                    continue;
-                }
+                // 筛选classic成绩
+                if (data.scoreInfo.IsClassic && mod.IsClassic) continue;
+                var modPic = await DrawMod(mod);
+                if (modPic is null) continue;
+                modPic.Mutate(x => x.Resize(200, 0));
+                score.Mutate(x => x.DrawImage(modPic, new Point((modp * 160) + 440, 440), 1));
+                modp += 1;
             }
             // rankings
             var ranking = data.scoreInfo.Passed ? data.scoreInfo.RankAuto : "F";
@@ -943,7 +991,7 @@ namespace KanonBot.LegacyImage
                 x.DrawText(drawOptions, textOptions, hp, new SolidBrush(color), null)
             );
             // stars, version
-            var starText = $"Stars: {star:0.##}";
+            var starText = $"Stars: {ppInfo.star:0.##}";
             textOptions.Origin = new PointF(584, 292);
             score.Mutate(x =>
                 x.DrawText(drawOptions, textOptions, starText, new SolidBrush(Color.Black), null)
