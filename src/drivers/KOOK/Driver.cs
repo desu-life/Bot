@@ -113,6 +113,11 @@ public partial class Kook : ISocket, IDriver
         throw new NotSupportedException("不支持");
     }
 
+    public Task SendAsync(string message)
+    {
+        throw new NotSupportedException("不支持");
+    }
+
     public async Task Start()
     {
         await this.instance.LoginAsync(tokenType: libKook.TokenType.Bot, this.token);

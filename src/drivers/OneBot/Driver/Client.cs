@@ -1,25 +1,26 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Net.WebSockets;
-using Websocket.Client;
+using System.Threading.Tasks;
+using KanonBot;
+using KanonBot.Event;
 using KanonBot.Message;
 using KanonBot.Serializer;
-using KanonBot.Event;
 using Newtonsoft.Json;
 using Serilog;
-using KanonBot;
+using Websocket.Client;
 
 namespace KanonBot.Drivers;
+
 public partial class OneBot
 {
     public class Client : OneBot, IDriver, ISocket
     {
-
         IWebsocketClient instance;
         public API api;
         public string? selfID { get; private set; }
+
         public Client(string url)
         {
             // 初始化
@@ -33,9 +34,9 @@ public partial class OneBot
                 {
                     Options =
                     {
-                            KeepAliveInterval = TimeSpan.FromSeconds(5),
-                            // Proxy = ...
-                            // ClientCertificates = ...
+                        KeepAliveInterval = TimeSpan.FromSeconds(5),
+                        // Proxy = ...
+                        // ClientCertificates = ...
                     }
                 };
                 //client.Options.SetRequestHeader("Origin", "xxx");
@@ -54,23 +55,25 @@ public partial class OneBot
             //     Console.WriteLine($"Disconnection happened, type: {info.Type}"));
 
             // 拿Tasks异步执行
-            client.MessageReceived.Subscribe(msgAction => Task.Run(() =>
-            {
-                try
+            client.MessageReceived.Subscribe(msgAction =>
+                Task.Run(async () =>
                 {
-                    this.Parse(msgAction);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("未捕获的异常 ↓\n{ex}", ex);
-                    this.Dispose();
-                }
-            }));
+                    try
+                    {
+                        await this.Parse(msgAction);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error("未捕获的异常 ↓\n{ex}", ex);
+                        this.Dispose();
+                    }
+                })
+            );
 
             this.instance = client;
         }
 
-        void Parse(ResponseMessage msg)
+        async Task Parse(ResponseMessage msg)
         {
             var m = Json.ToLinq(msg.Text!);
             if (m != null)
@@ -80,68 +83,84 @@ public partial class OneBot
                     switch ((string?)m["post_type"])
                     {
                         case "message":
-                            Models.CQMessageEventBase obj;
-                            try
+                        {
+                            if (msgAction is not null)
                             {
-                                var msgType = (string?)m["message_type"];
-                                switch (msgType)
+                                Models.CQMessageEventBase obj;
+                                try
                                 {
-                                    case "private":
-                                        obj = m.ToObject<Models.PrivateMessage>()!;
-                                        break;
-                                    case "group":
-                                        obj = m.ToObject<Models.GroupMessage>()!;
-                                        break;
-                                    default:
-                                        Log.Error("未知消息格式, {0}", msgType);
-                                        return;
+                                    var msgType = (string?)m["message_type"];
+                                    switch (msgType)
+                                    {
+                                        case "private":
+                                            obj = m.ToObject<Models.PrivateMessage>()!;
+                                            break;
+                                        case "group":
+                                            obj = m.ToObject<Models.GroupMessage>()!;
+                                            break;
+                                        default:
+                                            Log.Error("未知消息格式, {0}", msgType);
+                                            return;
+                                    }
+                                }
+                                catch (JsonSerializationException)
+                                {
+                                    Log.Error("不支持的消息格式，请使用数组消息格式，连接断开");
+                                    this.Dispose();
+                                    return;
+                                }
+                                var target = new Target
+                                {
+                                    platform = Platform.OneBot,
+                                    sender = obj.UserId.ToString(),
+                                    selfAccount = this.selfID,
+                                    msg = Message.Parse(obj.MessageList),
+                                    raw = obj,
+                                    socket = this
+                                };
+                                await msgAction.Invoke(target);
+                            }
+                            break;
+                        }
+                        case "meta_event":
+                        {
+                            if (eventAction is not null)
+                            {
+                                var metaEventType = (string?)m["meta_event_type"];
+                                if (metaEventType == "heartbeat")
+                                {
+                                    await this.eventAction.Invoke(
+                                        this,
+                                        new HeartBeat((long)m["time"]!)
+                                    );
+                                }
+                                else if (metaEventType == "lifecycle")
+                                {
+                                    this.selfID = (string)m["self_id"]!;
+                                    await this.eventAction.Invoke(
+                                        this,
+                                        new Ready(this.selfID, Platform.OneBot)
+                                    );
+                                }
+                                else
+                                {
+                                    await this.eventAction.Invoke(this, new RawEvent(m));
                                 }
                             }
-                            catch (JsonSerializationException)
-                            {
-                                Log.Error("不支持的消息格式，请使用数组消息格式，连接断开");
-                                this.Dispose();
-                                return;
-                            }
-                            var target = new Target
-                            {
-                                platform = Platform.OneBot,
-                                sender = obj.UserId.ToString(),
-                                selfAccount = this.selfID,
-                                msg = Message.Parse(obj.MessageList),
-                                raw = obj,
-                                socket = this
-                            };
-                            this.msgAction?.Invoke(target);
                             break;
-
-                        case "meta_event":
-                            var metaEventType = (string?)m["meta_event_type"];
-                            if (metaEventType == "heartbeat")
-                            {
-                                this.eventAction?.Invoke(this, new HeartBeat((long)m["time"]!));
-                            }
-                            else if (metaEventType == "lifecycle")
-                            {
-                                this.selfID = (string)m["self_id"]!;
-                                this.eventAction?.Invoke(this, new Ready(this.selfID, Platform.OneBot));
-                            }
-                            else
-                            {
-                                this.eventAction?.Invoke(this, new RawEvent(m));
-                            }
-
-                            break;
-
+                        }
                         default:
-                            this.eventAction?.Invoke(this, new RawEvent(m));
+                            if (eventAction is not null)
+                            {
+                                await this.eventAction.Invoke(this, new RawEvent(m));
+                            }
                             break;
                     }
                 }
                 // 处理回执消息
                 if (m["echo"] != null)
                 {
-                    this.api.Echo(m.ToObject<Models.CQResponse>()!);
+                    await this.api.Echo(m.ToObject<Models.CQResponse>()!);
                 }
             }
         }
@@ -151,6 +170,7 @@ public partial class OneBot
             this.msgAction += action;
             return this;
         }
+
         public IDriver onEvent(IDriver.EventDelegate action)
         {
             this.eventAction += action;
@@ -160,6 +180,11 @@ public partial class OneBot
         public void Send(string message)
         {
             this.instance.Send(message);
+        }
+
+        public async Task SendAsync(string message)
+        {
+            await this.instance.SendInstant(message);
         }
 
         public Task Start()
@@ -172,6 +197,4 @@ public partial class OneBot
             this.instance.Dispose();
         }
     }
-
-
 }

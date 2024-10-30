@@ -16,13 +16,13 @@ namespace KanonBot.API.OSU
         Recent,
     }
 
-    public partial class Client
+    public static class Client
     {
-        private static Config.Base config = Config.inner!;
+        private static readonly Config.Base config = Config.inner!;
         private static string Token = "";
         private static long TokenExpireTime = 0;
-        public static readonly string EndPointV1 = "https://osu.ppy.sh/api/";
-        public static readonly string EndPointV2 = "https://osu.ppy.sh/api/v2/";
+        private static readonly string EndPointV1 = "https://osu.ppy.sh/api/";
+        private static readonly string EndPointV2 = "https://osu.ppy.sh/api/v2/";
 
         static IFlurlRequest http()
         {

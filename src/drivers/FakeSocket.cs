@@ -14,7 +14,13 @@ public partial class FakeSocket : ISocket, IReply
         action?.Invoke(message);
     }
 
-    public void Reply(Target target, Message.Chain msg)
+    public Task SendAsync(string message)
+    {
+        action?.Invoke(message);
+        return Task.CompletedTask;
+    }
+
+    public async Task Reply(Target target, Message.Chain msg)
     {
         foreach (var s in msg.Iter())
         {
@@ -32,10 +38,10 @@ public partial class FakeSocket : ISocket, IReply
                         ImageSegment.Type.File => i.value,
                         _ => throw new ArgumentException("不支持的图片类型")
                     };
-                    this.Send($"image;{url}");
+                    await this.SendAsync($"image;{url}");
                     break;
                 default:
-                    this.Send(s.Build());
+                    await this.SendAsync(s.Build());
                     break;
             }
         }

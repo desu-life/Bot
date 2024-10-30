@@ -196,6 +196,11 @@ public partial class Guild : ISocket, IDriver
         this.instance.Send(message);
     }
 
+    public async Task SendAsync(string message)
+    {
+        await this.instance.SendInstant(message);
+    }
+
     public Task Start()
     {
         return this.instance.Start();

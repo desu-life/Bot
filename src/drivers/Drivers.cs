@@ -16,8 +16,8 @@ public enum Platform
 
 public interface IDriver
 {
-    delegate void MessageDelegate(Target target);
-    delegate void EventDelegate(ISocket socket, IEvent kevent);
+    delegate Task MessageDelegate(Target target);
+    delegate Task EventDelegate(ISocket socket, IEvent kevent);
     IDriver onMessage(MessageDelegate action);
     IDriver onEvent(EventDelegate action);
     Task Start();
@@ -27,12 +27,14 @@ public interface ISocket
 {
     string? selfID { get; }
     void Send(string message);
+    Task SendAsync(string message);
     void Send(Object obj) => Send(Json.Serialize(obj));
+    Task SendAsync(Object obj) => SendAsync(Json.Serialize(obj));
 }
 
 public interface IReply
 {
-    void Reply(Target target, Message.Chain msg);
+    Task Reply(Target target, Message.Chain msg);
 }
 
 public class Drivers

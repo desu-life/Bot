@@ -103,6 +103,11 @@ public partial class Discord : ISocket, IDriver
     {
         throw new NotSupportedException("不支持");
     }
+    
+    public Task SendAsync(string message)
+    {
+        throw new NotSupportedException("不支持");
+    }
 
     public async Task Start()
     {

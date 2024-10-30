@@ -25,7 +25,6 @@ public static class RosuCalculator
     public static async Task<Draw.ScorePanelData> CalculatePanelSSData(API.OSU.Models.Beatmap map)
     {
         Beatmap beatmap = Beatmap.FromBytes(await Utils.LoadOrDownloadBeatmap(map));
-        ;
         var builder = BeatmapAttributesBuilder.New();
         var bmAttr = builder.Build(beatmap);
         var bpm = bmAttr.clock_rate * beatmap.Bpm();

@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
+using DotNext.Threading;
 
 namespace KanonBot.command_parser
 {
@@ -19,27 +20,35 @@ namespace KanonBot.command_parser
     {
         public class ReduplicateTargetChecker
         {
-            private ConcurrentDictionary<string, Target> CommandList = new();
+            private AsyncReaderWriterLock rwlock = new();
+            private Dictionary<string, Target> CommandList = [];
 
-            public bool Lock(Target target)
+            public async Task<bool> Lock(Target target)
             {
-                return CommandList.TryAdd(target.sender!, target);
-            }
-
-            public bool Contains(Target target)
-            {
-                // 检查消息是否已被处理并判断是否为同一条指令
-                if (CommandList.TryGetValue(target.sender!, out var value))
-                {
-                    if (value.msg.Equals(target.msg))
-                        return true;
+                using (await rwlock.AcquireWriteLockAsync(CancellationToken.None)) {
+                    return CommandList.TryAdd(target.sender!, target);
                 }
-                return false;
             }
 
-            public void TryUnlock(Target target)
+            public async Task<bool> Contains(Target target)
             {
-                CommandList.TryRemove(target.sender!, out _);
+                using (await rwlock.AcquireReadLockAsync(CancellationToken.None)) {
+                    // 检查消息是否已被处理并判断是否为同一条指令
+                    if (CommandList.TryGetValue(target.sender!, out var value))
+                    {
+                        if (value.msg.Equals(target.msg)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+
+            public async Task TryUnlock(Target target)
+            {
+                using (await rwlock.AcquireWriteLockAsync(CancellationToken.None)) {
+                    CommandList.Remove(target.sender!, out _);
+                }
             }
         }
 
@@ -63,14 +72,14 @@ namespace KanonBot.command_parser
             if (msg.StartsWith("!") || msg.StartsWith("/") || msg.StartsWith("！"))
             {
                 // 检测相同指令重复
-                if (reduplicateTargetChecker.Contains(target))
+                if (await reduplicateTargetChecker.Contains(target)) {
                     return;
-                else
-                    reduplicateTargetChecker.Lock(target);
-
+                }
+                
+                await reduplicateTargetChecker.Lock(target);
                 cmd = msg.Build();
                 cmd = cmd[1..]; //删除命令唤起符
-            }
+            } 
 
             // var isAtSelf = false;
             // if (msg.StartsWith(new Message.AtSegment(target.selfAccount!, target.platform)))
@@ -86,22 +95,11 @@ namespace KanonBot.command_parser
             //     }
             // }
 
-
-
             if (cmd != null)
             {
                 //cmd = cmd.ToLower(); //转小写
                 cmd = Utils.ToDBC(cmd); //转半角
                 // cmd = Utils.ParseAt(cmd);
-
-                // 有些例外，用StartsWith匹配
-                if (cmd.StartsWith("bp"))
-                {
-                    if (cmd.StartsWith("bpme"))
-                        return;
-                    await BestPerformance.Execute(target, cmd[2..].Trim());
-                    return;
-                }
 
                 string rootCmd,
                     childCmd = "";
@@ -120,7 +118,7 @@ namespace KanonBot.command_parser
                 {
                     switch (rootCmd.ToLower())
                     {
-                        // case "search":
+                        // case "m":
                         //     await Search.Execute(target, childCmd);
                         //     return;
                         case "reg":
@@ -133,8 +131,6 @@ namespace KanonBot.command_parser
                             await Info.Execute(target, childCmd);
                             return;
                         case "recent":
-                            await Recent.Execute(target, childCmd, true);
-                            return;
                         case "re":
                             await Recent.Execute(target, childCmd, true);
                             return;
@@ -159,6 +155,7 @@ namespace KanonBot.command_parser
                         case "get":
                             await Get.Execute(target, childCmd);
                             return; // get bonuspp/elo/rolecost/bpht/todaybp/annualpass
+                        case "bpme":
                         case "todaybp":
                             await Get.TodayBP(target, childCmd);
                             return;
@@ -178,16 +175,31 @@ namespace KanonBot.command_parser
                         case "cat":
                             await ChatBot.Execute(target, childCmd);
                             return;
-                        // Admin
-                        case "sudo": //管理员
+                        //管理员
+                        case "sudo": 
                             await Sudo.Execute(target, childCmd);
                             return;
-                        case "su": //超级管理员
+                        //超级管理员
+                        case "su":
                             await Su.Execute(target, childCmd);
                             return;
-                        
-                        default:
+                    }
+
+                    // 有些例外，用StartsWith匹配
+                    if (cmd.StartsWith("bp"))
+                    {
+                        // 防止和某抽象bot冲突
+                        if (cmd.StartsWith("bpa")) {
                             return;
+                        }
+                        
+                        // 修复白菜bpme兼容
+                        if (cmd.StartsWith("bpme")) {
+                            return;
+                        }
+
+                        await BestPerformance.Execute(target, cmd[2..].Trim());
+                        return;
                     }
                 }
                 catch (Flurl.Http.FlurlHttpTimeoutException)

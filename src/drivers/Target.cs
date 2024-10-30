@@ -102,15 +102,17 @@ public class Target
             case OneBot.Client s:
                 switch (this.raw)
                 {
-                    case OneBot.Models.GroupMessage g:
-                        if (s.api.SendGroupMessage(g.GroupId, msgChain).HasValue)
+                    case OneBot.Models.GroupMessage g: 
+                    {
+                        if ((await s.api.SendGroupMessage(g.GroupId, msgChain)).HasValue)
                         {
                             Log.Warning("发送QQ消息失败");
                             return false;
                         }
                         break;
+                    }
                     case OneBot.Models.PrivateMessage p:
-                        if (s.api.SendPrivateMessage(p.UserId, msgChain).HasValue)
+                        if ((await s.api.SendPrivateMessage(p.UserId, msgChain)).HasValue)
                         {
                             Log.Warning("发送QQ消息失败");
                             return false;
@@ -124,13 +126,13 @@ public class Target
                 switch (this.raw)
                 {
                     case OneBot.Models.GroupMessage g:
-                        if (s.api.SendGroupMessage(g.GroupId, msgChain).HasValue)
+                        if ((await s.api.SendGroupMessage(g.GroupId, msgChain)).HasValue)
                         {
                             return false;
                         }
                         break;
                     case OneBot.Models.PrivateMessage p:
-                        if (s.api.SendPrivateMessage(p.UserId, msgChain).HasValue)
+                        if ((await s.api.SendPrivateMessage(p.UserId, msgChain)).HasValue)
                         {
                             return false;
                         }
@@ -140,10 +142,11 @@ public class Target
                 }
                 break;
             default:
-                if (this.socket is IReply r)
-                    r.Reply(this, msgChain);
-                else
-                    socket.Send(msgChain.ToString());
+                if (this.socket is IReply r) {
+                    await r.Reply(this, msgChain);
+                } else {
+                    await socket.SendAsync(msgChain.ToString());
+                }
                 break;
         }
         return true;

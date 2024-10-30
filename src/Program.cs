@@ -34,7 +34,7 @@ FlurlHttp.Clients.UseNewtonsoft().WithDefaults(c => {
     c.Settings.Redirects.AllowSecureToInsecure = true;
 });
 
-var config = Config.inner!;
+var config = Config.inner;
 
 if (config.dev)
 {
@@ -86,7 +86,7 @@ if (config.dev)
         Log.Warning("解析消息: {0}", input);
         var target  = new Target()
         {
-            msg = new Msg.Chain().msg(input!.Trim()),
+            msg = new Msg.Chain().msg(input.Trim()),
             sender = $"{sender.Value()}",
             platform = Platform.OneBot,
             selfAccount = null,
@@ -104,7 +104,7 @@ if (config.dev)
             isFromAdmin = true
         };
         _ = Task.Run(async () => await Universal.Parser(target));
-        Universal.reduplicateTargetChecker.TryUnlock(target);
+        await Universal.reduplicateTargetChecker.TryUnlock(target);
     }
 }
 
@@ -137,7 +137,7 @@ var drivers = new Drivers()
                     }
                     finally
                     {
-                        Universal.reduplicateTargetChecker.TryUnlock(target);
+                        await Universal.reduplicateTargetChecker.TryUnlock(target);
                     }
                 }
             )
@@ -155,9 +155,8 @@ var drivers = new Drivers()
                         case RawEvent r:
                             Log.Debug("收到OneBot事件 {r}", r);
                             break;
-                        default:
-                            break;
                     }
+                    return Task.CompletedTask;
                 }
             )
     )
@@ -175,7 +174,7 @@ var drivers = new Drivers()
                     }
                     finally
                     {
-                        Universal.reduplicateTargetChecker.TryUnlock(target);
+                        await Universal.reduplicateTargetChecker.TryUnlock(target);
                     }
                 }
             )
@@ -193,9 +192,8 @@ var drivers = new Drivers()
                         case RawEvent r:
                             Log.Debug("收到OneBot事件 {r}", r);
                             break;
-                        default:
-                            break;
                     }
+                    return Task.CompletedTask;
                 }
             )
     )
@@ -252,9 +250,8 @@ var drivers = new Drivers()
                         case Ready l:
                             Log.Debug("收到QQ Guild生命周期事件 {h}", l);
                             break;
-                        default:
-                            break;
                     }
+                    return Task.CompletedTask;
                 }
             )
     )
