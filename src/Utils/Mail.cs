@@ -55,21 +55,23 @@ public static partial class Utils
         }
     }
 
-    public static void SendDebugMail(string mailto, string body)
+    public static void SendDebugMail(string body)
     {
-        Mail.MailStruct ms =
-            new()
+        if (Config.inner!.mail is not null) {
+            Mail.MailStruct ms =
+                new()
+                {
+                    MailTo = Config.inner.mail.mailTo,
+                    Subject = $"KanonBot 错误自动上报 - 发生于 {DateTime.Now}",
+                    Body = body,
+                    IsBodyHtml = false
+                };
+            try
             {
-                MailTo = Array(mailto),
-                Subject = $"KanonBot 错误自动上报 - 发生于 {DateTime.Now}",
-                Body = body,
-                IsBodyHtml = false
-            };
-        try
-        {
-            Mail.Send(ms);
+                Mail.Send(ms);
+            }
+            catch { }
         }
-        catch { }
     }
 
     public static void SendMail(string mailto, string title, string body, bool isBodyHtml)
@@ -77,7 +79,7 @@ public static partial class Utils
         Mail.MailStruct ms =
             new()
             {
-                MailTo = Array(mailto),
+                MailTo = [mailto],
                 Subject = title,
                 Body = body,
                 IsBodyHtml = isBodyHtml

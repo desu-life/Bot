@@ -216,8 +216,7 @@ namespace KanonBot.command_parser
                     Target Message: {target.msg}
                     Exception: {ex}
                     """;
-                    Utils.SendDebugMail("mono@desu.life", rtmp);
-                    Utils.SendDebugMail("fantasyzhjk@qq.com", rtmp);
+                    Utils.SendDebugMail(rtmp);
                     Log.Error("网络异常 ↓\n{ex}", ex);
                 }
                 catch (System.IO.IOException ex)
@@ -237,8 +236,7 @@ namespace KanonBot.command_parser
                         Target Message: {target.msg}
                         Exception: {ex}
                         """;
-                        Utils.SendDebugMail("mono@desu.life", rtmp);
-                        Utils.SendDebugMail("fantasyzhjk@qq.com", rtmp);
+                        Utils.SendDebugMail(rtmp);
                         Log.Error("文件操作异常 ↓\n{ex}", ex);
                     }
                 }
@@ -254,6 +252,8 @@ namespace KanonBot.command_parser
                         else if (e is Flurl.Http.FlurlHttpException)
                         {
                             await target.reply("获取数据时出错，之后再试试吧");
+                            Log.Error("获取数据异常 ↓\n{ex}", e);
+                            return;
                         }
                     }
 
@@ -265,8 +265,7 @@ namespace KanonBot.command_parser
                     Target Message: {target.msg}
                     Exception: {ae}
                     """;
-                    Utils.SendDebugMail("mono@desu.life", rtmp);
-                    Utils.SendDebugMail("fantasyzhjk@qq.com", rtmp);
+                    Utils.SendDebugMail(rtmp);
                     Log.Error("执行指令异常 ↓\n{ex}", ae);
                 }
                 catch (Exception ex)
@@ -279,8 +278,7 @@ namespace KanonBot.command_parser
                     Target Message: {target.msg}
                     Exception: {ex}
                     """;
-                    Utils.SendDebugMail("mono@desu.life", rtmp);
-                    Utils.SendDebugMail("fantasyzhjk@qq.com", rtmp);
+                    Utils.SendDebugMail(rtmp);
                     Log.Error("执行指令异常 ↓\n{ex}", ex);
                 }
             }

@@ -4,97 +4,232 @@ using System.IO;
 using KanonBot.Database;
 using KanonBot.Serializer;
 using LanguageExt.UnitsOfMeasure;
-using Tomlyn.Model;
+using Tomlet.Attributes;
+using Destructurama;
+using Destructurama.Attributed;
 
 namespace KanonBot;
+
 public class Config
 {
     public static Base? inner;
-    public class OpenAI : ITomlMetadataProvider
+
+
+    public class OpenAI
     {
+        [TomlProperty("key")]
         public string? Key { get; set; }
+
+        [TomlProperty("max_tokens")]
         public int MaxTokens { get; set; } //def 16.
-        //OpenAI generally recommend altering Temperature or top_p but not both.
+
+        ///OpenAI generally recommend altering Temperature or top_p but not both.
+        [TomlProperty("temperature")]
         public double Temperature { get; set; } //def 1
-        public double Top_p { get; set; } //def 1
+
+        [TomlProperty("top_p")]
+        public double TopP { get; set; } //def 1
+
+        [TomlProperty("pre_define")]
         public string? PreDefine { get; set; }
-        TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
     }
-    public class Mail : ITomlMetadataProvider
+
+    public class Mail
     {
+        [TomlProperty("smtp_host")]
         public string? smtpHost { get; set; }
+
+        [TomlProperty("smtp_port")]
         public int smtpPort { get; set; }
-        public string? userName { get; set; }
-        public string? passWord { get; set; }
-        TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
 
-    }
-    public class Database : ITomlMetadataProvider
-    {
-        public string? type { get; set; }
-        public string? host { get; set; }
-        public int port { get; set; }
-        public string? db { get; set; }
-        public string? user { get; set; }
+        [TomlProperty("username")]
+        public string? username { get; set; }
+
+        [TomlProperty("password")]
         public string? password { get; set; }
-        TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
 
+        [TomlProperty("mail_to")]
+        public string[] mailTo { get; set; } = [];
     }
-    public class OSU : ITomlMetadataProvider
-    {
-        public int clientId { get; set; }
-        public string? clientSecret { get; set; }
-        public string? v1key { get; set; }
-        public string? v2EndPoint { get; set; }
-        TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
-    }
-    public class OSS : ITomlMetadataProvider
-    {
-        public string? url { get; set; }
-        public string? accessKeyId { get; set; }
-        public string? accessKeySecret { get; set; }
-        public string? endPoint { get; set; }
-        public string? bucketName { get; set; }
-        TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
 
-    }
-    public class OneBot : ITomlMetadataProvider
+    public class Database
     {
+        [TomlProperty("type")]
+        public string? type { get; set; }
+
+        [TomlProperty("host")]
         public string? host { get; set; }
+
+        [TomlProperty("port")]
         public int port { get; set; }
-        public int httpPort { get; set; }
-        public int serverPort { get; set; }
-        public int serverPortAdmin { get; set; }
-        public long? managementGroup { get; set; }
-        TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
+
+        [TomlProperty("db")]
+        public string? db { get; set; }
+
+        [TomlProperty("user")]
+        public string? user { get; set; }
+
+        [TomlProperty("password")]
+        public string? password { get; set; }
     }
-    public class Guild : ITomlMetadataProvider
+
+    public class OSU
     {
+        [TomlProperty("client_id")]
+        public int clientId { get; set; }
+
+        [TomlProperty("client_secret")]
+        public required string clientSecret { get; set; }
+
+        [TomlProperty("v1_key")]
+        public string? v1key { get; set; }
+
+        [TomlProperty("v2_end_point")]
+        public string? v2EndPoint { get; set; }
+    }
+
+    public class OSS
+    {
+        [TomlProperty("url")]
+        public string? url { get; set; }
+
+        [TomlProperty("access_key_id")]
+        public string? accessKeyId { get; set; }
+
+        [TomlProperty("access_key_secret")]
+        public string? accessKeySecret { get; set; }
+
+        [TomlProperty("end_point")]
+        public string? endPoint { get; set; }
+
+        [TomlProperty("bucket_name")]
+        public string? bucketName { get; set; }
+    }
+
+    public enum ConfigType
+    {
+        OneBotServer,
+        OneBotClient,
+        Guild,
+        Kook,
+    }
+
+    public class DriverConfig {
+        [TomlDoNotInlineObject]
+        [TomlProperty("onebot_server")]
+        [NotLoggedIfDefault]
+        public OneBotServer? OneBotServer { get; set; }
+
+        [TomlDoNotInlineObject]
+        [TomlProperty("onebot_client")]
+        [NotLoggedIfDefault]
+        public OneBotClient? OneBotClient { get; set; }
+
+        [TomlDoNotInlineObject]
+        [TomlProperty("guild")]
+        [NotLoggedIfDefault]
+        public Guild? Guild { get; set; }
+
+        [TomlDoNotInlineObject]
+        [TomlProperty("kook")]
+        [NotLoggedIfDefault]
+        public KOOK? KOOK { get; set; }
+
+        [TomlNonSerialized]
+        [NotLogged]
+        public IDriverConfig Config => OneBotServer ?? OneBotClient ?? Guild ?? (IDriverConfig)KOOK!;
+
+        public DriverConfig(IDriverConfig config) { 
+            switch (config)
+            {
+                case OneBotServer c: OneBotServer = c; break;
+                case OneBotClient c: OneBotClient = c; break;
+                case Guild c: Guild = c; break;
+                case KOOK c: KOOK = c; break;
+            }
+        }
+    }
+
+    public interface IDriverConfig;
+
+    public class OneBotServer : IDriverConfig
+    {
+        [TomlProperty("host")]
+        public string host { get; set; } = "0.0.0.0";
+
+        [TomlProperty("port")]
+        public int port { get; set; } = 7700;
+
+        [TomlProperty("elevated")]
+        public bool elevated { get; set; } = false;
+    }
+    public class OneBotClient : IDriverConfig
+    {
+        [TomlProperty("host")]
+        public string host { get; set; } = "localhost";
+
+        [TomlProperty("port")]
+        public int port { get; set; } = 6700;
+
+        [TomlProperty("http_port")]
+        public int httpPort { get; set; } = 5700;
+    }
+
+    public class Guild : IDriverConfig
+    {
+        [TomlProperty("sandbox")]
         public bool sandbox { get; set; }
+
+        [TomlProperty("app_id")]
         public long appID { get; set; }
+
+        [TomlProperty("secret")]
         public string? secret { get; set; }
+
+        [TomlProperty("token")]
         public string? token { get; set; }
-        TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
     }
-    public class KOOK : ITomlMetadataProvider
+
+    public class KOOK : IDriverConfig
     {
+        [TomlProperty("bot_id")]
         public string? botID { get; set; }
+
+        [TomlProperty("token")]
         public string? token { get; set; }
-        TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
     }
-    public class Base : ITomlMetadataProvider
+
+    public class Base
     {
+        [TomlProperty("debug")]
         public bool debug { get; set; }
+
+        [TomlProperty("dev")]
         public bool dev { get; set; }
+
+        [TomlDoNotInlineObject]
+        [TomlProperty("osu")]
         public OSU? osu { get; set; }
-        public OneBot? onebot { get; set; }
-        public Guild? guild { get; set; }
-        public KOOK? kook { get; set; }
+
+        [TomlDoNotInlineObject]
+        [TomlProperty("oss")]
         public OSS? oss { get; set; }
+
+        [TomlDoNotInlineObject]
+        [TomlProperty("database")]
         public Database? database { get; set; }
+
+        [TomlDoNotInlineObject]
+        [TomlProperty("mail")]
         public Mail? mail { get; set; }
+
+        [TomlDoNotInlineObject]
+        [TomlProperty("openai")]
         public OpenAI? openai { get; set; }
-        TomlPropertiesMetadata? ITomlMetadataProvider.PropertiesMetadata { get; set; }
+
+        [TomlProperty("drivers")]
+        public DriverConfig[] drivers { get; set; } = [];
+
         public static Base Default()
         {
             return new Base()
@@ -105,29 +240,31 @@ public class Config
                 {
                     clientId = 0,
                     clientSecret = "",
+                    v1key = "",
                     v2EndPoint = "https://osu.ppy.sh/api/v2/"
                 },
-                onebot = new()
-                {
-                    managementGroup = 0,
-                    host = "localhost",
-                    serverPort = 7700,
-                    serverPortAdmin = 54872,
-                    httpPort = 5700,
-                    port = 6700
-                },
-                guild = new()
-                {
-                    appID = 0,
-                    secret = "",
-                    token = "",
-                    sandbox = true
-                },
-                kook = new()
-                {
-                    botID = "",
-                    token = ""
-                },
+                drivers =
+                [
+                    new(new OneBotClient()
+                    {
+                        host = "localhost",
+                        httpPort = 5700,
+                        port = 6700
+                    }),
+                    new(new OneBotServer()
+                    {
+                        host = "0.0.0.0",
+                        port = 7700
+                    }),
+                    new(new Guild()
+                    {
+                        appID = 0,
+                        secret = "",
+                        token = "",
+                        sandbox = true
+                    }),
+                    new(new KOOK() { botID = "", token = "" })
+                ],
                 oss = new()
                 {
                     url = "",
@@ -149,19 +286,20 @@ public class Config
                 {
                     smtpHost = "localhost",
                     smtpPort = 587,
-                    userName = "",
-                    passWord = ""
+                    username = "",
+                    password = ""
                 },
                 openai = new()
                 {
                     Key = "",
                     MaxTokens = 16,
                     Temperature = 0,
-                    Top_p = 1,
+                    TopP = 1,
                     PreDefine = ""
                 }
             };
         }
+
         public void save(string path)
         {
             using var f = new StreamWriter(path);
@@ -178,7 +316,6 @@ public class Config
             return Json.Serialize(this);
         }
     }
-
 
     public static Base load(string path)
     {

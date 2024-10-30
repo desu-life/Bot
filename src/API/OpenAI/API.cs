@@ -71,7 +71,7 @@ namespace KanonBot.API
 
             chat.Model = Model.ChatGPTTurbo;
             chat.RequestParameters.Temperature = config.openai!.Temperature;
-            chat.RequestParameters.TopP = config.openai.Top_p;
+            chat.RequestParameters.TopP = config.openai.TopP;
             chat.RequestParameters.MaxTokens = config.openai.MaxTokens;
             chat.RequestParameters.NumChoicesPerMessage = 1;
 

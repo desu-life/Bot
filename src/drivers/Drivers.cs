@@ -39,6 +39,7 @@ public interface IReply
 
 public class Drivers
 {
+    ManualResetEvent exitEvent = new(false);
     List<IDriver> driverList;
     public Drivers()
     {
@@ -50,16 +51,18 @@ public class Drivers
         return this;
     }
 
-    public Drivers StartAll()
+    public void StartAll()
     {
-        foreach (var driver in this.driverList)
-            driver.Start();
-        return this;
+        var tasks = driverList.Map(x => x.Start()).ToArray();
+        Task.WaitAll(tasks);
+        exitEvent.WaitOne();
     }
 
     public void StopAll()
     {
-        foreach (var driver in this.driverList)
+        foreach (var driver in this.driverList) {
             driver.Dispose();
+        }
+        exitEvent.Set();
     }
 }

@@ -11,8 +11,8 @@ public static class Mail
     private static Config.Base config = Config.inner!;
     public class MailStruct
     {
-        public required Arr<String> MailTo; //收件人，可添加多个
-        public Arr<String> MailCC = Empty; //抄送人，不建议添加
+        public required IEnumerable<String> MailTo; //收件人，可添加多个
+        public IEnumerable<String> MailCC = []; //抄送人，不建议添加
         public required string Subject; //标题
         public required string Body; //正文
         public required bool IsBodyHtml;
@@ -20,16 +20,16 @@ public static class Mail
     public static void Send(MailStruct ms)
     {
         MailMessage message = new();
-        if (ms.MailTo.Length == 0) return;
-        ms.MailTo.Iter(s => message.To.Add(s)); //设置收件人
-        ms.MailCC.Iter(s => message.CC.Add(s)); //设置发件人
-        message.From = new MailAddress(config.mail.userName); //设置发件人
+        ms.MailTo.Iter(message.To.Add); //设置收件人
+        ms.MailCC.Iter(message.CC.Add); //设置发件人
+        if (message.To.Count == 0) return;
+        message.From = new MailAddress(config.mail.username); //设置发件人
         message.Subject = ms.Subject;
         message.Body = ms.Body;
         message.IsBodyHtml = ms.IsBodyHtml;
         var client = new SmtpClient(config.mail.smtpHost, config.mail.smtpPort)
         {
-            Credentials = new System.Net.NetworkCredential(config.mail.userName, config.mail.passWord), //设置邮箱用户名与密码
+            Credentials = new System.Net.NetworkCredential(config.mail.username, config.mail.password), //设置邮箱用户名与密码
             EnableSsl = true //启用SSL
         }; //设置邮件服务器
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
