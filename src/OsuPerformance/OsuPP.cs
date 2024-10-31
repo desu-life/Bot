@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using KanonBot.LegacyImage;
+using KanonBot.Serializer;
 using LanguageExt.ClassInstances.Pred;
 using RosuPP;
 using static KanonBot.API.OSU.OSUExtensions;
@@ -46,8 +47,12 @@ class OsuCalculator
         c.NKatu = statistics.CountKatu;
         c.NGeki = statistics.CountGeki;
         c.NMiss = statistics.CountMiss;
-        c.SliderTickMiss = statistics.LargeTickMiss;
-        c.SliderTailHit = statistics.SliderTailHit;
+
+        if (rmode is Mode.Osu) {
+            c.SliderTickMiss = statistics.LargeTickMiss;
+            c.SliderTailHit = statistics.SliderTailHit;
+        }
+        
         c.accuracy = data.scoreInfo.AccAuto * 100.00;
         var dAttr = c.CalculateDifficulty();
         var bAttr = c.Calculate();
@@ -77,6 +82,7 @@ class OsuCalculator
             p.Mode(rmode);
             p.Mods(mods);
             p.Accuracy(acc);
+            p.SliderTickHits(score.MaximumStatistics.LargeTickHit);
             var state = p.GenerateState(rosubeatmap);
 
             c.N50 = state.n50;
@@ -89,11 +95,8 @@ class OsuCalculator
             c.accuracy = acc;
 
             if (rmode is Mode.Osu) {
-                var d = Difficulty.New();
-                var dattr = d.Calculate(rosubeatmap);
-                
                 c.SliderTailHit = state.slider_end_hits;
-                c.SliderTickMiss = dattr.osu.ToNullable()!.Value.n_slider_ticks - state.slider_tick_hits;
+                c.SliderTickMiss = score.MaximumStatistics.LargeTickHit - state.slider_tick_hits;
             }
 
             bAttr = c.Calculate();

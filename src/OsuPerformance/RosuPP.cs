@@ -105,12 +105,9 @@ public static class RosuCalculator
         p.NKatu(statistics.CountKatu);
         p.NGeki(statistics.CountGeki);
         p.SliderTickHits(statistics.LargeTickHit);
+        p.SliderTickMisses(statistics.LargeTickMiss);
         p.SliderEndHits(statistics.SliderTailHit);
         p.Misses(statistics.CountMiss);
-        p.Accuracy(data.scoreInfo.AccAuto * 100.00);
-
-        var state = p.GenerateState(beatmap);
-        Log.Warning("{0}", Json.Serialize(state));
 
         // 开始计算
         data.ppInfo = PPInfo.New(p.Calculate(beatmap), bmAttr, bpm);
@@ -125,6 +122,7 @@ public static class RosuCalculator
                 p.Mode(rmode);
                 p.Mods(mods);
                 p.Accuracy(acc);
+                p.SliderTickHits(score.MaximumStatistics.LargeTickHit);
                 return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm).ppStat;
             })
             .ToList();
@@ -162,6 +160,7 @@ public static class RosuCalculator
         p.NGeki(statistics.CountGeki);
         p.Misses(statistics.CountMiss);
         p.SliderTickHits(statistics.LargeTickHit);
+        p.SliderTickMisses(statistics.LargeTickMiss);
         p.SliderEndHits(statistics.SliderTailHit);
         return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm);
     }
