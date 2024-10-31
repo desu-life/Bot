@@ -1,21 +1,21 @@
-using KanonBot.Drivers;
-using KanonBot.Message;
-using KanonBot.API;
-using System.Security.Cryptography;
-using KanonBot.Functions.OSU;
-using RosuPP;
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.Formats.Jpeg;
 using System.IO;
-using LanguageExt.UnsafeValueAccess;
+using System.Security.Cryptography;
+using KanonBot.API;
 using KanonBot.API.OSU;
+using KanonBot.Drivers;
+using KanonBot.Functions.OSU;
+using KanonBot.Message;
 using KanonBot.OsuPerformance;
+using LanguageExt.UnsafeValueAccess;
+using RosuPP;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats.Png;
 
 namespace KanonBot.Functions.OSUBot
 {
     public class BestPerformance
     {
-        async public static Task Execute(Target target, string cmd)
+        public static async Task Execute(Target target, string cmd)
         {
             #region 验证
             long? osuID = null;
@@ -55,7 +55,8 @@ namespace KanonBot.Functions.OSUBot
                 // 查询用户是否绑定
                 // 这里先按照at方法查询，查询不到就是普通用户查询
                 var (atOSU, atDBUser) = await Accounts.ParseAt(command.osu_username);
-                if (atOSU.IsNone && !atDBUser.IsNone) {
+                if (atOSU.IsNone && !atDBUser.IsNone)
+                {
                     DBUser = atDBUser.ValueUnsafe();
                     DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
                     if (DBOsuInfo == null)
@@ -67,17 +68,23 @@ namespace KanonBot.Functions.OSUBot
                         await target.reply("被办了。");
                     }
                     return;
-                } else if (!atOSU.IsNone && atDBUser.IsNone) {
+                }
+                else if (!atOSU.IsNone && atDBUser.IsNone)
+                {
                     var _osuinfo = atOSU.ValueUnsafe();
                     mode ??= _osuinfo.Mode;
                     osuID = _osuinfo.Id;
-                } else if (!atOSU.IsNone && !atDBUser.IsNone) {
+                }
+                else if (!atOSU.IsNone && !atDBUser.IsNone)
+                {
                     DBUser = atDBUser.ValueUnsafe();
                     DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
                     var _osuinfo = atOSU.ValueUnsafe();
-                    mode ??= DBOsuInfo!.osu_mode?.ToMode()!.Value ;
+                    mode ??= DBOsuInfo!.osu_mode?.ToMode()!.Value;
                     osuID = _osuinfo.Id;
-                } else {
+                }
+                else
+                {
                     // 普通查询
                     var OnlineOsuInfo = await API.OSU.Client.GetUser(
                         command.osu_username,
@@ -115,10 +122,10 @@ namespace KanonBot.Functions.OSUBot
             #endregion
 
             // 输入检查
-            if (command.order_number < 1 && command.order_number > 100) {
+            if (command.order_number < 1 && command.order_number > 100)
+            {
                 command.order_number = 1;
             }
-
 
             var scores = await API.OSU.Client.GetUserScores(
                 osuID!.Value,
@@ -136,14 +143,20 @@ namespace KanonBot.Functions.OSUBot
             if (scores!.Length > 0)
             {
                 LegacyImage.Draw.ScorePanelData data;
-                if (command.lazer) {
+                if (command.lazer)
+                {
                     data = await OsuCalculator.CalculatePanelData(scores[0]);
-                } else {
+                }
+                else
+                {
                     data = await UniversalCalculator.CalculatePanelDataAuto(scores[0]);
                 }
                 using var stream = new MemoryStream();
-    
-                using var img = (Config.inner != null && Config.inner.debug) ? await DrawV3.OsuScorePanelV3.Draw(data) : await LegacyImage.Draw.DrawScore(data);
+
+                using var img =
+                    (Config.inner != null && Config.inner.debug)
+                        ? await DrawV3.OsuScorePanelV3.Draw(data)
+                        : await LegacyImage.Draw.DrawScore(data);
 
                 await img.SaveAsync(stream, new JpegEncoder());
                 await target.reply(
@@ -152,33 +165,43 @@ namespace KanonBot.Functions.OSUBot
                         ImageSegment.Type.Base64
                     )
                 );
-                if (scores![0].Mode == API.OSU.Mode.OSU)
-                {
-                    if (
-                        scores[0].Beatmap!.Status == API.OSU.Models.Status.ranked
-                        || scores[0].Beatmap!.Status == API.OSU.Models.Status.approved
-                    )
-                    {
-                        await Database.Client.InsertOsuStandardBeatmapTechData(
-                            scores[0].Beatmap!.BeatmapId,
-                            data.ppInfo.star,
-                            (int)data.ppInfo.ppStats![0].total,
-                            (int)data.ppInfo.ppStats![0].acc!,
-                            (int)data.ppInfo.ppStats![0].speed!,
-                            (int)data.ppInfo.ppStats![0].aim!,
-                            (int)data.ppInfo.ppStats![1].total,
-                            (int)data.ppInfo.ppStats![2].total,
-                            (int)data.ppInfo.ppStats![3].total,
-                            (int)data.ppInfo.ppStats![4].total,
-                            scores[0].Mods.Map(m => m.Acronym).ToArray()
-                        );
-                    }
-                }
+
+                _ = Task.Run(() => BeatmapTechDataProcess(scores[0], data));
             }
             else
             {
                 await target.reply("猫猫找不到该BP。");
                 return;
+            }
+        }
+
+        private static async Task BeatmapTechDataProcess(
+            Models.ScoreLazer score,
+            LegacyImage.Draw.ScorePanelData data
+        )
+        {
+            if (Config.inner!.dev) return;
+            if (score.Mode == API.OSU.Mode.OSU)
+            {
+                if (
+                    score.Beatmap!.Status == API.OSU.Models.Status.ranked
+                    || score.Beatmap!.Status == API.OSU.Models.Status.approved
+                )
+                {
+                    await Database.Client.InsertOsuStandardBeatmapTechData(
+                        score.Beatmap!.BeatmapId,
+                        data.ppInfo.star,
+                        (int)data.ppInfo.ppStats![0].total,
+                        (int)data.ppInfo.ppStats![0].acc!,
+                        (int)data.ppInfo.ppStats![0].speed!,
+                        (int)data.ppInfo.ppStats![0].aim!,
+                        (int)data.ppInfo.ppStats![1].total,
+                        (int)data.ppInfo.ppStats![2].total,
+                        (int)data.ppInfo.ppStats![3].total,
+                        (int)data.ppInfo.ppStats![4].total,
+                        score.Mods.Map(m => m.Acronym).ToArray()
+                    );
+                }
             }
         }
     }

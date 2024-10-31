@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using KanonBot.LegacyImage;
+using KanonBot.Serializer;
 using LanguageExt.ClassInstances.Pred;
 using RosuPP;
 using static KanonBot.API.OSU.OSUExtensions;
@@ -85,7 +86,7 @@ public static class RosuCalculator
 
         Mode rmode = data.scoreInfo.Mode.ToRosu();
 
-        var mods = Mods.FromJson(Serializer.Json.Serialize(data.scoreInfo.Mods), rmode);
+        var mods = Mods.FromJson(data.scoreInfo.JsonMods, rmode);
 
         var builder = BeatmapAttributesBuilder.New();
         builder.Mode(rmode);
@@ -94,6 +95,7 @@ public static class RosuCalculator
         var bpm = bmAttr.clock_rate * beatmap.Bpm();
 
         var p = Performance.New();
+        p.Lazer(score.IsLazer);
         p.Mode(rmode);
         p.Mods(mods);
         p.Combo(data.scoreInfo.MaxCombo);
@@ -102,7 +104,14 @@ public static class RosuCalculator
         p.N300(statistics.CountGreat);
         p.NKatu(statistics.CountKatu);
         p.NGeki(statistics.CountGeki);
+        p.SliderTickHits(statistics.LargeTickHit);
+        p.SliderEndHits(statistics.SliderTailHit);
         p.Misses(statistics.CountMiss);
+        p.Accuracy(data.scoreInfo.AccAuto * 100.00);
+
+        var state = p.GenerateState(beatmap);
+        Log.Warning("{0}", Json.Serialize(state));
+
         // 开始计算
         data.ppInfo = PPInfo.New(p.Calculate(beatmap), bmAttr, bpm);
 
@@ -112,6 +121,7 @@ public static class RosuCalculator
         data.ppInfo.ppStats = accs.Select(acc =>
             {
                 var p = Performance.New();
+                p.Lazer(score.IsLazer);
                 p.Mode(rmode);
                 p.Mods(mods);
                 p.Accuracy(acc);
@@ -132,7 +142,7 @@ public static class RosuCalculator
 
         Mode rmode = score.Mode.ToRosu();
 
-        var mods = Mods.FromJson(Serializer.Json.Serialize(score.Mods), rmode);
+        var mods = Mods.FromJson(score.JsonMods, rmode);
 
         var builder = BeatmapAttributesBuilder.New();
         builder.Mode(rmode);
@@ -141,6 +151,7 @@ public static class RosuCalculator
         var bpm = bmAttr.clock_rate * beatmap.Bpm();
 
         var p = Performance.New();
+        p.Lazer(score.IsLazer);
         p.Mode(rmode);
         p.Mods(mods);
         p.Combo(score.MaxCombo);
@@ -150,6 +161,8 @@ public static class RosuCalculator
         p.NKatu(statistics.CountKatu);
         p.NGeki(statistics.CountGeki);
         p.Misses(statistics.CountMiss);
+        p.SliderTickHits(statistics.LargeTickHit);
+        p.SliderEndHits(statistics.SliderTailHit);
         return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm);
     }
 }

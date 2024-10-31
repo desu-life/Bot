@@ -81,6 +81,8 @@ public class Calculater {
     public uint? NKatu { get; set; }
     public uint? NGeki { get; set; }
     public uint? NMiss { get; set; }
+    public uint? SliderTailHit { get; set; }
+    public uint? SliderTickMiss { get; set; }
 
     public static Calculater New(Ruleset ruleset, WorkingBeatmap beatmap) {
         return new Calculater {
@@ -157,6 +159,16 @@ public class Calculater {
 
             if (NKatu is not null) {
                 statistics[HitResult.Good] = (int)NKatu;
+            }
+        }
+
+        if (ruleset is OsuRuleset) {
+            if (SliderTailHit is not null) {
+                statistics[HitResult.SliderTailHit] = (int)SliderTailHit;
+            }
+
+            if (SliderTickMiss is not null) {
+                statistics[HitResult.LargeTickMiss] = (int)SliderTickMiss;
             }
         }
 

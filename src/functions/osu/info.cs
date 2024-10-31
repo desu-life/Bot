@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using FFmpeg.AutoGen;
 using KanonBot.API;
 using KanonBot.API.OSU;
 using KanonBot.Drivers;
@@ -318,25 +319,29 @@ namespace KanonBot.Functions.OSUBot
                     ImageSegment.Type.Base64
                 )
             );
-            try
-            {
-                if (data.userInfo.Mode == API.OSU.Mode.OSU) //只存std的
-                    if (allBP!.Length > 0)
-                        await InsertBeatmapTechInfo(allBP);
-                    else
-                    {
-                        allBP = await API.OSU.Client.GetUserScores(
-                        data.userInfo.Id,
-                        API.OSU.UserScoreType.Best,
-                        API.OSU.Mode.OSU,
-                        20,
-                        0
-                    );
+
+            _ = Task.Run(async () => {
+                if (Config.inner!.dev) return;
+                try
+                {
+                    if (data.userInfo.Mode == API.OSU.Mode.OSU) //只存std的
                         if (allBP!.Length > 0)
                             await InsertBeatmapTechInfo(allBP);
-                    }
-            }
-            catch { }
+                        else
+                        {
+                            allBP = await API.OSU.Client.GetUserScores(
+                            data.userInfo.Id,
+                            API.OSU.UserScoreType.Best,
+                            API.OSU.Mode.OSU,
+                            20,
+                            0
+                        );
+                            if (allBP!.Length > 0)
+                                await InsertBeatmapTechInfo(allBP);
+                        }
+                }
+                catch { }
+            });
         }
 
         async public static Task InsertBeatmapTechInfo(API.OSU.Models.ScoreLazer[] allbp)

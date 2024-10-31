@@ -23,9 +23,10 @@ class OsuCalculator
         var rosubeatmap = Beatmap.FromBytes(b);
 
         Mode rmode = data.scoreInfo.Mode.ToRosu();
+        rosubeatmap.Convert(rmode);
 
         var clockRate = 1.0;
-        var mods = Mods.FromJson(Serializer.Json.Serialize(data.scoreInfo.Mods), rmode);
+        var mods = Mods.FromJson(data.scoreInfo.JsonMods, rmode);
 
         var builder = BeatmapAttributesBuilder.New();
         builder.Mode(rmode);
@@ -37,7 +38,7 @@ class OsuCalculator
         var ruleset = OsuPP.Utils.ParseRuleset(data.scoreInfo.ModeInt)!;
         var beatmap = new OsuPP.CalculatorWorkingBeatmap(ruleset, b);
         var c = OsuPP.Calculater.New(ruleset, beatmap);
-        c.Mods(Serializer.Json.Serialize(data.scoreInfo.Mods));
+        c.Mods(data.scoreInfo.JsonMods);
         c.combo = data.scoreInfo.MaxCombo;
         c.N50 = statistics.CountMeh;
         c.N100 = statistics.CountOk;
@@ -45,6 +46,8 @@ class OsuCalculator
         c.NKatu = statistics.CountKatu;
         c.NGeki = statistics.CountGeki;
         c.NMiss = statistics.CountMiss;
+        c.SliderTickMiss = statistics.LargeTickMiss;
+        c.SliderTailHit = statistics.SliderTailHit;
         c.accuracy = data.scoreInfo.AccAuto * 100.00;
         var dAttr = c.CalculateDifficulty();
         var bAttr = c.Calculate();
@@ -60,7 +63,7 @@ class OsuCalculator
             98.00,
             97.00,
             95.00,
-            data.scoreInfo.LeagcyAcc * 100.00 // if fc使用旧版acc计算，现在不知道怎么按新的lazer acc来模拟成绩
+            data.scoreInfo.AccAuto * 100.00
         };
 
         data.ppInfo.ppStats = [];
@@ -70,6 +73,7 @@ class OsuCalculator
             ref var acc = ref accs[i];
 
             var p = Performance.New();
+            p.Lazer(score.IsLazer);
             p.Mode(rmode);
             p.Mods(mods);
             p.Accuracy(acc);
@@ -82,14 +86,14 @@ class OsuCalculator
             c.NGeki = state.n_geki;
             c.NMiss = state.misses;
             c.combo = state.max_combo;
+            c.accuracy = acc;
 
-            if (i == 5)
-            {
-                c.accuracy = data.scoreInfo.AccAuto * 100.00;
-            }
-            else
-            {
-                c.accuracy = acc;
+            if (rmode is Mode.Osu) {
+                var d = Difficulty.New();
+                var dattr = d.Calculate(rosubeatmap);
+                
+                c.SliderTailHit = state.slider_end_hits;
+                c.SliderTickMiss = dattr.osu.ToNullable()!.Value.n_slider_ticks - state.slider_tick_hits;
             }
 
             bAttr = c.Calculate();
@@ -97,7 +101,7 @@ class OsuCalculator
             data.ppInfo.ppStats.Add(PPInfo.New(score, bAttr, dAttr, bmAttr, bpm, clockRate).ppStat);
         }
 
-        data.mode = data.scoreInfo.Mode.ToRosu();
+        data.mode = rmode;
 
         return data;
     }
@@ -111,8 +115,8 @@ class OsuCalculator
 
         Mode rmode = score.Mode.ToRosu();
 
-        var mods_str = Serializer.Json.Serialize(score.Mods);
-        var mods = Mods.FromJson(mods_str, rmode);
+        var mods_json = score.JsonMods;
+        var mods = Mods.FromJson(mods_json, rmode);
 
         var builder = BeatmapAttributesBuilder.New();
         builder.Mode(rmode);
@@ -126,7 +130,7 @@ class OsuCalculator
         var beatmap = new OsuPP.CalculatorWorkingBeatmap(ruleset, b);
         var c = OsuPP.Calculater.New(ruleset, beatmap);
 
-        c.Mods(mods_str);
+        c.Mods(mods_json);
         c.combo = score.MaxCombo;
         c.N50 = statistics.CountMeh;
         c.N100 = statistics.CountOk;
@@ -134,6 +138,8 @@ class OsuCalculator
         c.NKatu = statistics.CountKatu;
         c.NGeki = statistics.CountGeki;
         c.NMiss = statistics.CountMiss;
+        c.SliderTickMiss = statistics.LargeTickMiss;
+        c.SliderTailHit = statistics.SliderTailHit;
         c.accuracy = score.Accuracy * 100.00;
         var dAttr = c.CalculateDifficulty();
         var bAttr = c.Calculate();

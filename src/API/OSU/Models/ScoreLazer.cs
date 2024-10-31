@@ -148,6 +148,9 @@ public partial class Models
         public Mode Mode => ModeInt.ToMode() ?? Mode.OSU;
 
         [JsonIgnore]
+        public bool IsLazer => StartedAt.HasValue;
+
+        [JsonIgnore]
         public bool IsClassic => !StartedAt.HasValue;
 
         [JsonIgnore]
@@ -158,6 +161,9 @@ public partial class Models
 
         [JsonIgnore]
         public double AccAuto => IsClassic ? LeagcyAcc : Accuracy;
+
+        [JsonIgnore]
+        public string JsonMods => GetJsonMods();
 
         [JsonIgnore]
         public ScoreStatisticsLazer ConvertStatistics => GetStatistics();
@@ -171,6 +177,9 @@ public partial class Models
         // private
 
         [JsonIgnore]
+        public string? _JsonMods { get; set; } = null;
+
+        [JsonIgnore]
         private double? _LeagcyAcc { get; set; } = null;
 
         [JsonIgnore]
@@ -178,6 +187,17 @@ public partial class Models
 
         [JsonIgnore]
         private ScoreStatisticsLazer? _ConvertStatistics { get; set; } = null;
+
+        private string GetJsonMods()
+        {
+            if (_JsonMods is not null)
+            {
+                return _JsonMods;
+            }
+
+            _JsonMods = Serializer.Json.Serialize(Mods);
+            return _JsonMods;
+        }
 
         private double GetLeagcyAcc()
         {
