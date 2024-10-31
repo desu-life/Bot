@@ -298,6 +298,11 @@ namespace KanonBot.API.OSU
             }
         }
 
+        async public static Task<string?> DownloadBeatmapBackgroundImg(long sid, string folderPath, string? fileName = null)
+        {
+            return await $"https://assets.ppy.sh/beatmaps/{sid}/covers/raw.jpg".DownloadFileAsync(folderPath, fileName);
+        }
+
         // 小夜api版（备选方案）
         async public static Task<string?> SayoDownloadBeatmapBackgroundImg(long sid, long bid, string folderPath, string? fileName = null)
         {

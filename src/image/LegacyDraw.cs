@@ -64,21 +64,21 @@ namespace KanonBot.LegacyImage
             "./work/fonts/AvenirLTStd-Medium.ttf"
         );
 
-        public static FontFamily Mizolet = fonts.Add(
-            "./work/fonts/mizolet.ttf"
-        );
-        public static FontFamily MizoletBokutoh = fonts.Add(
-            "./work/fonts/mizolet-bokutoh.ttf"
-        );
+        public static FontFamily Mizolet = fonts.Add("./work/fonts/mizolet.ttf");
+        public static FontFamily MizoletBokutoh = fonts.Add("./work/fonts/mizolet-bokutoh.ttf");
 
-        public static async Task<Img> DrawMod(OSU.Models.Mod mod) {
+        public static async Task<Img> DrawMod(OSU.Models.Mod mod)
+        {
             var modName = mod.Acronym.ToUpper();
             var modPath = $"./work/mods/{modName}.png";
-            if (File.Exists(modPath)) {
+            if (File.Exists(modPath))
+            {
                 var modPic = await Img.LoadAsync(modPath);
                 modPic.Mutate(x => x.Resize(200, 0));
                 return modPic;
-            } else {
+            }
+            else
+            {
                 var drawOptions = new DrawingOptions
                 {
                     GraphicsOptions = new GraphicsOptions { Antialias = true }
@@ -91,14 +91,19 @@ namespace KanonBot.LegacyImage
                 var modPic = await Img.LoadAsync($"./work/mods/Unknown.png");
                 modPic.Mutate(x => x.Resize(200, 0));
                 textOptions.Origin = new PointF(96, 34);
-                modPic.Mutate(x => x.DrawText(drawOptions, textOptions, modName, new SolidBrush(Color.Black), null));
+                modPic.Mutate(x =>
+                    x.DrawText(drawOptions, textOptions, modName, new SolidBrush(Color.Black), null)
+                );
                 textOptions.Origin = new PointF(96, 33);
-                modPic.Mutate(x => x.DrawText(drawOptions, textOptions, modName, new SolidBrush(Color.White), null));
+                modPic.Mutate(x =>
+                    x.DrawText(drawOptions, textOptions, modName, new SolidBrush(Color.White), null)
+                );
                 return modPic;
             }
         }
 
-        public static async Task<Img> DrawDifficultyRing(RosuPP.Mode mode, double star) {
+        public static async Task<Img> DrawDifficultyRing(RosuPP.Mode mode, double star)
+        {
             var ringFile = mode switch
             {
                 RosuPP.Mode.Osu => "std-expertplus.png",
@@ -115,13 +120,20 @@ namespace KanonBot.LegacyImage
             cover.Mutate(x => x.Resize(128, 128));
             color.Mutate(x => x.DrawImage(cover, new Point(0, 0), 0.3f));
             cover.Mutate(x => x.Brightness(0.9f)); // adjust
-            
+
             var ring = await Image<Rgba32>.LoadAsync($"./work/icons/{ringFile}");
             ring.Mutate(x => x.Resize(128, 128));
-            ring.Mutate(x => x.DrawImage(color, new Point(0, 0), PixelColorBlendingMode.Lighten, PixelAlphaCompositionMode.SrcAtop, 1f));
+            ring.Mutate(x =>
+                x.DrawImage(
+                    color,
+                    new Point(0, 0),
+                    PixelColorBlendingMode.Lighten,
+                    PixelAlphaCompositionMode.SrcAtop,
+                    1f
+                )
+            );
             return ring;
         }
-
 
         public static async Task<Img> DrawInfo(
             UserPanelData data,
@@ -157,7 +169,8 @@ namespace KanonBot.LegacyImage
                         {
                             var cover_id = data.userInfo.Cover.Id ?? "0";
                             coverPath = $"./work/legacy/v1_cover/osu!web/default_{cover_id}.png";
-                            if (!File.Exists(coverPath)) {
+                            if (!File.Exists(coverPath))
+                            {
                                 coverPath = await data.userInfo.Cover.Url.DownloadFileAsync(
                                     "./work/legacy/v1_cover/osu!web/",
                                     $"default_{cover_id}.png"
@@ -679,6 +692,7 @@ namespace KanonBot.LegacyImage
             var bgPath = $"./work/background/{data.scoreInfo.Beatmap!.BeatmapId}.png";
             if (!File.Exists(bgPath))
             {
+                bgPath = null;
                 try
                 {
                     bgPath = await OSU.Client.SayoDownloadBeatmapBackgroundImg(
@@ -689,8 +703,27 @@ namespace KanonBot.LegacyImage
                 }
                 catch (Exception ex)
                 {
-                    var msg = $"从API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
+                    var msg =
+                        $"从Sayo API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
                     Log.Warning(msg);
+                }
+
+                if (bgPath is null)
+                {
+                    try
+                    {
+                        bgPath = await OSU.Client.DownloadBeatmapBackgroundImg(
+                            data.scoreInfo.Beatmap.BeatmapsetId,
+                            "./work/background/",
+                            $"{data.scoreInfo.Beatmap!.BeatmapId}.png"
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        var msg =
+                            $"从OSU API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
+                        Log.Warning(msg);
+                    }
                 }
             }
 
@@ -725,13 +758,21 @@ namespace KanonBot.LegacyImage
 
             // bg
             Image<Rgba32> bg;
-            try
-            {
-                bg = await Img.LoadAsync<Rgba32>(bgPath!);
-            }
-            catch
+            if (bgPath is null)
             {
                 bg = await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
+            }
+            else
+            {
+                try
+                {
+                    bg = await Img.LoadAsync<Rgba32>(bgPath);
+                }
+                catch
+                {
+                    bg = await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
+                    try { File.Delete(bgPath); } catch { }
+                }
             }
             using var smallBg = bg.Clone(x => x.RoundCorner(new Size(433, 296), 20));
             using var backBlack = new Image<Rgba32>(1950 - 2, 1088);
@@ -837,26 +878,32 @@ namespace KanonBot.LegacyImage
             // mods.Sort((a, b) => a.IsSpeedChangeMod ? 1 : -1);
 
             // 筛选classic成绩
-            if (data.scoreInfo.IsClassic) {
+            if (data.scoreInfo.IsClassic)
+            {
                 me = me.Filter(x => !x.IsClassic);
             }
 
             var mods = me.ToList();
             var modp = 0;
-            if (mods.Count > 7) {
+            if (mods.Count > 7)
+            {
                 foreach (var mod in mods)
                 {
                     var modPic = await DrawMod(mod);
-                    if (modPic is null) continue;
+                    if (modPic is null)
+                        continue;
                     modPic.Mutate(x => x.Resize(200, 0));
                     score.Mutate(x => x.DrawImage(modPic, new Point(modp + 440, 440), 1));
                     modp += 120;
                 }
-            } else {
+            }
+            else
+            {
                 foreach (var mod in mods)
                 {
                     var modPic = await DrawMod(mod);
-                    if (modPic is null) continue;
+                    if (modPic is null)
+                        continue;
                     modPic.Mutate(x => x.Resize(200, 0));
                     score.Mutate(x => x.DrawImage(modPic, new Point(modp + 440, 440), 1));
                     modp += 160;
