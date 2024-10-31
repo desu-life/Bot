@@ -150,7 +150,7 @@ namespace KanonBot.Functions.OSUBot
 
             LegacyImage.Draw.ScorePanelData data;
             if (command.lazer) {
-                data = await OsuCalculator.CalculatePanelData(scoreData.Score);
+                data = await RosuCalculator.CalculatePanelData(scoreData.Score);
             } else {
                 data = await UniversalCalculator.CalculatePanelDataAuto(scoreData.Score);
             }

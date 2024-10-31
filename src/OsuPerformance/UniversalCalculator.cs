@@ -10,26 +10,26 @@ namespace KanonBot.OsuPerformance
             API.OSU.Models.ScoreLazer score
         )
         {
-            if (score.IsClassic)
-            {
-                return await RosuCalculator.CalculatePanelData(score);
-            }
-            else
-            {
+            // if (score.IsClassic)
+            // {
+            //     return await RosuCalculator.CalculatePanelData(score);
+            // }
+            // else
+            // {
                 return await OsuCalculator.CalculatePanelData(score);
-            }
+            // }
         }
 
         public static async Task<PPInfo> CalculateDataAuto(API.OSU.Models.ScoreLazer score)
         {
-            if (score.IsClassic)
-            {
-                return await RosuCalculator.CalculateData(score);
-            }
-            else
-            {
+            // if (score.IsClassic)
+            // {
+            //     return await RosuCalculator.CalculateData(score);
+            // }
+            // else
+            // {
                 return await OsuCalculator.CalculateData(score);
-            }
+            // }
         }
     }
 }

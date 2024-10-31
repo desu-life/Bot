@@ -44,7 +44,7 @@ namespace KanonBot.image
             for (int i = 0; i < scoreList.Count; i++) {
                 PPInfo ppinfo;
                 if (lazer) {
-                    ppinfo = await OsuCalculator.CalculateData(scoreList[i]);
+                    ppinfo = await RosuCalculator.CalculateData(scoreList[i]);
                 } else {
                     ppinfo = await UniversalCalculator.CalculateDataAuto(scoreList[i]);
                 }

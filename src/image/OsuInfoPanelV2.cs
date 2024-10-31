@@ -1745,7 +1745,7 @@ namespace KanonBot.DrawV2
                 for (int i = 0; i < Math.Min(5, allBP.Length); i++) {
                     PPInfo ppinfo;
                     if (islazer) {
-                        ppinfo = await OsuCalculator.CalculateData(allBP[i]);
+                        ppinfo = await RosuCalculator.CalculateData(allBP[i]);
                     } else {
                         ppinfo = await UniversalCalculator.CalculateDataAuto(allBP[i]);
                     }
