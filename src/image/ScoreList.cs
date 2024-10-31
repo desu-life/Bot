@@ -49,7 +49,11 @@ namespace KanonBot.image
                     ppinfo = await UniversalCalculator.CalculateDataAuto(scoreList[i]);
                 }
                 ppinfos.Add(ppinfo);
+                scoreList[i].pp = ppinfo.ppStat.total;
             }
+            
+            // scoreList.Sort((a, b) => b.pp > a.pp ? 1 : -1);
+            // ppinfos.Sort((a, b) => b.ppStat.total > a.ppStat.total ? 1 : -1);
 
             //设定textOption/drawOption
             var textOptions = new RichTextOptions(new Font(TorusSemiBold, 120))
