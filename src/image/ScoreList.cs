@@ -18,6 +18,7 @@ using static KanonBot.LegacyImage.Draw;
 using Img = SixLabors.ImageSharp.Image;
 using ResizeOptions = SixLabors.ImageSharp.Processing.ResizeOptions;
 using KanonBot.OsuPerformance;
+using System.Diagnostics;
 
 namespace KanonBot.image
 {
@@ -40,6 +41,7 @@ namespace KanonBot.image
         )
         {
             //get pp
+       
             List<PPInfo> ppinfos = [];
             for (int i = 0; i < scoreList.Count; i++) {
                 PPInfo ppinfo;
@@ -105,6 +107,7 @@ namespace KanonBot.image
             var scorebgPath = $"./work/background/{scoreList[0].Beatmap!.BeatmapId}.png";
             if (!File.Exists(scorebgPath))
             {
+                scorebgPath = null;
                 try
                 {
                     scorebgPath = await OSU.Client.SayoDownloadBeatmapBackgroundImg(
@@ -115,14 +118,47 @@ namespace KanonBot.image
                 }
                 catch (Exception ex)
                 {
-                    var msg = $"从API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
+                    var msg = $"从Sayo API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
                     Log.Warning(msg);
+                }
+
+                if (scorebgPath is null)
+                {
+                    try
+                    {
+                        scorebgPath = await OSU.Client.DownloadBeatmapBackgroundImg(
+                            scoreList[0].Beatmapset!.Id,
+                            "./work/background/",
+                            $"{scoreList[0].Beatmap!.BeatmapId}.png"
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        var msg =
+                            $"从OSU API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
+                        Log.Warning(msg);
+                    }
                 }
             }
             
-            using var scorebg = await TryAsync(Utils.ReadImageRgba(scorebgPath!))
-                .IfFail(await Utils.ReadImageRgba("./work/legacy/load-failed-img.png"));
-            
+            Image<Rgba32> scorebg;
+            if (scorebgPath is null)
+            {
+                scorebg = await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
+            }
+            else
+            {
+                try
+                {
+                    scorebg = await Img.LoadAsync<Rgba32>(scorebgPath);
+                }
+                catch
+                {
+                    scorebg = await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
+                    try { File.Delete(scorebgPath); } catch { }
+                }
+            }
+
             scorebg.Mutate(
                 x =>
                     x.Resize(new ResizeOptions() { Size = new Size(365, 0), Mode = ResizeMode.Max })

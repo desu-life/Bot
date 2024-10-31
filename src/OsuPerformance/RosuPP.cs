@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -162,6 +163,8 @@ public static class RosuCalculator
         p.SliderTickHits(statistics.LargeTickHit);
         p.SliderTickMisses(statistics.LargeTickMiss);
         p.SliderEndHits(statistics.SliderTailHit);
-        return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm);
+        var pattr = p.Calculate(beatmap);
+
+        return PPInfo.New(pattr, bmAttr, bpm);
     }
 }

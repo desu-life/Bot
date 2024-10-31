@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -112,8 +113,9 @@ class OsuCalculator
     public static async Task<PPInfo> CalculateData(API.OSU.Models.ScoreLazer score)
     {
         var statistics = score.ConvertStatistics;
-
+    
         var b = await Utils.LoadOrDownloadBeatmap(score.Beatmap!);
+        
         var rosubeatmap = Beatmap.FromBytes(b);
 
         Mode rmode = score.Mode.ToRosu();
