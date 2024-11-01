@@ -155,7 +155,6 @@ namespace KanonBot.command_parser
                         case "get":
                             await Get.Execute(target, childCmd);
                             return; // get bonuspp/elo/rolecost/bpht/todaybp/annualpass
-                        case "bpme":
                         case "todaybp":
                             await Get.TodayBP(target, childCmd);
                             return;
