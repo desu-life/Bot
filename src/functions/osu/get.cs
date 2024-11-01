@@ -68,6 +68,12 @@ namespace KanonBot.Functions.OSUBot
                 case "profile":
                     await SendProfileLink(target, childCmd);
                     break;
+                case "bg":
+                    await GetBackground.Execute(target, childCmd);
+                    break;
+                case "mapsim":
+                    await Search.Execute(target, childCmd);
+                    break;
                 default:
                     await target.reply(
                         """

@@ -118,9 +118,6 @@ namespace KanonBot.command_parser
                 {
                     switch (rootCmd.ToLower())
                     {
-                        // case "m":
-                        //     await Search.Execute(target, childCmd);
-                        //     return;
                         case "reg":
                             await Accounts.RegAccount(target, childCmd);
                             return;

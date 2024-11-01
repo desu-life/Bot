@@ -24,13 +24,16 @@ public static class RosuCalculator
             _ => throw new ArgumentException()
         };
 
-    public static async Task<Draw.ScorePanelData> CalculatePanelSSData(API.OSU.Models.Beatmap map)
+    public static async Task<Draw.ScorePanelData> CalculatePanelSSData(API.OSU.Models.Beatmap map, API.OSU.Models.Mod[] mods)
     {
         Beatmap beatmap = Beatmap.FromBytes(await Utils.LoadOrDownloadBeatmap(map));
         var builder = BeatmapAttributesBuilder.New();
         var bmAttr = builder.Build(beatmap);
         var bpm = bmAttr.clock_rate * beatmap.Bpm();
         var p = Performance.New();
+        var rmods = Mods.FromJson(Serializer.Json.Serialize(mods), beatmap.Mode());
+        p.Lazer(false);
+        p.Mods(rmods);
         p.Accuracy(100);
         // 开始计算
         var res = p.Calculate(beatmap);
@@ -50,7 +53,7 @@ public static class RosuCalculator
                     CountKatu = 0,
                     CountOk = 0,
                 },
-                Mods = [],
+                Mods = mods,
                 ModeInt = map.Mode.ToNum(),
                 Score = 1000000,
                 Passed = true,
@@ -64,6 +67,8 @@ public static class RosuCalculator
         data.ppInfo.ppStats = accs.Select(acc =>
             {
                 var p = Performance.New();
+                p.Lazer(false);
+                p.Mods(rmods);
                 p.Accuracy(acc);
                 return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm).ppStat;
             })
