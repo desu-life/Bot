@@ -115,22 +115,25 @@ public static class BotCmdHelper
         return (s, number.ToNullable());
     }
 
-    public static BotParameter CmdParser(string? cmd, FuncType type)
+    public static BotParameter CmdParser(string? cmd, FuncType type, bool parsearg1 = true, bool parsearg2 = true, bool parsearg3 = true, bool parsearg4 = true, bool tolower = true)
     {
-        cmd = cmd?.Trim().ToLower();
+        cmd = cmd?.Trim();
+        if (tolower) {
+            cmd?.ToLower();
+        }
         BotParameter param = new() { lazer = false, self_query = false };
         if (!String.IsNullOrEmpty(cmd)) {
             string arg1 = "", arg2 = "", arg3 = "", arg4 = "";
             int section = 0;
             // 解析所有可能的参数
             for (var i = 0; i < cmd.Length; i++) {
-                if (cmd[i] == ':') {
+                if (cmd[i] == ':' && parsearg1) {
                     section = 1;
-                } else if (cmd[i] == '#') {
+                } else if (cmd[i] == '#' && parsearg2) {
                     section = 2;
-                } else if (cmd[i] == '+') {
+                } else if (cmd[i] == '+' && parsearg3) {
                     section = 3;
-                } else if (cmd[i] == '&') {
+                } else if (cmd[i] == '&' && parsearg4) {
                     section = 4;
                 }
 

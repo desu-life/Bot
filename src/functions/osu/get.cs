@@ -27,13 +27,15 @@ namespace KanonBot.Functions.OSUBot
     {
         async public static Task Execute(Target target, string cmd)
         {
-            string rootCmd,
-                childCmd = "";
+            string rootCmd;
+            string    childCmd = "";
+            string    childCmdLower = "";
             try
             {
                 var tmp = cmd.SplitOnFirstOccurence(" ");
                 rootCmd = tmp[0].Trim();
-                childCmd = tmp[1].Trim().ToLower();
+                childCmd = tmp[1].Trim();
+                childCmdLower = childCmd.ToLower();
             }
             catch
             {
@@ -42,34 +44,34 @@ namespace KanonBot.Functions.OSUBot
             switch (rootCmd.ToLower())
             {
                 case "bonuspp":
-                    await Bonuspp(target, childCmd);
+                    await Bonuspp(target, childCmdLower);
                     break;
                 case "bplist":
-                    await BPList(target, childCmd);
+                    await BPList(target, childCmdLower);
                     break;
                 case "rolecost":
-                    await Rolecost(target, childCmd);
+                    await Rolecost(target, childCmdLower);
                     break;
                 case "bpht":
-                    await Bpht(target, childCmd);
+                    await Bpht(target, childCmdLower);
                     break;
                 case "todaybp":
-                    await TodayBP(target, childCmd);
+                    await TodayBP(target, childCmdLower);
                     break;
                 case "seasonalpass":
-                    await SeasonalPass(target, childCmd);
+                    await SeasonalPass(target, childCmdLower);
                     break;
                 case "recommend":
-                    await BeatmapRecommend(target, childCmd);
+                    await BeatmapRecommend(target, childCmdLower);
                     break;
                 case "mu":
-                    await SendProfileLink(target, childCmd);
+                    await SendProfileLink(target, childCmdLower);
                     break;
                 case "profile":
-                    await SendProfileLink(target, childCmd);
+                    await SendProfileLink(target, childCmdLower);
                     break;
                 case "bg":
-                    await GetBackground.Execute(target, childCmd);
+                    await GetBackground.Execute(target, childCmdLower);
                     break;
                 case "mapsim":
                     await Search.Execute(target, childCmd);
