@@ -782,9 +782,17 @@ namespace KanonBot.LegacyImage
             bg.Mutate(x => x.GaussianBlur(5).RoundCorner(new Size(1950 - 2, 1088), 20));
             score.Mutate(x => x.DrawImage(bg, 1));
             score.Mutate(x => x.DrawImage(backBlack, 0.33f));
+
+            if (data.scoreInfo.IsLazer) {
+                var blurpanel = panel.Clone(x => x.GaussianBlur(3));
+                score.Mutate(x => x.DrawImage(blurpanel, 0.3f));
+            }
+
             score.Mutate(x => x.DrawImage(panel, 1));
             score.Mutate(x => x.DrawImage(smallBg, new Point(27, 34), 1));
             bg.Dispose();
+
+
 
             // StarRing
             // diff circle
@@ -912,6 +920,12 @@ namespace KanonBot.LegacyImage
             // rankings
             var ranking = data.scoreInfo.Passed ? data.scoreInfo.RankAuto : "F";
             using var rankPic = await Img.LoadAsync($"./work/ranking/ranking-{ranking}.png");
+
+            if (data.scoreInfo.IsLazer) {
+                var blurrank = rankPic.Clone(x => x.Resize(new ResizeOptions { Size = new Size(300, 300), Mode = ResizeMode.BoxPad }).GaussianBlur(40));
+                score.Mutate(x => x.DrawImage(blurrank, new Point(913 - 150 + 62, 874 - 150 + 31), 0.8f));
+            }
+
             score.Mutate(x => x.DrawImage(rankPic, new Point(913, 874), 1));
             // text part (文字部分)
             var font = new Font(TorusRegular, 60);
@@ -1896,6 +1910,15 @@ namespace KanonBot.LegacyImage
         {
             return processingContext
                 .Resize(new ResizeOptions { Size = size, Mode = ResizeMode.Crop })
+                .ApplyRoundedCorners(cornerRadius);
+        }
+
+        private static IImageProcessingContext RoundCorner(
+            this IImageProcessingContext processingContext,
+            float cornerRadius
+        )
+        {
+            return processingContext
                 .ApplyRoundedCorners(cornerRadius);
         }
 
