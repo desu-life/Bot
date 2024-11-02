@@ -74,12 +74,12 @@ public static partial class Utils
         }
     }
 
-    public static void SendMail(string mailto, string title, string body, bool isBodyHtml)
+    public static void SendMail(IEnumerable<string> mailto, string title, string body, bool isBodyHtml)
     {
         Mail.MailStruct ms =
             new()
             {
-                MailTo = [mailto],
+                MailTo = mailto,
                 Subject = title,
                 Body = body,
                 IsBodyHtml = isBodyHtml

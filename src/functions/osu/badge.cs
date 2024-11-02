@@ -506,7 +506,7 @@ namespace KanonBot.Functions.OSUBot
             await target.reply($"图片成功上传，新的badgeID为{db_badgeid}");
             Mail.MailStruct ms = new()
             {
-                MailTo = new string[] { "mono@desu.life", "fantasyzhjk@qq.com" },
+                MailTo = Config.inner!.mail!.mailTo,
                 Subject = "desu.life - 有新的徽章被创建",
                 Body = $"有新的徽章兑换码被使用\n\nENG_name: {args[1]}\nCHN_name: {args[2]}\nDISC: {args[3]}\nExpire at: {(int.Parse(args[4]) > 0 ? DateTimeOffset.Now.AddDays(int.Parse(args[4])) : "never")}",
                 IsBodyHtml = false
@@ -912,7 +912,7 @@ namespace KanonBot.Functions.OSUBot
 
                     Mail.MailStruct ms = new()
                     {
-                        MailTo = new string[] { "mono@desu.life", "fantasyzhjk@qq.com" },
+                        MailTo = Config.inner!.mail!.mailTo,
                         Subject = "desu.life - 有新的徽章兑换码被使用",
                         Body = $"有新的徽章兑换码被使用\n\n用户id：{userInfo.uid}\n" +
                         $"徽章id：{badgeinfo!.id}\n" +
@@ -1000,7 +1000,7 @@ namespace KanonBot.Functions.OSUBot
 
                 Mail.MailStruct ms = new()
                 {
-                    MailTo = new string[] { "mono@desu.life", "fantasyzhjk@qq.com" },
+                    MailTo = Config.inner!.mail!.mailTo,
                     Subject = "desu.life - 有新的徽章兑换码被创建",
                     Body = str,
                     IsBodyHtml = false
@@ -1132,7 +1132,7 @@ namespace KanonBot.Functions.OSUBot
                 mailmsg += "\n\n desu.life";
                 if (hadbadgeexpired && user.email!.Length > 4)
                 {
-                    Utils.SendMail(user.email!, "desu.life - 徽章过期通知", mailmsg, false);
+                    Utils.SendMail([user.email!], "desu.life - 徽章过期通知", mailmsg, false);
                     Log.Information($"已向用户 {user.uid} 发送徽章过期通知邮件。");
                 }
             }
@@ -1178,7 +1178,7 @@ namespace KanonBot.Functions.OSUBot
                     mailmsg += "\n\n desu.life";
                     if (user.email!.Length > 5)
                     {
-                        Utils.SendMail(user.email!, "desu.life - 徽章过期通知", mailmsg, false);
+                        Utils.SendMail([user.email!], "desu.life - 徽章过期通知", mailmsg, false);
                         Log.Information($"已向用户 {user.uid} 发送徽章过期通知邮件。");
                     }
                 }

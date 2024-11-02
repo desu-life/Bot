@@ -311,13 +311,7 @@ namespace KanonBot.Functions.OSUBot
                 File.Delete(imagePath);
                 await target.reply("已成功上传，请耐心等待审核。\n（*如长时间审核未通过则表示不符合规定，请重新上传或联系管理员）");
                 Utils.SendMail(
-                    "mono@desu.life",
-                    "有新的v2 info image需要审核",
-                    $"osuid: {DBOsuInfo.osu_uid}  请及时查看\n<img src={cmd}>",
-                    true
-                );
-                Utils.SendMail(
-                    "fantasyzhjk@qq.com",
+                    Config.inner!.mail!.mailTo,
                     "有新的v2 info image需要审核",
                     $"osuid: {DBOsuInfo.osu_uid}  请及时查看\n<img src={cmd}>",
                     true
@@ -421,13 +415,7 @@ namespace KanonBot.Functions.OSUBot
                 File.Delete(imagePath);
                 await target.reply("已成功上传，请耐心等待审核。\n（*如长时间审核未通过则表示不符合规定，请重新上传或联系管理员）");
                 Utils.SendMail(
-                    "mono@desu.life",
-                    "有新的v1 info image需要审核",
-                    $"osuid: {DBOsuInfo.osu_uid}  请及时查看\n<img src={cmd}>",
-                    true
-                );
-                Utils.SendMail(
-                    "fantasyzhjk@qq.com",
+                    Config.inner!.mail!.mailTo,
                     "有新的v1 info image需要审核",
                     $"osuid: {DBOsuInfo.osu_uid}  请及时查看\n<img src={cmd}>",
                     true
@@ -579,13 +567,7 @@ namespace KanonBot.Functions.OSUBot
                 File.Delete(imagePath);
                 await target.reply("已成功上传，请耐心等待审核。\n（*如长时间审核未通过则表示不符合规定，请重新上传或联系管理员）");
                 Utils.SendMail(
-                    "mono@desu.life",
-                    "有新的v2 info panel需要审核",
-                    $"osuid: {DBOsuInfo.osu_uid}  请及时查看\n<img src={cmd}>",
-                    true
-                );
-                Utils.SendMail(
-                    "fantasyzhjk@qq.com",
+                    Config.inner!.mail!.mailTo,
                     "有新的v2 info panel需要审核",
                     $"osuid: {DBOsuInfo.osu_uid}  请及时查看\n<img src={cmd}>",
                     true
@@ -681,18 +663,12 @@ namespace KanonBot.Functions.OSUBot
                 }
                 pic.Save(
                     $"./work/legacy/v1_infopanel/verify/{DBOsuInfo.osu_uid}.png",
-                    new PngEncoder()
+                    encoder: new PngEncoder()
                 );
                 File.Delete(imagePath);
                 await target.reply("已成功上传，请耐心等待审核。\n（*如长时间审核未通过则表示不符合规定，请重新上传或联系管理员）");
                 Utils.SendMail(
-                    "mono@desu.life",
-                    "有新的v1 info panel需要审核",
-                    $"osuid: {DBOsuInfo.osu_uid}  请及时查看\n<img src={cmd}>",
-                    true
-                );
-                Utils.SendMail(
-                    "fantasyzhjk@qq.com",
+                    Config.inner!.mail!.mailTo,
                     "有新的v1 info panel需要审核",
                     $"osuid: {DBOsuInfo.osu_uid}  请及时查看\n<img src={cmd}>",
                     true
