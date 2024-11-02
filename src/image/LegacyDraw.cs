@@ -792,7 +792,9 @@ namespace KanonBot.LegacyImage
             score.Mutate(x => x.DrawImage(smallBg, new Point(27, 34), 1));
             bg.Dispose();
 
-
+            // var lazer_triangle = await Img.LoadAsync<Rgba32>("./work/triangles.png");
+            // lazer_triangle.Mutate(x => x.Resize(200, 0));
+            // score.Mutate(x => x.DrawImage(lazer_triangle, new Point(870, 810), 0.5f));
 
             // StarRing
             // diff circle
@@ -923,7 +925,7 @@ namespace KanonBot.LegacyImage
 
             if (data.scoreInfo.IsLazer) {
                 var blurrank = rankPic.Clone(x => x.Resize(new ResizeOptions { Size = new Size(300, 300), Mode = ResizeMode.BoxPad }).GaussianBlur(40));
-                score.Mutate(x => x.DrawImage(blurrank, new Point(913 - 150 + 62, 874 - 150 + 31), 0.8f));
+                score.Mutate(x => x.DrawImage(blurrank, new Point(913 - 150 + 62, 874 - 150 + 31), 1f));
             }
 
             score.Mutate(x => x.DrawImage(rankPic, new Point(913, 874), 1));
@@ -1250,7 +1252,7 @@ namespace KanonBot.LegacyImage
             // score
             textOptions.HorizontalAlignment = HorizontalAlignment.Center;
             textOptions.Font = new Font(TorusRegular, 40);
-            textOptions.Origin = new PointF(980, 750);
+            textOptions.Origin = new PointF(980, 745);
             score.Mutate(x =>
                 x.DrawText(
                     drawOptions,
