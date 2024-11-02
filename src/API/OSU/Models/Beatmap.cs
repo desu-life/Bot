@@ -104,8 +104,8 @@ public partial class Models
         [JsonProperty(PropertyName = "failtimes")]
         public BeatmapFailtimes Failtimes { get; set; }
 
-        [JsonProperty(PropertyName = "max_combo")]
-        public long MaxCombo { get; set; }
+        [JsonProperty(PropertyName = "max_combo", NullValueHandling = NullValueHandling.Ignore)]
+        public long? MaxCombo { get; set; }
     }
 
 
