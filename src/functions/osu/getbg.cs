@@ -15,44 +15,92 @@ namespace KanonBot.Functions.OSUBot
     {
         async public static Task Execute(Target target, string cmd)
         {
-            var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Score);
-            // 判断是否给定了bid
-            if (command.order_number == -1)
+            var command = BotCmdHelper.CmdParser(
+                cmd,
+                BotCmdHelper.FuncType.Search,
+                false,
+                true,
+                true,
+                false,
+                false
+            );
+
+            var index = Math.Max(0, command.order_number - 1);
+            var isBid = int.TryParse(command.search_arg, out var bid);
+
+            bool beatmapFound = true;
+            API.OSU.Models.BeatmapSearchResult? beatmaps = null;
+            API.OSU.Models.Beatmapset? beatmapset = null;
+
+            beatmaps = await API.OSU.Client.SearchBeatmap(command.search_arg, null);
+            if (beatmaps != null && isBid) {
+                beatmaps.Beatmapsets = beatmaps.Beatmapsets.OrderByDescending(x => x.Beatmaps.Find(y => y.BeatmapId == bid) != null).ToList();
+            }
+            beatmapset = beatmaps?.Beatmapsets.Skip(index).FirstOrDefault();
+
+            if (beatmapset == null)
             {
-                await target.reply("请提供谱面参数。");
-                return;
+                beatmapFound = false;
+            }
+            else if (beatmapset.Beatmaps == null)
+            {
+                beatmapFound = false;
+            }
+            else if (beatmapset.Beatmaps.Length == 0)
+            {
+                beatmapFound = false;
             }
 
-            List<string> mods = new();
-            try
+            if (!beatmapFound)
             {
-                mods = Enumerable
-                    .Range(0, command.osu_mods.Length / 2)
-                    .Select(p => new string(command.osu_mods.AsSpan().Slice(p * 2, 2)).ToUpper())
-                    .ToList();
+                beatmaps = await API.OSU.Client.SearchBeatmap(command.search_arg, null, false);
+                beatmapFound = true;
             }
-            catch { }
 
-            Log.Debug($"Mods: {string.Join(",", mods)}");
+            if (beatmaps != null && isBid) {
+                beatmaps.Beatmapsets = beatmaps.Beatmapsets.OrderByDescending(x => x.Beatmaps.Find(y => y.BeatmapId == bid) != null).ToList();
+            }
+            beatmapset = beatmaps?.Beatmapsets.Skip(index).FirstOrDefault();
 
-            var mods_lazer = mods.Map(API.OSU.Models.Mod.FromString).ToArray();
+            if (beatmapset == null)
+            {
+                beatmapFound = false;
+            }
+            else if (beatmapset.Beatmaps == null)
+            {
+                beatmapFound = false;
+            }
+            else if (beatmapset.Beatmaps.Length == 0)
+            {
+                beatmapFound = false;
+            }
 
-            var beatmaps = await API.OSU.Client.SearchBeatmap(command.order_number.ToString());
-
-            if (beatmaps == null)
+            if (!beatmapFound)
             {
                 await target.reply("未找到谱面。");
                 return;
             }
 
-            if (beatmaps.Beatmapsets.Count == 0)
-            {
-                await target.reply("未找到谱面。");
-                return;
-            }
+            // beatmapset!.Beatmaps = beatmapset
+            //     .Beatmaps!.OrderByDescending(x => x.DifficultyRating)
+            //     .ToArray();
 
-            var beatmapset = beatmaps.Beatmapsets[0];
-            await target.reply($"https://assets.ppy.sh/beatmaps/{beatmapset.Id}/covers/raw.jpg");
+            // API.OSU.Models.Beatmap? beatmap = null;
+
+            // if (isBid)
+            // {
+            //     beatmap = beatmapset
+            //         .Beatmaps.Find(x => x.BeatmapId == command.bid)
+            //         .IfNone(() => beatmapset.Beatmaps.First());
+            // }
+            // else
+            // {
+            //     beatmap = beatmapset.Beatmaps.First();
+            // }
+
+            // beatmap.Beatmapset = beatmaps!.Beatmapsets[0];
+
+            await target.reply($"https://assets.ppy.sh/beatmaps/{beatmapset!.Id}/covers/raw.jpg");
         }
     }
 }

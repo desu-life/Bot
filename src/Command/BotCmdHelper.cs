@@ -15,7 +15,7 @@ public static class BotCmdHelper
     public struct BotParameter
     {
         public API.OSU.Mode? osu_mode;
-        public string osu_username, osu_mods, match_name;           //用于获取具体要查询的模式，未提供返回osu
+        public string osu_username, osu_mods, match_name, search_arg;           //用于获取具体要查询的模式，未提供返回osu
         public long osu_user_id, bid;
         public int order_number;//用于info的查询n天之前、pr，bp的序号，score的bid，如未提供则返回0
         public bool lazer; //是否获取lazer数据
@@ -35,6 +35,7 @@ public static class BotCmdHelper
         Leeway,
         RoleCost,
         BPList,
+        Search,
     }
 
     public static string? ParseString(string? input) {
@@ -310,46 +311,19 @@ public static class BotCmdHelper
                     }
                 }
 
-                //没提供用户名
-                // if (arg3 == "" || param.osu_username == null) {
-                //     param.osu_username = "";
+                param.osu_mods = arg4 != "" ? arg4[1..] : "";
+            } else if (type == FuncType.Search) {
+                // 处理score解析
+                // arg1 = search arg
+                // arg3 = num #
+                // arg4 = mods +
 
-                //      //bid必须有效，否则返回 -1
-                //     if (arg1 == "") {
-                //         param.order_number = -1;
-                //     } else {
-                //         try {
-                //             var index = int.Parse(arg1);
-                //             param.order_number = index < 1 ? -1 : index;
-                //             param.extra_args = arg1;
-                //         } catch {
-                //             param.order_number = -1;
-                //         }
-                //     }
-                // } else {
-                //     //提供了用户名
-                //     param.osu_username = arg1;
-
-                //      //bid必须有效，否则返回 -1
-                //     if (arg3 == "" || param.osu_username == null) {
-                //         param.order_number = -1;
-                //     } else {
-                //         try {
-                //             var index = int.Parse(arg3[1..]);
-                //             param.order_number = index < 1 ? -1 : index;
-                //             param.extra_args = arg3[1..];
-                //         } catch {
-                //             param.order_number = -1;
-                //         }
-                //     }
-                // }
-
-                if (arg2 != "") {
-                    try {
-                        param.osu_mode = arg2[1..].Trim().ParseMode();
-                    } catch {
-                        param.osu_mode = null;
-                    }
+                // bid 解析成功
+                if (arg3 != "" && int.TryParse(arg3[1..], out param.order_number)) {
+                    param.search_arg = ParseString(input: arg1) ?? String.Empty;
+                } else {
+                    // arg1的处理
+                    param.search_arg = ParseString(input: arg1) ?? String.Empty;
                 }
 
                 param.osu_mods = arg4 != "" ? arg4[1..] : "";

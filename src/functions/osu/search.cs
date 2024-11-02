@@ -1,28 +1,39 @@
-using KanonBot.Drivers;
-using KanonBot.Message;
-using KanonBot.API;
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.Formats.Jpeg;
 using System.IO;
-using LanguageExt.UnsafeValueAccess;
+using DotNext.Collections.Generic;
+using KanonBot.API;
+using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
+using KanonBot.Message;
 using KanonBot.OsuPerformance;
-
+using LanguageExt.UnsafeValueAccess;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats.Png;
 
 namespace KanonBot.Functions.OSUBot
 {
     public class Search
     {
-        async public static Task Execute(Target target, string cmd)
+        public static async Task Execute(Target target, string cmd)
         {
-            var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Score, false, true, true, false, false);
-            var mode = command.osu_mode;
+            var command = BotCmdHelper.CmdParser(
+                cmd,
+                BotCmdHelper.FuncType.Search,
+                false,
+                true,
+                true,
+                false,
+                false
+            );
             // 判断是否给定了bid
             API.OSU.Models.Mod[]? mods_lazer = null;
+            var index = Math.Max(0, command.order_number - 1);
+            var isBid = int.TryParse(command.search_arg, out var bid);
 
-            try {
+            try
+            {
                 mods_lazer = Serializer.Json.Deserialize<API.OSU.Models.Mod[]>(command.osu_mods);
-            } catch { }
+            }
+            catch { }
 
             if (mods_lazer == null)
             {
@@ -31,7 +42,9 @@ namespace KanonBot.Functions.OSUBot
                 {
                     mods = Enumerable
                         .Range(0, command.osu_mods.Length / 2)
-                        .Select(p => new string(command.osu_mods.AsSpan().Slice(p * 2, 2)).ToUpper())
+                        .Select(p =>
+                            new string(command.osu_mods.AsSpan().Slice(p * 2, 2)).ToUpper()
+                        )
                         .ToList();
                 }
                 catch { }
@@ -42,33 +55,48 @@ namespace KanonBot.Functions.OSUBot
 
             bool beatmapFound = true;
             API.OSU.Models.BeatmapSearchResult? beatmaps = null;
+            API.OSU.Models.Beatmapset? beatmapset = null;
 
-            if (command.order_number > 0)
+            beatmaps = await API.OSU.Client.SearchBeatmap(command.search_arg, null);
+            if (beatmaps != null && isBid) {
+                beatmaps.Beatmapsets = beatmaps.Beatmapsets.OrderByDescending(x => x.Beatmaps.Find(y => y.BeatmapId == bid) != null).ToList();
+            }
+            beatmapset = beatmaps?.Beatmapsets.Skip(index).FirstOrDefault();
+
+            if (beatmapset == null)
             {
-                beatmaps = await API.OSU.Client.SearchBeatmap(command.order_number.ToString(), mode);
-            }
-
-            if (beatmaps is null) {
-                beatmapFound = false;
-            } else if (beatmaps.Beatmapsets.Count == 0) {
                 beatmapFound = false;
             }
+            else if (beatmapset.Beatmaps == null)
+            {
+                beatmapFound = false;
+            }
+            else if (beatmapset.Beatmaps.Length == 0)
+            {
+                beatmapFound = false;
+            }
 
-            if (!beatmapFound) {
-                beatmaps = await API.OSU.Client.SearchBeatmap(command.osu_username, mode);
+            if (!beatmapFound)
+            {
+                beatmaps = await API.OSU.Client.SearchBeatmap(command.search_arg, null, false);
                 beatmapFound = true;
             }
-            
-            if (beatmaps is null) {
-                beatmapFound = false;
-            } else if (beatmaps.Beatmapsets.Count == 0) {
+
+            if (beatmaps != null && isBid) {
+                beatmaps.Beatmapsets = beatmaps.Beatmapsets.OrderByDescending(x => x.Beatmaps.Find(y => y.BeatmapId == bid) != null).ToList();
+            }
+            beatmapset = beatmaps?.Beatmapsets.Skip(index).FirstOrDefault();
+
+            if (beatmapset == null)
+            {
                 beatmapFound = false;
             }
-
-            var beatmapset = beatmaps!.Beatmapsets[0];
-            if (beatmapset.Beatmaps is null) {
+            else if (beatmapset.Beatmaps == null)
+            {
                 beatmapFound = false;
-            } else if (beatmapset.Beatmaps.Length == 0) {
+            }
+            else if (beatmapset.Beatmaps.Length == 0)
+            {
                 beatmapFound = false;
             }
 
@@ -78,21 +106,28 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
 
-            beatmapset.Beatmaps = beatmapset.Beatmaps!.OrderByDescending(x => x.DifficultyRating).ToArray();
+            beatmapset!.Beatmaps = beatmapset
+                .Beatmaps!.OrderByDescending(x => x.DifficultyRating)
+                .ToArray();
 
             API.OSU.Models.Beatmap? beatmap = null;
 
-            if (command.order_number != -1) {
-                beatmap = beatmapset.Beatmaps.Find(x => x.BeatmapId == command.order_number).IfNone(() => beatmapset.Beatmaps.First());
-            } else {
+            if (isBid)
+            {
+                beatmap = beatmapset
+                    .Beatmaps.Find(x => x.BeatmapId == command.bid)
+                    .IfNone(() => beatmapset.Beatmaps.First());
+            }
+            else
+            {
                 beatmap = beatmapset.Beatmaps.First();
             }
 
-            beatmap.Beatmapset = beatmaps.Beatmapsets[0];
+            beatmap.Beatmapset = beatmaps!.Beatmapsets[0];
 
             var data = await OsuCalculator.CalculatePanelSSData(beatmap, mods_lazer);
-            
-            data.scoreInfo.UserId = 3;  // bancho bot
+
+            data.scoreInfo.UserId = 3; // bancho bot
             data.scoreInfo.User = await API.OSU.Client.GetUser(data.scoreInfo.UserId);
             data.scoreInfo.Beatmapset = beatmapset;
             data.scoreInfo.Beatmap = beatmap;
@@ -101,15 +136,17 @@ namespace KanonBot.Functions.OSUBot
             data.scoreInfo.EndedAt = DateTime.UtcNow;
             data.scoreInfo.StartedAt = DateTime.UtcNow;
             data.scoreInfo.Score = 1000000;
-            
+
             using var stream = new MemoryStream();
             using var img = await LegacyImage.Draw.DrawScore(data);
             await img.SaveAsync(stream, new JpegEncoder());
             await target.reply(
-                new Chain().image(
-                    Convert.ToBase64String(stream.ToArray(), 0, (int)stream.Length),
-                    ImageSegment.Type.Base64
-                ).msg("该功能为测试功能。")
+                new Chain()
+                    .image(
+                        Convert.ToBase64String(stream.ToArray(), 0, (int)stream.Length),
+                        ImageSegment.Type.Base64
+                    )
+                    .msg("该功能为测试功能。")
             );
         }
     }

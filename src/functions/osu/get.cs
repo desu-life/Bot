@@ -12,6 +12,7 @@ using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
 using KanonBot.image;
 using KanonBot.Message;
+using KanonBot.OsuPerformance;
 using LanguageExt.UnsafeValueAccess;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,17 +20,16 @@ using SixLabors.ImageSharp.Formats.Png;
 using static KanonBot.API.OSU.Models;
 using static KanonBot.API.OSU.Models.PPlusData;
 using static KanonBot.API.OSU.OSUExtensions;
-using KanonBot.OsuPerformance;
 
 namespace KanonBot.Functions.OSUBot
 {
     public class Get
     {
-        async public static Task Execute(Target target, string cmd)
+        public static async Task Execute(Target target, string cmd)
         {
             string rootCmd;
-            string    childCmd = "";
-            string    childCmdLower = "";
+            string childCmd = "";
+            string childCmdLower = "";
             try
             {
                 var tmp = cmd.SplitOnFirstOccurence(" ");
@@ -71,29 +71,30 @@ namespace KanonBot.Functions.OSUBot
                     await SendProfileLink(target, childCmdLower);
                     break;
                 case "bg":
-                    await GetBackground.Execute(target, childCmdLower);
+                    await GetBackground.Execute(target, childCmd);
                     break;
-                case "mapsim":
+                case "map":
                     await Search.Execute(target, childCmd);
                     break;
                 default:
                     await target.reply(
                         """
-                                       !get bonuspp
-                                            rolecost
-                                            bpht
-                                            bplist
-                                            todaybp
-                                            seasonalpass
-                                            recommend
-                                            mu/profile
-                                       """
+                        !get bonuspp
+                             rolecost
+                             bpht
+                             bplist
+                             todaybp
+                             seasonalpass
+                             recommend
+                             mu/profile
+                             bg
+                        """
                     );
                     return;
             }
         }
 
-        async private static Task SendProfileLink(Target target, string cmd)
+        private static async Task SendProfileLink(Target target, string cmd)
         {
             #region 验证
             long? osuID = null;
@@ -141,7 +142,7 @@ namespace KanonBot.Functions.OSUBot
             );
         }
 
-        async private static Task BeatmapRecommend(Target target, string cmd)
+        private static async Task BeatmapRecommend(Target target, string cmd)
         {
             int normal_range = 20;
             int NFEZHT_range = 60;
@@ -412,12 +413,14 @@ namespace KanonBot.Functions.OSUBot
                 Stars: {data[beatmapindex].stars:0.##*}  Mod: {mod}
                 PP Statistics:
                 100%: {data[beatmapindex].total}pp  99%: {data[beatmapindex].pp_99acc}pp
-                98%: {data[beatmapindex].pp_98acc}pp  97%: {data[beatmapindex].pp_97acc}pp  95%: {data[beatmapindex].pp_95acc}pp
+                98%: {data[beatmapindex].pp_98acc}pp  97%: {data[
+                    beatmapindex
+                ].pp_97acc}pp  95%: {data[beatmapindex].pp_95acc}pp
                 """;
             await target.reply(msg);
         }
 
-        async private static Task Bonuspp(Target target, string cmd)
+        private static async Task Bonuspp(Target target, string cmd)
         {
             #region 验证
             long? osuID = null;
@@ -622,7 +625,7 @@ namespace KanonBot.Functions.OSUBot
             await target.reply(str);
         }
 
-        async private static Task Rolecost(Target target, string cmd)
+        private static async Task Rolecost(Target target, string cmd)
         {
             cmd = cmd.ToLower().Trim();
             static double occost(User userInfo, UserData pppData)
@@ -709,7 +712,8 @@ namespace KanonBot.Functions.OSUBot
                     t = 0.0;
                 }
                 return (double)userInfo.Statistics.PP / 1200.0
-                    + (double)userInfo.Statistics.TotalHits / 1333333.0 + t;
+                    + (double)userInfo.Statistics.TotalHits / 1333333.0
+                    + t;
             }
             #region 验证
             long? osuID = null;
@@ -842,12 +846,12 @@ namespace KanonBot.Functions.OSUBot
                 ////////////////////////////////////////////////////////////////////////////////////////
                 case "zkfc":
                     var scores = await API.OSU.Client.GetUserScoresLeagcy(
-                                                         osuID!.Value,
-                                                         API.OSU.UserScoreType.Best,
-                                                         API.OSU.Mode.OSU,
-                                                         1,
-                                                         command.order_number - 1
-                                                        );
+                        osuID!.Value,
+                        API.OSU.UserScoreType.Best,
+                        API.OSU.Mode.OSU,
+                        1,
+                        command.order_number - 1
+                    );
                     if (scores == null)
                     {
                         await target.reply("查询成绩时出错。");
@@ -869,7 +873,7 @@ namespace KanonBot.Functions.OSUBot
             }
         }
 
-        async private static Task Bpht(Target target, string cmd)
+        private static async Task Bpht(Target target, string cmd)
         {
             #region 验证
             long? osuID = null;
@@ -1015,7 +1019,7 @@ namespace KanonBot.Functions.OSUBot
             await target.reply(str);
         }
 
-        async public static Task TodayBP(Target target, string cmd)
+        public static async Task TodayBP(Target target, string cmd)
         {
             #region 验证
             long? osuID = null;
@@ -1137,11 +1141,8 @@ namespace KanonBot.Functions.OSUBot
             List<int> Rank = new();
 
             var now = DateTime.Now;
-            var t =
-                now.Hour < 4
-                    ? now.Date.AddDays(-1).AddHours(4)
-                    : now.Date.AddHours(4);
-            
+            var t = now.Hour < 4 ? now.Date.AddDays(-1).AddHours(4) : now.Date.AddHours(4);
+
             t = t.AddDays(-command.order_number);
 
             for (int i = 0; i < allBP.Length; i++)
@@ -1155,7 +1156,7 @@ namespace KanonBot.Functions.OSUBot
                     Rank.Add(i + 1);
                 }
             }
-            
+
             if (TBP.Count == 0)
             {
                 if (cmd == "")
@@ -1186,7 +1187,7 @@ namespace KanonBot.Functions.OSUBot
             }
         }
 
-        async private static Task SeasonalPass(Target target, string cmd)
+        private static async Task SeasonalPass(Target target, string cmd)
         {
             #region 验证
             long? osuID = null;
@@ -1318,7 +1319,7 @@ namespace KanonBot.Functions.OSUBot
             //await target.reply(str);
         }
 
-        async private static Task BPList(Target target, string cmd)
+        private static async Task BPList(Target target, string cmd)
         {
             #region 验证
             long? osuID = null;

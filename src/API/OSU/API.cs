@@ -85,7 +85,7 @@ namespace KanonBot.API.OSU
 
 
         // 获取特定谱面信息
-        async public static Task<Models.BeatmapSearchResult?> SearchBeatmap(string filters, Mode? mode = null)
+        async public static Task<Models.BeatmapSearchResult?> SearchBeatmap(string filters, Mode? mode = null, bool has_leaderboard = true)
         {
             var q = http()
                 .AppendPathSegments(new object[] { "beatmapsets", "search" })
@@ -102,6 +102,9 @@ namespace KanonBot.API.OSU
 
             if (mode != null)
                 q = q.SetQueryParam("m", mode.Value.ToNum());
+            
+            if (!has_leaderboard)
+                q = q.SetQueryParam("s", "any");
                 
 
             var res = await q.GetAsync();
