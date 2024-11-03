@@ -80,9 +80,11 @@ namespace KanonBot.Functions.OSU
             {
                 Log.Information($"正在更新用户数据....[{userID}/{mode}]");
                 var userInfo = await API.OSU.Client.GetUser(userID, mode);
+                if (userInfo == null) continue;
+                if (userInfo.Statistics.PP == 0) continue;
                 OsuArchivedRec rec = new()
                 {
-                    uid = (int)userInfo!.Id,
+                    uid = userInfo!.Id,
                     play_count = (int)userInfo.Statistics.PlayCount,
                     ranked_score = userInfo.Statistics.RankedScore,
                     total_score = userInfo.Statistics.TotalScore,

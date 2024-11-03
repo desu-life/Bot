@@ -925,7 +925,7 @@ namespace KanonBot.LegacyImage
 
             if (data.scoreInfo.IsLazer) {
                 var blurrank = rankPic.Clone(x => x.Resize(new ResizeOptions { Size = new Size(300, 300), Mode = ResizeMode.BoxPad }).GaussianBlur(40));
-                score.Mutate(x => x.DrawImage(blurrank, new Point(913 - 150 + 62, 874 - 150 + 31), 1f));
+                score.Mutate(x => x.DrawImage(blurrank, new Point(913 - 150 + 62, 874 - 150 + 31), 0.8f));
             }
 
             score.Mutate(x => x.DrawImage(rankPic, new Point(913, 874), 1));
