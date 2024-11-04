@@ -264,7 +264,7 @@ namespace KanonBot.Functions
                 }
 
                 // 查询当前kanon账户是否有效
-                if (DBUser == null) { await target.reply("您还没有绑定Kanon账户，请使用!reg 您的邮箱来进行绑定或注册。"); return; }
+                if (DBUser == null) { await target.reply("你还没有绑定desu.life账户，使用 !reg 你的邮箱 来进行绑定或注册喵。"); return; }
 
                 // 检查用户是否已绑定osu账户
                 var osuuserinfo = await Database.Client.GetOsuUserByUID(DBUser.uid);

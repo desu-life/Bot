@@ -110,9 +110,8 @@ namespace KanonBot.Functions.OSUBot
             var AccInfo = Accounts.GetAccInfo(target);
             DBUser = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
             if (DBUser == null)
-            // { await target.reply("您还没有绑定Kanon账户，请使用!reg 您的邮箱来进行绑定或注册。"); return; }    // 这里引导到绑定osu
             {
-                await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
+                await target.reply("你还没有绑定desu.life账户，使用 !reg 你的邮箱 来进行绑定或注册喵。");
                 return;
             }
             // 验证账号信息
@@ -120,7 +119,7 @@ namespace KanonBot.Functions.OSUBot
             DBOsuInfo = (await Accounts.CheckOsuAccount(_u!.uid))!;
             if (DBOsuInfo == null)
             {
-                await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
+                await target.reply("你还没有绑定osu账户，请使用 !bind osu 你的osu用户名 来绑定你的osu账户喵。");
                 return;
             }
 
@@ -161,9 +160,8 @@ namespace KanonBot.Functions.OSUBot
             var AccInfo = Accounts.GetAccInfo(target);
             DBUser = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
             if (DBUser == null)
-            // { await target.reply("您还没有绑定Kanon账户，请使用!reg 您的邮箱来进行绑定或注册。"); return; }    // 这里引导到绑定osu
             {
-                await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
+                await target.reply("你还没有绑定desu.life账户，使用 !reg 你的邮箱 来进行绑定或注册喵。");
                 return;
             }
             // 验证账号信息
@@ -171,7 +169,7 @@ namespace KanonBot.Functions.OSUBot
             DBOsuInfo = (await Accounts.CheckOsuAccount(_u!.uid))!;
             if (DBOsuInfo == null)
             {
-                await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
+                await target.reply("你还没有绑定osu账户，请使用 !bind osu 你的osu用户名 来绑定你的osu账户喵。");
                 return;
             }
 
@@ -439,16 +437,15 @@ namespace KanonBot.Functions.OSUBot
                 var AccInfo = Accounts.GetAccInfo(target);
                 DBUser = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
                 if (DBUser == null)
-                // { await target.reply("您还没有绑定Kanon账户，请使用!reg 您的邮箱来进行绑定或注册。"); return; }    // 这里引导到绑定osu
                 {
-                    await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
+                    await target.reply("你还没有绑定desu.life账户，使用 !reg 你的邮箱 来进行绑定或注册喵。");
                     return;
                 }
                 // 验证账号信息
                 DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
                 if (DBOsuInfo == null)
                 {
-                    await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
+                    await target.reply("你还没有绑定osu账户，请使用 !bind osu 你的osu用户名 来绑定你的osu账户喵。");
                     return;
                 }
 
@@ -732,16 +729,15 @@ namespace KanonBot.Functions.OSUBot
                 var AccInfo = Accounts.GetAccInfo(target);
                 DBUser = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
                 if (DBUser == null)
-                // { await target.reply("您还没有绑定Kanon账户，请使用!reg 您的邮箱来进行绑定或注册。"); return; }    // 这里引导到绑定osu
                 {
-                    await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
+                    await target.reply("你还没有绑定desu.life账户，使用 !reg 你的邮箱 来进行绑定或注册喵。");
                     return;
                 }
                 // 验证账号信息
                 DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
                 if (DBOsuInfo == null)
                 {
-                    await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
+                    await target.reply("你还没有绑定osu账户，请使用 !bind osu 你的osu用户名 来绑定你的osu账户喵。");
                     return;
                 }
 
@@ -892,16 +888,15 @@ namespace KanonBot.Functions.OSUBot
                 var AccInfo = Accounts.GetAccInfo(target);
                 DBUser = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
                 if (DBUser == null)
-                // { await target.reply("您还没有绑定Kanon账户，请使用!reg 您的邮箱来进行绑定或注册。"); return; }    // 这里引导到绑定osu
                 {
-                    await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
+                    await target.reply("你还没有绑定desu.life账户，使用 !reg 你的邮箱 来进行绑定或注册喵。");
                     return;
                 }
                 // 验证账号信息
                 DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
                 if (DBOsuInfo == null)
                 {
-                    await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
+                    await target.reply("你还没有绑定osu账户，请使用 !bind osu 你的osu用户名 来绑定你的osu账户喵。");
                     return;
                 }
 
@@ -1038,16 +1033,15 @@ namespace KanonBot.Functions.OSUBot
                 var AccInfo = Accounts.GetAccInfo(target);
                 DBUser = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
                 if (DBUser == null)
-                // { await target.reply("您还没有绑定Kanon账户，请使用!reg 您的邮箱来进行绑定或注册。"); return; }    // 这里引导到绑定osu
                 {
-                    await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
+                    await target.reply("你还没有绑定desu.life账户，使用 !reg 你的邮箱 来进行绑定或注册喵。");
                     return;
                 }
                 // 验证账号信息
                 DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
                 if (DBOsuInfo == null)
                 {
-                    await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
+                    await target.reply("你还没有绑定osu账户，请使用 !bind osu 你的osu用户名 来绑定你的osu账户喵。");
                     return;
                 }
 
@@ -1205,9 +1199,8 @@ namespace KanonBot.Functions.OSUBot
             var AccInfo = Accounts.GetAccInfo(target);
             DBUser = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
             if (DBUser == null)
-            // { await target.reply("您还没有绑定Kanon账户，请使用!reg 您的邮箱来进行绑定或注册。"); return; }    // 这里引导到绑定osu
             {
-                await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
+                await target.reply("你还没有绑定desu.life账户，使用 !reg 你的邮箱 来进行绑定或注册喵。");
                 return;
             }
             // 验证账号信息
@@ -1215,7 +1208,7 @@ namespace KanonBot.Functions.OSUBot
             DBOsuInfo = (await Accounts.CheckOsuAccount(_u!.uid))!;
             if (DBOsuInfo == null)
             {
-                await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
+                await target.reply("你还没有绑定osu账户，请使用 !bind osu 你的osu用户名 来绑定你的osu账户喵。");
                 return;
             }
 
@@ -1337,16 +1330,15 @@ namespace KanonBot.Functions.OSUBot
                 var AccInfo = Accounts.GetAccInfo(target);
                 DBUser = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
                 if (DBUser == null)
-                // { await target.reply("您还没有绑定Kanon账户，请使用!reg 您的邮箱来进行绑定或注册。"); return; }    // 这里引导到绑定osu
                 {
-                    await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
+                    await target.reply("你还没有绑定desu.life账户，使用 !reg 你的邮箱 来进行绑定或注册喵。");
                     return;
                 }
                 // 验证账号信息
                 DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
                 if (DBOsuInfo == null)
                 {
-                    await target.reply("您还没有绑定osu账户，请使用!bind osu 您的osu用户名 来绑定您的osu账户。");
+                    await target.reply("你还没有绑定osu账户，请使用 !bind osu 你的osu用户名 来绑定你的osu账户喵。");
                     return;
                 }
 
