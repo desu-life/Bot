@@ -128,7 +128,7 @@ public static class RosuCalculator
                 p.Mode(rmode);
                 p.Mods(mods);
                 p.Accuracy(acc);
-                p.SliderTickHits(score.MaximumStatistics.LargeTickHit);
+                p.SliderTickHits(score.MaximumStatistics?.LargeTickHit ?? 0);
                 return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm).ppStat;
             })
             .ToList();

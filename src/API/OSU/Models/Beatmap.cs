@@ -9,7 +9,11 @@ namespace KanonBot.API.OSU;
 
 public partial class Models
 {
+    public class BeatmapList {
 
+        [JsonProperty(PropertyName = "beatmaps")]
+        public Beatmap[] Beatmaps { get; set; }
+    }
 
     public class Beatmap
     {

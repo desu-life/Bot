@@ -126,13 +126,27 @@ namespace KanonBot.Functions.OSUBot
                 command.order_number = 1;
             }
 
-            var scores = await API.OSU.Client.GetUserScores(
-                osuID!.Value,
-                API.OSU.UserScoreType.Best,
-                mode!.Value,
-                1,
-                command.order_number - 1
-            );
+            API.OSU.Models.ScoreLazer[]? scores = null;
+
+            
+            if (command.lazer)
+            {
+                var ss = await API.OSU.Client.GetUserBestsV1(
+                    osuID!.Value,
+                    mode!.Value,
+                    1,
+                    command.order_number - 1
+                );
+                scores = ss?.Map(s => s.ToLazerScore(mode!.Value)).ToArray();
+            } else {
+                scores = await API.OSU.Client.GetUserScores(
+                    osuID!.Value,
+                    API.OSU.UserScoreType.Best,
+                    mode!.Value,
+                    1,
+                    command.order_number - 1
+                );
+            }
 
             if (scores == null)
             {
@@ -141,15 +155,23 @@ namespace KanonBot.Functions.OSUBot
             }
             if (scores!.Length > 0)
             {
+                var score = scores[0];
+                if (score.Beatmap is null) {
+                    score.Beatmap = await Client.GetBeatmap(score.BeatmapId);
+                    score.Beatmapset = score.Beatmap?.Beatmapset;
+                }
+
+                score.User ??= tempOsuInfo;
+
                 LegacyImage.Draw.ScorePanelData data;
-                if (command.lazer)
-                {
-                    data = await RosuCalculator.CalculatePanelData(scores[0]);
-                }
-                else
-                {
-                    data = await UniversalCalculator.CalculatePanelDataAuto(scores[0]);
-                }
+                // if (command.lazer)
+                // {
+                //     data = await RosuCalculator.CalculatePanelData(score);
+                // }
+                // else
+                // {
+                    data = await UniversalCalculator.CalculatePanelDataAuto(score);
+                // }
                 using var stream = new MemoryStream();
 
                 using var img =
@@ -165,7 +187,7 @@ namespace KanonBot.Functions.OSUBot
                     )
                 );
 
-                _ = Task.Run(() => BeatmapTechDataProcess(scores[0], data));
+                _ = Task.Run(() => BeatmapTechDataProcess(score, data));
             }
             else
             {

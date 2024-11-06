@@ -1416,13 +1416,27 @@ namespace KanonBot.Functions.OSUBot
             OnlineOsuInfo.Mode = mode!.Value;
             #endregion
 
-            var allBP = await API.OSU.Client.GetUserScores(
-                OnlineOsuInfo!.Id,
-                API.OSU.UserScoreType.Best,
-                mode!.Value,
-                100,
-                0
-            );
+            API.OSU.Models.ScoreLazer[]? allBP = null;
+
+            if (command.lazer)
+            {
+                var ss = await API.OSU.Client.GetUserBestsV1(
+                    osuID!.Value,
+                    mode!.Value,
+                    100,
+                    0
+                );
+                allBP = ss?.Map(s => s.ToLazerScore(mode!.Value)).ToArray();
+            } else {
+                allBP = await API.OSU.Client.GetUserScores(
+                    osuID!.Value,
+                    API.OSU.UserScoreType.Best,
+                    mode!.Value,
+                    100,
+                    0
+                );
+            }
+
             if (allBP == null)
             {
                 await target.reply("查询成绩时出错。");
@@ -1477,12 +1491,27 @@ namespace KanonBot.Functions.OSUBot
             }
             else
             {
+                // 转换检测
+                if (TBP[0].ConvertFromOld) {
+                    var beatmaps = await API.OSU.Client.GetBeatmaps(TBP.Select(s => s.BeatmapId));
+                    for (var i = 0; i < TBP.Count; i++)
+                    {
+                        var score = TBP[i];
+                        if (score.Beatmap is null) {
+                            var bm = beatmaps!.Where(b => b.BeatmapId == score.BeatmapId).First();
+                            score.Beatmap = bm;
+                            score.Beatmapset = score.Beatmap?.Beatmapset;
+                        }
+
+                        score.User ??= OnlineOsuInfo;
+                    }
+                }
+                
                 using var image = await KanonBot.image.ScoreList.Draw(
                     ScoreList.Type.BPLIST,
                     TBP,
                     Rank,
-                    OnlineOsuInfo,
-                    command.lazer
+                    OnlineOsuInfo
                 );
                 using var stream = new MemoryStream();
                 await image.SaveAsync(stream, new PngEncoder());

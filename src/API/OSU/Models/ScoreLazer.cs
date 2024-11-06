@@ -57,7 +57,7 @@ public partial class Models
         public uint MaxCombo { get; set; }
 
         [JsonProperty("maximum_statistics")]
-        public ScoreStatisticsLazer MaximumStatistics { get; set; }
+        public ScoreStatisticsLazer? MaximumStatistics { get; set; }
 
         [JsonProperty("mods")]
         public Mod[] Mods { get; set; }

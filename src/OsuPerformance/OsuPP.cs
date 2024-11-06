@@ -208,7 +208,7 @@ class OsuCalculator
             p.Mode(rmode);
             p.Mods(mods);
             p.Accuracy(acc);
-            p.SliderTickHits(score.MaximumStatistics.LargeTickHit);
+            p.SliderTickHits(score.MaximumStatistics?.LargeTickHit ?? 0);
             var state = p.GenerateState(rosubeatmap);
 
             c.N50 = state.n50;
@@ -222,7 +222,7 @@ class OsuCalculator
 
             if (rmode is Mode.Osu) {
                 c.SliderTailHit = state.slider_end_hits;
-                c.SliderTickMiss = score.MaximumStatistics.LargeTickHit - state.slider_tick_hits;
+                c.SliderTickMiss = score.MaximumStatistics?.LargeTickHit - state.slider_tick_hits;
             }
 
             bAttr = c.Calculate();

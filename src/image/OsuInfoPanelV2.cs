@@ -1820,7 +1820,7 @@ namespace KanonBot.DrawV2
 
                     //mods
                     OSU.Models.Mod[] firstbpmods;
-                    if (islazer) {
+                    if (allBP![0].IsLazer) {
                         firstbpmods = allBP![0].Mods;
                     } else {
                         firstbpmods = allBP![0].Mods.Filter(x => !x.IsClassic).ToArray();
@@ -2395,7 +2395,7 @@ namespace KanonBot.DrawV2
                         //shdklahdksadkjkcna5hoacsporjasldjlksakdlsa
 
                         OSU.Models.Mod[] bpmods;
-                        if (islazer) {
+                        if (allBP![i].IsLazer) {
                             bpmods = allBP![i].Mods;
                         } else {
                             bpmods = allBP![i].Mods.Filter(x => !x.IsClassic).ToArray();

@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System.Net;
 using KanonBot.Serializer;
 using System.IO;
+using KanonBot.Database;
 
 namespace KanonBot.API.OSU
 {
@@ -29,6 +30,11 @@ namespace KanonBot.API.OSU
             CheckToken().Wait();
             var ep = config.osu?.v2EndPoint ?? EndPointV2;
             return ep.WithHeader("Authorization", $"Bearer {Token}").AllowHttpStatus("404");
+        }
+        static IFlurlRequest httpV1()
+        {
+            var ep = EndPointV1;
+            return ep.SetQueryParam("k", config.osu!.v1key).AllowHttpStatus("404");
         }
 
         static IFlurlRequest withLazerScore(IFlurlRequest req) {
@@ -119,7 +125,7 @@ namespace KanonBot.API.OSU
         async public static Task<Models.Beatmap?> GetBeatmap(long bid)
         {
             var res = await http()
-                .AppendPathSegments(new object[] { "beatmaps", bid })
+                .AppendPathSegments(["beatmaps", bid])
                 .GetAsync();
 
             if (res.StatusCode == 404)
@@ -128,6 +134,50 @@ namespace KanonBot.API.OSU
                 return await res.GetJsonAsync<Models.Beatmap>();
         }
 
+        // 获取特定谱面信息
+        async public static Task<Models.Beatmap[]?> GetBeatmaps(IEnumerable<long> bids)
+        {
+            IEnumerable<Models.Beatmap> beatmaps = [];
+
+            foreach (var b in bids.Chunk(50)) {
+                var res = await http()
+                    .AppendPathSegment("beatmaps")
+                    .SetQueryParam("ids[]", b)
+                    .GetAsync();
+
+                if (res.StatusCode == 404)
+                    return null;
+
+                var bms =  await res.GetJsonAsync<Models.BeatmapList>();
+                beatmaps = beatmaps.Append(bms.Beatmaps);
+            }
+            return beatmaps.ToArray();
+        }
+
+
+        // 获取用户成绩
+        // Score type. Must be one of these: best, firsts, recent.
+        // 默认 best
+        async public static Task<Models.ScoreV1[]?> GetUserBestsV1(long userId, Mode mode = Mode.OSU, int limit = 1, int offset = 0)
+        {
+            var res = await httpV1()
+                .AppendPathSegment("get_user_best")
+                .SetQueryParams(new
+                {
+                    u = userId,
+                    limit = 100,
+                    mode = mode.ToNum(),
+                    type = "id"
+                })
+                .GetAsync();
+
+            if (res.StatusCode == 404) {
+                return null;
+            } else {
+                var j = await res.GetJsonAsync<Models.ScoreV1[]>();
+                return j?.Skip(offset).Take(limit).ToArray();
+            }
+        }
 
         // 获取用户成绩
         // Score type. Must be one of these: best, firsts, recent.
@@ -135,7 +185,7 @@ namespace KanonBot.API.OSU
         async public static Task<Models.ScoreLazer[]?> GetUserScores(long userId, UserScoreType scoreType = UserScoreType.Best, Mode mode = Mode.OSU, int limit = 1, int offset = 0, bool includeFails = true, bool LegacyOnly = false)
         {
             var res = await withLazerScore(http())
-                .AppendPathSegments(new object[] { "users", userId, "scores", scoreType.ToStr() })
+                .AppendPathSegments(["users", userId, "scores", scoreType.ToStr()])
                 .SetQueryParams(new
                 {
                     include_fails = includeFails ? 1 : 0,
@@ -158,7 +208,7 @@ namespace KanonBot.API.OSU
         async public static Task<Models.Score[]?> GetUserScoresLeagcy(long userId, UserScoreType scoreType = UserScoreType.Best, Mode mode = Mode.OSU, int limit = 1, int offset = 0, bool includeFails = true)
         {
             var res = await http()
-                .AppendPathSegments(new object[] { "users", userId, "scores", scoreType.ToStr() })
+                .AppendPathSegments(["users", userId, "scores", scoreType.ToStr()])
                 .SetQueryParams(new
                 {
                     include_fails = includeFails ? 1 : 0,
@@ -226,21 +276,20 @@ namespace KanonBot.API.OSU
         }
 
         // 通过osuv1 api osu uid获取用户信息
-        async public static Task<List<Models.UserV1>?> GetUserWithV1API(long userId, Mode mode = Mode.OSU)
+        async public static Task<Models.UserV1[]?> GetUserWithV1API(long userId, Mode mode = Mode.OSU)
         {
-            var url = $"{EndPointV1}get_user?k={config.osu!.v1key}&u={userId}&m={mode.ToNum()}";
-            try
-            {
-                var str = await url.GetStringAsync();
-                //Console.WriteLine(str);
-                return Json.Deserialize<List<Models.UserV1>>(str);
-            }
-            catch (Exception ex)
-            {
-                Log.Debug(ex.Message);
+            var res = await httpV1()
+                .AppendPathSegment("get_user")
+                .SetQueryParam("u", userId)
+                .SetQueryParam("m", mode.ToNum())
+                .GetAsync();
+
+            if (res.StatusCode == 404)
                 return null;
-            }
+            else
+                return await res.GetJsonAsync<Models.UserV1[]>();
         }
+        
         // 通过osu uid获取用户信息
         async public static Task<Models.UserExtended?> GetUser(long userId, Mode mode = Mode.OSU)
         {

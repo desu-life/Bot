@@ -246,7 +246,7 @@ namespace KanonBot.image
             );
             //mods
 
-            if (!lazer) {
+            if (scoreList[0].IsClassic) {
                 scoreList[0].Mods = scoreList[0].Mods.Filter(x => !x.IsClassic).ToArray();
             }
 
@@ -659,7 +659,7 @@ namespace KanonBot.image
                 );
 
                 //mods
-                if (!lazer) {
+                if (scoreList[i].IsClassic) {
                     scoreList[i].Mods = scoreList[i].Mods.Filter(x => !x.IsClassic).ToArray();
                 }
 
