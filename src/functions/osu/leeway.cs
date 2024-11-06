@@ -73,7 +73,7 @@ namespace KanonBot.Functions.OSUBot
             long score;
             var empty_mods = System.Array.Empty<string>(); // 要的是最高分，直接给传一个空集合得了
             var scoreData = await API.OSU.Client.GetUserBeatmapScore(OnlineOsuInfo.Id, bid, empty_mods, command.osu_mode ?? API.OSU.Mode.OSU);
-            if (scoreData == !null)
+            if (scoreData != null)
             {
                 score = scoreData.Score.ScoreAuto;
                 if (scoreData.Score.Mode is not API.OSU.Mode.OSU) { await target.reply("Leeway仅支持osu!std模式。"); return; } // 检查谱面是否是std
