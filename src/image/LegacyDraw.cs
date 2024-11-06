@@ -798,23 +798,31 @@ namespace KanonBot.LegacyImage
             score.Mutate(x => x.DrawImage(panel, 1));
             score.Mutate(x => x.DrawImage(smallBg, new Point(27, 34), 1));
 
-            score.Mutate(x =>
-                x.DrawText(
-                    new DrawingOptions
-                    {
-                        GraphicsOptions = new GraphicsOptions { Antialias = true }
-                    },
-                    new RichTextOptions(new Font(FredokaBold, 60, FontStyle.Bold))
-                    {
-                        VerticalAlignment = VerticalAlignment.Bottom,
-                        HorizontalAlignment = HorizontalAlignment.Right,
-                        Origin = new PointF(1915, 1065)
-                    },
-                    data.scoreInfo.IsLazer ? "Lazer" : "Classic",
-                    new SolidBrush(Color.Transparent),
-                    new SolidPen(Color.FromRgba(0x5f, 0x5f, 0x5f, 0xff), 3)
-                )
-            );
+            if (data.scoreInfo.IsLazer)
+            {
+                score.Mutate(x =>
+                    x.DrawText(
+                        new DrawingOptions
+                        {
+                            GraphicsOptions = new GraphicsOptions { 
+                                Antialias = true,
+                                ColorBlendingMode = PixelColorBlendingMode.Lighten
+                            }
+                        },
+                        new RichTextOptions(new Font(FredokaBold, 60, FontStyle.Bold))
+                        {
+                            VerticalAlignment = VerticalAlignment.Bottom,
+                            HorizontalAlignment = HorizontalAlignment.Right,
+                            Origin = new PointF(1913, 1061)
+                        },
+                        "Lazer",
+                        new SolidBrush(Color.Transparent),
+                        new SolidPen(Color.FromRgba(0x5f, 0x5f, 0x5f, 0xaa), 3)
+                    )
+                );
+            }
+
+            
 
             bg.Dispose();
 
