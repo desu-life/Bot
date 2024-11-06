@@ -1429,20 +1429,20 @@ namespace KanonBot.LegacyImage
                 var miss = data.scoreInfo.Statistics.CountMiss.ToString();
 
                 // great
-                textOptions.Origin = new PointF(795, 857);
+                textOptions.Origin = new PointF(792, 857);
                 score.Mutate(x =>
                     x.DrawText(drawOptions, textOptions, great, new SolidBrush(Color.Black), null)
                 );
-                textOptions.Origin = new PointF(795, 854);
+                textOptions.Origin = new PointF(792, 854);
                 score.Mutate(x =>
                     x.DrawText(drawOptions, textOptions, great, new SolidBrush(Color.White), null)
                 );
                 // ok
-                textOptions.Origin = new PointF(795, 985);
+                textOptions.Origin = new PointF(792, 985);
                 score.Mutate(x =>
                     x.DrawText(drawOptions, textOptions, ok, new SolidBrush(Color.Black), null)
                 );
-                textOptions.Origin = new PointF(795, 982);
+                textOptions.Origin = new PointF(792, 982);
                 score.Mutate(x =>
                     x.DrawText(drawOptions, textOptions, ok, new SolidBrush(Color.White), null)
                 );
