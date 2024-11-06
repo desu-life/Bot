@@ -66,6 +66,8 @@ namespace KanonBot.LegacyImage
 
         public static FontFamily Mizolet = fonts.Add("./work/fonts/mizolet.ttf");
         public static FontFamily MizoletBokutoh = fonts.Add("./work/fonts/mizolet-bokutoh.ttf");
+        public static FontFamily FredokaRegular = fonts.Add("./work/fonts/fredoka/Fredoka-Regular.ttf");
+        public static FontFamily FredokaBold = fonts.Add("./work/fonts/fredoka/Fredoka-Bold.ttf");
 
         public static async Task<Img> DrawMod(OSU.Models.Mod mod)
         {
@@ -91,7 +93,7 @@ namespace KanonBot.LegacyImage
                 var modPic = await Img.LoadAsync($"./work/mods/Unknown.png");
                 modPic.Mutate(x => x.Resize(200, 0));
                 textOptions.Origin = new PointF(96, 34);
-                modPic.Mutate(x =>
+                modPic.Mutate(operation: x =>
                     x.DrawText(drawOptions, textOptions, modName, new SolidBrush(Color.Black), null)
                 );
                 textOptions.Origin = new PointF(96, 33);
@@ -771,7 +773,11 @@ namespace KanonBot.LegacyImage
                 catch
                 {
                     bg = await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
-                    try { File.Delete(bgPath); } catch { }
+                    try
+                    {
+                        File.Delete(bgPath);
+                    }
+                    catch { }
                 }
             }
             using var smallBg = bg.Clone(x => x.RoundCorner(new Size(433, 296), 20));
@@ -783,13 +789,33 @@ namespace KanonBot.LegacyImage
             score.Mutate(x => x.DrawImage(bg, 1));
             score.Mutate(x => x.DrawImage(backBlack, 0.33f));
 
-            if (data.scoreInfo.IsLazer) {
+            if (data.scoreInfo.IsLazer)
+            {
                 var blurpanel = panel.Clone(x => x.GaussianBlur(3));
                 score.Mutate(x => x.DrawImage(blurpanel, 0.3f));
             }
 
             score.Mutate(x => x.DrawImage(panel, 1));
             score.Mutate(x => x.DrawImage(smallBg, new Point(27, 34), 1));
+
+            score.Mutate(x =>
+                x.DrawText(
+                    new DrawingOptions
+                    {
+                        GraphicsOptions = new GraphicsOptions { Antialias = true }
+                    },
+                    new RichTextOptions(new Font(FredokaBold, 60, FontStyle.Bold))
+                    {
+                        VerticalAlignment = VerticalAlignment.Bottom,
+                        HorizontalAlignment = HorizontalAlignment.Right,
+                        Origin = new PointF(1915, 1065)
+                    },
+                    data.scoreInfo.IsLazer ? "Lazer" : "Classic",
+                    new SolidBrush(Color.Transparent),
+                    new SolidPen(Color.FromRgba(0x5f, 0x5f, 0x5f, 0xff), 3)
+                )
+            );
+
             bg.Dispose();
 
             // var lazer_triangle = await Img.LoadAsync<Rgba32>("./work/triangles.png");
@@ -923,9 +949,21 @@ namespace KanonBot.LegacyImage
             var ranking = data.scoreInfo.Passed ? data.scoreInfo.RankAuto : "F";
             using var rankPic = await Img.LoadAsync($"./work/ranking/ranking-{ranking}.png");
 
-            if (data.scoreInfo.IsLazer) {
-                var blurrank = rankPic.Clone(x => x.Resize(new ResizeOptions { Size = new Size(300, 300), Mode = ResizeMode.BoxPad }).GaussianBlur(40));
-                score.Mutate(x => x.DrawImage(blurrank, new Point(913 - 150 + 62, 874 - 150 + 31), 0.8f));
+            if (data.scoreInfo.IsLazer)
+            {
+                var blurrank = rankPic.Clone(x =>
+                    x.Resize(
+                            new ResizeOptions
+                            {
+                                Size = new Size(300, 300),
+                                Mode = ResizeMode.BoxPad
+                            }
+                        )
+                        .GaussianBlur(40)
+                );
+                score.Mutate(x =>
+                    x.DrawImage(blurrank, new Point(913 - 150 + 62, 874 - 150 + 31), 0.8f)
+                );
             }
 
             score.Mutate(x => x.DrawImage(rankPic, new Point(913, 874), 1));
@@ -1920,8 +1958,7 @@ namespace KanonBot.LegacyImage
             float cornerRadius
         )
         {
-            return processingContext
-                .ApplyRoundedCorners(cornerRadius);
+            return processingContext.ApplyRoundedCorners(cornerRadius);
         }
 
         private static IPathCollection BuildCorners(

@@ -44,7 +44,7 @@ public static class RosuCalculator
                 ConvertFromOld = true,
                 Accuracy = 1.0,
                 Beatmap = map,
-                MaxCombo = (uint)map.MaxCombo,
+                MaxCombo = (uint?)map.MaxCombo ?? 0,
                 Statistics = new API.OSU.Models.ScoreStatisticsLazer
                 {
                     CountGreat = (uint)(map.CountCircles + map.CountSliders),

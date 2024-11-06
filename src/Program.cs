@@ -97,7 +97,7 @@ if (config.dev)
             raw = new OneBot.Models.CQMessageEventBase() { UserId = sender.Value(), },
             isFromAdmin = true
         };
-        _ = Task.Run(async () => await Universal.Parser(target));
+        await Universal.Parser(target);
         await Universal.reduplicateTargetChecker.TryUnlock(target);
     }
 }

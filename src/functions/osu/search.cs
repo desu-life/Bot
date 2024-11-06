@@ -115,7 +115,7 @@ namespace KanonBot.Functions.OSUBot
             if (isBid)
             {
                 beatmap = beatmapset
-                    .Beatmaps.Find(x => x.BeatmapId == command.bid)
+                    .Beatmaps.Find(x => x.BeatmapId == bid)
                     .IfNone(() => beatmapset.Beatmaps.First());
             }
             else
