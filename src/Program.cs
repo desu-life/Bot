@@ -64,6 +64,11 @@ else
 }
 Log.Information("初始化成功 {@config}", config);
 
+var u = await API.PPYSB.Client.GetUser("水瓶");
+Log.Warning("获取用户信息成功 {@User}", u);
+var s = await API.PPYSB.Client.GetUserScores(u!.Info!.Id, API.PPYSB.UserScoreType.Best);
+Log.Warning("获取用户成绩成功 {@Score}", s);
+
 if (config.dev)
 {
     var sender = parseInt(Environment.GetEnvironmentVariable("KANONBOT_TEST_QQ_ID"));

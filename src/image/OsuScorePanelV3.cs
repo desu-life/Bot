@@ -130,9 +130,9 @@ namespace KanonBot.DrawV3
             using var bgstatus = new Image<Rgba32>(619, 80);
             var beatmap_status_color = data.scoreInfo.Beatmap.Status switch
             {
-                OSU.Models.Status.approved => Color.ParseHex("#14b400"),
-                OSU.Models.Status.ranked => Color.ParseHex("#66bdff"),
-                OSU.Models.Status.loved => Color.ParseHex("#ff66aa"),
+                OSU.Models.Status.Approved => Color.ParseHex("#14b400"),
+                OSU.Models.Status.Ranked => Color.ParseHex("#66bdff"),
+                OSU.Models.Status.Loved => Color.ParseHex("#ff66aa"),
                 _ => Color.ParseHex("#e08918")
             };
             bgstatus.Mutate(x => x.Fill(beatmap_status_color).RoundCorner(new Size(619, 80), 20));

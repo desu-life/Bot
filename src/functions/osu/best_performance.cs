@@ -205,8 +205,8 @@ namespace KanonBot.Functions.OSUBot
             if (score.Mode == API.OSU.Mode.OSU)
             {
                 if (
-                    score.Beatmap!.Status == API.OSU.Models.Status.ranked
-                    || score.Beatmap!.Status == API.OSU.Models.Status.approved
+                    score.Beatmap!.Status == API.OSU.Models.Status.Ranked
+                    || score.Beatmap!.Status == API.OSU.Models.Status.Approved
                 )
                 {
                     await Database.Client.InsertOsuStandardBeatmapTechData(

@@ -902,17 +902,17 @@ namespace KanonBot.LegacyImage
             diffCircle.Mutate(x => x.Resize(65, 65));
             score.Mutate(x => x.DrawImage(diffCircle, new Point(512, 257), 1));
             // beatmap_status
-            if (data.scoreInfo.Beatmap.Status is OSU.Models.Status.ranked)
+            if (data.scoreInfo.Beatmap.Status is OSU.Models.Status.Ranked)
             {
                 using var c = await Img.LoadAsync("./work/icons/ranked.png");
                 score.Mutate(x => x.DrawImage(c, new Point(415, 16), 1));
             }
-            if (data.scoreInfo.Beatmap.Status is OSU.Models.Status.approved)
+            if (data.scoreInfo.Beatmap.Status is OSU.Models.Status.Approved)
             {
                 using var c = await Img.LoadAsync("./work/icons/approved.png");
                 score.Mutate(x => x.DrawImage(c, new Point(415, 16), 1));
             }
-            if (data.scoreInfo.Beatmap.Status is OSU.Models.Status.loved)
+            if (data.scoreInfo.Beatmap.Status is OSU.Models.Status.Loved)
             {
                 using var c = await Img.LoadAsync("./work/icons/loved.png");
                 score.Mutate(x => x.DrawImage(c, new Point(415, 16), 1));

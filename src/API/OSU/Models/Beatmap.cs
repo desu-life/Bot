@@ -35,7 +35,7 @@ public partial class Models
         public Status Status { get; set; }
 
         [JsonProperty(PropertyName = "total_length")]
-        public int TotalLength { get; set; }
+        public uint TotalLength { get; set; }
 
         [JsonProperty(PropertyName = "user_id")]
         public long UserId { get; set; }
@@ -138,18 +138,18 @@ public partial class Models
         WIP,
 
         [Description("pending")]
-        pending,
+        Pending,
 
         [Description("ranked")]
-        ranked,
+        Ranked,
 
         [Description("approved")]
-        approved,
+        Approved,
 
         [Description("qualified")]
-        qualified,
+        Qualified,
 
         [Description("loved")]
-        loved
+        Loved
     }
 }

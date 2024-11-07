@@ -192,8 +192,8 @@ namespace KanonBot.Functions.OSUBot
                     if (x.Mode == API.OSU.Mode.OSU)
                     {
                         if (
-                            x.Beatmap!.Status == API.OSU.Models.Status.ranked
-                            || x.Beatmap!.Status == API.OSU.Models.Status.approved
+                            x.Beatmap!.Status == API.OSU.Models.Status.Ranked
+                            || x.Beatmap!.Status == API.OSU.Models.Status.Approved
                         )
                             if (
                                 x.Rank.ToUpper() == "XH"

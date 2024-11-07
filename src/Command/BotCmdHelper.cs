@@ -15,7 +15,7 @@ public static class BotCmdHelper
     public struct BotParameter
     {
         public API.OSU.Mode? osu_mode;
-        public string osu_username, osu_mods, match_name, search_arg;           //用于获取具体要查询的模式，未提供返回osu
+        public string osu_username, osu_mods, match_name, search_arg, server;           //用于获取具体要查询的模式，未提供返回osu
         public long osu_user_id, bid;
         public int order_number;//用于info的查询n天之前、pr，bp的序号，score的bid，如未提供则返回0
         public bool lazer; //是否获取lazer数据
@@ -124,7 +124,7 @@ public static class BotCmdHelper
         }
         BotParameter param = new() { lazer = false, self_query = false };
         if (!String.IsNullOrEmpty(cmd)) {
-            string arg1 = "", arg2 = "", arg3 = "", arg4 = "";
+            string arg1 = "", arg2 = "", arg3 = "", arg4 = "", arg5 = "";
             int section = 0;
             // 解析所有可能的参数
             for (var i = 0; i < cmd.Length; i++) {
@@ -151,6 +151,7 @@ public static class BotCmdHelper
                         break;
                     case 4:
                         param.lazer = true;
+                        arg5 += cmd[i]; // &
                         break;
                     default:
                         arg1 += cmd[i];
@@ -162,6 +163,11 @@ public static class BotCmdHelper
             arg2 = arg2.Trim();
             arg3 = arg3.Trim();
             arg4 = arg4.Trim();
+
+            if (string.IsNullOrWhiteSpace(arg5)) {
+                
+                param.server = arg5[1..].Trim();
+            }
 
             if (type == FuncType.BPList) {
                 // bplist处理
