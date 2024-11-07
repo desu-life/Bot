@@ -77,6 +77,7 @@ public static class PPYSBConverters
     }
 
     public static OSU.Models.UserExtended? ToOsu(this Models.User u, Mode? mode) {
+        if (u._LazerUser != null) return u._LazerUser;
         mode ??= u.Info.PreferredMode;
         
         var userStat = mode switch {
@@ -97,7 +98,7 @@ public static class PPYSBConverters
 
         if (userStat == null) return null;
         
-        return new OSU.Models.UserExtended
+        var lazerUser = new OSU.Models.UserExtended
         {
             Id = u.Info.Id,
             Username = u.Info.Name,
@@ -109,6 +110,9 @@ public static class PPYSBConverters
             Mode = u.Info.PreferredMode.ToOsu(),
             StatisticsCurrent = userStat.ToOsu(),
         };
+
+        u._LazerUser = lazerUser;
+        return lazerUser;
     }
 
     public static OSU.Models.ScoreLazer ToOsu(this Models.Score s, Models.User user, Mode mode) {
@@ -149,7 +153,7 @@ public static class PPYSBConverters
             LegacyScoreId = s.Id,
             Beatmap = bm,
             Beatmapset = bm.Beatmapset,
-            User = null,
+            User = user.ToOsu(mode),
             Weight = null,
             ConvertFromOld = true
         };

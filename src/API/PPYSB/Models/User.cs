@@ -23,6 +23,9 @@ public partial class Models
 
         [JsonProperty("stats")]
         public UserStats Stats { get; set; }
+
+        [JsonIgnore]
+        public OSU.Models.UserExtended? _LazerUser { get; set; } = null;
     }
 
     public class UserInfo {

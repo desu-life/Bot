@@ -75,8 +75,10 @@ namespace KanonBot.API.PPYSB
                 .AppendPathSegment("get_player_scores")
                 .SetQueryParam("scope", scoreType.ToStr())
                 .SetQueryParam("id", userId)
+                .SetQueryParam("include_failed", includeFails)
+                .SetQueryParam("include_loved", includeLoved)
                 .SetQueryParam("mode", mode.ToNum());
-
+            
             if (offset == 0) {
                 req.SetQueryParam("limit", limit);
             } else {
