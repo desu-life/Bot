@@ -28,6 +28,7 @@ namespace KanonBot.LegacyImage
             public List<int> badgeId = new();
             public CustomMode customMode = CustomMode.Dark; //0=custom 1=light 2=dark
             public string ColorConfigRaw;
+            public string? modeString;
 
             public enum CustomMode
             {
@@ -42,6 +43,7 @@ namespace KanonBot.LegacyImage
             public OsuPerformance.PPInfo ppInfo;
             public OSU.Models.ScoreLazer scoreInfo;
             public RosuPP.Mode mode;
+            public string server;
         }
 
         public class PPVSPanelData
@@ -203,26 +205,7 @@ namespace KanonBot.LegacyImage
             info.Mutate(x => x.DrawImage(panel, 1));
 
             //avatar
-            var avatarPath = $"./work/avatar/{data.userInfo.Id}.png";
-            using var avatar = await TryAsync(Utils.ReadImageRgba(avatarPath))
-                .IfFail(async () =>
-                {
-                    try
-                    {
-                        avatarPath = await data.userInfo.AvatarUrl.DownloadFileAsync(
-                            "./work/avatar/",
-                            $"{data.userInfo.Id}.png"
-                        );
-                    }
-                    catch (Exception ex)
-                    {
-                        var msg = $"从API下载用户头像时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
-                        Log.Error(msg);
-                        throw; // 下载失败直接抛出error
-                    }
-                    return await Utils.ReadImageRgba(avatarPath); // 下载后再读取
-                });
-
+            using var avatar = await Utils.LoadOrDownloadAvatar(data.userInfo);
             avatar.Mutate(x => x.Resize(190, 190).RoundCorner(new Size(190, 190), 40));
             info.Mutate(x => x.DrawImage(avatar, new Point(39, 55), 1));
 
@@ -729,25 +712,7 @@ namespace KanonBot.LegacyImage
                 }
             }
 
-            var avatarPath = $"./work/avatar/{data.scoreInfo.UserId}.png";
-            using var avatar = await TryAsync(Utils.ReadImageRgba(avatarPath))
-                .IfFail(async () =>
-                {
-                    try
-                    {
-                        avatarPath = await data.scoreInfo.User!.AvatarUrl.DownloadFileAsync(
-                            "./work/avatar/",
-                            $"{data.scoreInfo.UserId}.png"
-                        );
-                    }
-                    catch (Exception ex)
-                    {
-                        var msg = $"从API下载用户头像时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
-                        Log.Error(msg);
-                        throw; // 下载失败直接抛出error
-                    }
-                    return await Utils.ReadImageRgba(avatarPath); // 下载后再读取
-                });
+            using var avatar = await Utils.LoadOrDownloadAvatar(data.scoreInfo.User!);
 
             using var panel = data.mode switch
             {
@@ -798,7 +763,7 @@ namespace KanonBot.LegacyImage
             score.Mutate(x => x.DrawImage(panel, 1));
             score.Mutate(x => x.DrawImage(smallBg, new Point(27, 34), 1));
 
-            if (data.scoreInfo.IsLazer)
+            if (!string.IsNullOrWhiteSpace(data.server))
             {
                 score.Mutate(x =>
                     x.DrawText(
@@ -815,7 +780,7 @@ namespace KanonBot.LegacyImage
                             HorizontalAlignment = HorizontalAlignment.Right,
                             Origin = new PointF(1913, 1061)
                         },
-                        "Lazer",
+                        data.server,
                         new SolidBrush(Color.Transparent),
                         new SolidPen(Color.FromRgba(0x5f, 0x5f, 0x5f, 0xaa), 3)
                     )
@@ -984,7 +949,8 @@ namespace KanonBot.LegacyImage
             var textOptions = new RichTextOptions(new Font(font, 60))
             {
                 VerticalAlignment = VerticalAlignment.Bottom,
-                HorizontalAlignment = HorizontalAlignment.Left
+                HorizontalAlignment = HorizontalAlignment.Left,
+                FallbackFontFamilies = [HarmonySans]
             };
             // beatmap_info
             var title = "";

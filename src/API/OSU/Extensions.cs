@@ -29,7 +29,7 @@ public static class OSUExtensions
     {
         return mode switch
         {
-            Mode.OSU => "osu!",
+            Mode.OSU => "osu!standard",
             Mode.Taiko => "osu!taiko",
             Mode.Fruits => "osu!catch",
             Mode.Mania => "osu!mania",

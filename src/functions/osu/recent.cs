@@ -16,12 +16,15 @@ namespace KanonBot.Functions.OSUBot
         {
             long? osuID = null;
             API.OSU.Mode? mode;
+            API.PPYSB.Mode? sbmode;
             Database.Model.User? DBUser = null;
             Database.Model.UserOSU? DBOsuInfo = null;
+            bool is_ppysb = false;
 
             // 解析指令
             var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Recent);
             mode = command.osu_mode;
+            sbmode = command.sb_osu_mode;
 
             // 解析指令
             if (command.self_query)
@@ -81,32 +84,57 @@ namespace KanonBot.Functions.OSUBot
                 else
                 {
                     // 普通查询
-                    var OnlineOsuInfo = await API.OSU.Client.GetUser(
-                        command.osu_username,
-                        command.osu_mode ?? API.OSU.Mode.OSU
-                    );
-                    if (OnlineOsuInfo != null)
-                    {
-                        DBOsuInfo = await Database.Client.GetOsuUser(OnlineOsuInfo.Id);
-                        if (DBOsuInfo != null)
+                    if (command.server == "sb") {
+                        var OnlineOsuInfo = await API.PPYSB.Client.GetUser(
+                            command.osu_username
+                        );
+                        if (OnlineOsuInfo != null)
                         {
-                            DBUser = await Accounts.GetAccountByOsuUid(OnlineOsuInfo.Id);
-                            mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value;
+                            sbmode ??= OnlineOsuInfo.Info.PreferredMode;
+                            osuID = OnlineOsuInfo.Info.Id;
+                            is_ppysb = true;
                         }
-                        mode ??= OnlineOsuInfo.Mode;
-                        osuID = OnlineOsuInfo.Id;
-                    }
-                    else
-                    {
-                        // 直接取消查询，简化流程
-                        await target.reply("猫猫没有找到此用户。");
-                        return;
+                        else
+                        {
+                            // 直接取消查询，简化流程
+                            await target.reply("猫猫没有找到此用户。");
+                            return;
+                        }
+                    } else {
+                        var OnlineOsuInfo = await API.OSU.Client.GetUser(
+                            command.osu_username,
+                            command.osu_mode ?? API.OSU.Mode.OSU
+                        );
+                        if (OnlineOsuInfo != null)
+                        {
+                            DBOsuInfo = await Database.Client.GetOsuUser(OnlineOsuInfo.Id);
+                            if (DBOsuInfo != null)
+                            {
+                                DBUser = await Accounts.GetAccountByOsuUid(OnlineOsuInfo.Id);
+                                mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value;
+                            }
+                            mode ??= OnlineOsuInfo.Mode;
+                            osuID = OnlineOsuInfo.Id;
+                        }
+                        else
+                        {
+                            // 直接取消查询，简化流程
+                            await target.reply("猫猫没有找到此用户。");
+                            return;
+                        }
                     }
                 }
             }
 
             // 验证osu信息
-            var tempOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
+            API.OSU.Models.UserExtended? tempOsuInfo = null;
+            API.PPYSB.Models.User? sbinfo = null;
+            if (is_ppysb) {
+                sbinfo = await API.PPYSB.Client.GetUser(command.osu_username);
+                tempOsuInfo = sbinfo?.ToOsu(sbmode);
+            } else {
+                tempOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
+            }
             if (tempOsuInfo == null)
             {
                 await target.reply("猫猫没有找到此用户。");
@@ -114,15 +142,28 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
 
-            //var scorePanelData = new LegacyImage.Draw.ScorePanelData();
-            var scoreInfos = await API.OSU.Client.GetUserScores(
-                osuID!.Value,
-                API.OSU.UserScoreType.Recent,
-                mode!.Value,
-                20, //default was 1, due to seasonalpass set it to 50
-                command.order_number - 1,
-                includeFails
-            );
+            API.OSU.Models.ScoreLazer[]? scoreInfos = null;
+
+            if (is_ppysb) {
+                var ss = await API.PPYSB.Client.GetUserScores(
+                    osuID!.Value,
+                API.PPYSB.UserScoreType.Recent,
+                    sbmode!.Value,
+                    20,
+                    command.order_number - 1
+                );
+                scoreInfos = ss?.Map(s => s.ToOsu(sbinfo!, sbmode!.Value)).ToArray();
+            } else {
+                scoreInfos = await API.OSU.Client.GetUserScores(
+                    osuID!.Value,
+                    API.OSU.UserScoreType.Recent,
+                    mode!.Value,
+                    20, //default was 1, due to seasonalpass set it to 20
+                    command.order_number - 1,
+                    includeFails
+                );
+            }
+
             if (scoreInfos == null)
             {
                 await target.reply("查询成绩时出错。");
@@ -134,12 +175,17 @@ namespace KanonBot.Functions.OSUBot
                 LegacyImage.Draw.ScorePanelData data;
                 if (command.lazer)
                 {
-                    data = await RosuCalculator.CalculatePanelData(scoreInfos[0]);
+                    if (is_ppysb) {
+                        data = await SBRosuCalculator.CalculatePanelData(scoreInfos[0]);
+                    } else {
+                        data = await RosuCalculator.CalculatePanelData(scoreInfos[0]);
+                    }
                 }
                 else
                 {
                     data = await UniversalCalculator.CalculatePanelDataAuto(scoreInfos[0]);
                 }
+                
                 using var stream = new MemoryStream();
                 using var img =
                     (Config.inner != null && Config.inner.debug)

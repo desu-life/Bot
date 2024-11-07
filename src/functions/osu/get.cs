@@ -1167,7 +1167,7 @@ namespace KanonBot.Functions.OSUBot
                     TBP,
                     Rank,
                     OnlineOsuInfo,
-                    command.lazer
+                    command.lazer ? CalculatorKind.Rosu : CalculatorKind.Unset
                 );
                 using var stream = new MemoryStream();
                 await image.SaveAsync(stream, new PngEncoder());

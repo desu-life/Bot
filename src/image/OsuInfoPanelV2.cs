@@ -19,6 +19,7 @@ using static KanonBot.LegacyImage.Draw;
 using Img = SixLabors.ImageSharp.Image;
 using ResizeOptions = SixLabors.ImageSharp.Processing.ResizeOptions;
 using KanonBot.OsuPerformance;
+using RosuPP;
 
 namespace KanonBot.DrawV2
 {
@@ -751,7 +752,7 @@ namespace KanonBot.DrawV2
             bool eventmode = false,
             bool isDataOfDayAvaiavle = true,
             bool output4k = false,
-            bool islazer = false
+            CalculatorKind kind = CalculatorKind.Unset
         )
         {
             var ColorMode = data.customMode;
@@ -882,7 +883,8 @@ namespace KanonBot.DrawV2
             var textOptions = new RichTextOptions(new Font(TorusSemiBold, 120))
             {
                 VerticalAlignment = VerticalAlignment.Bottom,
-                HorizontalAlignment = HorizontalAlignment.Left
+                HorizontalAlignment = HorizontalAlignment.Left,
+                FallbackFontFamilies = [HarmonySans]
             };
             var drawOptions = new DrawingOptions
             {
@@ -1779,11 +1781,14 @@ namespace KanonBot.DrawV2
                 List<PPInfo> ppinfos = [];
                 for (int i = 0; i < Math.Min(5, allBP.Length); i++) {
                     PPInfo ppinfo;
-                    if (islazer) {
-                        ppinfo = await RosuCalculator.CalculateData(allBP[i]);
-                    } else {
-                        ppinfo = await UniversalCalculator.CalculateDataAuto(allBP[i]);
-                    }
+                    ppinfo = kind switch
+                    {
+                        CalculatorKind.Unset => await UniversalCalculator.CalculateDataAuto(allBP[i]),
+                        CalculatorKind.Rosu => await RosuCalculator.CalculateData(allBP[i]),
+                        CalculatorKind.Lazer => await OsuCalculator.CalculateData(allBP[i]),
+                        CalculatorKind.Sb => await SBRosuCalculator.CalculateData(allBP[i]),
+                        _ => throw new ArgumentOutOfRangeException(),
+                    };
                     ppinfos.Add(ppinfo);
                 }
 
@@ -2894,25 +2899,7 @@ namespace KanonBot.DrawV2
             }
 
             //avatar
-            var avatarPath = $"./work/avatar/{data.userInfo.Id}.png";
-            using var avatar = await TryAsync(Utils.ReadImageRgba(avatarPath))
-                .IfFail(async () =>
-                {
-                    try
-                    {
-                        avatarPath = await data.userInfo.AvatarUrl.DownloadFileAsync(
-                            "./work/avatar/",
-                            $"{data.userInfo.Id}.png"
-                        );
-                    }
-                    catch (Exception ex)
-                    {
-                        var msg = $"从API下载用户头像时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
-                        Log.Error(msg);
-                        throw; // 下载失败直接抛出error
-                    }
-                    return await Utils.ReadImageRgba(avatarPath); // 下载后再读取
-                });
+            using var avatar = await Utils.LoadOrDownloadAvatar(data.userInfo);
 
             // 亮度
             avatar.Mutate(x => x.Brightness(AvatarBrightness));
@@ -2949,20 +2936,10 @@ namespace KanonBot.DrawV2
                 $"./work/panelv2/icons/mode_icon/profile/{data.userInfo.Mode.ToStr()}.png"
             );
             var osuprofilemode_text = "";
-            switch (data.userInfo.Mode)
-            {
-                case OSU.Mode.OSU:
-                    osuprofilemode_text = "osu!standard";
-                    break;
-                case OSU.Mode.Taiko:
-                    osuprofilemode_text = "osu!taiko";
-                    break;
-                case OSU.Mode.Fruits:
-                    osuprofilemode_text = "osu!catch";
-                    break;
-                case OSU.Mode.Mania:
-                    osuprofilemode_text = "osu!mania";
-                    break;
+            if (data.modeString is null) {
+                osuprofilemode_text = data.userInfo.Mode.ToDisplay();
+            } else {
+                osuprofilemode_text = data.modeString;
             }
             textOptions.Font = new Font(TorusRegular, 55);
             textOptions.VerticalAlignment = VerticalAlignment.Center;

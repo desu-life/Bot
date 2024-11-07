@@ -75,25 +75,7 @@ namespace KanonBot.DrawV3
             }
 
             //下载头像
-            var avatarPath = $"./work/avatar/{data.scoreInfo.UserId}.png";
-            using var avatar = await TryAsync(Utils.ReadImageRgba(avatarPath))
-                .IfFail(async () =>
-                {
-                    try
-                    {
-                        avatarPath = await data.scoreInfo.User!.AvatarUrl.DownloadFileAsync(
-                            "./work/avatar/",
-                            $"{data.scoreInfo.UserId}.png"
-                        );
-                    }
-                    catch (Exception ex)
-                    {
-                        var msg = $"从API下载用户头像时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
-                        Log.Error(msg);
-                        throw;
-                    }
-                    return await Utils.ReadImageRgba(avatarPath); // 下载后再读取
-                });
+            using var avatar = await Utils.LoadOrDownloadAvatar(data.scoreInfo.User!);
 
             //panel
             using var panel = data.scoreInfo.Passed ?

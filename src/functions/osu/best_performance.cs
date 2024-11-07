@@ -23,12 +23,12 @@ namespace KanonBot.Functions.OSUBot
             API.PPYSB.Mode? sbmode;
             Database.Model.User? DBUser = null;
             Database.Model.UserOSU? DBOsuInfo = null;
+            bool is_ppysb = false;
 
             // 解析指令
             var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.BestPerformance);
             mode = command.osu_mode;
             sbmode = command.sb_osu_mode;
-            bool is_ppysb = command.server == "sb";
 
             // 解析指令
             if (command.self_query)
@@ -88,7 +88,7 @@ namespace KanonBot.Functions.OSUBot
                 else
                 {
                     // 普通查询
-                    if (is_ppysb) {
+                    if (command.server == "sb") {
                         var OnlineOsuInfo = await API.PPYSB.Client.GetUser(
                             command.osu_username
                         );
@@ -96,6 +96,7 @@ namespace KanonBot.Functions.OSUBot
                         {
                             sbmode ??= OnlineOsuInfo.Info.PreferredMode;
                             osuID = OnlineOsuInfo.Info.Id;
+                            is_ppysb = true;
                         }
                         else
                         {
@@ -166,7 +167,6 @@ namespace KanonBot.Functions.OSUBot
                         1,
                         command.order_number - 1
                     );
-                    Log.Warning("{@ss}", ss);
                     scores = ss?.Map(s => s.ToOsu(sbinfo!, sbmode!.Value)).ToArray();
                 } else {
                     var ss = await API.OSU.Client.GetUserBestsV1(
@@ -203,14 +203,14 @@ namespace KanonBot.Functions.OSUBot
                 score.User ??= tempOsuInfo;
 
                 LegacyImage.Draw.ScorePanelData data;
-                // if (command.lazer)
-                // {
-                //     data = await RosuCalculator.CalculatePanelData(score);
-                // }
-                // else
-                // {
+                if (is_ppysb)
+                {
+                    data = await SBRosuCalculator.CalculatePanelData(score);
+                }
+                else
+                {
                     data = await UniversalCalculator.CalculatePanelDataAuto(score);
-                // }
+                }
                 using var stream = new MemoryStream();
 
                 using var img =

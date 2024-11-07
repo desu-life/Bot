@@ -117,7 +117,7 @@ public partial class Models
         public long RankedScore { get; set; }
 
         [JsonProperty("pp")]
-        public uint Pp { get; set; }
+        public uint PP { get; set; }
 
         [JsonProperty("plays")]
         public uint Plays { get; set; }

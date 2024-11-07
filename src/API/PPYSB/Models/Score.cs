@@ -86,7 +86,7 @@ public partial class Models
         public string Username { get; set; }
 
         [JsonProperty("clan")]
-        public string? Clan { get; set; }
+        public object? Clan { get; set; }
 
     }
    

@@ -37,7 +37,7 @@ namespace KanonBot.image
             List<OSU.Models.ScoreLazer> scoreList,
             List<int> Rank,
             OSU.Models.User userInfo,
-            bool lazer = false
+            CalculatorKind kind = CalculatorKind.Unset
         )
         {
             //get pp
@@ -45,11 +45,14 @@ namespace KanonBot.image
             List<PPInfo> ppinfos = [];
             for (int i = 0; i < scoreList.Count; i++) {
                 PPInfo ppinfo;
-                if (lazer) {
-                    ppinfo = await RosuCalculator.CalculateData(scoreList[i]);
-                } else {
-                    ppinfo = await UniversalCalculator.CalculateDataAuto(scoreList[i]);
-                }
+                ppinfo = kind switch
+                {
+                    CalculatorKind.Unset => await UniversalCalculator.CalculateDataAuto(scoreList[i]),
+                    CalculatorKind.Rosu => await RosuCalculator.CalculateData(scoreList[i]),
+                    CalculatorKind.Lazer => await OsuCalculator.CalculateData(scoreList[i]),
+                    CalculatorKind.Sb => await SBRosuCalculator.CalculateData(scoreList[i]),
+                    _ => throw new ArgumentOutOfRangeException(),
+                };
                 ppinfos.Add(ppinfo);
                 scoreList[i].pp = ppinfo.ppStat.total;
             }
@@ -170,25 +173,7 @@ namespace KanonBot.image
             image.Mutate(x => x.DrawImage(MainPic, new Point(0, 0), 1));
 
             //头像、用户名、PP
-            var avatarPath = $"./work/avatar/{userInfo.Id}.png";
-            using var avatar = await TryAsync(Utils.ReadImageRgba(avatarPath))
-                .IfFail(async () =>
-                {
-                    try
-                    {
-                        avatarPath = await userInfo.AvatarUrl.DownloadFileAsync(
-                            "./work/avatar/",
-                            $"{userInfo.Id}.png"
-                        );
-                    }
-                    catch (Exception ex)
-                    {
-                        var msg = $"从API下载用户头像时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
-                        Log.Error(msg);
-                        throw; // 下载失败直接抛出error
-                    }
-                    return await Utils.ReadImageRgba(avatarPath); // 下载后再读取
-                });
+            using var avatar = await Utils.LoadOrDownloadAvatar(userInfo);
             avatar.Mutate(x => x.Resize(160, 160).RoundCorner(new Size(160, 160), 25));
             image.Mutate(x => x.DrawImage(avatar, new Point(56, 60), 1));
             //username

@@ -226,20 +226,20 @@ namespace KanonBot.API.OSU
         }
 
         // 获取用户在特定谱面上的成绩
-        async public static Task<Models.BeatmapScoreLazer?> GetUserBeatmapScore(long UserId, long bid, string[] mods, Mode mode = Mode.OSU, bool LegacyOnly = false)
+        async public static Task<Models.BeatmapScoreLazer?> GetUserBeatmapScore(long UserId, long bid, IEnumerable<string> mods, Mode mode = Mode.OSU, bool LegacyOnly = false)
         {
-            var req = withLazerScore(http())
-                .AppendPathSegments(new object[] { "beatmaps", bid, "scores", "users", UserId })
+            var res = await withLazerScore(http())
+                .AppendPathSegments(["beatmaps", bid, "scores", "users", UserId])
                 .SetQueryParam("mode", mode.ToStr())
-                .SetQueryParam("legacy_only", LegacyOnly ? 1 : 0);
+                .SetQueryParam("legacy_only", LegacyOnly ? 1 : 0)
+                .SetQueryParam("mods[]", mods)
+                .GetAsync();
 
-
-            req.SetQueryParam("mods[]", mods);
-            var res = await req.GetAsync();
-            if (res.StatusCode == 404)
+            if (res.StatusCode == 404) {
                 return null;
-            else
+            } else {
                 return await res.GetJsonAsync<Models.BeatmapScoreLazer>();
+            }
         }
 
         // 获取用户在特定谱面上的成绩

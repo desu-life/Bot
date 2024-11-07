@@ -4,7 +4,6 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using KanonBot.LegacyImage;
 using LanguageExt.ClassInstances.Pred;
-using RosuPP;
 using static KanonBot.API.OSU.OSUExtensions;
 using OSU = KanonBot.API.OSU;
 
@@ -38,7 +37,7 @@ public struct PPInfo
         API.OSU.Models.ScoreLazer score,
         osu.Game.Rulesets.Difficulty.PerformanceAttributes result,
         osu.Game.Rulesets.Difficulty.DifficultyAttributes dAttr,
-        BeatmapAttributes bmAttr,
+        RosuPP.BeatmapAttributes bmAttr,
         double bpm,
         double clockrate
     )
@@ -150,11 +149,11 @@ public struct PPInfo
         throw new ArgumentOutOfRangeException();
     }
 
-    public static PPInfo New(PerformanceAttributes result, BeatmapAttributes bmAttr, double bpm)
+    public static PPInfo New(RosuPP.PerformanceAttributes result, RosuPP.BeatmapAttributes bmAttr, double bpm)
     {
         switch (result.mode)
         {
-            case Mode.Osu:
+            case RosuPP.Mode.Osu:
             {
                 var attr = result.osu.ToNullable()!.Value;
                 return new PPInfo()
@@ -180,7 +179,7 @@ public struct PPInfo
                     ppStats = null
                 };
             }
-            case Mode.Taiko:
+            case RosuPP.Mode.Taiko:
             {
                 var attr = result.taiko.ToNullable()!.Value;
                 return new PPInfo()
@@ -206,7 +205,7 @@ public struct PPInfo
                     ppStats = null
                 };
             }
-            case Mode.Catch:
+            case RosuPP.Mode.Catch:
             {
                 var attr = result.fruit.ToNullable()!.Value;
                 return new PPInfo()
@@ -232,7 +231,120 @@ public struct PPInfo
                     ppStats = null
                 };
             }
-            case Mode.Mania:
+            case RosuPP.Mode.Mania:
+            {
+                var attr = result.mania.ToNullable()!.Value;
+                return new PPInfo()
+                {
+                    star = attr.stars,
+                    CS = bmAttr.cs,
+                    HP = bmAttr.hp,
+                    AR = bmAttr.ar,
+                    OD = bmAttr.od,
+                    accuracy = null,
+                    maxCombo = attr.max_combo,
+                    bpm = bpm,
+                    clockrate = bmAttr.clock_rate,
+                    ppStat = new PPInfo.PPStat()
+                    {
+                        total = attr.pp,
+                        aim = null,
+                        speed = null,
+                        acc = null,
+                        strain = attr.pp_difficulty,
+                        flashlight = null,
+                    },
+                    ppStats = null
+                };
+            }
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    public static PPInfo New(SBRosuPP.PerformanceAttributes result, SBRosuPP.BeatmapAttributes bmAttr, double bpm)
+    {
+        switch (result.mode)
+        {
+            case SBRosuPP.Mode.Osu:
+            {
+                var attr = result.osu.ToNullable()!.Value;
+                return new PPInfo()
+                {
+                    star = attr.stars,
+                    CS = bmAttr.cs,
+                    HP = bmAttr.hp,
+                    AR = bmAttr.ar,
+                    OD = bmAttr.od,
+                    accuracy = attr.pp_acc,
+                    maxCombo = attr.max_combo,
+                    bpm = bpm,
+                    clockrate = bmAttr.clock_rate,
+                    ppStat = new PPInfo.PPStat()
+                    {
+                        total = attr.pp,
+                        aim = attr.pp_aim,
+                        speed = attr.pp_speed,
+                        acc = attr.pp_acc,
+                        strain = null,
+                        flashlight = attr.pp_flashlight,
+                    },
+                    ppStats = null
+                };
+            }
+            case SBRosuPP.Mode.Taiko:
+            {
+                var attr = result.taiko.ToNullable()!.Value;
+                return new PPInfo()
+                {
+                    star = attr.stars,
+                    CS = bmAttr.cs,
+                    HP = bmAttr.hp,
+                    AR = bmAttr.ar,
+                    OD = bmAttr.od,
+                    accuracy = attr.pp_acc,
+                    maxCombo = attr.max_combo,
+                    bpm = bpm,
+                    clockrate = bmAttr.clock_rate,
+                    ppStat = new PPInfo.PPStat()
+                    {
+                        total = attr.pp,
+                        aim = null,
+                        speed = null,
+                        acc = attr.pp_acc,
+                        strain = attr.pp_difficulty,
+                        flashlight = null,
+                    },
+                    ppStats = null
+                };
+            }
+            case SBRosuPP.Mode.Catch:
+            {
+                var attr = result.fruit.ToNullable()!.Value;
+                return new PPInfo()
+                {
+                    star = attr.stars,
+                    CS = bmAttr.cs,
+                    HP = bmAttr.hp,
+                    AR = bmAttr.ar,
+                    OD = bmAttr.od,
+                    accuracy = null,
+                    maxCombo = attr.max_combo,
+                    bpm = bpm,
+                    clockrate = bmAttr.clock_rate,
+                    ppStat = new PPInfo.PPStat()
+                    {
+                        total = attr.pp,
+                        aim = null,
+                        speed = null,
+                        acc = null,
+                        strain = null,
+                        flashlight = null,
+                    },
+                    ppStats = null
+                };
+            }
+            case SBRosuPP.Mode.Mania:
             {
                 var attr = result.mania.ToNullable()!.Value;
                 return new PPInfo()

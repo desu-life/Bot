@@ -70,6 +70,7 @@ namespace KanonBot.API.PPYSB
 
         async public static Task<Models.Score[]?> GetUserScores(long userId, UserScoreType scoreType = UserScoreType.Best, Mode mode = Mode.OSU, int limit = 1, int offset = 0, bool includeFails = true, bool includeLoved = false)
         {
+            if (mode.IsSupported() == false) return null;
             var req = httpV1()
                 .AppendPathSegment("get_player_scores")
                 .SetQueryParam("scope", scoreType.ToStr())

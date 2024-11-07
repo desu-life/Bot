@@ -2,6 +2,13 @@ using KanonBot.LegacyImage;
 
 namespace KanonBot.OsuPerformance
 {
+    public enum CalculatorKind {
+        Unset,
+        Rosu,
+        Lazer,
+        Sb
+    }
+
     public static class UniversalCalculator
     {
        

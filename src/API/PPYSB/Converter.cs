@@ -55,7 +55,10 @@ public static class PPYSBConverters
         return new OSU.Models.UserStatistics
         {
             TotalScore = u.TotalScore,
+            RankedScore = u.RankedScore,
+            PP = u.PP,
             PlayTime = u.PlayTime,
+            PlayCount = u.Plays,
             HitAccuracy = u.Accuracy,
             MaximumCombo = u.MaxCombo,
             TotalHits = u.TotalHits,
@@ -73,7 +76,7 @@ public static class PPYSBConverters
         };
     }
 
-    public static OSU.Models.UserExtended ToOsu(this Models.User u, Mode? mode) {
+    public static OSU.Models.UserExtended? ToOsu(this Models.User u, Mode? mode) {
         mode ??= u.Info.PreferredMode;
         
         var userStat = mode switch {
@@ -91,6 +94,8 @@ public static class PPYSBConverters
             Mode.AutoPilotMania => null,
             _ => throw new ArgumentOutOfRangeException(),
         };
+
+        if (userStat == null) return null;
         
         return new OSU.Models.UserExtended
         {
@@ -102,7 +107,7 @@ public static class PPYSBConverters
             JoinDate = u.Info.CreationTime,
             LastVisit = u.Info.LatestActivity,
             Mode = u.Info.PreferredMode.ToOsu(),
-            StatisticsCurrent = userStat != null ? ToOsu(userStat) : null
+            StatisticsCurrent = userStat.ToOsu(),
         };
     }
 

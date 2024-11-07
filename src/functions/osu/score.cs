@@ -131,8 +131,14 @@ namespace KanonBot.Functions.OSUBot
             var scoreData = await API.OSU.Client.GetUserBeatmapScore(
                 osuID!.Value,
                 command.order_number,
-                mods.ToArray(),
+                mods,
                 mode!.Value
+            ) ?? await API.OSU.Client.GetUserBeatmapScore(
+                osuID!.Value,
+                command.order_number,
+                mods,
+                mode!.Value,
+                true
             );
 
             if (scoreData == null)

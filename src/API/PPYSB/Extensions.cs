@@ -18,15 +18,15 @@ public static class PPYSBExtensions
     {
         return mode switch
         {
-            Mode.OSU => "vn!std",
+            Mode.OSU => "vn!standard",
             Mode.Taiko => "vn!taiko",
             Mode.Fruits => "vn!catch",
             Mode.Mania => "vn!mania",
-            Mode.RelaxOsu => "rx!std",
+            Mode.RelaxOsu => "rx!standard",
             Mode.RelaxTaiko => "rx!taiko",
             Mode.RelaxFruits => "rx!catch",
             Mode.RelaxMania => "rx!mania",
-            Mode.AutoPilotOsu => "ap!std",
+            Mode.AutoPilotOsu => "ap!standard",
             Mode.AutoPilotTaiko => "ap!taiko",
             Mode.AutoPilotFruits => "ap!catch",
             Mode.AutoPilotMania => "ap!mania",
@@ -54,6 +54,26 @@ public static class PPYSBExtensions
         };
     }
 
+    public static bool IsSupported(this Mode mode)
+    {
+        return mode switch
+        {
+            Mode.OSU => true,
+            Mode.Taiko => true,
+            Mode.Fruits => true,
+            Mode.Mania => true,
+            Mode.RelaxOsu => true,
+            Mode.RelaxTaiko => true,
+            Mode.RelaxFruits => true,
+            Mode.RelaxMania => false,
+            Mode.AutoPilotOsu => true,
+            Mode.AutoPilotTaiko => false,
+            Mode.AutoPilotFruits => false,
+            Mode.AutoPilotMania => false,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+
     public static Mode? ParsePpysbMode(this string value)
     {
         value = value.ToLower(); // 大写字符转小写
@@ -63,14 +83,14 @@ public static class PPYSBExtensions
             "1" or "taiko" or "tko" => Mode.Taiko,
             "2" or "fruits" or "catch" or "ctb" => Mode.Fruits,
             "3" or "mania" or "m" => Mode.Mania,
-            "4" or "rxosu" or "rx!std" or "rxstd" => Mode.RelaxOsu,
-            "5" or "rxtaiko" or "rx!taiko" => Mode.RelaxTaiko,
-            "6" or "rxctb" or "rx!catch" => Mode.RelaxFruits,
-            "7" or "rxmania" or "rx!mania" => Mode.RelaxMania,
-            "8" or "aposu" or "ap!std" or "apstd" => Mode.AutoPilotOsu,
-            "9" or "aptaiko" or "ap!taiko" => Mode.AutoPilotTaiko,
-            "10" or "apctb" or "ap!catch" => Mode.AutoPilotFruits,
-            "11" or "apmania" or "ap!mania" => Mode.AutoPilotMania,
+            "4" or "rx0" or "rxosu" or "rxstd" => Mode.RelaxOsu,
+            "5" or "rx1" or "rxtaiko" or "rxtko" => Mode.RelaxTaiko,
+            "6" or "rx2" or "rxfruits" or "rxcatch" or "rxctb" => Mode.RelaxFruits,
+            "7" or "rx3" or "rxmania" or "rxm" => Mode.RelaxMania,
+            "8" or "ap0" or "aposu" or "apstd" => Mode.AutoPilotOsu,
+            "9" or "ap1" or "aptaiko" or "aptko" => Mode.AutoPilotTaiko,
+            "10" or "ap2" or "apfruits" or "apcatch" or "apctb" => Mode.AutoPilotFruits,
+            "11" or "ap3" or "apmania" or "apm" => Mode.AutoPilotMania,
             _ => null
         };
     }

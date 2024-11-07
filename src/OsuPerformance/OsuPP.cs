@@ -144,6 +144,7 @@ class OsuCalculator
     )
     {
         var data = new Draw.ScorePanelData { scoreInfo = score };
+        if (score.IsLazer) data.server = "Lazer";
         var statistics = data.scoreInfo.ConvertStatistics;
 
         var b = await Utils.LoadOrDownloadBeatmap(data.scoreInfo.Beatmap!);
