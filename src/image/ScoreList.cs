@@ -68,7 +68,8 @@ namespace KanonBot.image
             var textOptions = new RichTextOptions(new Font(TorusSemiBold, 120))
             {
                 VerticalAlignment = VerticalAlignment.Bottom,
-                HorizontalAlignment = HorizontalAlignment.Left
+                HorizontalAlignment = HorizontalAlignment.Left,
+                FallbackFontFamilies = [HarmonySans, HarmonySansArabic]
             };
             var drawOptions = new DrawingOptions
             {

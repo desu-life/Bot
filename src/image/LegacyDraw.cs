@@ -60,6 +60,10 @@ namespace KanonBot.LegacyImage
         public static FontFamily HarmonySans = fonts.Add(
             "./work/fonts/HarmonyOS_Sans_SC/HarmonyOS_Sans_SC_Regular.ttf"
         );
+
+        public static FontFamily HarmonySansArabic = fonts.Add(
+            "./work/fonts/HarmonyOS_Sans_Naskh_Arabic/HarmonyOS_Sans_Naskh_Arabic_Regular.ttf"
+        );
         public static FontFamily TorusRegular = fonts.Add("./work/fonts/Torus-Regular.ttf");
         public static FontFamily TorusSemiBold = fonts.Add("./work/fonts/Torus-SemiBold.ttf");
         public static FontFamily avenirLTStdMedium = fonts.Add(
@@ -327,7 +331,8 @@ namespace KanonBot.LegacyImage
             {
                 VerticalAlignment = VerticalAlignment.Bottom,
                 HorizontalAlignment = HorizontalAlignment.Left,
-                Origin = new PointF(15, 25)
+                Origin = new PointF(15, 25),
+                FallbackFontFamilies = [HarmonySans, HarmonySansArabic]
             };
             info.Mutate(x =>
                 x.DrawText(
@@ -950,7 +955,7 @@ namespace KanonBot.LegacyImage
             {
                 VerticalAlignment = VerticalAlignment.Bottom,
                 HorizontalAlignment = HorizontalAlignment.Left,
-                FallbackFontFamilies = [HarmonySans]
+                FallbackFontFamilies = [HarmonySans, HarmonySansArabic]
             };
             // beatmap_info
             var title = "";
@@ -1801,7 +1806,8 @@ namespace KanonBot.LegacyImage
             {
                 VerticalAlignment = VerticalAlignment.Top,
                 HorizontalAlignment = HorizontalAlignment.Left,
-                Origin = new PointF(fontSize / 2, fontSize / 2)
+                Origin = new PointF(fontSize / 2, fontSize / 2),
+                FallbackFontFamilies = [HarmonySans, HarmonySansArabic]
             };
             var m = TextMeasurer.MeasureSize(str, textOptions);
 

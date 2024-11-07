@@ -39,7 +39,7 @@ namespace KanonBot.API.PPYSB
             var res = await httpV1()
                 .AppendPathSegment("get_player_info")
                 .SetQueryParam("scope", "all")
-                .SetQueryParam("name", userName)
+                .SetQueryParam("name", userName.Replace(" ", "_"))
                 .GetAsync();
 
             if (res.StatusCode == 404)

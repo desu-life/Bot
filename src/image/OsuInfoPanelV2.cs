@@ -884,7 +884,7 @@ namespace KanonBot.DrawV2
             {
                 VerticalAlignment = VerticalAlignment.Bottom,
                 HorizontalAlignment = HorizontalAlignment.Left,
-                FallbackFontFamilies = [HarmonySans]
+                FallbackFontFamilies = [HarmonySans, HarmonySansArabic]
             };
             var drawOptions = new DrawingOptions
             {
@@ -1428,9 +1428,11 @@ namespace KanonBot.DrawV2
             //acc sub
             if (data.userInfo.Statistics.HitAccuracy != 0)
             {
-                var accsub_point =
-                    (2374 + (int)(1443.00 * (data.userInfo.Statistics.HitAccuracy / 100.0))) - 40;
-                textOptions.Origin = new PointF(accsub_point, 641);
+                textOptions.HorizontalAlignment = HorizontalAlignment.Right;
+                textOptions.Font = new Font(TorusRegular, 40);
+                var percent = 100d / 100d;
+                var accsub_point = 2374 + (percent * 1443.00) - 40;
+                textOptions.Origin = new PointF((float)accsub_point, 641f);
                 info.Mutate(
                     x =>
                         x.DrawText(
