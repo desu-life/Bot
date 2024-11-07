@@ -12,3 +12,5 @@ global using static LanguageExt.Prelude;
 
 global using KanonBot;
 global using static KanonBot.API.OSU.OSUExtensions;
+global using static KanonBot.API.PPYSB.PPYSBConverters;
+global using static KanonBot.API.PPYSB.PPYSBExtensions;

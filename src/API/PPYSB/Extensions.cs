@@ -4,21 +4,6 @@ namespace KanonBot.API.PPYSB;
 
 public static class PPYSBExtensions
 {
-    public static OSU.Models.Status ToOsu(this Models.Status status)
-    {
-        return status switch
-        {
-            Models.Status.NotSubmitted => OSU.Models.Status.Unknown,
-            Models.Status.UpdateAvailable => OSU.Models.Status.Unknown,
-            Models.Status.Pending => OSU.Models.Status.Pending,
-            Models.Status.Ranked => OSU.Models.Status.Ranked,
-            Models.Status.Approved => OSU.Models.Status.Approved,
-            Models.Status.Qualified => OSU.Models.Status.Qualified,
-            Models.Status.Loved => OSU.Models.Status.Loved,
-            _ => throw new ArgumentOutOfRangeException(),
-        };
-    }
-
     public static string ToStr(this UserScoreType type)
     {
         return type switch

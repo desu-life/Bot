@@ -23,7 +23,7 @@ public partial class Models
         public long Id { get; set; }
 
         [JsonProperty("score")]
-        public long Scores { get; set; }
+        public uint Scores { get; set; }
 
         [JsonProperty("pp")]
         public double PP { get; set; }
@@ -38,25 +38,25 @@ public partial class Models
         public uint Mods { get; set; }
 
         [JsonProperty("n300")]
-        public uint N300 { get; set; }
+        public uint Count300 { get; set; }
 
         [JsonProperty("n100")]
-        public uint N100 { get; set; }
+        public uint Count100 { get; set; }
 
         [JsonProperty("n50")]
-        public uint N50 { get; set; }
+        public uint Count50 { get; set; }
 
         [JsonProperty("nmiss")]
-        public uint Nmiss { get; set; }
+        public uint CountMiss { get; set; }
 
         [JsonProperty("ngeki")]
-        public uint Ngeki { get; set; }
+        public uint CountGeki { get; set; }
 
         [JsonProperty("nkatu")]
-        public uint Nkatu { get; set; }
+        public uint CountKatu { get; set; }
 
         [JsonProperty("grade")]
-        public string Grade { get; set; }
+        public string Rank { get; set; }
 
         [JsonProperty("status")]
         public uint Status { get; set; }

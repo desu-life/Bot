@@ -19,15 +19,15 @@ public partial class Models
     public class User {
 
         [JsonProperty("info")]
-        public UserInfo? Info { get; set; }
+        public UserInfo Info { get; set; }
 
         [JsonProperty("stats")]
-        public UserStats? Stats { get; set; }
+        public UserStats Stats { get; set; }
     }
 
     public class UserInfo {
         [JsonProperty("id")]
-        public uint Id { get; set; }
+        public long Id { get; set; }
 
         [JsonProperty("name")]
         public string Name { get; set; }
@@ -138,19 +138,19 @@ public partial class Models
         public uint ReplayViews { get; set; }
 
         [JsonProperty("xh_count")]
-        public uint XhCount { get; set; }
+        public int XhCount { get; set; }
 
         [JsonProperty("x_count")]
-        public uint XCount { get; set; }
+        public int XCount { get; set; }
 
         [JsonProperty("sh_count")]
-        public uint ShCount { get; set; }
+        public int ShCount { get; set; }
 
         [JsonProperty("s_count")]
-        public uint SCount { get; set; }
+        public int SCount { get; set; }
 
         [JsonProperty("a_count")]
-        public uint ACount { get; set; }
+        public int ACount { get; set; }
 
         [JsonProperty("rank")]
         public long Rank { get; set; }

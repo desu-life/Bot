@@ -20,12 +20,15 @@ namespace KanonBot.Functions.OSUBot
             #region 验证
             long? osuID = null;
             API.OSU.Mode? mode;
+            API.PPYSB.Mode? sbmode;
             Database.Model.User? DBUser = null;
             Database.Model.UserOSU? DBOsuInfo = null;
 
             // 解析指令
             var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.BestPerformance);
             mode = command.osu_mode;
+            sbmode = command.sb_osu_mode;
+            bool is_ppysb = command.server == "sb";
 
             // 解析指令
             if (command.self_query)
@@ -85,32 +88,56 @@ namespace KanonBot.Functions.OSUBot
                 else
                 {
                     // 普通查询
-                    var OnlineOsuInfo = await API.OSU.Client.GetUser(
-                        command.osu_username,
-                        command.osu_mode ?? API.OSU.Mode.OSU
-                    );
-                    if (OnlineOsuInfo != null)
-                    {
-                        DBOsuInfo = await Database.Client.GetOsuUser(OnlineOsuInfo.Id);
-                        if (DBOsuInfo != null)
+                    if (is_ppysb) {
+                        var OnlineOsuInfo = await API.PPYSB.Client.GetUser(
+                            command.osu_username
+                        );
+                        if (OnlineOsuInfo != null)
                         {
-                            DBUser = await Accounts.GetAccountByOsuUid(OnlineOsuInfo.Id);
-                            mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value;
+                            sbmode ??= OnlineOsuInfo.Info.PreferredMode;
+                            osuID = OnlineOsuInfo.Info.Id;
                         }
-                        mode ??= OnlineOsuInfo.Mode;
-                        osuID = OnlineOsuInfo.Id;
-                    }
-                    else
-                    {
-                        // 直接取消查询，简化流程
-                        await target.reply("猫猫没有找到此用户。");
-                        return;
+                        else
+                        {
+                            // 直接取消查询，简化流程
+                            await target.reply("猫猫没有找到此用户。");
+                            return;
+                        }
+                    } else {
+                        var OnlineOsuInfo = await API.OSU.Client.GetUser(
+                            command.osu_username,
+                            command.osu_mode ?? API.OSU.Mode.OSU
+                        );
+                        if (OnlineOsuInfo != null)
+                        {
+                            DBOsuInfo = await Database.Client.GetOsuUser(OnlineOsuInfo.Id);
+                            if (DBOsuInfo != null)
+                            {
+                                DBUser = await Accounts.GetAccountByOsuUid(OnlineOsuInfo.Id);
+                                mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value;
+                            }
+                            mode ??= OnlineOsuInfo.Mode;
+                            osuID = OnlineOsuInfo.Id;
+                        }
+                        else
+                        {
+                            // 直接取消查询，简化流程
+                            await target.reply("猫猫没有找到此用户。");
+                            return;
+                        }
                     }
                 }
             }
 
             // 验证osu信息
-            var tempOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
+            API.OSU.Models.UserExtended? tempOsuInfo = null;
+            API.PPYSB.Models.User? sbinfo = null;
+            if (is_ppysb) {
+                sbinfo = await API.PPYSB.Client.GetUser(command.osu_username);
+                tempOsuInfo = sbinfo?.ToOsu(sbmode);
+            } else {
+                tempOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
+            }
             if (tempOsuInfo == null)
             {
                 await target.reply("猫猫没有找到此用户。");
@@ -131,13 +158,25 @@ namespace KanonBot.Functions.OSUBot
             
             if (command.lazer)
             {
-                var ss = await API.OSU.Client.GetUserBestsV1(
-                    osuID!.Value,
-                    mode!.Value,
-                    1,
-                    command.order_number - 1
-                );
-                scores = ss?.Map(s => s.ToLazerScore(mode!.Value)).ToArray();
+                if (is_ppysb) {
+                    var ss = await API.PPYSB.Client.GetUserScores(
+                        osuID!.Value,
+                    API.PPYSB.UserScoreType.Best,
+                        sbmode!.Value,
+                        1,
+                        command.order_number - 1
+                    );
+                    Log.Warning("{@ss}", ss);
+                    scores = ss?.Map(s => s.ToOsu(sbinfo!, sbmode!.Value)).ToArray();
+                } else {
+                    var ss = await API.OSU.Client.GetUserBestsV1(
+                        osuID!.Value,
+                        mode!.Value,
+                        1,
+                        command.order_number - 1
+                    );
+                    scores = ss?.Map(s => s.ToLazerScore(mode!.Value)).ToArray();
+                }
             } else {
                 scores = await API.OSU.Client.GetUserScores(
                     osuID!.Value,

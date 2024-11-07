@@ -51,7 +51,7 @@ namespace KanonBot.API.PPYSB
             }
         }
 
-        public static async Task<Models.User?> GetUser(uint uid)
+        public static async Task<Models.User?> GetUser(long uid)
         {
             var res = await httpV1()
                 .AppendPathSegment("get_player_info")
@@ -68,22 +68,27 @@ namespace KanonBot.API.PPYSB
             }
         }
 
-        async public static Task<Models.Score[]?> GetUserScores(uint userId, UserScoreType scoreType = UserScoreType.Best, Mode mode = Mode.OSU, int limit = 1, int offset = 0, bool includeFails = true, bool includeLoved = false)
+        async public static Task<Models.Score[]?> GetUserScores(long userId, UserScoreType scoreType = UserScoreType.Best, Mode mode = Mode.OSU, int limit = 1, int offset = 0, bool includeFails = true, bool includeLoved = false)
         {
-            var res = await httpV1()
+            var req = httpV1()
                 .AppendPathSegment("get_player_scores")
                 .SetQueryParam("scope", scoreType.ToStr())
                 .SetQueryParam("id", userId)
-                .SetQueryParam("mode", mode.ToNum())
-                .SetQueryParam("limit", 100)
-                .GetAsync();
+                .SetQueryParam("mode", mode.ToNum());
 
+            if (offset == 0) {
+                req.SetQueryParam("limit", limit);
+            } else {
+                req.SetQueryParam("limit", 100);
+            }
+
+            var res = await req.GetAsync();
             if (res.StatusCode == 404)
                 return null;
             else
             {
                 var u = await res.GetJsonAsync<Models.ScoreResponse>();
-                return u?.Scores;
+                return u?.Scores.Skip(offset).Take(limit).ToArray();
             }
         }
 

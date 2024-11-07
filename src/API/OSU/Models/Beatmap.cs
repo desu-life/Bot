@@ -46,7 +46,7 @@ public partial class Models
         // Accuracy = OD
 
         [JsonProperty(PropertyName = "accuracy")]
-        public double Accuracy { get; set; }
+        public double OD { get; set; }
 
         [JsonProperty(PropertyName = "ar")]
         public double AR { get; set; }
@@ -73,7 +73,7 @@ public partial class Models
         public DateTimeOffset? DeletedAt { get; set; }
 
         [JsonProperty(PropertyName = "drain")]
-        public long HPDrain { get; set; }
+        public double HPDrain { get; set; }
 
         [JsonProperty(PropertyName = "hit_length")]
         public long HitLength { get; set; }
@@ -85,7 +85,7 @@ public partial class Models
         public DateTimeOffset LastUpdated { get; set; }
 
         [JsonProperty(PropertyName = "mode_int")]
-        public long ModeInt { get; set; }
+        public int ModeInt { get; set; }
 
         [JsonProperty(PropertyName = "passcount")]
         public long Passcount { get; set; }

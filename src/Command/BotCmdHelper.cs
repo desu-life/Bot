@@ -7,6 +7,7 @@ using KanonBot.API;
 using LanguageExt.UnsafeValueAccess;
 using OSU = KanonBot.API.OSU;
 using static KanonBot.API.OSU.OSUExtensions;
+using KanonBot.API.PPYSB;
 
 namespace KanonBot
 {
@@ -15,6 +16,7 @@ public static class BotCmdHelper
     public struct BotParameter
     {
         public API.OSU.Mode? osu_mode;
+        public API.PPYSB.Mode? sb_osu_mode;
         public string osu_username, osu_mods, match_name, search_arg, server;           //用于获取具体要查询的模式，未提供返回osu
         public long osu_user_id, bid;
         public int order_number;//用于info的查询n天之前、pr，bp的序号，score的bid，如未提供则返回0
@@ -160,13 +162,25 @@ public static class BotCmdHelper
             }
 
             arg1 = arg1.Trim();
-            arg2 = arg2.Trim();
             arg3 = arg3.Trim();
             arg4 = arg4.Trim();
 
-            if (string.IsNullOrWhiteSpace(arg5)) {
-                
+            if (!string.IsNullOrWhiteSpace(arg5)) {
                 param.server = arg5[1..].Trim();
+            }
+
+            if (!string.IsNullOrWhiteSpace(arg2)) {
+                try {
+                    param.osu_mode = arg2[1..].Trim().ParseMode();
+                } catch {
+                    param.osu_mode = null;
+                }
+
+                try {
+                    param.sb_osu_mode = arg2[1..].Trim().ParsePpysbMode();
+                } catch {
+                    param.osu_mode = null;
+                }
             }
 
             if (type == FuncType.BPList) {
@@ -175,13 +189,7 @@ public static class BotCmdHelper
                 // arg2 = osu_mode
                 // arg3 = osu_days_before_to_query
                 // #1-100
-                if (arg2 != "") {
-                    try {
-                        param.osu_mode = arg2[1..].Trim().ParseMode();
-                    } catch {
-                        param.osu_mode = null;
-                    }
-                }
+
                 if (arg3 != "") {
                     param.osu_username = arg1;
                     var tmp = arg3[1..];
@@ -209,13 +217,7 @@ public static class BotCmdHelper
                 // arg2 = osu_mode
                 // arg3 = osu_days_before_to_query
                 param.osu_username = arg1;
-                if (arg2 != "") {
-                    try {
-                        param.osu_mode = arg2[1..].Trim().ParseMode();
-                    } catch {
-                        param.osu_mode = null;
-                    }
-                }
+
 
                 if (arg3 == "" || param.osu_username == null) {
                     param.order_number = 0;
@@ -250,26 +252,13 @@ public static class BotCmdHelper
                     param.self_query = true;
                 }
 
-                if (arg2 != "") {
-                    try {
-                        param.osu_mode = arg2[1..].Trim().ParseMode();
-                    } catch {
-                        param.osu_mode = null;
-                    }
-                }
+
             } else if (type == FuncType.Recent || type == FuncType.PassRecent) {
                 // 处理pr/re解析
                 // arg1 = username
                 // arg2 = osu_mode
                 // arg3 = order_number (序号)
                 param.osu_username = arg1;
-                if (arg2 != "") {
-                    try {
-                        param.osu_mode = arg2[1..].Trim().ParseMode();
-                    } catch {
-                        param.osu_mode = null;
-                    }
-                }
 
                 // 成绩必须为1
                 if (arg3 == "" || param.osu_username == null) {
@@ -309,14 +298,6 @@ public static class BotCmdHelper
                     param.self_query = true;
                 }
 
-                if (arg2 != "") {
-                    try {
-                        param.osu_mode = arg2[1..].Trim().ParseMode();
-                    } catch {
-                        param.osu_mode = null;
-                    }
-                }
-
                 param.osu_mods = arg4 != "" ? arg4[1..] : "";
             } else if (type == FuncType.Search) {
                 // 处理score解析
@@ -348,14 +329,6 @@ public static class BotCmdHelper
                         param.order_number = index < 1 ? -1 : index;
                     } catch {
                         param.order_number = 0;
-                    }
-                }
-
-                if (arg2 != "") {
-                    try {
-                        param.osu_mode = arg2[1..].Trim().ParseMode();
-                    } catch {
-                        param.osu_mode = null;
                     }
                 }
 

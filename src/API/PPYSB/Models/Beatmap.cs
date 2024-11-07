@@ -15,10 +15,10 @@ public partial class Models
         public string Md5 { get; set; }
 
         [JsonProperty("id")]
-        public long Id { get; set; }
+        public long BeatmapId { get; set; }
 
         [JsonProperty("set_id")]
-        public long SetId { get; set; }
+        public long BeatmapsetId { get; set; }
 
         [JsonProperty("artist")]
         public string Artist { get; set; }
@@ -54,7 +54,7 @@ public partial class Models
         public Mode Mode { get; set; }
 
         [JsonProperty("bpm")]
-        public double bpm { get; set; }
+        public double BPM { get; set; }
 
         [JsonProperty("cs")]
         public double CS { get; set; }
@@ -69,7 +69,7 @@ public partial class Models
         public double HP { get; set; }
 
         [JsonProperty("diff")]
-        public double Diff { get; set; }
+        public double DifficultyRating { get; set; }
     }
 
     public enum Status
