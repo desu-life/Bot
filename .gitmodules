@@ -1,3 +1,6 @@
 [submodule "rosu-pp-ffi"]
 	path = rosu-pp-ffi
 	url = https://github.com/fantasyzhjk/rosu-pp-ffi
+[submodule "sb-pp-ffi"]
+	path = sb-pp-ffi
+	url = https://github.com/fantasyzhjk/rosu-pp-ffi
