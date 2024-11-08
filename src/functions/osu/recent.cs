@@ -34,7 +34,7 @@ namespace KanonBot.Functions.OSUBot
                 DBUser = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
                 if (DBUser == null)
                 {
-                    await target.reply("你还没有绑定desu.life账户，使用 !reg 你的邮箱 来进行绑定或注册喵。");
+                    await target.reply("你还没有绑定 desu.life 账户，先使用 !reg 你的邮箱 来进行绑定或注册哦。");
                     return;
                 }
                 // 验证账号信息

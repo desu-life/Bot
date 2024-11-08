@@ -179,7 +179,7 @@ public static class BotCmdHelper
                 try {
                     param.sb_osu_mode = arg2[1..].Trim().ParsePpysbMode();
                 } catch {
-                    param.osu_mode = null;
+                    param.sb_osu_mode = null;
                 }
             }
 

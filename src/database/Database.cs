@@ -120,6 +120,18 @@ public class Client
         return await db.User.Where(it => it.uid == user.uid).FirstOrDefaultAsync();
     }
 
+    public static async Task<Model.UserPPYSB?> GetPpysbUser(long osu_uid)
+    {
+        using var db = GetInstance();
+        return await db.UserPPYSB.Where(it => it.osu_uid == osu_uid).FirstOrDefaultAsync();
+    }
+
+    public static async Task<Model.UserPPYSB?> GetPpysbUserByUID(long kanon_uid)
+    {
+        using var db = GetInstance();
+        return await db.UserPPYSB.Where(it => it.uid == kanon_uid).FirstOrDefaultAsync();
+    }
+
     public static async Task<Model.UserOSU?> GetOsuUser(long osu_uid)
     {
         using var db = GetInstance();
@@ -130,6 +142,29 @@ public class Client
     {
         using var db = GetInstance();
         return await db.UserOSU.Where(it => it.uid == kanon_uid).FirstOrDefaultAsync();
+    }
+
+    public static async Task<bool> InsertPpysbUser(
+        long kanon_uid,
+        long osu_uid
+    )
+    {
+        using var db = GetInstance();
+        var d = new Model.UserPPYSB()
+        {
+            uid = kanon_uid,
+            osu_uid = osu_uid,
+            mode = 0,
+        };
+        try
+        {
+            await db.InsertOrReplaceAsync(d);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public static async Task<bool> InsertOsuUser(

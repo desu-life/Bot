@@ -19,6 +19,7 @@ public class Model
         public ITable<OSUSeasonalPass_ScoreRecords> OSUSeasonalPass_ScoreRecords => this.GetTable<OSUSeasonalPass_ScoreRecords>();
         public ITable<User> User => this.GetTable<User>();
         public ITable<UserOSU> UserOSU => this.GetTable<UserOSU>();
+        public ITable<UserPPYSB> UserPPYSB => this.GetTable<UserPPYSB>();
         public ITable<OsuArchivedRec> OsuArchivedRec => this.GetTable<OsuArchivedRec>();
         public ITable<OsuPPlus> OsuPPlus => this.GetTable<OsuPPlus>();
         public ITable<BadgeList> BadgeList => this.GetTable<BadgeList>();
@@ -225,6 +226,19 @@ public class Model
 
         [Column]
         public int InfoPanelV2_Mode { get; set; }
+    }
+
+    [Table("users_ppysb")]
+    public class UserPPYSB
+    {
+        [PrimaryKey]
+        public long uid { get; set; }
+
+        [PrimaryKey]
+        public long osu_uid { get; set; }
+
+        [Column]
+        public int? mode { get; set; }
     }
 
     [Table("osu_archived_record")]

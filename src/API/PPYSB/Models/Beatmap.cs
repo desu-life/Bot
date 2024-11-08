@@ -10,6 +10,11 @@ namespace KanonBot.API.PPYSB;
 
 public partial class Models
 {
+    public class MapResponseV2 : ApiResponseV2 {
+        [JsonProperty("data")]
+        public Beatmap Data { get; set; }
+    }
+
     public class Beatmap {
         [JsonProperty("md5")]
         public string Md5 { get; set; }

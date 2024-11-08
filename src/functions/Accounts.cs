@@ -243,15 +243,15 @@ namespace KanonBot.Functions
 
             var AccInfo = Accounts.GetAccInfo(target);
             var DBUser = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
-            //这里dbuser可空，后面一定要检测
-
+            // 查询当前kanon账户是否有效
+            if (DBUser == null) { await target.reply("你还没有绑定 desu.life 账户，先使用 !reg 你的邮箱 来进行绑定或注册哦。"); return; }
 
             if (childCmd_1 == "osu")
             {
                 // 先检查查询的用户是否有效
                 API.OSU.Models.User? online_osu_userinfo;
                 online_osu_userinfo = await API.OSU.Client.GetUser(childCmd_2);
-                if (online_osu_userinfo == null) { await target.reply($"没有找到osu用户名为 {childCmd_2} 的osu用户，绑定失败。"); return; }
+                if (online_osu_userinfo == null) { await target.reply($"没有找到用户名为 {childCmd_2} 的 osu 用户，绑定失败。"); return; }
 
                 // 检查要绑定的osu是否没有被Kanon用户绑定过
                 var db_osu_userinfo = await Database.Client.GetOsuUser(online_osu_userinfo.Id);
@@ -260,15 +260,12 @@ namespace KanonBot.Functions
                     if (DBUser != null && DBUser.uid == db_osu_userinfo.uid) {
                         await target.reply($"你已绑定该账户。"); return;
                     }
-                    await target.reply($"此osu账户已被用户ID为 {db_osu_userinfo.uid} 的用户绑定了，如果这是你的账户，请联系管理员更新账户信息。"); return;
+                    await target.reply($"此 osu 账户已被用户 ID 为 {db_osu_userinfo.uid} 的用户绑定了，如果这是你的账户，请联系管理员更新账户信息。"); return;
                 }
-
-                // 查询当前kanon账户是否有效
-                if (DBUser == null) { await target.reply("你还没有绑定desu.life账户，使用 !reg 你的邮箱 来进行绑定或注册喵。"); return; }
 
                 // 检查用户是否已绑定osu账户
                 var osuuserinfo = await Database.Client.GetOsuUserByUID(DBUser.uid);
-                if (osuuserinfo != null) { await target.reply($"您已经与osu uid为 {osuuserinfo.osu_uid} 的用户绑定过了。"); return; }
+                if (osuuserinfo != null) { await target.reply($"您已经与 osu uid 为 {osuuserinfo.osu_uid} 的用户绑定过了。"); return; }
 
                 // 通过osu username搜索osu用户id
                 try
@@ -276,8 +273,41 @@ namespace KanonBot.Functions
                     // 没被他人绑定，开始绑定流程
                     if (await Database.Client.InsertOsuUser(DBUser.uid, online_osu_userinfo.Id))
                     {
-                        await target.reply($"绑定成功，已将osu用户 {online_osu_userinfo.Id} 绑定至Kanon账户 {DBUser.uid} 。");
+                        await target.reply($"绑定成功，已将 osu 用户 {online_osu_userinfo.Id} 绑定至 desu.life 账户 {DBUser.uid} 。");
                         await GeneralUpdate.UpdateUser(online_osu_userinfo.Id, true); //插入用户每日数据记录
+                    }
+                    else { await target.reply($"绑定失败，请稍后再试。"); }
+                }
+                catch { await target.reply($"在绑定用户时出错，请联系猫妈处理.png"); return; }
+            }
+            else if (childCmd_1 == "ppysb")
+            {
+                // 检查用户是否已绑定osu账户
+                var osuuserinfo = await Database.Client.GetOsuUserByUID(DBUser.uid);
+                if (osuuserinfo != null) { await target.reply($"请先绑定官服 osu 账户。"); return; }
+
+                // 先检查查询的用户是否有效
+                API.PPYSB.Models.User? online_osu_userinfo;
+                online_osu_userinfo = await API.PPYSB.Client.GetUser(childCmd_2);
+                if (online_osu_userinfo == null) { await target.reply($"没有在ppy.sb找到用户名为 {childCmd_2} 的用户，绑定失败。"); return; }
+
+                // 检查要绑定的osu是否没有被Kanon用户绑定过
+                var db_osu_userinfo = await Database.Client.GetPpysbUser(online_osu_userinfo.Info.Id);
+                if (db_osu_userinfo != null)
+                {
+                    if (DBUser != null && DBUser.uid == db_osu_userinfo.uid) {
+                        await target.reply($"你已绑定该账户。"); return;
+                    }
+                    await target.reply($"此 ppy.sb 账户已被用户ID为 {db_osu_userinfo.uid} 的用户绑定了，如果这是你的账户，请联系管理员更新账户信息。"); return;
+                }
+
+                // 通过osu username搜索osu用户id
+                try
+                {
+                    // 没被他人绑定，开始绑定流程
+                    if (await Database.Client.InsertPpysbUser(DBUser.uid, online_osu_userinfo.Info.Id))
+                    {
+                        await target.reply($"绑定成功，已将 ppy.sb 用户 {online_osu_userinfo.Info.Id} 绑定至 desu.life 账户 {DBUser.uid} 。");
                     }
                     else { await target.reply($"绑定失败，请稍后再试。"); }
                 }

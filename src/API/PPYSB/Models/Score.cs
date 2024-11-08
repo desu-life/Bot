@@ -10,7 +10,12 @@ namespace KanonBot.API.PPYSB;
 
 public partial class Models
 {
-    public class ScoreResponse {
+    public class ScoreResponseV2 : ApiResponseV2 {
+        [JsonProperty("data")]
+        public Score[] Data { get; set; }
+    }
+
+    public class ScoreResponse : ApiResponse {
         [JsonProperty("scores")]
         public Score[] Scores { get; set; }
 

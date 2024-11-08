@@ -14,5 +14,12 @@ public partial class Models
         [JsonProperty("status")]
         public string Status { get; set; }
     }
+    public class ApiResponseV2 {
+        [JsonProperty("status")]
+        public string Status { get; set; }
+        
+        [JsonProperty("meta")]
+        public Dictionary<string, object> Meta { get; set; }
+    }
    
 }
