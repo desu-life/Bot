@@ -185,7 +185,6 @@ namespace KanonBot.Functions.OSUBot
             var AccInfo = Accounts.GetAccInfo(target);
             var DBUser = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
             if (DBUser == null)
-            
             {
                 await target.reply("你还没有绑定 desu.life 账户，先使用 !reg 你的邮箱 来进行绑定或注册哦。");
                 return;
@@ -197,10 +196,35 @@ namespace KanonBot.Functions.OSUBot
                 await target.reply("您还没有绑定osu账户，请使用!set osu 您的osu用户名来绑定您的osu账户。");
                 return;
             }
+            var DBSBInfo = (await Accounts.CheckPpysbAccount(_u!.uid))!;
 
             cmd = cmd.ToLower().Trim();
 
             var mode = cmd.ParseMode();
+            var sbmode = cmd.ParsePpysbMode();
+            if (DBSBInfo != null && sbmode != null && sbmode?.IsSupported() == true) {
+                try
+                {
+                    var success = await Database.Client.SetPpysbUserMode(DBSBInfo.osu_uid, sbmode.Value);
+                    // 哎呀这段好乱
+                    if (success) {
+                        if (mode != null) {
+                            if (await Database.Client.SetOsuUserMode(DBOsuInfo.osu_uid, mode.Value)) {
+                                await target.reply($"成功设置模式为 {mode.Value.ToDisplay()}");
+                                return;
+                            }
+                        }
+                        await target.reply("成功设置sb服的模式为 " + sbmode.Value.ToDisplay());
+                        return;
+                    }
+                }
+                catch
+                {
+                    await target.reply("发生了错误，无法设置osu模式，请联系管理员。");
+                    return;
+                }
+            }
+
             if (mode == null)
             {
                 await target.reply("提供的模式不正确，请重新确认 (osu/taiko/fruits/mania)");

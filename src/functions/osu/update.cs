@@ -40,7 +40,7 @@ namespace KanonBot.Functions.OSUBot
             else
             {
                 // 查询用户是否绑定
-                var (atOSU, atDBUser) = await Accounts.ParseAt(command.osu_username);
+                var (atOSU, atDBUser) = await Accounts.ParseAtOsu(command.osu_username);
                 if (atOSU.IsNone && !atDBUser.IsNone) {
                     DBUser = atDBUser.ValueUnsafe();
                     DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);

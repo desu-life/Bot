@@ -120,6 +120,17 @@ public class Client
         return await db.User.Where(it => it.uid == user.uid).FirstOrDefaultAsync();
     }
 
+    public static async Task<Model.User?> GetUserByPpysbUID(long osu_uid)
+    {
+        using var db = GetInstance();
+        var user = await GetPpysbUser(osu_uid);
+        if (user == null)
+        {
+            return null;
+        }
+        return await db.User.Where(it => it.uid == user.uid).FirstOrDefaultAsync();
+    }
+
     public static async Task<Model.UserPPYSB?> GetPpysbUser(long osu_uid)
     {
         using var db = GetInstance();
@@ -310,7 +321,17 @@ public class Client
             .Where(it => it.osu_uid == osu_uid)
             .Set(it => it.osu_mode, mode.ToStr())
             .UpdateAsync();
-        return result > -1;
+        return result > 0;
+    }
+
+    public static async Task<bool> SetPpysbUserMode(long osu_uid, API.PPYSB.Mode mode)
+    {
+        using var db = GetInstance();
+        var result = await db.UserPPYSB
+            .Where(it => it.osu_uid == osu_uid)
+            .Set(it => it.mode, mode.ToNum())
+            .UpdateAsync();
+        return result > 0;
     }
 
     //返回值为天数（几天前）
@@ -419,7 +440,7 @@ public class Client
             return await db.OSUSeasonalPass
                     .Where(it => it.osu_id == oid && it.mode == mode)
                     .Set(it => it.point, it => it.point + add_point)
-                    .UpdateAsync() > -1;
+                    .UpdateAsync() > 0;
         }
         var t = false;
         if (

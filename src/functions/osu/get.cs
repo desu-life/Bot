@@ -456,7 +456,7 @@ namespace KanonBot.Functions.OSUBot
             {
                 // 查询用户是否绑定
                 // 这里先按照at方法查询，查询不到就是普通用户查询
-                var (atOSU, atDBUser) = await Accounts.ParseAt(command.osu_username);
+                var (atOSU, atDBUser) = await Accounts.ParseAtOsu(command.osu_username);
                 if (atOSU.IsNone && !atDBUser.IsNone)
                 {
                     DBUser = atDBUser.ValueUnsafe();
@@ -748,7 +748,7 @@ namespace KanonBot.Functions.OSUBot
             {
                 // 查询用户是否绑定
                 // 这里先按照at方法查询，查询不到就是普通用户查询
-                var (atOSU, atDBUser) = await Accounts.ParseAt(command.osu_username);
+                var (atOSU, atDBUser) = await Accounts.ParseAtOsu(command.osu_username);
                 if (atOSU.IsNone && !atDBUser.IsNone)
                 {
                     DBUser = atDBUser.ValueUnsafe();
@@ -907,7 +907,7 @@ namespace KanonBot.Functions.OSUBot
             {
                 // 查询用户是否绑定
                 // 这里先按照at方法查询，查询不到就是普通用户查询
-                var (atOSU, atDBUser) = await Accounts.ParseAt(command.osu_username);
+                var (atOSU, atDBUser) = await Accounts.ParseAtOsu(command.osu_username);
                 if (atOSU.IsNone && !atDBUser.IsNone)
                 {
                     DBUser = atDBUser.ValueUnsafe();
@@ -1052,7 +1052,7 @@ namespace KanonBot.Functions.OSUBot
             {
                 // 查询用户是否绑定
                 // 这里先按照at方法查询，查询不到就是普通用户查询
-                var (atOSU, atDBUser) = await Accounts.ParseAt(command.osu_username);
+                var (atOSU, atDBUser) = await Accounts.ParseAtOsu(command.osu_username);
                 if (atOSU.IsNone && !atDBUser.IsNone)
                 {
                     DBUser = atDBUser.ValueUnsafe();
@@ -1349,7 +1349,7 @@ namespace KanonBot.Functions.OSUBot
             {
                 // 查询用户是否绑定
                 // 这里先按照at方法查询，查询不到就是普通用户查询
-                var (atOSU, atDBUser) = await Accounts.ParseAt(command.osu_username);
+                var (atOSU, atDBUser) = await Accounts.ParseAtOsu(command.osu_username);
                 if (atOSU.IsNone && !atDBUser.IsNone)
                 {
                     DBUser = atDBUser.ValueUnsafe();

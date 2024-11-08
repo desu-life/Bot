@@ -23,9 +23,9 @@ namespace KanonBot.LegacyImage
             public OSU.Models.UserExtended userInfo;
             public OSU.Models.User? prevUserInfo;
             public OSU.Models.PPlusData.UserData? pplusInfo;
-            public string? customPanel;
+            public required long osuId; // 官方服务器的id
             public int daysBefore = 0;
-            public List<int> badgeId = new();
+            public List<int> badgeId = [];
             public CustomMode customMode = CustomMode.Dark; //0=custom 1=light 2=dark
             public string ColorConfigRaw;
             public string? modeString;
@@ -153,14 +153,14 @@ namespace KanonBot.LegacyImage
             var info = new Image<Rgba32>(1200, 857);
             // custom panel
             var panelPath = "./work/legacy/default-info-v1.png";
-            if (File.Exists($"./work/legacy/v1_infopanel/{data.userInfo.Id}.png"))
-                panelPath = $"./work/legacy/v1_infopanel/{data.userInfo.Id}.png";
+            if (File.Exists($"./work/legacy/v1_infopanel/{data.osuId}.png"))
+                panelPath = $"./work/legacy/v1_infopanel/{data.osuId}.png";
             using var panel = await Img.LoadAsync(panelPath);
             // cover
-            var coverPath = $"./work/legacy/v1_cover/custom/{data.userInfo.Id}.png";
+            var coverPath = $"./work/legacy/v1_cover/custom/{data.osuId}.png";
             if (!File.Exists(coverPath))
             {
-                coverPath = $"./work/legacy/v1_cover/osu!web/{data.userInfo.Id}.png";
+                coverPath = $"./work/legacy/v1_cover/osu!web/{data.osuId}.png";
                 if (!File.Exists(coverPath))
                 {
                     coverPath = null;
@@ -170,7 +170,7 @@ namespace KanonBot.LegacyImage
                         {
                             coverPath = await data.userInfo.Cover.CustomUrl.DownloadFileAsync(
                                 "./work/legacy/v1_cover/osu!web/",
-                                $"{data.userInfo.Id}.png"
+                                $"{data.osuId}.png"
                             );
                         }
                         else

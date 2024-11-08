@@ -284,7 +284,7 @@ namespace KanonBot.Functions
             {
                 // 检查用户是否已绑定osu账户
                 var osuuserinfo = await Database.Client.GetOsuUserByUID(DBUser.uid);
-                if (osuuserinfo != null) { await target.reply($"请先绑定官服 osu 账户。"); return; }
+                if (osuuserinfo == null) { await target.reply($"请先绑定官服 osu 账户。"); return; }
 
                 // 先检查查询的用户是否有效
                 API.PPYSB.Models.User? online_osu_userinfo;
@@ -318,12 +318,14 @@ namespace KanonBot.Functions
                 await target.reply("请按照以下格式进行绑定。\n!bind osu 您的osu用户名 "); return;
             }
         }
-        public static async Task<(Option<API.OSU.Models.UserExtended>, Option<Database.Model.User>)> ParseAt(string atmsg) {
+        
+        public static async Task<(Option<API.OSU.Models.UserExtended>, Option<Database.Model.User>)> ParseAtOsu(string atmsg) {
             var res = Utils.SplitKvp(atmsg);
             if (res.IsNone)
                 return (None, None);
 
             var (k, v) = res.Value();
+
             if (k == "osu") {
                 var uid = parseLong(v).IfNone(() => 0);
                 if (uid == 0)
@@ -340,6 +342,70 @@ namespace KanonBot.Functions
                     return (Some(osuacc_!), Some(dbuser_!));
             }
 
+            var user = await ParseAtBase(atmsg);
+            if (user.IsNone)
+                return (None, None);
+            
+            var dbuser = user.ValueUnsafe();
+
+            var dbosu = await CheckOsuAccount(dbuser.uid);
+            if (dbosu is null)
+                return (None, Some(dbuser));
+
+            var osuacc = await API.OSU.Client.GetUser(dbosu.osu_uid);
+            if (osuacc is null)
+                return (None, Some(dbuser));
+            else
+                return (Some(osuacc), Some(dbuser));
+        }
+
+        public static async Task<(Option<API.OSU.Models.UserExtended>, Option<Database.Model.User>)> ParseAtPpysb(string atmsg) {
+            var res = Utils.SplitKvp(atmsg);
+            if (res.IsNone)
+                return (None, None);
+
+            var (k, v) = res.Value();
+
+            if (k == "sb") {
+                var uid = parseLong(v).IfNone(() => 0);
+                if (uid == 0)
+                    return (None, None);
+                
+                var osuacc_ = await API.PPYSB.Client.GetUser(uid);
+                if (osuacc_ is null)
+                    return (None, None);
+
+                var dbuser_ = await GetAccountByPpysbUid(uid);
+                if (dbuser_ is null)
+                    return (Some(osuacc_.ToOsu(null)!), None);
+                else
+                    return (Some(osuacc_.ToOsu(null)!), Some(dbuser_));
+            }
+
+            var user = await ParseAtBase(atmsg);
+            if (user.IsNone)
+                return (None, None);
+            
+            var dbuser = user.ValueUnsafe();
+
+            var dbosu = await CheckPpysbAccount(dbuser.uid);
+            if (dbosu is null)
+                return (None, Some(dbuser));
+
+            var osuacc = await API.PPYSB.Client.GetUser(dbosu.osu_uid);
+            if (osuacc is null)
+                return (None, Some(dbuser));
+            else
+                return (Some(osuacc.ToOsu(dbosu.mode?.ToPpysbMode())!), Some(dbuser));
+        }
+
+        public static async Task<Option<Database.Model.User>> ParseAtBase(string atmsg) {
+            var res = Utils.SplitKvp(atmsg);
+            if (res.IsNone)
+                return None;
+
+            var (k, v) = res.Value();
+
             var platform =  k switch {
                 "qq" => Platform.OneBot,
                 "gulid" => Platform.Guild,
@@ -348,21 +414,13 @@ namespace KanonBot.Functions
                 _ => Platform.Unknown
             };
             if (platform == Platform.Unknown)
-                return (None, None);
+                return None;
             
             var dbuser = await GetAccount(v, platform);
             if (dbuser is null)
-                return (None, None);
+                return None;
 
-            var dbosu = await CheckOsuAccount(dbuser.uid);
-            if (dbosu is null)
-                return (None, Some(dbuser!));
-
-            var osuacc = await API.OSU.Client.GetUser(dbosu.osu_uid);
-            if (osuacc is null)
-                return (None, Some(dbuser!));
-            else
-                return (Some(osuacc!), Some(dbuser!));
+            return Some(dbuser!);
         }
 
         public static async Task<Database.Model.User?> GetAccount(string uid, Platform platform)
@@ -376,6 +434,14 @@ namespace KanonBot.Functions
         public static async Task<Database.Model.UserOSU?> CheckOsuAccount(long uid)
         {
             return await Database.Client.GetOsuUserByUID(uid);
+        }
+        public static async Task<Database.Model.User?> GetAccountByPpysbUid(long osu_uid)
+        {
+            return await Database.Client.GetUserByPpysbUID(osu_uid);
+        }
+        public static async Task<Database.Model.UserPPYSB?> CheckPpysbAccount(long uid)
+        {
+            return await Database.Client.GetPpysbUserByUID(uid);
         }
 
         public static AccInfo GetAccInfo(Target target)

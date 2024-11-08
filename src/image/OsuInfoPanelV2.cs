@@ -893,8 +893,8 @@ namespace KanonBot.DrawV2
 
             //自定义侧图
             string sidePicPath;
-            if (File.Exists($"./work/panelv2/user_customimg/{data.userInfo.Id}.png"))
-                sidePicPath = $"./work/panelv2/user_customimg/{data.userInfo.Id}.png";
+            if (File.Exists($"./work/panelv2/user_customimg/{data.osuId}.png"))
+                sidePicPath = $"./work/panelv2/user_customimg/{data.osuId}.png";
             else
                 sidePicPath = ColorMode switch
                 {
@@ -1173,8 +1173,8 @@ namespace KanonBot.DrawV2
 
             //用户面板/自定义面板
             string panelPath;
-            if (File.Exists($"./work/panelv2/user_infopanel/{data.userInfo.Id}.png"))
-                panelPath = $"./work/panelv2/user_infopanel/{data.userInfo.Id}.png";
+            if (File.Exists($"./work/panelv2/user_infopanel/{data.osuId}.png"))
+                panelPath = $"./work/panelv2/user_infopanel/{data.osuId}.png";
             else
                 panelPath = ColorMode switch
                 {

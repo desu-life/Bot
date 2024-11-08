@@ -27,6 +27,7 @@ namespace KanonBot.Functions.OSUBot
             var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Score);
             mode = command.osu_mode;
             sbmode = command.sb_osu_mode;
+            bool is_query_sb = command.server == "sb";
 
             // 解析指令
             if (command.self_query)
@@ -46,14 +47,27 @@ namespace KanonBot.Functions.OSUBot
                     await target.reply("你还没有绑定osu账户，请使用 !bind osu 你的osu用户名 来绑定你的osu账户喵。");
                     return;
                 }
-                mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value; // 从数据库解析，理论上不可能错
-                osuID = DBOsuInfo.osu_uid;
+
+                if (is_query_sb) {
+                    var sbdbinfo = await Accounts.CheckPpysbAccount(DBUser.uid);
+                    if (sbdbinfo == null)
+                    {
+                        await target.reply("请先绑定sb服。");
+                        return;
+                    }
+                    sbmode ??= sbdbinfo.mode?.ToPpysbMode();
+                    osuID = sbdbinfo.osu_uid;
+                    is_ppysb = true;
+                } else {
+                    mode ??= DBOsuInfo.osu_mode?.ToMode(); // 从数据库解析，理论上不可能错
+                    osuID = DBOsuInfo.osu_uid;
+                }
             }
             else
             {
                 // 查询用户是否绑定
                 // 这里先按照at方法查询，查询不到就是普通用户查询
-                var (atOSU, atDBUser) = await Accounts.ParseAt(command.osu_username);
+                var (atOSU, atDBUser) = await Accounts.ParseAtOsu(command.osu_username);
                 if (atOSU.IsNone && !atDBUser.IsNone) {
                     DBUser = atDBUser.ValueUnsafe();
                     DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
@@ -78,12 +92,22 @@ namespace KanonBot.Functions.OSUBot
                     osuID = _osuinfo.Id;
                 } else {
                     // 普通查询
-                    if (command.server == "sb") {
+                    if (is_query_sb) {
                         var OnlineOsuInfo = await API.PPYSB.Client.GetUser(
                             command.osu_username
                         );
                         if (OnlineOsuInfo != null)
                         {
+                            var sbdbinfo = await Database.Client.GetPpysbUser(OnlineOsuInfo.Info.Id);
+                            if (sbdbinfo != null)
+                            {
+                                DBUser = await Accounts.GetAccountByPpysbUid(OnlineOsuInfo.Info.Id);
+                                if (DBUser != null) {
+                                    DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
+                                }
+                                sbmode ??= sbdbinfo.mode?.ToPpysbMode();
+                            }
+
                             sbmode ??= OnlineOsuInfo.Info.PreferredMode;
                             osuID = OnlineOsuInfo.Info.Id;
                             is_ppysb = true;
@@ -124,7 +148,7 @@ namespace KanonBot.Functions.OSUBot
             API.OSU.Models.UserExtended? tempOsuInfo = null;
             API.PPYSB.Models.User? sbinfo = null;
             if (is_ppysb) {
-                sbinfo = await API.PPYSB.Client.GetUser(command.osu_username);
+                sbinfo = await API.PPYSB.Client.GetUser(osuID!.Value);
                 tempOsuInfo = sbinfo?.ToOsu(sbmode);
             } else {
                 tempOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
@@ -159,6 +183,17 @@ namespace KanonBot.Functions.OSUBot
             API.OSU.Models.BeatmapScoreLazer? scoreData = null;
 
             if (is_ppysb) {
+                // config mods
+                if (mods.Find(x => x == "RX") != null) {
+                    sbmode = sbmode?.ToRx();
+                    if (mods.Count == 1) { mods = []; }
+                }
+
+                if (mods.Find(x => x == "AP") != null) {
+                    sbmode = sbmode?.ToAp();
+                    if (mods.Count == 1) { mods = []; }
+                }
+
                 var tmpScore = await API.PPYSB.Client.GetMapScore(
                     osuID!.Value,
                     command.order_number,

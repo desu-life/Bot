@@ -54,6 +54,46 @@ public static class PPYSBExtensions
         };
     }
 
+    public static Mode ToRx(this Mode mode)
+    {
+        return mode switch
+        {
+            Mode.OSU => Mode.RelaxOsu,
+            Mode.Taiko => Mode.RelaxTaiko,
+            Mode.Fruits => Mode.RelaxFruits,
+            Mode.Mania => Mode.RelaxMania,
+            Mode.RelaxOsu => Mode.RelaxOsu,
+            Mode.RelaxTaiko => Mode.RelaxTaiko,
+            Mode.RelaxFruits => Mode.RelaxFruits,
+            Mode.RelaxMania => Mode.RelaxMania,
+            Mode.AutoPilotOsu => Mode.RelaxOsu,
+            Mode.AutoPilotTaiko => Mode.RelaxTaiko,
+            Mode.AutoPilotFruits => Mode.RelaxFruits,
+            Mode.AutoPilotMania => Mode.RelaxMania,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+
+    public static Mode ToAp(this Mode mode)
+    {
+        return mode switch
+        {
+            Mode.OSU => Mode.AutoPilotOsu,
+            Mode.Taiko => Mode.AutoPilotTaiko,
+            Mode.Fruits => Mode.AutoPilotFruits,
+            Mode.Mania => Mode.AutoPilotMania,
+            Mode.RelaxOsu => Mode.AutoPilotOsu,
+            Mode.RelaxTaiko => Mode.AutoPilotTaiko,
+            Mode.RelaxFruits => Mode.AutoPilotFruits,
+            Mode.RelaxMania => Mode.AutoPilotMania,
+            Mode.AutoPilotOsu => Mode.AutoPilotOsu,
+            Mode.AutoPilotTaiko => Mode.AutoPilotTaiko,
+            Mode.AutoPilotFruits => Mode.AutoPilotFruits,
+            Mode.AutoPilotMania => Mode.AutoPilotMania,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+
     public static bool IsSupported(this Mode mode)
     {
         return mode switch

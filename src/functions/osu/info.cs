@@ -30,6 +30,7 @@ namespace KanonBot.Functions.OSUBot
             var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Info);
             mode = command.osu_mode;
             sbmode = command.sb_osu_mode;
+            bool is_query_sb = command.server == "sb";
 
             // 解析指令
             if (command.self_query)
@@ -49,15 +50,27 @@ namespace KanonBot.Functions.OSUBot
                     await target.reply("你还没有绑定osu账户，请使用 !bind osu 你的osu用户名 来绑定你的osu账户喵。");
                     return;
                 }
-                    
-                mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value; // 从数据库解析，理论上不可能错
-                osuID = DBOsuInfo.osu_uid;
+                
+                if (is_query_sb) {
+                    var sbdbinfo = await Accounts.CheckPpysbAccount(DBUser.uid);
+                    if (sbdbinfo == null)
+                    {
+                        await target.reply("请先绑定sb服。");
+                        return;
+                    }
+                    sbmode ??= sbdbinfo.mode?.ToPpysbMode();
+                    osuID = sbdbinfo.osu_uid;
+                    is_ppysb = true;
+                } else {
+                    mode ??= DBOsuInfo.osu_mode?.ToMode(); // 从数据库解析，理论上不可能错
+                    osuID = DBOsuInfo.osu_uid;
+                }
             }
             else
             {
                 // 查询用户是否绑定
                 // 这里先按照at方法查询，查询不到就是普通用户查询
-                var (atOSU, atDBUser) = await Accounts.ParseAt(command.osu_username);
+                var (atOSU, atDBUser) = await Accounts.ParseAtOsu(command.osu_username);
                 if (atOSU.IsNone && !atDBUser.IsNone)
                 {
                     DBUser = atDBUser.ValueUnsafe();
@@ -89,12 +102,22 @@ namespace KanonBot.Functions.OSUBot
                 else
                 {
                     // 普通查询
-                    if (command.server == "sb") {
+                    if (is_query_sb) {
                         var OnlineOsuInfo = await API.PPYSB.Client.GetUser(
                             command.osu_username
                         );
                         if (OnlineOsuInfo != null)
                         {
+                            var sbdbinfo = await Database.Client.GetPpysbUser(OnlineOsuInfo.Info.Id);
+                            if (sbdbinfo != null)
+                            {
+                                DBUser = await Accounts.GetAccountByPpysbUid(OnlineOsuInfo.Info.Id);
+                                if (DBUser != null) {
+                                    DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
+                                }
+                                sbmode ??= sbdbinfo.mode?.ToPpysbMode();
+                            }
+
                             sbmode ??= OnlineOsuInfo.Info.PreferredMode;
                             osuID = OnlineOsuInfo.Info.Id;
                             is_ppysb = true;
@@ -135,7 +158,7 @@ namespace KanonBot.Functions.OSUBot
             API.OSU.Models.UserExtended? tempOsuInfo = null;
             API.PPYSB.Models.User? sbinfo = null;
             if (is_ppysb) {
-                sbinfo = await API.PPYSB.Client.GetUser(command.osu_username);
+                sbinfo = await API.PPYSB.Client.GetUser(osuID!.Value);
                 tempOsuInfo = sbinfo?.ToOsu(sbmode);
             } else {
                 tempOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
@@ -152,127 +175,129 @@ namespace KanonBot.Functions.OSUBot
             #region 获取信息
             LegacyImage.Draw.UserPanelData data = new()
             {
+                osuId = osuID!.Value,
                 userInfo = tempOsuInfo!
             };
             // 覆写
 
             if (is_ppysb) {
                 data.modeString = sbmode?.ToDisplay();
+                data.osuId = 0;
             } else {
                 data.userInfo.Mode = mode!.Value;
-            }
-            // 查询
-
-            if (DBOsuInfo != null)
-            {
-                if (command.order_number > 0)
+                if (DBOsuInfo != null)
                 {
-                    // 从数据库取指定天数前的记录
-                    (data.daysBefore, data.prevUserInfo) = await Database.Client.GetOsuUserData(
-                        DBOsuInfo!.osu_uid,
-                        data.userInfo.Mode,
-                        command.order_number
-                    );
-                    if (data.daysBefore > 0)
-                        ++data.daysBefore;
-                }
-                else
-                {
-                    // 从数据库取最近的一次记录
-                    try
+                    if (command.order_number > 0)
                     {
+                        // 从数据库取指定天数前的记录
                         (data.daysBefore, data.prevUserInfo) = await Database.Client.GetOsuUserData(
                             DBOsuInfo!.osu_uid,
                             data.userInfo.Mode,
-                            0
+                            command.order_number
                         );
                         if (data.daysBefore > 0)
                             ++data.daysBefore;
                     }
-                    catch
+                    else
                     {
-                        data.daysBefore = 0;
+                        // 从数据库取最近的一次记录
+                        try
+                        {
+                            (data.daysBefore, data.prevUserInfo) = await Database.Client.GetOsuUserData(
+                                DBOsuInfo!.osu_uid,
+                                data.userInfo.Mode,
+                                0
+                            );
+                            if (data.daysBefore > 0)
+                                ++data.daysBefore;
+                        }
+                        catch
+                        {
+                            data.daysBefore = 0;
+                        }
                     }
-                }
 
-                var d = await Database.Client.GetOsuPPlusData(osuID!.Value);
-                if (d != null)
-                {
-                    data.pplusInfo = d;
-                }
-                else
-                {
-                    // 设置空数据
-                    data.pplusInfo = new();
-                    // 异步获取osupp数据，下次请求的时候就有了
-                    new Task(async () =>
+                    var d = await Database.Client.GetOsuPPlusData(osuID!.Value);
+                    if (d != null)
+                    {
+                        data.pplusInfo = d;
+                    }
+                    else
+                    {
+                        // 设置空数据
+                        data.pplusInfo = new();
+                        // 异步获取osupp数据，下次请求的时候就有了
+                        new Task(async () =>
+                        {
+                            try
+                            {
+                                await Database.Client.UpdateOsuPPlusData(
+                                    (await API.OSU.Client.TryGetUserPlusData(tempOsuInfo!))!.User,
+                                    tempOsuInfo!.Id
+                                );
+                            }
+                            catch { } //更新pp+失败，不返回信息
+                        }).RunSynchronously();
+                    }
+
+                    var badgeID = DBUser!.displayed_badge_ids;
+                    // 由于v1v2绘制位置以及绘制方向的不同，legacy(v1)只取第一个badge
+                    if (badgeID != null)
                     {
                         try
                         {
-                            await Database.Client.UpdateOsuPPlusData(
-                                (await API.OSU.Client.TryGetUserPlusData(tempOsuInfo!))!.User,
-                                tempOsuInfo!.Id
-                            );
+                            if (badgeID!.IndexOf(",") != -1)
+                            {
+                                var y = badgeID.Split(",");
+                                foreach (var x in y)
+                                    data.badgeId.Add(int.Parse(x));
+                            }
+                            else
+                            {
+                                data.badgeId.Add(int.Parse(badgeID!));
+                            }
                         }
-                        catch { } //更新pp+失败，不返回信息
-                    }).RunSynchronously();
-                }
-
-                var badgeID = DBUser!.displayed_badge_ids;
-                // 由于v1v2绘制位置以及绘制方向的不同，legacy(v1)只取第一个badge
-                if (badgeID != null)
-                {
-                    try
-                    {
-                        if (badgeID!.IndexOf(",") != -1)
+                        catch
                         {
-                            var y = badgeID.Split(",");
-                            foreach (var x in y)
-                                data.badgeId.Add(int.Parse(x));
-                        }
-                        else
-                        {
-                            data.badgeId.Add(int.Parse(badgeID!));
+                            data.badgeId = new() { -1 };
                         }
                     }
-                    catch
+                    else
                     {
                         data.badgeId = new() { -1 };
                     }
                 }
                 else
                 {
-                    data.badgeId = new() { -1 };
-                }
-            }
-            else if (!is_ppysb)
-            {
-                var d = await Database.Client.GetOsuPPlusData(osuID!.Value);
-                if (d != null)
-                {
-                    data.pplusInfo = d;
-                }
-                else
-                {
-                    // 设置空数据
-                    data.pplusInfo = new();
-                    // 异步获取osupp数据，下次请求的时候就有了
-                    new Task(async () =>
+                    var d = await Database.Client.GetOsuPPlusData(osuID!.Value);
+                    if (d != null)
                     {
-                        try
+                        data.pplusInfo = d;
+                    }
+                    else
+                    {
+                        // 设置空数据
+                        data.pplusInfo = new();
+                        // 异步获取osupp数据，下次请求的时候就有了
+                        new Task(async () =>
                         {
-                            var temppppinfo = await API.OSU.Client.TryGetUserPlusData(tempOsuInfo!);
-                            if (temppppinfo == null)
-                                return;
-                            await Database.Client.UpdateOsuPPlusData(
-                                temppppinfo!.User,
-                                tempOsuInfo!.Id
-                            );
-                        }
-                        catch { } //更新pp+失败，不返回信息
-                    }).RunSynchronously();
+                            try
+                            {
+                                var temppppinfo = await API.OSU.Client.TryGetUserPlusData(tempOsuInfo!);
+                                if (temppppinfo == null)
+                                    return;
+                                await Database.Client.UpdateOsuPPlusData(
+                                    temppppinfo!.User,
+                                    tempOsuInfo!.Id
+                                );
+                            }
+                            catch { } //更新pp+失败，不返回信息
+                        }).RunSynchronously();
+                    }
                 }
             }
+
+            
 
             #endregion
 
@@ -284,6 +309,7 @@ namespace KanonBot.Functions.OSUBot
             if (DBOsuInfo != null)
             {
                 custominfoengineVer = DBOsuInfo!.customInfoEngineVer;
+                data.osuId = DBOsuInfo!.osu_uid;
                 if (Enum.IsDefined(typeof(LegacyImage.Draw.UserPanelData.CustomMode), DBOsuInfo.InfoPanelV2_Mode))
                 {
                     data.customMode = (LegacyImage.Draw.UserPanelData.CustomMode)DBOsuInfo.InfoPanelV2_Mode;
@@ -365,8 +391,9 @@ namespace KanonBot.Functions.OSUBot
                 )
             );
 
+            if (Config.inner!.dev) return;
             _ = Task.Run(async () => {
-                if (Config.inner!.dev) return;
+                if (is_ppysb) return;
                 try
                 {
                     if (data.userInfo.Mode == API.OSU.Mode.OSU) //只存std的
