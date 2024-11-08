@@ -239,33 +239,6 @@ namespace KanonBot.Functions.OSUBot
                             catch { } //更新pp+失败，不返回信息
                         }).RunSynchronously();
                     }
-
-                    var badgeID = DBUser!.displayed_badge_ids;
-                    // 由于v1v2绘制位置以及绘制方向的不同，legacy(v1)只取第一个badge
-                    if (badgeID != null)
-                    {
-                        try
-                        {
-                            if (badgeID!.IndexOf(",") != -1)
-                            {
-                                var y = badgeID.Split(",");
-                                foreach (var x in y)
-                                    data.badgeId.Add(int.Parse(x));
-                            }
-                            else
-                            {
-                                data.badgeId.Add(int.Parse(badgeID!));
-                            }
-                        }
-                        catch
-                        {
-                            data.badgeId = new() { -1 };
-                        }
-                    }
-                    else
-                    {
-                        data.badgeId = new() { -1 };
-                    }
                 }
                 else
                 {
@@ -306,6 +279,37 @@ namespace KanonBot.Functions.OSUBot
                 isDataOfDayAvaiavle = true;
 
             int custominfoengineVer = 2;
+            if (DBUser != null) {
+                var badgeID = DBUser.displayed_badge_ids;
+                // 由于v1v2绘制位置以及绘制方向的不同，legacy(v1)只取第一个badge
+                if (badgeID != null)
+                {
+                    try
+                    {
+                        if (badgeID.Contains(','))
+                        {
+                            var y = badgeID.Split(",");
+                            foreach (var x in y)
+                                data.badgeId.Add(int.Parse(x));
+                        }
+                        else
+                        {
+                            data.badgeId.Add(int.Parse(badgeID!));
+                        }
+                    }
+                    catch
+                    {
+                        data.badgeId = [-1];
+                    }
+                }
+                else
+                {
+                    data.badgeId = [-1];
+                }
+            } else {
+                data.badgeId = [-1];
+            }
+
             if (DBOsuInfo != null)
             {
                 custominfoengineVer = DBOsuInfo!.customInfoEngineVer;

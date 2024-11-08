@@ -263,7 +263,7 @@ namespace KanonBot.LegacyImage
             info.Mutate(x => x.DrawImage(modeicon, new Point(1125, 10), 1));
 
             // pp+
-            if (data.userInfo.Mode is OSU.Mode.OSU)
+            if (data.userInfo.Mode is OSU.Mode.OSU && data.pplusInfo is not null)
             {
                 using var ppdataPanel = await Img.LoadAsync("./work/legacy/pp+-v1.png");
                 info.Mutate(x => x.DrawImage(ppdataPanel, new Point(0, 0), 1));
@@ -284,7 +284,7 @@ namespace KanonBot.LegacyImage
                 var ppd = new int[6]; // 这里就强制转换了
                 try
                 {
-                    ppd[0] = (int)data.pplusInfo!.AccuracyTotal;
+                    ppd[0] = (int)data.pplusInfo.AccuracyTotal;
                     ppd[1] = (int)data.pplusInfo.FlowAimTotal;
                     ppd[2] = (int)data.pplusInfo.JumpAimTotal;
                     ppd[3] = (int)data.pplusInfo.PrecisionTotal;

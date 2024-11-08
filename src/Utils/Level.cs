@@ -43,16 +43,16 @@ public static partial class Utils
 
         while (left < right)
         {
-            int mid = (left + right + 1) / 2;
+            int mid = left + (right - left) / 2;
             BigInteger requiredScore = GetRequiredScoreForLevel(mid);
 
             if (score >= requiredScore)
             {
-                left = mid;
+                left = mid + 1;
             }
             else
             {
-                right = mid - 1;
+                right = mid;
             }
         }
 
@@ -71,7 +71,7 @@ public static partial class Utils
         BigInteger scoreProgress = score - baseLevelScore;
         BigInteger scoreLevelDifference = GetRequiredScoreForLevel(baseLevel + 1) - baseLevelScore;
 
-        double progress = (double)scoreProgress / (double)scoreLevelDifference;
+        double progress = Math.Min(1.0, (double)scoreProgress / (double)scoreLevelDifference);
         if (double.IsNaN(progress) || double.IsInfinity(progress))
         {
             progress = 0;
