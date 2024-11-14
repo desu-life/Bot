@@ -27,7 +27,7 @@ namespace KanonBot.OsuPerformance
             CalculatorKind kind = CalculatorKind.Unset
         )
         {
-            if (kind is CalculatorKind.Oppai && score.Mode != API.OSU.Mode.OSU && !score.Mods.Any(m => m.IsClassic)) {
+            if (kind is CalculatorKind.Oppai && score.Mode != API.OSU.Mode.OSU) {
                 kind = CalculatorKind.Unset;
             }
 
@@ -55,7 +55,7 @@ namespace KanonBot.OsuPerformance
             CalculatorKind kind = CalculatorKind.Unset
         )
         {
-            if (kind is CalculatorKind.Oppai && score.Mode != API.OSU.Mode.OSU && !score.Mods.Any(m => m.IsClassic)) {
+            if (kind is CalculatorKind.Oppai && score.Mode != API.OSU.Mode.OSU) {
                 kind = CalculatorKind.Unset;
             }
 
