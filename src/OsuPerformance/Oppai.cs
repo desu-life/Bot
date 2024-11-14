@@ -21,8 +21,9 @@ public static class OppaiCalculator
     public static Draw.ScorePanelData CalculatePanelData(byte[] b, API.OSU.Models.ScoreLazer score)
     {
         var data = new Draw.ScorePanelData { scoreInfo = score };
-        if (score.IsLazer)
+        if (score.IsLazer) {
             data.server = "Lazer";
+        }
         var statistics = data.scoreInfo.ConvertStatistics;
 
         var rosubeatmap = Beatmap.FromBytes(b);
@@ -54,9 +55,9 @@ public static class OppaiCalculator
                 mods: (Oppai.Mods)mods.Bits()
             )
         );
+        var maxcombo = beatmap.GetMaxCombo();
 
-        // 开始计算
-        data.ppInfo = PPInfo.New(score, bAttr, dAttr, bmAttr, bpm, clockRate);
+        data.ppInfo = PPInfo.New(score, bAttr, dAttr, bmAttr, bpm, clockRate, maxcombo);
 
         // 5种acc + 全连
         double[] accs = [100.00, 99.00, 98.00, 97.00, 95.00, data.scoreInfo.AccAuto * 100.00];
@@ -87,7 +88,7 @@ public static class OppaiCalculator
                 )
             );
 
-            data.ppInfo.ppStats.Add(PPInfo.New(score, bAttr, dAttr, bmAttr, bpm, clockRate).ppStat);
+            data.ppInfo.ppStats.Add(PPInfo.New(score, bAttr, dAttr, bmAttr, bpm, clockRate, maxcombo).ppStat);
         }
 
         data.mode = rmode;
@@ -128,8 +129,9 @@ public static class OppaiCalculator
                 mods: (Oppai.Mods)mods.Bits()
             )
         );
+        var maxcombo = beatmap.GetMaxCombo();
 
-        return PPInfo.New(score, bAttr, dAttr, bmAttr, bpm, clockRate);
+        return PPInfo.New(score, bAttr, dAttr, bmAttr, bpm, clockRate, maxcombo);
     }
 }
 
@@ -141,7 +143,8 @@ public partial class PPInfo
         Oppai.DiffCalc dAttr,
         RosuPP.BeatmapAttributes bmAttr,
         double bpm,
-        double clockrate
+        double clockrate,
+        int maxcombo
     )
     {
         return new PPInfo()
@@ -152,7 +155,7 @@ public partial class PPInfo
             AR = bmAttr.ar,
             OD = bmAttr.od,
             accuracy = result.Acc,
-            maxCombo = score.MaxCombo,
+            maxCombo = (uint)maxcombo,
             bpm = bpm,
             clockrate = clockrate,
             ppStat = new PPInfo.PPStat()
