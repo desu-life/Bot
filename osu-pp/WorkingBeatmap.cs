@@ -15,22 +15,14 @@ public class CalculatorWorkingBeatmap : WorkingBeatmap
 {
     private readonly Beatmap _beatmap;
 
-    public CalculatorWorkingBeatmap(Ruleset ruleset, Stream beatmapStream) : this(ruleset, ReadFromStream(beatmapStream)) { }
     public CalculatorWorkingBeatmap(Stream beatmapStream) : this(ReadFromStream(beatmapStream)) { }
     public CalculatorWorkingBeatmap(byte[] b) : this(ReadFromBytes(b)) { }
-    public CalculatorWorkingBeatmap(Ruleset ruleset, byte[] b) : this(ruleset, ReadFromBytes(b)) { }
 
     private CalculatorWorkingBeatmap(Beatmap beatmap) : base(beatmap.BeatmapInfo, null)
     {
         _beatmap = beatmap;
+        _beatmap.BeatmapInfo.Ruleset = Utils.ParseRuleset(beatmap.BeatmapInfo.Ruleset.OnlineID)!.RulesetInfo;
     }
-
-    private CalculatorWorkingBeatmap(Ruleset ruleset, Beatmap beatmap) : base(beatmap.BeatmapInfo, null)
-    {
-        _beatmap = beatmap;
-        _beatmap.BeatmapInfo.Ruleset = ruleset.RulesetInfo;
-    }
-
 
     static Beatmap ReadFromStream(Stream stream)
     {

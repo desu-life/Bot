@@ -28,28 +28,15 @@ using osu.Game.Rulesets.Mania;
 namespace OsuPP;
 
 public static class Utils {
-    public static double CalculateAccuracy(Dictionary<HitResult, int> statistics)
-    {
-        var countGreat = statistics[HitResult.Great];
-        var countOk = statistics[HitResult.Ok];
-        var countMeh = statistics[HitResult.Meh];
-        var countMiss = statistics[HitResult.Miss];
-        var total = countGreat + countOk + countMeh + countMiss;
-
-        return (double)((6 * countGreat) + (2 * countOk) + countMeh) / (6 * total);
-    }
-
-    public static Ruleset? ParseRuleset(int mode) {
-        if (mode == 0) {
-            return new OsuRuleset();
-        } else if (mode == 1) {
-            return new TaikoRuleset();
-        } else if (mode == 2) {
-            return new CatchRuleset();
-        } else if (mode == 3) {
-            return new ManiaRuleset();
-        }
-        return null;
+    public static Ruleset? ParseRuleset(int id) {
+        return id switch
+        {
+            0 => new OsuRuleset(),
+            1 => new TaikoRuleset(),
+            2 => new CatchRuleset(),
+            3 => new ManiaRuleset(),
+            _ => null
+        };
     }
 }
 

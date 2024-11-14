@@ -41,7 +41,7 @@ class OsuCalculator
         var pstate = perf.GenerateState(rosubeatmap);
 
         var ruleset = OsuPP.Utils.ParseRuleset((int)rmode)!;
-        var beatmap = new OsuPP.CalculatorWorkingBeatmap(ruleset, b);
+        var beatmap = new OsuPP.CalculatorWorkingBeatmap(b);
         var c = OsuPP.Calculater.New(ruleset, beatmap);
         c.Mods(jmods);
         c.N50 = pstate.n50;
@@ -164,7 +164,7 @@ class OsuCalculator
         clockRate = bmAttr.clock_rate;
 
         var ruleset = OsuPP.Utils.ParseRuleset(data.scoreInfo.ModeInt)!;
-        var beatmap = new OsuPP.CalculatorWorkingBeatmap(ruleset, b);
+        var beatmap = new OsuPP.CalculatorWorkingBeatmap(b);
         var c = OsuPP.Calculater.New(ruleset, beatmap);
         c.Mods(data.scoreInfo.JsonMods);
         c.combo = data.scoreInfo.MaxCombo;
@@ -258,7 +258,7 @@ class OsuCalculator
         var clockRate = bmAttr.clock_rate;
 
         var ruleset = OsuPP.Utils.ParseRuleset(score.ModeInt)!;
-        var beatmap = new OsuPP.CalculatorWorkingBeatmap(ruleset, b);
+        var beatmap = new OsuPP.CalculatorWorkingBeatmap(b);
         var c = OsuPP.Calculater.New(ruleset, beatmap);
 
         c.Mods(mods_json);
