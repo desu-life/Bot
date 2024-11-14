@@ -127,6 +127,9 @@ namespace KanonBot.command_parser
                         case "info":
                             await Info.Execute(target, childCmd);
                             return;
+                        case "search":
+                            await Search.Execute(target, childCmd);
+                            return;
                         case "recent":
                         case "re":
                             await Recent.Execute(target, childCmd, true);

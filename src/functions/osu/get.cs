@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -72,9 +73,6 @@ namespace KanonBot.Functions.OSUBot
                     break;
                 case "bg":
                     await GetBackground.Execute(target, childCmd);
-                    break;
-                case "map":
-                    await Search.Execute(target, childCmd);
                     break;
                 default:
                     await target.reply(
@@ -210,7 +208,7 @@ namespace KanonBot.Functions.OSUBot
             //从数据库获取相似的谱面
             var randBP = allBP![new Random().Next(0, 19)];
             //get stars from rosupp
-            var ppinfo = await UniversalCalculator.CalculatePanelDataAuto(randBP);
+            var ppinfo = await UniversalCalculator.CalculatePanelData(randBP);
 
             var data = new List<Database.Model.OsuStandardBeatmapTechData>();
 
@@ -1131,8 +1129,7 @@ namespace KanonBot.Functions.OSUBot
                 await target.reply("查询成绩时出错。");
                 return;
             }
-            List<API.OSU.Models.ScoreLazer> TBP = new();
-            List<int> Rank = new();
+            List<ScoreList.ScoreRank> scores = [];
 
             var now = DateTime.Now;
             var t = now.Hour < 4 ? now.Date.AddDays(-1).AddHours(4) : now.Date.AddHours(4);
@@ -1146,12 +1143,14 @@ namespace KanonBot.Functions.OSUBot
 
                 if (bp_time >= t)
                 {
-                    TBP.Add(item);
-                    Rank.Add(i + 1);
+                    scores.Add(new image.ScoreList.ScoreRank {
+                        Score = item,
+                        Rank = i + 1
+                    });
                 }
             }
 
-            if (TBP.Count == 0)
+            if (scores.Count == 0)
             {
                 if (cmd == "")
                     await target.reply($"你今天在 {OnlineOsuInfo.Mode.ToStr()} 模式上还没有新bp呢。。");
@@ -1162,12 +1161,17 @@ namespace KanonBot.Functions.OSUBot
             }
             else
             {
+                await Parallel.ForEachAsync(scores, async (s, _) => {
+                    var b = await Utils.LoadOrDownloadBeatmap(s.Score.Beatmap!);
+                    s.PPInfo = UniversalCalculator.CalculateData(b, s.Score, command.lazer ? CalculatorKind.Oppai : CalculatorKind.Unset);
+                });
+
+                scores.Sort((a, b) => b.PPInfo!.ppStat.total > a.PPInfo!.ppStat.total ? 1 : -1);
+
                 var image = await KanonBot.image.ScoreList.Draw(
                     ScoreList.Type.TODAYBP,
-                    TBP,
-                    Rank,
-                    OnlineOsuInfo,
-                    command.lazer ? CalculatorKind.Rosu : CalculatorKind.Unset
+                    scores,
+                    OnlineOsuInfo
                 );
                 using var stream = new MemoryStream();
                 await image.SaveAsync(stream, new PngEncoder());
@@ -1418,24 +1422,13 @@ namespace KanonBot.Functions.OSUBot
 
             API.OSU.Models.ScoreLazer[]? allBP = null;
 
-            if (command.lazer)
-            {
-                var ss = await API.OSU.Client.GetUserBestsV1(
-                    osuID!.Value,
-                    mode!.Value,
-                    100,
-                    0
-                );
-                allBP = ss?.Map(s => s.ToLazerScore(mode!.Value)).ToArray();
-            } else {
-                allBP = await API.OSU.Client.GetUserScores(
-                    osuID!.Value,
-                    API.OSU.UserScoreType.Best,
-                    mode!.Value,
-                    100,
-                    0
-                );
-            }
+            allBP = await API.OSU.Client.GetUserScores(
+                osuID!.Value,
+                API.OSU.UserScoreType.Best,
+                mode!.Value,
+                100,
+                0
+            );
 
             if (allBP == null)
             {
@@ -1473,14 +1466,15 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
 
-            List<API.OSU.Models.ScoreLazer> TBP = new();
-            List<int> Rank = new();
-            for (int i = StartAt - 1; i < (allBP.Length > EndAt ? EndAt : allBP.Length); ++i)
-                TBP.Add(allBP[i]);
-            for (int i = StartAt - 1; i < (allBP.Length > EndAt ? EndAt : allBP.Length); ++i)
-                Rank.Add(i + 1);
+            List<ScoreList.ScoreRank> scores = [];
+            for (int i = StartAt - 1; i < (allBP.Length > EndAt ? EndAt : allBP.Length); ++i) {
+                scores.Add(new image.ScoreList.ScoreRank {
+                    Score = allBP[i],
+                    Rank = i + 1,
+                });
+            }
 
-            if (TBP.Count == 0)
+            if (scores.Count == 0)
             {
                 if (cmd == "")
                     await target.reply($"你在 {OnlineOsuInfo.Mode.ToStr()} 模式上还没有bp呢。。");
@@ -1491,26 +1485,16 @@ namespace KanonBot.Functions.OSUBot
             }
             else
             {
-                // 转换检测
-                if (TBP[0].ConvertFromOld) {
-                    var beatmaps = await API.OSU.Client.GetBeatmaps(TBP.Select(s => s.BeatmapId));
-                    for (var i = 0; i < TBP.Count; i++)
-                    {
-                        var score = TBP[i];
-                        if (score.Beatmap is null) {
-                            var bm = beatmaps!.Where(b => b.BeatmapId == score.BeatmapId).First();
-                            score.Beatmap = bm;
-                            score.Beatmapset = score.Beatmap?.Beatmapset;
-                        }
-
-                        score.User ??= OnlineOsuInfo;
-                    }
-                }
+                await Parallel.ForEachAsync(scores, async (s, _) => {
+                    var b = await Utils.LoadOrDownloadBeatmap(s.Score.Beatmap!);
+                    s.PPInfo = UniversalCalculator.CalculateData(b, s.Score, command.lazer ? CalculatorKind.Oppai : CalculatorKind.Unset);
+                });
                 
+                scores.Sort((a, b) => b.PPInfo!.ppStat.total > a.PPInfo!.ppStat.total ? 1 : -1);
+
                 using var image = await KanonBot.image.ScoreList.Draw(
                     ScoreList.Type.BPLIST,
-                    TBP,
-                    Rank,
+                    scores,
                     OnlineOsuInfo
                 );
                 using var stream = new MemoryStream();

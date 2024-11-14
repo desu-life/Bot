@@ -12,11 +12,14 @@ using OSU = KanonBot.API.OSU;
 
 namespace KanonBot.OsuPerformance;
 
-class OsuCalculator
+public static class OsuCalculator
 {
-    public static async Task<Draw.ScorePanelData> CalculatePanelSSData(API.OSU.Models.Beatmap map, API.OSU.Models.Mod[] mods)
+    public static Draw.ScorePanelData CalculatePanelSSData(
+        byte[] b,
+        API.OSU.Models.Beatmap map,
+        API.OSU.Models.Mod[] mods
+    )
     {
-        var b = await Utils.LoadOrDownloadBeatmap(map);
         var rosubeatmap = Beatmap.FromBytes(b);
 
         Mode rmode = rosubeatmap.Mode();
@@ -53,7 +56,8 @@ class OsuCalculator
         c.combo = pstate.max_combo;
         c.accuracy = 100;
 
-        if (rmode is Mode.Osu) {
+        if (rmode is Mode.Osu)
+        {
             c.SliderTickMiss = 0;
             c.SliderTailHit = (uint)map.CountSliders;
         }
@@ -92,15 +96,7 @@ class OsuCalculator
         data.ppInfo = PPInfo.New(data.scoreInfo, bAttr, dAttr, bmAttr, bpm, clockRate);
 
         // 5种acc + 全连
-        double[] accs =
-        {
-            100.00,
-            99.00,
-            98.00,
-            97.00,
-            95.00,
-            100.00
-        };
+        double[] accs = [100.00, 99.00, 98.00, 97.00, 95.00, 100.00];
 
         data.ppInfo.ppStats = [];
 
@@ -124,14 +120,17 @@ class OsuCalculator
             c.combo = state.max_combo;
             c.accuracy = acc;
 
-            if (rmode is Mode.Osu) {
+            if (rmode is Mode.Osu)
+            {
                 c.SliderTickMiss = 0;
                 c.SliderTailHit = (uint)map.CountSliders;
             }
 
             bAttr = c.Calculate();
 
-            data.ppInfo.ppStats.Add(PPInfo.New(data.scoreInfo, bAttr, dAttr, bmAttr, bpm, clockRate).ppStat);
+            data.ppInfo.ppStats.Add(
+                PPInfo.New(data.scoreInfo, bAttr, dAttr, bmAttr, bpm, clockRate).ppStat
+            );
         }
 
         data.mode = rmode;
@@ -139,15 +138,16 @@ class OsuCalculator
         return data;
     }
 
-    public static async Task<Draw.ScorePanelData> CalculatePanelData(
+    public static Draw.ScorePanelData CalculatePanelData(
+        byte[] b,
         API.OSU.Models.ScoreLazer score
     )
     {
         var data = new Draw.ScorePanelData { scoreInfo = score };
-        if (score.IsLazer) data.server = "Lazer";
+        if (score.IsLazer)
+            data.server = "Lazer";
         var statistics = data.scoreInfo.ConvertStatistics;
 
-        var b = await Utils.LoadOrDownloadBeatmap(data.scoreInfo.Beatmap!);
         var rosubeatmap = Beatmap.FromBytes(b);
 
         Mode rmode = data.scoreInfo.Mode.ToRosu();
@@ -175,11 +175,12 @@ class OsuCalculator
         c.NGeki = statistics.CountGeki;
         c.NMiss = statistics.CountMiss;
 
-        if (rmode is Mode.Osu) {
+        if (rmode is Mode.Osu)
+        {
             c.SliderTickMiss = statistics.LargeTickMiss;
             c.SliderTailHit = statistics.SliderTailHit;
         }
-        
+
         c.accuracy = data.scoreInfo.AccAuto * 100.00;
         var dAttr = c.CalculateDifficulty();
         var bAttr = c.Calculate();
@@ -188,15 +189,7 @@ class OsuCalculator
         data.ppInfo = PPInfo.New(score, bAttr, dAttr, bmAttr, bpm, clockRate);
 
         // 5种acc + 全连
-        double[] accs =
-        {
-            100.00,
-            99.00,
-            98.00,
-            97.00,
-            95.00,
-            data.scoreInfo.AccAuto * 100.00
-        };
+        double[] accs = { 100.00, 99.00, 98.00, 97.00, 95.00, data.scoreInfo.AccAuto * 100.00 };
 
         data.ppInfo.ppStats = [];
 
@@ -209,7 +202,6 @@ class OsuCalculator
             p.Mode(rmode);
             p.Mods(mods);
             p.Accuracy(acc);
-            p.SliderTickHits(score.MaximumStatistics?.LargeTickHit ?? 0);
             var state = p.GenerateState(rosubeatmap);
 
             c.N50 = state.n50;
@@ -221,9 +213,10 @@ class OsuCalculator
             c.combo = state.max_combo;
             c.accuracy = acc;
 
-            if (rmode is Mode.Osu) {
+            if (rmode is Mode.Osu)
+            {
                 c.SliderTailHit = state.slider_end_hits;
-                c.SliderTickMiss = score.MaximumStatistics?.LargeTickHit - state.slider_tick_hits;
+                c.SliderTickMiss = state.slider_tick_misses;
             }
 
             bAttr = c.Calculate();
@@ -236,12 +229,10 @@ class OsuCalculator
         return data;
     }
 
-    public static async Task<PPInfo> CalculateData(API.OSU.Models.ScoreLazer score)
+    public static PPInfo CalculateData(byte[] b, API.OSU.Models.ScoreLazer score)
     {
         var statistics = score.ConvertStatistics;
-    
-        var b = await Utils.LoadOrDownloadBeatmap(score.Beatmap!);
-        
+
         var rosubeatmap = Beatmap.FromBytes(b);
 
         Mode rmode = score.Mode.ToRosu();
@@ -276,5 +267,124 @@ class OsuCalculator
         var bAttr = c.Calculate();
 
         return PPInfo.New(score, bAttr, dAttr, bmAttr, bpm, clockRate);
+    }
+}
+
+public partial class PPInfo
+{
+    public static PPInfo New(
+        API.OSU.Models.ScoreLazer score,
+        osu.Game.Rulesets.Difficulty.PerformanceAttributes result,
+        osu.Game.Rulesets.Difficulty.DifficultyAttributes dAttr,
+        RosuPP.BeatmapAttributes bmAttr,
+        double bpm,
+        double clockrate
+    )
+    {
+        if (result is osu.Game.Rulesets.Osu.Difficulty.OsuPerformanceAttributes osu)
+        {
+            var dosu = (dAttr as osu.Game.Rulesets.Osu.Difficulty.OsuDifficultyAttributes)!;
+            return new PPInfo()
+            {
+                star = dosu.StarRating,
+                CS = bmAttr.cs,
+                HP = bmAttr.hp,
+                AR = bmAttr.ar,
+                OD = bmAttr.od,
+                accuracy = osu.Accuracy,
+                maxCombo = (uint)dosu.MaxCombo,
+                bpm = bpm,
+                clockrate = clockrate,
+                ppStat = new PPInfo.PPStat()
+                {
+                    total = osu.Total,
+                    aim = osu.Aim,
+                    speed = osu.Speed,
+                    acc = osu.Accuracy,
+                    strain = null,
+                    flashlight = osu.Flashlight,
+                },
+                ppStats = null
+            };
+        }
+        if (result is osu.Game.Rulesets.Taiko.Difficulty.TaikoPerformanceAttributes taiko)
+        {
+            var dtaiko = (dAttr as osu.Game.Rulesets.Taiko.Difficulty.TaikoDifficultyAttributes)!;
+            return new PPInfo()
+            {
+                star = dtaiko.StarRating,
+                CS = bmAttr.cs,
+                HP = bmAttr.hp,
+                AR = bmAttr.ar,
+                OD = bmAttr.od,
+                accuracy = taiko.Accuracy,
+                maxCombo = (uint)dtaiko.MaxCombo,
+                bpm = bpm,
+                clockrate = clockrate,
+                ppStat = new PPInfo.PPStat()
+                {
+                    total = taiko.Total,
+                    aim = null,
+                    speed = null,
+                    acc = taiko.Accuracy,
+                    strain = taiko.Difficulty,
+                    flashlight = null,
+                },
+                ppStats = null
+            };
+        }
+        if (result is osu.Game.Rulesets.Mania.Difficulty.ManiaPerformanceAttributes mania)
+        {
+            var dmania = (dAttr as osu.Game.Rulesets.Mania.Difficulty.ManiaDifficultyAttributes)!;
+            return new PPInfo()
+            {
+                star = dmania.StarRating,
+                CS = bmAttr.cs,
+                HP = bmAttr.hp,
+                AR = bmAttr.ar,
+                OD = bmAttr.od,
+                accuracy = null,
+                maxCombo = (uint)dmania.MaxCombo,
+                bpm = bpm,
+                clockrate = clockrate,
+                ppStat = new PPInfo.PPStat()
+                {
+                    total = mania.Total,
+                    aim = null,
+                    speed = null,
+                    acc = null,
+                    strain = mania.Difficulty,
+                    flashlight = null,
+                },
+                ppStats = null
+            };
+        }
+        if (result is osu.Game.Rulesets.Catch.Difficulty.CatchPerformanceAttributes fruit)
+        {
+            var dfruit = (dAttr as osu.Game.Rulesets.Catch.Difficulty.CatchDifficultyAttributes)!;
+            return new PPInfo()
+            {
+                star = dfruit.StarRating,
+                CS = bmAttr.cs,
+                HP = bmAttr.hp,
+                AR = bmAttr.ar,
+                OD = bmAttr.od,
+                accuracy = null,
+                maxCombo = (uint)dfruit.MaxCombo,
+                bpm = bpm,
+                clockrate = clockrate,
+                ppStat = new PPInfo.PPStat()
+                {
+                    total = fruit.Total,
+                    aim = null,
+                    speed = null,
+                    acc = null,
+                    strain = null,
+                    flashlight = null,
+                },
+                ppStats = null
+            };
+        }
+        throw new ArgumentOutOfRangeException();
     }
 }

@@ -125,7 +125,8 @@ namespace KanonBot.Functions.OSUBot
 
             beatmap.Beatmapset = beatmaps!.Beatmapsets[0];
 
-            var data = await OsuCalculator.CalculatePanelSSData(beatmap, mods_lazer);
+            var b = await Utils.LoadOrDownloadBeatmap(beatmap);
+            var data = RosuCalculator.CalculatePanelSSData(b, beatmap, mods_lazer);
 
             data.scoreInfo.UserId = 3; // bancho bot
             data.scoreInfo.User = await API.OSU.Client.GetUser(data.scoreInfo.UserId);

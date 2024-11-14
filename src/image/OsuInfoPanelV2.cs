@@ -1783,14 +1783,7 @@ namespace KanonBot.DrawV2
                 List<PPInfo> ppinfos = [];
                 for (int i = 0; i < Math.Min(5, allBP.Length); i++) {
                     PPInfo ppinfo;
-                    ppinfo = kind switch
-                    {
-                        CalculatorKind.Unset => await UniversalCalculator.CalculateDataAuto(allBP[i]),
-                        CalculatorKind.Rosu => await RosuCalculator.CalculateData(allBP[i]),
-                        CalculatorKind.Lazer => await OsuCalculator.CalculateData(allBP[i]),
-                        CalculatorKind.Sb => await SBRosuCalculator.CalculateData(allBP[i]),
-                        _ => throw new ArgumentOutOfRangeException(),
-                    };
+                    ppinfo = await UniversalCalculator.CalculateData(allBP[i], kind);
                     ppinfos.Add(ppinfo);
                 }
 

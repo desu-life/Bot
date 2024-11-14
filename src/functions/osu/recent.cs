@@ -196,18 +196,8 @@ namespace KanonBot.Functions.OSUBot
             if (scoreInfos.Length > 0)
             {
                 LegacyImage.Draw.ScorePanelData data;
-                if (command.lazer)
-                {
-                    if (is_ppysb) {
-                        data = await SBRosuCalculator.CalculatePanelData(scoreInfos[0]);
-                    } else {
-                        data = await RosuCalculator.CalculatePanelData(scoreInfos[0]);
-                    }
-                }
-                else
-                {
-                    data = await UniversalCalculator.CalculatePanelDataAuto(scoreInfos[0]);
-                }
+                data = await UniversalCalculator.CalculatePanelData(scoreInfos[0], command.lazer ? is_ppysb ? CalculatorKind.Sb : CalculatorKind.Oppai : CalculatorKind.Unset);
+                
                 
                 using var stream = new MemoryStream();
                 using var img =
@@ -242,7 +232,7 @@ namespace KanonBot.Functions.OSUBot
                 if (x.Rank.ToUpper() != "F")
                 {
                     //计算pp数据
-                    var data = await RosuCalculator.CalculatePanelData(x);
+                    var data = await UniversalCalculator.CalculatePanelData(x);
 
                     //季票信息
                     if (oid is not null)

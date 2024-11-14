@@ -34,9 +34,13 @@ public static class SBRosuCalculator
             _ => throw new ArgumentException()
         };
 
-    public static async Task<Draw.ScorePanelData> CalculatePanelSSData(API.OSU.Models.Beatmap map, API.OSU.Models.Mod[] mods)
+    public static Draw.ScorePanelData CalculatePanelSSData(
+        byte[] b,
+        API.OSU.Models.Beatmap map,
+        API.OSU.Models.Mod[] mods
+    )
     {
-        Beatmap beatmap = Beatmap.FromBytes(await Utils.LoadOrDownloadBeatmap(map));
+        Beatmap beatmap = Beatmap.FromBytes(b);
         var builder = BeatmapAttributesBuilder.New();
         var bmAttr = builder.Build(beatmap);
         var bpm = bmAttr.clock_rate * beatmap.Bpm();
@@ -67,9 +71,9 @@ public static class SBRosuCalculator
                 Score = 1000000,
                 Passed = true,
                 Rank = "X",
-            }
+            },
+            server = "ppy.sb"
         };
-        data.server = "ppy.sb";
         var statistics = data.scoreInfo.Statistics;
         data.ppInfo = PPInfo.New(res, bmAttr, bpm);
 
@@ -88,17 +92,12 @@ public static class SBRosuCalculator
         return data;
     }
 
-    public static async Task<Draw.ScorePanelData> CalculatePanelData(
-        API.OSU.Models.ScoreLazer score
-    )
+    public static Draw.ScorePanelData CalculatePanelData(byte[] b, API.OSU.Models.ScoreLazer score)
     {
-        var data = new Draw.ScorePanelData { scoreInfo = score };
-        data.server = "ppy.sb";
+        var data = new Draw.ScorePanelData { scoreInfo = score, server = "ppy.sb" };
         var statistics = data.scoreInfo.ConvertStatistics;
 
-        Beatmap beatmap = Beatmap.FromBytes(
-            await Utils.LoadOrDownloadBeatmap(data.scoreInfo.Beatmap!)
-        );
+        Beatmap beatmap = Beatmap.FromBytes(b);
 
         Mode rmode = data.scoreInfo.Mode.ToSBRosu();
 
@@ -125,7 +124,7 @@ public static class SBRosuCalculator
         data.ppInfo = PPInfo.New(p.Calculate(beatmap), bmAttr, bpm);
 
         // 5种acc + 全连
-        double[] accs = { 100.00, 99.00, 98.00, 97.00, 95.00, data.scoreInfo.AccAuto * 100.00 };
+        double[] accs = [100.00, 99.00, 98.00, 97.00, 95.00, data.scoreInfo.AccAuto * 100.00];
 
         data.ppInfo.ppStats = accs.Select(acc =>
             {
@@ -142,11 +141,11 @@ public static class SBRosuCalculator
         return data;
     }
 
-    public static async Task<PPInfo> CalculateData(API.OSU.Models.ScoreLazer score)
+    public static PPInfo CalculateData(byte[] b, API.OSU.Models.ScoreLazer score)
     {
         var statistics = score.ConvertStatistics;
 
-        Beatmap beatmap = Beatmap.FromBytes(await Utils.LoadOrDownloadBeatmap(score.Beatmap!));
+        Beatmap beatmap = Beatmap.FromBytes(b);
 
         Mode rmode = score.Mode.ToSBRosu();
 
@@ -171,5 +170,125 @@ public static class SBRosuCalculator
         var pattr = p.Calculate(beatmap);
 
         return PPInfo.New(pattr, bmAttr, bpm);
+    }
+}
+
+public partial class PPInfo
+{
+    public static PPInfo New(
+        SBRosuPP.PerformanceAttributes result,
+        SBRosuPP.BeatmapAttributes bmAttr,
+        double bpm
+    )
+    {
+        switch (result.mode)
+        {
+            case SBRosuPP.Mode.Osu:
+            {
+                var attr = result.osu.ToNullable()!.Value;
+                return new PPInfo()
+                {
+                    star = attr.stars,
+                    CS = bmAttr.cs,
+                    HP = bmAttr.hp,
+                    AR = bmAttr.ar,
+                    OD = bmAttr.od,
+                    accuracy = attr.pp_acc,
+                    maxCombo = attr.max_combo,
+                    bpm = bpm,
+                    clockrate = bmAttr.clock_rate,
+                    ppStat = new PPInfo.PPStat()
+                    {
+                        total = attr.pp,
+                        aim = attr.pp_aim,
+                        speed = attr.pp_speed,
+                        acc = attr.pp_acc,
+                        strain = null,
+                        flashlight = attr.pp_flashlight,
+                    },
+                    ppStats = null
+                };
+            }
+            case SBRosuPP.Mode.Taiko:
+            {
+                var attr = result.taiko.ToNullable()!.Value;
+                return new PPInfo()
+                {
+                    star = attr.stars,
+                    CS = bmAttr.cs,
+                    HP = bmAttr.hp,
+                    AR = bmAttr.ar,
+                    OD = bmAttr.od,
+                    accuracy = attr.pp_acc,
+                    maxCombo = attr.max_combo,
+                    bpm = bpm,
+                    clockrate = bmAttr.clock_rate,
+                    ppStat = new PPInfo.PPStat()
+                    {
+                        total = attr.pp,
+                        aim = null,
+                        speed = null,
+                        acc = attr.pp_acc,
+                        strain = attr.pp_difficulty,
+                        flashlight = null,
+                    },
+                    ppStats = null
+                };
+            }
+            case SBRosuPP.Mode.Catch:
+            {
+                var attr = result.fruit.ToNullable()!.Value;
+                return new PPInfo()
+                {
+                    star = attr.stars,
+                    CS = bmAttr.cs,
+                    HP = bmAttr.hp,
+                    AR = bmAttr.ar,
+                    OD = bmAttr.od,
+                    accuracy = null,
+                    maxCombo = attr.max_combo,
+                    bpm = bpm,
+                    clockrate = bmAttr.clock_rate,
+                    ppStat = new PPInfo.PPStat()
+                    {
+                        total = attr.pp,
+                        aim = null,
+                        speed = null,
+                        acc = null,
+                        strain = null,
+                        flashlight = null,
+                    },
+                    ppStats = null
+                };
+            }
+            case SBRosuPP.Mode.Mania:
+            {
+                var attr = result.mania.ToNullable()!.Value;
+                return new PPInfo()
+                {
+                    star = attr.stars,
+                    CS = bmAttr.cs,
+                    HP = bmAttr.hp,
+                    AR = bmAttr.ar,
+                    OD = bmAttr.od,
+                    accuracy = null,
+                    maxCombo = attr.max_combo,
+                    bpm = bpm,
+                    clockrate = bmAttr.clock_rate,
+                    ppStat = new PPInfo.PPStat()
+                    {
+                        total = attr.pp,
+                        aim = null,
+                        speed = null,
+                        acc = null,
+                        strain = attr.pp_difficulty,
+                        flashlight = null,
+                    },
+                    ppStats = null
+                };
+            }
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 }

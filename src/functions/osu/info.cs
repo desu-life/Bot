@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.IO;
-using FFmpeg.AutoGen;
 using KanonBot.API;
 using KanonBot.API.OSU;
 using KanonBot.Drivers;
@@ -377,7 +376,7 @@ namespace KanonBot.Functions.OSUBot
                         false,
                         isDataOfDayAvaiavle,
                         false,
-                        kind: command.lazer ? is_ppysb ? CalculatorKind.Sb : CalculatorKind.Rosu : CalculatorKind.Unset
+                        kind: command.lazer ? is_ppysb ? CalculatorKind.Sb : CalculatorKind.Unset : CalculatorKind.Unset
                     );
                     await img.SaveAsync(stream, new PngEncoder());
                     break;
@@ -433,7 +432,7 @@ namespace KanonBot.Functions.OSUBot
                            score.Rank.ToUpper() == "S" ||
                            score.Rank.ToUpper() == "A")
                     {
-                        var data = await RosuCalculator.CalculatePanelData(score);
+                        var data = await UniversalCalculator.CalculatePanelData(score);
                         await Database.Client.InsertOsuStandardBeatmapTechData(
                         score.Beatmap!.BeatmapId,
                         data.ppInfo.star,

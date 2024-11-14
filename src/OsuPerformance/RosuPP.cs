@@ -24,18 +24,23 @@ public static class RosuCalculator
             _ => throw new ArgumentException()
         };
 
-    public static async Task<Draw.ScorePanelData> CalculatePanelSSData(API.OSU.Models.Beatmap map, API.OSU.Models.Mod[] mods)
+    public static Draw.ScorePanelData CalculatePanelSSData(
+        byte[] b,
+        API.OSU.Models.Beatmap map,
+        API.OSU.Models.Mod[] mods
+    )
     {
-        Beatmap beatmap = Beatmap.FromBytes(await Utils.LoadOrDownloadBeatmap(map));
+        Beatmap beatmap = Beatmap.FromBytes(b);
         var builder = BeatmapAttributesBuilder.New();
         var bmAttr = builder.Build(beatmap);
         var bpm = bmAttr.clock_rate * beatmap.Bpm();
-        var p = Performance.New();
         var rmods = Mods.FromJson(Serializer.Json.Serialize(mods), beatmap.Mode());
-        p.Lazer(false);
+        var is_lazer = !mods.Any(m => m.IsClassic);
+
+        var p = Performance.New();
+        p.Lazer(is_lazer);
         p.Mods(rmods);
-        p.Accuracy(100);
-        // 开始计算
+        var pstate = p.GenerateState(beatmap);
         var res = p.Calculate(beatmap);
         var data = new Draw.ScorePanelData
         {
@@ -47,11 +52,15 @@ public static class RosuCalculator
                 MaxCombo = (uint?)map.MaxCombo ?? 0,
                 Statistics = new API.OSU.Models.ScoreStatisticsLazer
                 {
-                    CountGreat = (uint)(map.CountCircles + map.CountSliders),
-                    CountMeh = 0,
-                    CountMiss = 0,
-                    CountKatu = 0,
-                    CountOk = 0,
+                    CountGeki = pstate.n_geki,
+                    CountKatu = pstate.n_katu,
+                    CountGreat = pstate.n300,
+                    CountOk = pstate.n100,
+                    CountMeh = pstate.n50,
+                    CountMiss = pstate.misses,
+                    LargeTickHit = pstate.slider_tick_hits,
+                    LargeTickMiss = pstate.slider_tick_misses,
+                    SliderTailHit = pstate.slider_end_hits,
                 },
                 Mods = mods,
                 ModeInt = map.Mode.ToNum(),
@@ -63,11 +72,11 @@ public static class RosuCalculator
         var statistics = data.scoreInfo.Statistics;
         data.ppInfo = PPInfo.New(res, bmAttr, bpm);
 
-        double[] accs = { 100.00, 99.00, 98.00, 97.00, 95.00, data.scoreInfo.Accuracy * 100.00 };
+        double[] accs = [100.00, 99.00, 98.00, 97.00, 95.00, data.scoreInfo.Accuracy * 100.00];
         data.ppInfo.ppStats = accs.Select(acc =>
             {
                 var p = Performance.New();
-                p.Lazer(false);
+                p.Lazer(is_lazer);
                 p.Mods(rmods);
                 p.Accuracy(acc);
                 return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm).ppStat;
@@ -79,16 +88,16 @@ public static class RosuCalculator
         return data;
     }
 
-    public static async Task<Draw.ScorePanelData> CalculatePanelData(
-        API.OSU.Models.ScoreLazer score
-    )
+    public static Draw.ScorePanelData CalculatePanelData(byte[] b, API.OSU.Models.ScoreLazer score)
     {
         var data = new Draw.ScorePanelData { scoreInfo = score };
+        if (score.IsLazer)
+        {
+            data.server = "Lazer";
+        }
         var statistics = data.scoreInfo.ConvertStatistics;
 
-        Beatmap beatmap = Beatmap.FromBytes(
-            await Utils.LoadOrDownloadBeatmap(data.scoreInfo.Beatmap!)
-        );
+        Beatmap beatmap = Beatmap.FromBytes(b);
 
         Mode rmode = data.scoreInfo.Mode.ToRosu();
 
@@ -110,7 +119,6 @@ public static class RosuCalculator
         p.N300(statistics.CountGreat);
         p.NKatu(statistics.CountKatu);
         p.NGeki(statistics.CountGeki);
-        p.SliderTickHits(statistics.LargeTickHit);
         p.SliderTickMisses(statistics.LargeTickMiss);
         p.SliderEndHits(statistics.SliderTailHit);
         p.Misses(statistics.CountMiss);
@@ -119,7 +127,7 @@ public static class RosuCalculator
         data.ppInfo = PPInfo.New(p.Calculate(beatmap), bmAttr, bpm);
 
         // 5种acc + 全连
-        double[] accs = { 100.00, 99.00, 98.00, 97.00, 95.00, data.scoreInfo.AccAuto * 100.00 };
+        double[] accs = [100.00, 99.00, 98.00, 97.00, 95.00, data.scoreInfo.AccAuto * 100.00];
 
         data.ppInfo.ppStats = accs.Select(acc =>
             {
@@ -128,7 +136,6 @@ public static class RosuCalculator
                 p.Mode(rmode);
                 p.Mods(mods);
                 p.Accuracy(acc);
-                p.SliderTickHits(score.MaximumStatistics?.LargeTickHit ?? 0);
                 return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm).ppStat;
             })
             .ToList();
@@ -138,11 +145,11 @@ public static class RosuCalculator
         return data;
     }
 
-    public static async Task<PPInfo> CalculateData(API.OSU.Models.ScoreLazer score)
+    public static PPInfo CalculateData(byte[] b, API.OSU.Models.ScoreLazer score)
     {
         var statistics = score.ConvertStatistics;
 
-        Beatmap beatmap = Beatmap.FromBytes(await Utils.LoadOrDownloadBeatmap(score.Beatmap!));
+        Beatmap beatmap = Beatmap.FromBytes(b);
 
         Mode rmode = score.Mode.ToRosu();
 
@@ -165,11 +172,130 @@ public static class RosuCalculator
         p.NKatu(statistics.CountKatu);
         p.NGeki(statistics.CountGeki);
         p.Misses(statistics.CountMiss);
-        p.SliderTickHits(statistics.LargeTickHit);
         p.SliderTickMisses(statistics.LargeTickMiss);
         p.SliderEndHits(statistics.SliderTailHit);
         var pattr = p.Calculate(beatmap);
 
         return PPInfo.New(pattr, bmAttr, bpm);
+    }
+}
+
+public partial class PPInfo
+{
+    public static PPInfo New(
+        RosuPP.PerformanceAttributes result,
+        RosuPP.BeatmapAttributes bmAttr,
+        double bpm
+    )
+    {
+        switch (result.mode)
+        {
+            case RosuPP.Mode.Osu:
+            {
+                var attr = result.osu.ToNullable()!.Value;
+                return new PPInfo()
+                {
+                    star = attr.stars,
+                    CS = bmAttr.cs,
+                    HP = bmAttr.hp,
+                    AR = bmAttr.ar,
+                    OD = bmAttr.od,
+                    accuracy = attr.pp_acc,
+                    maxCombo = attr.max_combo,
+                    bpm = bpm,
+                    clockrate = bmAttr.clock_rate,
+                    ppStat = new PPInfo.PPStat()
+                    {
+                        total = attr.pp,
+                        aim = attr.pp_aim,
+                        speed = attr.pp_speed,
+                        acc = attr.pp_acc,
+                        strain = null,
+                        flashlight = attr.pp_flashlight,
+                    },
+                    ppStats = null
+                };
+            }
+            case RosuPP.Mode.Taiko:
+            {
+                var attr = result.taiko.ToNullable()!.Value;
+                return new PPInfo()
+                {
+                    star = attr.stars,
+                    CS = bmAttr.cs,
+                    HP = bmAttr.hp,
+                    AR = bmAttr.ar,
+                    OD = bmAttr.od,
+                    accuracy = attr.pp_acc,
+                    maxCombo = attr.max_combo,
+                    bpm = bpm,
+                    clockrate = bmAttr.clock_rate,
+                    ppStat = new PPInfo.PPStat()
+                    {
+                        total = attr.pp,
+                        aim = null,
+                        speed = null,
+                        acc = attr.pp_acc,
+                        strain = attr.pp_difficulty,
+                        flashlight = null,
+                    },
+                    ppStats = null
+                };
+            }
+            case RosuPP.Mode.Catch:
+            {
+                var attr = result.fruit.ToNullable()!.Value;
+                return new PPInfo()
+                {
+                    star = attr.stars,
+                    CS = bmAttr.cs,
+                    HP = bmAttr.hp,
+                    AR = bmAttr.ar,
+                    OD = bmAttr.od,
+                    accuracy = null,
+                    maxCombo = attr.max_combo,
+                    bpm = bpm,
+                    clockrate = bmAttr.clock_rate,
+                    ppStat = new PPInfo.PPStat()
+                    {
+                        total = attr.pp,
+                        aim = null,
+                        speed = null,
+                        acc = null,
+                        strain = null,
+                        flashlight = null,
+                    },
+                    ppStats = null
+                };
+            }
+            case RosuPP.Mode.Mania:
+            {
+                var attr = result.mania.ToNullable()!.Value;
+                return new PPInfo()
+                {
+                    star = attr.stars,
+                    CS = bmAttr.cs,
+                    HP = bmAttr.hp,
+                    AR = bmAttr.ar,
+                    OD = bmAttr.od,
+                    accuracy = null,
+                    maxCombo = attr.max_combo,
+                    bpm = bpm,
+                    clockrate = bmAttr.clock_rate,
+                    ppStat = new PPInfo.PPStat()
+                    {
+                        total = attr.pp,
+                        aim = null,
+                        speed = null,
+                        acc = null,
+                        strain = attr.pp_difficulty,
+                        flashlight = null,
+                    },
+                    ppStats = null
+                };
+            }
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 }

@@ -237,15 +237,7 @@ namespace KanonBot.Functions.OSUBot
             }
 
             LegacyImage.Draw.ScorePanelData data;
-            if (command.lazer) {
-                if (is_ppysb) {
-                    data = await SBRosuCalculator.CalculatePanelData(scoreData.Score);
-                } else {
-                    data = await RosuCalculator.CalculatePanelData(scoreData.Score);
-                }
-            } else {
-                data = await UniversalCalculator.CalculatePanelDataAuto(scoreData.Score);
-            }
+            data = await UniversalCalculator.CalculatePanelData(scoreData.Score, command.lazer ? is_ppysb ? CalculatorKind.Sb : CalculatorKind.Oppai : CalculatorKind.Unset);
 
             using var stream = new MemoryStream();
             using var img = await LegacyImage.Draw.DrawScore(data);

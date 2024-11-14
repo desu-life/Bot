@@ -2,41 +2,70 @@ using KanonBot.LegacyImage;
 
 namespace KanonBot.OsuPerformance
 {
-    public enum CalculatorKind {
+    public enum CalculatorKind
+    {
         Unset,
         Rosu,
-        Lazer,
+        Oppai,
         Sb
     }
 
     public static class UniversalCalculator
     {
-       
-
-        public static async Task<Draw.ScorePanelData> CalculatePanelDataAuto(
-            API.OSU.Models.ScoreLazer score
+        public static async Task<Draw.ScorePanelData> CalculatePanelData(
+            API.OSU.Models.ScoreLazer score,
+            CalculatorKind kind = CalculatorKind.Unset
         )
         {
-            // if (score.IsClassic)
-            // {
-            //     return await RosuCalculator.CalculatePanelData(score);
-            // }
-            // else
-            // {
-                return await OsuCalculator.CalculatePanelData(score);
-            // }
+            var b = await Utils.LoadOrDownloadBeatmap(score.Beatmap!);
+            return CalculatePanelData(b, score, kind);
         }
 
-        public static async Task<PPInfo> CalculateDataAuto(API.OSU.Models.ScoreLazer score)
+        public static Draw.ScorePanelData CalculatePanelData(
+            byte[] b,
+            API.OSU.Models.ScoreLazer score,
+            CalculatorKind kind = CalculatorKind.Unset
+        )
         {
-            // if (score.IsClassic)
-            // {
-            //     return await RosuCalculator.CalculateData(score);
-            // }
-            // else
-            // {
-                return await OsuCalculator.CalculateData(score);
-            // }
+            if (kind is CalculatorKind.Oppai && !score.Mods.Any(m => m.IsClassic)) {
+                kind = CalculatorKind.Unset;
+            }
+
+            return kind switch
+            {
+                CalculatorKind.Rosu => RosuCalculator.CalculatePanelData(b, score),
+                CalculatorKind.Oppai => OppaiCalculator.CalculatePanelData(b, score),
+                CalculatorKind.Sb => SBRosuCalculator.CalculatePanelData(b, score),
+                _ => RosuCalculator.CalculatePanelData(b, score),
+            };
+        }
+
+        public static async Task<PPInfo> CalculateData(
+            API.OSU.Models.ScoreLazer score,
+            CalculatorKind kind = CalculatorKind.Unset
+        )
+        {
+            var b = await Utils.LoadOrDownloadBeatmap(score.Beatmap!);
+            return CalculateData(b, score, kind);
+        }
+
+        public static PPInfo CalculateData(
+            byte[] b,
+            API.OSU.Models.ScoreLazer score,
+            CalculatorKind kind = CalculatorKind.Unset
+        )
+        {
+            if (kind is CalculatorKind.Oppai && !score.Mods.Any(m => m.IsClassic)) {
+                kind = CalculatorKind.Unset;
+            }
+
+            return kind switch
+            {
+                CalculatorKind.Rosu => RosuCalculator.CalculateData(b, score),
+                CalculatorKind.Oppai => OppaiCalculator.CalculateData(b,score),
+                CalculatorKind.Sb => SBRosuCalculator.CalculateData(b,score),
+                _ => RosuCalculator.CalculateData(b,score),
+            };
         }
     }
 }

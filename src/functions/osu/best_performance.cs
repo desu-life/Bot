@@ -180,26 +180,16 @@ namespace KanonBot.Functions.OSUBot
             API.OSU.Models.ScoreLazer[]? scores = null;
 
             
-            if (command.lazer)
+            if (command.lazer && is_ppysb)
             {
-                if (is_ppysb) {
-                    var ss = await API.PPYSB.Client.GetUserScores(
-                        osuID!.Value,
-                    API.PPYSB.UserScoreType.Best,
-                        sbmode!.Value,
-                        1,
-                        command.order_number - 1
-                    );
-                    scores = ss?.Map(s => s.ToOsu(sbinfo!, sbmode!.Value)).ToArray();
-                } else {
-                    var ss = await API.OSU.Client.GetUserBestsV1(
-                        osuID!.Value,
-                        mode!.Value,
-                        1,
-                        command.order_number - 1
-                    );
-                    scores = ss?.Map(s => s.ToLazerScore(mode!.Value)).ToArray();
-                }
+                var ss = await API.PPYSB.Client.GetUserScores(
+                    osuID!.Value,
+                API.PPYSB.UserScoreType.Best,
+                    sbmode!.Value,
+                    1,
+                    command.order_number - 1
+                );
+                scores = ss?.Map(s => s.ToOsu(sbinfo!, sbmode!.Value)).ToArray();
             } else {
                 scores = await API.OSU.Client.GetUserScores(
                     osuID!.Value,
@@ -226,14 +216,7 @@ namespace KanonBot.Functions.OSUBot
                 score.User ??= tempOsuInfo;
 
                 LegacyImage.Draw.ScorePanelData data;
-                if (is_ppysb)
-                {
-                    data = await SBRosuCalculator.CalculatePanelData(score);
-                }
-                else
-                {
-                    data = await UniversalCalculator.CalculatePanelDataAuto(score);
-                }
+                data = await UniversalCalculator.CalculatePanelData(score, command.lazer ? is_ppysb ? CalculatorKind.Sb : CalculatorKind.Oppai : CalculatorKind.Unset);
                 using var stream = new MemoryStream();
 
                 using var img =
