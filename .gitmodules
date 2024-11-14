@@ -4,3 +4,6 @@
 [submodule "sb-pp-ffi"]
 	path = sb-pp-ffi
 	url = https://github.com/fantasyzhjk/rosu-pp-ffi
+[submodule "OppaiSharp"]
+	path = OppaiSharp
+	url = https://github.com/fantasyzhjk/OppaiSharp
