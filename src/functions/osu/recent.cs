@@ -173,7 +173,8 @@ namespace KanonBot.Functions.OSUBot
                 API.PPYSB.UserScoreType.Recent,
                     sbmode!.Value,
                     20,
-                    command.order_number - 1
+                    command.order_number - 1,
+                    includeFails
                 );
                 scoreInfos = ss?.Map(s => s.ToOsu(sbinfo!, sbmode!.Value)).ToArray();
             } else {

@@ -25,24 +25,25 @@ namespace KanonBot.API.PPYSB
         static IFlurlRequest http()
         {
             var ep = EndPointV2;
-            return ep.AllowHttpStatus("404");
+            return ep.AllowHttpStatus(404);
         }
 
         static IFlurlRequest httpV1()
         {
             var ep = EndPointV1;
-            return ep.AllowHttpStatus("404");
+            return ep.AllowHttpStatus(404);
         }
 
         public static async Task<Models.User?> GetUser(string userName)
         {
             var res = await httpV1()
+                .AllowHttpStatus(404, 422)
                 .AppendPathSegment("get_player_info")
                 .SetQueryParam("scope", "all")
                 .SetQueryParam("name", userName.Replace(" ", "_"))
                 .GetAsync();
 
-            if (res.StatusCode == 404)
+            if (res.StatusCode is 404 or 422)
                 return null;
             else
             {

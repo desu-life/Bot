@@ -248,6 +248,7 @@ namespace KanonBot.Functions
 
             if (childCmd_1 == "osu")
             {
+                if (string.IsNullOrEmpty(childCmd_2)) { await target.reply("请按照以下格式进行绑定。\n!bind osu 您的osu用户名 "); return; }
                 // 先检查查询的用户是否有效
                 API.OSU.Models.User? online_osu_userinfo;
                 online_osu_userinfo = await API.OSU.Client.GetUser(childCmd_2);
@@ -282,13 +283,26 @@ namespace KanonBot.Functions
             }
             else if (childCmd_1 == "ppysb")
             {
+                if (string.IsNullOrEmpty(childCmd_2)) { await target.reply("请按照以下格式进行绑定。\n!bind ppysb 您在sb服的用户名\n如果无法通过用户名找到账号\n!bind ppysb uid:您在sb服的id"); return; }
+                Option<int> uid = None;
+                // 处理uid绑定
+                if (childCmd_2.StartsWith("uid:")) {
+                    childCmd_2 = childCmd_2.Replace("uid:", "").Trim();
+                    uid = parseInt(childCmd_2);
+                    if (uid.IsNone) { await target.reply("请输入正确的id"); return; }
+                }
+
                 // 检查用户是否已绑定osu账户
                 var osuuserinfo = await Database.Client.GetOsuUserByUID(DBUser.uid);
                 if (osuuserinfo == null) { await target.reply($"请先绑定官服 osu 账户。"); return; }
 
                 // 先检查查询的用户是否有效
                 API.PPYSB.Models.User? online_osu_userinfo;
-                online_osu_userinfo = await API.PPYSB.Client.GetUser(childCmd_2);
+                if (uid.IsSome) { 
+                    online_osu_userinfo = await API.PPYSB.Client.GetUser(uid.Value()); 
+                } else {
+                    online_osu_userinfo = await API.PPYSB.Client.GetUser(childCmd_2);
+                }
                 if (online_osu_userinfo == null) { await target.reply($"没有在ppy.sb找到用户名为 {childCmd_2} 的用户，绑定失败。"); return; }
 
                 // 检查要绑定的osu是否没有被Kanon用户绑定过
