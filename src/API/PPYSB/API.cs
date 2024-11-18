@@ -85,10 +85,37 @@ namespace KanonBot.API.PPYSB
             }
         }
 
+        async public static Task<Models.Score?> GetScore(long scoreId)
+        {
+            var res = await httpV1()
+                .AppendPathSegment("get_score_info")
+                .SetQueryParam("id", scoreId)
+                .GetAsync();
+
+            if (res.StatusCode == 404)
+                return null;
+            else
+            {
+                var u = await res.GetJsonAsync<Models.ScoreResponse>();
+                return u?.Score;
+            }
+        }
+
         async public static Task<Models.Score?> GetMapScore(long userId, long beatmapId, Mode mode = Mode.OSU, uint mods = 0)
         {
             var scores = await GetMapScores(userId, beatmapId, mode, 1, mods);
-            return scores?.FirstOrDefault();
+            var score = scores?.FirstOrDefault();
+
+            if (score is not null) {
+                var map = score.Beatmap;
+                var score2 = await GetScore(score.Id);
+                if (score2 is not null) {
+                    score2.Beatmap = map;
+                    return score2;
+                }
+            }
+
+            return score;
         }
 
         async public static Task<Models.Score[]?> GetMapScores(long userId, long beatmapId, Mode mode = Mode.OSU, int limit = 50, uint mods = 0)
@@ -112,6 +139,7 @@ namespace KanonBot.API.PPYSB
             }
             
             var res = await req.GetAsync();
+            
             if (res.StatusCode == 404)
                 return null;
             else
@@ -136,18 +164,15 @@ namespace KanonBot.API.PPYSB
                 .SetQueryParam("include_loved", includeLoved ? 1 : 0)
                 .SetQueryParam("mode", mode.ToNum());
             
-            if (offset == 0) {
-                req.SetQueryParam("limit", limit);
-            } else {
-                req.SetQueryParam("limit", 100);
-            }
+            
+            req.SetQueryParam("limit", limit + offset);
 
             var res = await req.GetAsync();
             if (res.StatusCode == 404)
                 return null;
             else
             {
-                var u = await res.GetJsonAsync<Models.ScoreResponse>();
+                var u = await res.GetJsonAsync<Models.PlayerScoreResponse>();
                 return u?.Scores.Skip(offset).Take(limit).ToArray();
             }
         }

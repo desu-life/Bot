@@ -15,13 +15,19 @@ public partial class Models
         public Score[] Data { get; set; }
     }
 
-    public class ScoreResponse : ApiResponse {
+    public class PlayerScoreResponse : ApiResponse {
         [JsonProperty("scores")]
         public Score[] Scores { get; set; }
 
         [JsonProperty("player")]
         public ScoreUser Player { get; set; }
     }
+
+    public class ScoreResponse : ApiResponse {
+        [JsonProperty("score")]
+        public Score Score { get; set; }
+    }
+
 
     public class Score {
         [JsonProperty("id")]
