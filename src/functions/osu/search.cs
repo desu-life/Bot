@@ -3,6 +3,7 @@ using DotNext.Collections.Generic;
 using KanonBot.API;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
+using KanonBot.LegacyImage;
 using KanonBot.Message;
 using KanonBot.OsuPerformance;
 using LanguageExt.UnsafeValueAccess;
@@ -18,7 +19,7 @@ namespace KanonBot.Functions.OSUBot
             var command = BotCmdHelper.CmdParser(
                 cmd,
                 BotCmdHelper.FuncType.Search,
-                false,
+                true,
                 true,
                 true,
                 false,
@@ -57,7 +58,7 @@ namespace KanonBot.Functions.OSUBot
             API.OSU.Models.BeatmapSearchResult? beatmaps = null;
             API.OSU.Models.Beatmapset? beatmapset = null;
 
-            beatmaps = await API.OSU.Client.SearchBeatmap(command.search_arg, null);
+            beatmaps = await API.OSU.Client.SearchBeatmap(command.search_arg, command.osu_mode);
             if (beatmaps != null && isBid) {
                 beatmaps.Beatmapsets = beatmaps.Beatmapsets.OrderByDescending(x => x.Beatmaps.Find(y => y.BeatmapId == bid) != null).ToList();
             }
@@ -78,7 +79,7 @@ namespace KanonBot.Functions.OSUBot
 
             if (!beatmapFound)
             {
-                beatmaps = await API.OSU.Client.SearchBeatmap(command.search_arg, null, false);
+                beatmaps = await API.OSU.Client.SearchBeatmap(command.search_arg, command.osu_mode, false);
                 beatmapFound = true;
             }
 
@@ -126,10 +127,21 @@ namespace KanonBot.Functions.OSUBot
             beatmap.Beatmapset = beatmaps!.Beatmapsets[0];
 
             var b = await Utils.LoadOrDownloadBeatmap(beatmap);
-            var data = RosuCalculator.CalculatePanelSSData(b, beatmap, mods_lazer);
 
-            data.scoreInfo.UserId = 3; // bancho bot
-            data.scoreInfo.User = await API.OSU.Client.GetUser(data.scoreInfo.UserId);
+            Draw.ScorePanelData data;
+            API.OSU.Models.User? user = await API.OSU.Client.GetUser(3);
+            if (mods_lazer.Any(x => x.Acronym is "RX" or "AP")) {
+                data = SBRosuCalculator.CalculatePanelSSData(b, beatmap, mods_lazer);
+                user!.Id = 1;
+                user!.Username = "ChinoBot";
+                user!.IsBot = true;
+                user!.AvatarUrl = new Uri("https://a.ppy.sb/1");
+            } else {
+                data = RosuCalculator.CalculatePanelSSData(b, beatmap, mods_lazer);
+            }
+
+            data.scoreInfo.UserId = user!.Id;
+            data.scoreInfo.User = user;
             data.scoreInfo.Beatmapset = beatmapset;
             data.scoreInfo.Beatmap = beatmap;
             data.scoreInfo.ModeInt = beatmap.Mode.ToNum();
@@ -147,7 +159,6 @@ namespace KanonBot.Functions.OSUBot
                         Convert.ToBase64String(stream.ToArray(), 0, (int)stream.Length),
                         ImageSegment.Type.Base64
                     )
-                    .msg("该功能为测试功能。")
             );
         }
     }

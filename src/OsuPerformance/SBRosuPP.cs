@@ -40,15 +40,15 @@ public static class SBRosuCalculator
         API.OSU.Models.Mod[] mods
     )
     {
-        Beatmap beatmap = Beatmap.FromBytes(b);
+         Beatmap beatmap = Beatmap.FromBytes(b);
         var builder = BeatmapAttributesBuilder.New();
         var bmAttr = builder.Build(beatmap);
         var bpm = bmAttr.clock_rate * beatmap.Bpm();
-        var p = Performance.New();
         var rmods = Mods.FromJson(Serializer.Json.Serialize(mods), beatmap.Mode());
+
+        var p = Performance.New();
         p.Mods(rmods);
-        p.Accuracy(100);
-        // 开始计算
+        var pstate = p.GenerateState(beatmap);
         var res = p.Calculate(beatmap);
         var data = new Draw.ScorePanelData
         {
@@ -60,11 +60,12 @@ public static class SBRosuCalculator
                 MaxCombo = (uint?)map.MaxCombo ?? 0,
                 Statistics = new API.OSU.Models.ScoreStatisticsLazer
                 {
-                    CountGreat = (uint)(map.CountCircles + map.CountSliders),
-                    CountMeh = 0,
-                    CountMiss = 0,
-                    CountKatu = 0,
-                    CountOk = 0,
+                    CountGeki = pstate.n_geki,
+                    CountKatu = pstate.n_katu,
+                    CountGreat = pstate.n300,
+                    CountOk = pstate.n100,
+                    CountMeh = pstate.n50,
+                    CountMiss = pstate.misses,
                 },
                 Mods = mods,
                 ModeInt = map.Mode.ToNum(),
@@ -72,12 +73,12 @@ public static class SBRosuCalculator
                 Passed = true,
                 Rank = "X",
             },
-            server = "ppy.sb"
+            server = "ppy.sb",
         };
         var statistics = data.scoreInfo.Statistics;
         data.ppInfo = PPInfo.New(res, bmAttr, bpm);
 
-        double[] accs = { 100.00, 99.00, 98.00, 97.00, 95.00, data.scoreInfo.Accuracy * 100.00 };
+        double[] accs = [100.00, 99.00, 98.00, 97.00, 95.00, data.scoreInfo.Accuracy * 100.00];
         data.ppInfo.ppStats = accs.Select(acc =>
             {
                 var p = Performance.New();

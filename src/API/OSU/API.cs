@@ -94,10 +94,11 @@ namespace KanonBot.API.OSU
         async public static Task<Models.BeatmapSearchResult?> SearchBeatmap(string filters, Mode? mode = null, bool has_leaderboard = true)
         {
             var q = http()
-                .AppendPathSegments(new object[] { "beatmapsets", "search" })
+                .AppendPathSegments(["beatmapsets", "search"])
                 .SetQueryParams(new
                 {
                     q = filters,
+                    nsfw = 1,
                     // limit = 1,
                     // offset = 0,
                     // sort = "ranked",
