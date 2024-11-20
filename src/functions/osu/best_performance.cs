@@ -172,7 +172,7 @@ namespace KanonBot.Functions.OSUBot
             #endregion
 
             // 输入检查
-            if (command.order_number < 1 && command.order_number > 100)
+            if (command.order_number < 1)
             {
                 command.order_number = 1;
             }
