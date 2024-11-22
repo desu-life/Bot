@@ -44,7 +44,7 @@ namespace KanonBot.Functions
             var AccInfo = Accounts.GetAccInfo(target);
             var DBUserSelf = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
             if (DBUserSelf is not null) {
-                if (string.IsNullOrEmpty(DBUserSelf.email))
+                if (!string.IsNullOrEmpty(DBUserSelf.email))
                 {
                     await target.reply($"您目前的平台账户已经和邮箱为 {Utils.HideMailAddr(DBUserSelf.email ?? "undefined@undefined.undefined")} 的用户绑定了。");
                     return;
