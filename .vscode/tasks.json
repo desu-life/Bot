@@ -43,6 +43,23 @@
             "problemMatcher": "$msCompile"
         },
         {
+            "label": "publish singlefile",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/src/KanonBot.csproj",
+                "--configuration",
+                "Release",
+                "--self-contained",
+                "false",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary",
+                "-p:PublishSingleFile=true"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
             "label": "watch",
             "command": "dotnet",
             "type": "process",

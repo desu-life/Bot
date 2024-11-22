@@ -30,30 +30,6 @@ namespace KanonBot.Functions.OSUBot
             var index = Math.Max(0, command.order_number - 1);
             var isBid = int.TryParse(command.search_arg, out var bid);
 
-            try
-            {
-                mods_lazer = Serializer.Json.Deserialize<API.OSU.Models.Mod[]>(command.osu_mods);
-            }
-            catch { }
-
-            if (mods_lazer == null)
-            {
-                List<string> mods = new();
-                try
-                {
-                    mods = Enumerable
-                        .Range(0, command.osu_mods.Length / 2)
-                        .Select(p =>
-                            new string(command.osu_mods.AsSpan().Slice(p * 2, 2)).ToUpper()
-                        )
-                        .ToList();
-                }
-                catch { }
-                mods_lazer = mods.Map(API.OSU.Models.Mod.FromString).ToArray();
-            }
-
-            Log.Debug($"Mods: {string.Join(",", mods_lazer.Select(x => x.Acronym))}");
-
             bool beatmapFound = true;
             API.OSU.Models.BeatmapSearchResult? beatmaps = null;
             API.OSU.Models.Beatmapset? beatmapset = null;
@@ -127,6 +103,13 @@ namespace KanonBot.Functions.OSUBot
             beatmap.Beatmapset = beatmaps!.Beatmapsets[0];
 
             var b = await Utils.LoadOrDownloadBeatmap(beatmap);
+
+            var rmods = RosuPP.Mods.FromAcronyms(command.osu_mods, beatmap.Mode.ToRosu());
+            rmods.RemoveIncompatibleMods();
+            var js = RosuPP.OwnedString.Empty();
+            rmods.Json(js.Context);
+            mods_lazer = Serializer.Json.Deserialize<API.OSU.Models.Mod[]>(js.ToCstr())!;
+            Log.Debug($"Mods: {string.Join(",", mods_lazer.Select(x => x.Acronym))}");
 
             Draw.ScorePanelData data;
             API.OSU.Models.User? user = await API.OSU.Client.GetUser(3);

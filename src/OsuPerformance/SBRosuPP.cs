@@ -37,14 +37,19 @@ public static class SBRosuCalculator
     public static Draw.ScorePanelData CalculatePanelSSData(
         byte[] b,
         API.OSU.Models.Beatmap map,
-        API.OSU.Models.Mod[] mods
+        API.OSU.Models.Mod[] rawMods
     )
     {
-         Beatmap beatmap = Beatmap.FromBytes(b);
+        Beatmap beatmap = Beatmap.FromBytes(b);
         var builder = BeatmapAttributesBuilder.New();
         var bmAttr = builder.Build(beatmap);
         var bpm = bmAttr.clock_rate * beatmap.Bpm();
-        var rmods = Mods.FromJson(Serializer.Json.Serialize(mods), beatmap.Mode());
+        var rmods = Mods.FromJson(Serializer.Json.Serialize(rawMods), beatmap.Mode());
+
+        var js = RosuPP.OwnedString.Empty();
+        rmods.Json(js.Context);
+        var mods = Json.Deserialize<OSU.Models.Mod[]>(js.ToCstr())!;
+        Console.WriteLine(Json.Serialize(mods));
 
         var p = Performance.New();
         p.Mods(rmods);

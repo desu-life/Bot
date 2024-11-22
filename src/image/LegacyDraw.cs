@@ -75,7 +75,7 @@ namespace KanonBot.LegacyImage
         public static FontFamily FredokaRegular = fonts.Add("./work/fonts/fredoka/Fredoka-Regular.ttf");
         public static FontFamily FredokaBold = fonts.Add("./work/fonts/fredoka/Fredoka-Bold.ttf");
 
-        public static async Task<Img> DrawMod(OSU.Models.Mod mod)
+        public static async Task<Img> DrawMod(OSU.Models.Mod mod, bool showCustomSettings = false)
         {
             var modName = mod.Acronym.ToUpper();
             var modPath = $"./work/mods/{modName}.png";
@@ -83,6 +83,29 @@ namespace KanonBot.LegacyImage
             {
                 var modPic = await Img.LoadAsync(modPath);
                 modPic.Mutate(x => x.Resize(200, 0));
+
+                if (showCustomSettings) {
+                    var speedChange = (double?)mod.Settings?.GetValue("speed_change");
+
+                    if (speedChange is not null) {
+                        var color = Utils.GetDominantColor(modPic.CloneAs<Rgba32>());
+                        var i = new Image<Rgba32>(200, 20);
+                        i.Mutate(x => x.Fill(color).RoundCorner(new Size(130, 20), 7));
+                        modPic.Mutate(x => x.DrawImage(i, new Point(35, 50), PixelColorBlendingMode.Subtract, PixelAlphaCompositionMode.SrcAtop, 0.7f));
+                        var drawOptions = new DrawingOptions
+                        {
+                            GraphicsOptions = new GraphicsOptions { Antialias = true }
+                        };
+                        var textOptions = new RichTextOptions(new Font(Draw.Mizolet, 8))
+                        {
+                            VerticalAlignment = VerticalAlignment.Center,
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            Origin = new PointF(100, 55)
+                        };
+                        modPic.Mutate(x => x.DrawText(drawOptions, textOptions, $"{speedChange}x", new SolidBrush(Color.LightGray), null));
+                    }
+                }
+
                 return modPic;
             }
             else
@@ -903,7 +926,7 @@ namespace KanonBot.LegacyImage
             {
                 foreach (var mod in mods)
                 {
-                    var modPic = await DrawMod(mod);
+                    var modPic = await DrawMod(mod, data.scoreInfo.IsLazer);
                     if (modPic is null)
                         continue;
                     modPic.Mutate(x => x.Resize(200, 0));
@@ -915,7 +938,7 @@ namespace KanonBot.LegacyImage
             {
                 foreach (var mod in mods)
                 {
-                    var modPic = await DrawMod(mod);
+                    var modPic = await DrawMod(mod, data.scoreInfo.IsLazer);
                     if (modPic is null)
                         continue;
                     modPic.Mutate(x => x.Resize(200, 0));
