@@ -24,6 +24,18 @@ public static class RosuCalculator
             _ => throw new ArgumentException()
         };
 
+    public static void Lazer(this Performance p, bool is_lazer) {
+        p.Lazer(new Bool(is_lazer));
+    }
+
+    public static void Lazer(this Difficulty d, bool is_lazer) {
+        d.Lazer(new Bool(is_lazer));
+    }
+
+    public static uint GetLargeTicks(this DifficultyAttributes dattr) {
+        return dattr.osu.ToNullable()?.n_large_ticks ?? 0;
+    }
+
     public static Draw.ScorePanelData CalculatePanelSSData(
         byte[] b,
         API.OSU.Models.Beatmap map,
@@ -41,11 +53,16 @@ public static class RosuCalculator
         var mods = Json.Deserialize<OSU.Models.Mod[]>(js.ToCstr())!;
         var is_lazer = !mods.Any(m => m.IsClassic);
 
+        var d = Difficulty.New();
+        d.Lazer(is_lazer);
+        d.Mods(rmods);
+        var dattr = d.Calculate(beatmap);
+
         var p = Performance.New();
         p.Lazer(is_lazer);
         p.Mods(rmods);
-        var pstate = p.GenerateState(beatmap);
-        var res = p.Calculate(beatmap);
+        var pstate = p.GenerateStateFromDifficulty(dattr);
+        var res = p.CalculateFromDifficulty(dattr);
         var data = new Draw.ScorePanelData
         {
             scoreInfo = new API.OSU.Models.ScoreLazer
@@ -62,8 +79,8 @@ public static class RosuCalculator
                     CountOk = pstate.n100,
                     CountMeh = pstate.n50,
                     CountMiss = pstate.misses,
-                    LargeTickHit = pstate.slider_tick_hits,
-                    LargeTickMiss = pstate.slider_tick_misses,
+                    LargeTickHit = pstate.osu_large_tick_hits,
+                    LargeTickMiss = dattr.GetLargeTicks() - pstate.osu_large_tick_hits,
                     SliderTailHit = pstate.slider_end_hits,
                 },
                 Mods = mods,
@@ -123,7 +140,7 @@ public static class RosuCalculator
         p.N300(statistics.CountGreat);
         p.NKatu(statistics.CountKatu);
         p.NGeki(statistics.CountGeki);
-        p.SliderTickMisses(statistics.LargeTickMiss);
+        p.LargeTickHits(statistics.LargeTickHit);
         p.SliderEndHits(statistics.SliderTailHit);
         p.Misses(statistics.CountMiss);
 
@@ -176,7 +193,7 @@ public static class RosuCalculator
         p.NKatu(statistics.CountKatu);
         p.NGeki(statistics.CountGeki);
         p.Misses(statistics.CountMiss);
-        p.SliderTickMisses(statistics.LargeTickMiss);
+        p.LargeTickHits(statistics.LargeTickHit);
         p.SliderEndHits(statistics.SliderTailHit);
         var pattr = p.Calculate(beatmap);
 

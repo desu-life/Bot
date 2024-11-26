@@ -198,7 +198,7 @@ namespace KanonBot.Functions.OSUBot
                     osuID!.Value,
                     command.order_number,
                     sbmode!.Value,
-                    RosuPP.ModsIntermode.FromAcronyms(string.Concat(mods)).Bits()
+                    RosuPP.Mods.FromAcronyms(string.Concat(mods), sbmode.Value.ToOsu().ToRosu()).Bits()
                 );
 
                 if (tmpScore is not null) {
