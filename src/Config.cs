@@ -155,7 +155,7 @@ public class Config
     public class OneBotServer : IDriverConfig
     {
         [TomlProperty("host")]
-        public string host { get; set; } = "0.0.0.0";
+        public string[] host { get; set; } = ["localhost"];
 
         [TomlProperty("port")]
         public int port { get; set; } = 7700;
@@ -253,7 +253,7 @@ public class Config
                     }),
                     new(new OneBotServer()
                     {
-                        host = "0.0.0.0",
+                        host = ["localhost"],
                         port = 7700
                     }),
                     new(new Guild()

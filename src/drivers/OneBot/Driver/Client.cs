@@ -9,7 +9,7 @@ using KanonBot.Message;
 using KanonBot.Serializer;
 using Newtonsoft.Json;
 using Serilog;
-using Websocket.Client;
+using WatsonWebsocket;
 
 namespace KanonBot.Drivers;
 
@@ -17,7 +17,7 @@ public partial class OneBot
 {
     public class Client : OneBot, IDriver, ISocket
     {
-        IWebsocketClient instance;
+        WatsonWsClient instance;
         public API api;
         public string? selfID { get; private set; }
 
@@ -27,55 +27,45 @@ public partial class OneBot
             this.api = new(this);
 
             // 初始化ws
-
-            var factory = new Func<ClientWebSocket>(() =>
-            {
-                var client = new ClientWebSocket
-                {
-                    Options =
-                    {
-                        KeepAliveInterval = TimeSpan.FromSeconds(5),
-                        // Proxy = ...
-                        // ClientCertificates = ...
-                    }
-                };
-                //client.Options.SetRequestHeader("Origin", "xxx");
-                return client;
+            var client = new WatsonWsClient(new Uri(url));
+            client.ConfigureOptions(options => {
+                options.KeepAliveInterval = TimeSpan.FromSeconds(5);
             });
 
-            var client = new WebsocketClient(new Uri(url), factory)
-            {
-                Name = "OneBot",
-                ReconnectTimeout = TimeSpan.FromSeconds(30),
-                ErrorReconnectTimeout = TimeSpan.FromSeconds(30)
+            client.Logger = (message) => { 
+                Log.Information($"[{OneBot.platform} Client] {message}");
             };
-            // client.ReconnectionHappened.Subscribe(info =>
-            //     Console.WriteLine($"Reconnection happened, type: {info.Type}, url: {client.Url}"));
-            // client.DisconnectionHappened.Subscribe(info =>
-            //     Console.WriteLine($"Disconnection happened, type: {info.Type}"));
 
             // 拿Tasks异步执行
-            client.MessageReceived.Subscribe(msgAction =>
+            client.MessageReceived += (sender, e) => {
+                if (e.MessageType is not WebSocketMessageType.Text) { return; }
+                string message = System.Text.Encoding.UTF8.GetString(e.Data);
                 Task.Run(async () =>
                 {
                     try
                     {
-                        await this.Parse(msgAction);
+                        await this.Parse(message);
                     }
                     catch (Exception ex)
                     {
                         Log.Error("未捕获的异常 ↓\n{ex}", ex);
-                        this.Dispose();
                     }
-                })
-            );
+                });
+            };
+
+            client.ServerDisconnected += (sender, e) => {
+                // reconnect timeout
+                Thread.Sleep(5000);
+                Console.WriteLine("与服务器断开连接，开始重连...");
+                Start();
+            };
 
             this.instance = client;
         }
 
-        async Task Parse(ResponseMessage msg)
+        async Task Parse(string msg)
         {
-            var m = Json.ToLinq(msg.Text!);
+            var m = Json.ToLinq(msg);
             if (m != null)
             {
                 if (m["post_type"] != null)
@@ -179,17 +169,17 @@ public partial class OneBot
 
         public void Send(string message)
         {
-            this.instance.Send(message);
+            this.instance.SendAsync(message).Wait();
         }
 
         public async Task SendAsync(string message)
         {
-            await this.instance.SendInstant(message);
+            await this.instance.SendAsync(message);
         }
 
         public Task Start()
         {
-            return this.instance.Start();
+            return this.instance.StartAsync();
         }
 
         public void Dispose()

@@ -5,13 +5,15 @@ using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Fleck;
+using WatsonWebsocket;
 using KanonBot;
 using KanonBot.Event;
 using KanonBot.Message;
 using KanonBot.Serializer;
 using Newtonsoft.Json;
 using Serilog;
+using System.Text;
+using System.Net;
 
 namespace KanonBot.Drivers;
 
@@ -22,34 +24,33 @@ public partial class OneBot
         public class Socket : ISocket
         {
             public API api;
-            IWebSocketConnection inner;
-            public string selfID { get; private set; }
+            WatsonWsServer server;
+            ClientMetadata client;
+            public string selfID { get; init; }
 
-            public Socket(IWebSocketConnection socket)
+            public Socket(WatsonWsServer server, ClientMetadata client, string selfID)
             {
                 this.api = new(this);
-                this.inner = socket;
-                this.selfID = socket.ConnectionInfo.Headers["X-Self-ID"];
+                this.server = server;
+                this.client = client;
+                this.selfID = selfID;
             }
 
             public void Send(string message)
             {
-                Task.Run(() => this.inner.Send(message));
+                this.server.SendAsync(client.Guid, message).Wait();
             }
 
             public async Task SendAsync(string message)
             {
-                await this.inner.Send(message);
+                await this.server.SendAsync(client.Guid, message);
             }
 
-            public IWebSocketConnectionInfo ConnectionInfo()
-            {
-                return this.inner.ConnectionInfo;
-            }
+            public ClientMetadata ConnectionInfo => this.client;
 
             public void Close()
             {
-                this.inner.Close();
+                this.server.DisconnectClient(this.client.Guid);
             }
         }
 
@@ -85,95 +86,73 @@ public partial class OneBot
         }
 
         Clients clients = new();
-        WebSocketServer instance;
+        WatsonWsServer instance;
 
-        public Server(string url)
+        public Server(IEnumerable<string> hosts, int port, bool ssl = false)
         {
-            var server = new WebSocketServer(url) { RestartAfterListenError = true };
-            Fleck.FleckLog.LogAction = (level, message, ex) =>
+            this.instance = new WatsonWsServer(hosts.ToList(), port, ssl)
             {
-                switch (level)
+                Logger = message =>
                 {
-                    case LogLevel.Debug:
-                        // 不要debug
-                        // Log.Debug($"[{OneBot.platform} Core] {message}", ex);
-                        break;
-                    case LogLevel.Error:
-                        Log.Error($"[{OneBot.platform} Core] {message}", ex);
-                        break;
-                    case LogLevel.Warn:
-                        Log.Warning($"[{OneBot.platform} Core] {message}", ex);
-                        break;
-                    default:
-                        Log.Information($"[{OneBot.platform} Core] {message}", ex);
-                        break;
+                    Log.Information($"[{OneBot.platform} Core] {message}");
+                },
+
+                // HttpHandler = ctx =>
+                // {
+                //     byte[] data = Encoding.ASCII.GetBytes("返回什么");
+                //     ctx.Response.Close(data, true);
+                // }
+            };
+
+            // 绑定事件
+            this.instance.ClientConnected += (sender, e) =>
+            {
+                var role = e.HttpRequest.Headers.Get("X-Client-Role");
+                if (role is null)
+                {
+                    instance.DisconnectClient(e.Client.Guid);
+                    return;
                 }
-            };
-            this.instance = server;
-        }
 
-        void SocketAction(IWebSocketConnection socket)
-        {
-            // 获取请求头数据
-            // 数据验证失败后直接断开链接
+                if (role != "Universal")
+                {
+                    instance.DisconnectClient(e.Client.Guid);
+                    return;
+                }
 
-            if (!socket.ConnectionInfo.Headers.TryGetValue("X-Client-Role", out string? role))
-            {
-                socket.Close();
-                return;
-            }
+                var selfID = e.HttpRequest.Headers.Get("X-Self-ID");
+                if (selfID is null)
+                {
+                    instance.DisconnectClient(e.Client.Guid);
+                    return;
+                }
 
-            if (role != "Universal")
-            {
-                socket.Close();
-                return;
-            }
+                this.clients.Set(e.Client.Guid, new Socket(this.instance, e.Client, selfID));
+            };
 
-            socket.OnError = (e) =>
+            this.instance.ClientDisconnected += (sender, e) =>
             {
-                this.Disconnect(socket.ConnectionInfo.Id);
-                Log.Error(
-                    $"[{OneBot.platform} Core] {socket.ConnectionInfo.ClientIpAddress}:{socket.ConnectionInfo.ClientPort} 连接异常断开"
-                );
+                this.clients.Remove(e.Client.Guid);
             };
-            socket.OnOpen = () =>
+
+            this.instance.MessageReceived += (sender, e) =>
             {
-                this.clients.Set(socket.ConnectionInfo.Id, new Socket(socket));
-                Log.Information(
-                    $"[{OneBot.platform} Core] 收到来自 {socket.ConnectionInfo.ClientIpAddress}:{socket.ConnectionInfo.ClientPort} 的连接"
-                );
-            };
-            socket.OnClose = () =>
-            {
-                this.Disconnect(socket.ConnectionInfo.Id);
-                Log.Information(
-                    $"[{OneBot.platform} Core] {socket.ConnectionInfo.ClientIpAddress}:{socket.ConnectionInfo.ClientPort} 连接断开"
-                );
-            };
-            // socket.OnBinary = (_) => {
-            //     Log.Information($"[{OneBot.platform} Core] Binary");
-            // };
-            socket.OnMessage = message =>
+                if (e.MessageType is not WebSocketMessageType.Text) { return; }
+                string message = Encoding.UTF8.GetString(e.Data);
                 Task.Run(async () =>
                 {
                     try
                     {
-                        var s = this.clients.Get(socket.ConnectionInfo.Id);
-                        if (s != null)
-                        {
-                            await this.Parse(message, s);
-                        }
-                        else
-                        {
-                            socket.Close();
-                        }
+                        var s = this.clients.Get(e.Client.Guid)!;
+                        await this.Parse(message, s);
                     }
                     catch (Exception ex)
                     {
                         Log.Error("未捕获的异常 ↓\n{ex}", ex);
-                        this.Disconnect(socket.ConnectionInfo.Id);
+                        this.Disconnect(e.Client.Guid);
                     }
                 });
+            };
         }
 
         async Task Parse(string msg, Socket socket)
@@ -216,9 +195,9 @@ public partial class OneBot
                                 // throw new NotSupportedException($"不支持的消息格式，请使用数组消息格式");
                                 Log.Error(
                                     "不支持的消息格式，请使用数组消息格式，断开来自{0}的连接",
-                                    socket.ConnectionInfo().ClientIpAddress
+                                    socket.ConnectionInfo
                                 );
-                                this.Disconnect(socket.ConnectionInfo().Id);
+                                this.Disconnect(socket.ConnectionInfo.Guid);
                                 return;
                             }
                             var target = new Target
@@ -298,7 +277,7 @@ public partial class OneBot
 
         public Task Start()
         {
-            return Task.Run(() => this.instance.Start(SocketAction));
+            return instance.StartAsync();
         }
 
         public void Dispose()

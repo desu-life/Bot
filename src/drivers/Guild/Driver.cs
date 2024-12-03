@@ -1,5 +1,5 @@
 using System.Net.WebSockets;
-using Websocket.Client;
+using WatsonWebsocket;
 using KanonBot.Serializer;
 using KanonBot.Event;
 using Newtonsoft.Json.Linq;
@@ -8,7 +8,7 @@ public partial class Guild : ISocket, IDriver
 {
     public static readonly Platform platform = Platform.Guild;
     public string? selfID { get; private set; }
-    IWebsocketClient instance;
+    WatsonWsClient instance;
     event IDriver.MessageDelegate? msgAction;
     event IDriver.EventDelegate? eventAction;
     public API api;
@@ -31,43 +31,40 @@ public partial class Guild : ISocket, IDriver
         var url = api.GetWebsocketUrl().Result;
 
         // 初始化ws
-
-        var factory = new Func<ClientWebSocket>(() =>
-        {
-            var client = new ClientWebSocket
-            {
-                Options =
-                {
-                        KeepAliveInterval = TimeSpan.FromSeconds(5),
-                        // Proxy = ...
-                        // ClientCertificates = ...
-
-                }
-            };
-            client.Options.SetRequestHeader("Authorization", this.AuthToken);
-            return client;
+        var client = new WatsonWsClient(new Uri(url));
+        client.ConfigureOptions(options => {
+            options.KeepAliveInterval = TimeSpan.FromSeconds(5);
+            options.SetRequestHeader("Authorization", this.AuthToken);
         });
 
-        var client = new WebsocketClient(new Uri(url), factory)
-        {
-            Name = "Guild",
-            ReconnectTimeout = null,
-            ErrorReconnectTimeout = TimeSpan.FromSeconds(30)
+        client.Logger = (message) => { 
+            Log.Information($"[{OneBot.platform} Client] {message}");
         };
-        // client.ReconnectionHappened.Subscribe(info =>
-        //     Console.WriteLine($"Reconnection happened, type: {info.Type}, url: {client.Url}"));
-        // client.DisconnectionHappened.Subscribe(info =>
-        //     Console.WriteLine($"Disconnection happened, type: {info.Type}"));
+
 
         // 拿Tasks异步执行
-        client.MessageReceived.Subscribe(msgAction => Task.Run(() =>
-        {
-            try
+        client.MessageReceived += (sender, e) => {
+            if (e.MessageType is not WebSocketMessageType.Text) { return; }
+            string message = System.Text.Encoding.UTF8.GetString(e.Data);
+            Task.Run(async () =>
             {
-                this.Parse(msgAction);
-            }
-            catch (Exception ex) { Log.Error("未捕获的异常 ↓\n{ex}", ex); }
-        }));
+                try
+                {
+                    await this.Parse(message);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("未捕获的异常 ↓\n{ex}", ex);
+                }
+            });
+        };
+
+        client.ServerDisconnected += (sender, e) => {
+            // reconnect timeout
+            Thread.Sleep(5000);
+            Console.WriteLine("与服务器断开连接，开始重连...");
+            Start();
+        };
 
         this.instance = client;
     }
@@ -104,9 +101,9 @@ public partial class Guild : ISocket, IDriver
         }
     }
 
-    void Parse(ResponseMessage msg)
+    async Task Parse(string msg)
     {
-        var obj = Json.Deserialize<Models.PayloadBase<JToken>>(msg.Text!)!;
+        var obj = Json.Deserialize<Models.PayloadBase<JToken>>(msg)!;
         // Log.Debug("收到消息: {@0} 数据: {1}", obj, obj.Data?.ToString(Formatting.None) ?? null);
 
         if (obj.Seq != null)
@@ -128,7 +125,7 @@ public partial class Guild : ISocket, IDriver
                     Data = new Models.IdentityData{
                         Token = this.AuthToken,
                         Intents = this.intents,
-                        Shard = new int[] { 0, 1 },
+                        Shard = [0, 1],
                     }
                     }),
                     not null => Json.Serialize(new Models.PayloadBase<Models.ResumeData> {    // 鉴权
@@ -142,9 +139,10 @@ public partial class Guild : ISocket, IDriver
                 });
                 break;
             case Enums.OperationCode.Reconnect:
-                this.instance.Reconnect();    // 重连
+                await this.instance.StartAsync();    // 重连
                 break;
             case Enums.OperationCode.InvalidSession:
+                await this.instance.StopAsync();
                 this.Dispose();      // 销毁客户端
                 throw new KanonError("无效的session，需要重新鉴权");
             case Enums.OperationCode.HeartbeatACK:
@@ -193,17 +191,17 @@ public partial class Guild : ISocket, IDriver
 
     public void Send(string message)
     {
-        this.instance.Send(message);
+        this.instance.SendAsync(message).Wait();
     }
 
     public async Task SendAsync(string message)
     {
-        await this.instance.SendInstant(message);
+        await this.instance.SendAsync(message);
     }
 
     public Task Start()
     {
-        return this.instance.Start();
+        return this.instance.StartAsync();
     }
 
     public void Dispose()

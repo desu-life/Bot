@@ -124,7 +124,7 @@ foreach (var driverConfig in config.drivers)
             driverConfig.Config switch
             {
                 Config.OneBotServer c
-                    => new OneBot.Server($"ws://{c.host}:{c.port}")
+                    => new OneBot.Server(c.host, c.port)
                         .onMessage(
                             async (target) =>
                             {

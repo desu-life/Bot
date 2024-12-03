@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Net.WebSockets;
-using Websocket.Client;
 using KanonBot.Message;
 using KanonBot.Serializer;
 using KanonBot.Event;
