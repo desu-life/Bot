@@ -1492,6 +1492,7 @@ namespace KanonBot.Functions.OSUBot
                 
                 scores.Sort((a, b) => b.PPInfo!.ppStat.total > a.PPInfo!.ppStat.total ? 1 : -1);
 
+                
                 using var image = await KanonBot.image.ScoreList.Draw(
                     ScoreList.Type.BPLIST,
                     scores,

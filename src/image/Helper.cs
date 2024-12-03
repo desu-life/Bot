@@ -1,5 +1,4 @@
 #pragma warning disable IDE0044 // 添加只读修饰符
-using System.CommandLine;
 using SixLabors.ImageSharp;
 using Microsoft.CodeAnalysis;
 using Img = SixLabors.ImageSharp.Image;

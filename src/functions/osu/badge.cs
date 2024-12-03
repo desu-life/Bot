@@ -1,5 +1,4 @@
 using System;
-using System.CommandLine;
 using System.IO;
 using System.Reflection.Metadata.Ecma335;
 using System.Security.Cryptography;

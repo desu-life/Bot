@@ -1056,7 +1056,7 @@ namespace KanonBot.LegacyImage
             textOptions.Font = new Font(TorusRegular, 24.25f);
             // time
             var song_time = Utils.Duration2TimeString(
-                (long)Math.Round((data.scoreInfo.Beatmap.TotalLength - 1.0) / data.ppInfo.clockrate)
+                (long)Math.Round(data.scoreInfo.Beatmap.TotalLength / data.ppInfo.clockrate)
             );
             textOptions.Origin = new PointF(1741, 127);
             score.Mutate(x =>

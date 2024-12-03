@@ -11,6 +11,7 @@ using static KanonBot.Database.Model;
 using CronNET.Impl;
 using System.IO;
 using static KanonBot.API.OSU.OSUExtensions;
+using DotNext.Collections.Generic;
 
 namespace KanonBot.Functions.OSU
 {
@@ -54,28 +55,28 @@ namespace KanonBot.Functions.OSU
         {
             var stopwatch = Stopwatch.StartNew();
             var userList = await Database.Client.GetOsuUserList();
-            var options = new ParallelOptions { MaxDegreeOfParallelism = 4 };
-            await Parallel.ForEachAsync(userList, options, async (userID, _) =>
-            {
-                try
-                {
-                    await UpdateUser(userID, false);
-                }
-                catch (Exception e)
-                {
-                    Log.Warning("更新用户信息时出错，ex: {@0}", e);
-                }
+
+            await userList.AsParallel().WithDegreeOfParallelism(4).ForEachAsync(async (userID, _) => {
+                await TryAsync(UpdateUser(userID, false)).IfFail(e => Log.Warning("更新用户信息时出错，ex: {@0}", e));
             });
+            
             stopwatch.Stop();
+
             //删除头像以及osu!web缓存
-            try { try { var files = Directory.GetFiles($@".\work\avatar\"); foreach (var file in files) try { File.Delete(file); } catch { } } catch { } } catch { }
-            try { try { var files = Directory.GetFiles($@".\work\legacy\v1_cover\osu!web\"); foreach (var file in files) try { File.Delete(file); } catch { } } catch { } } catch { }
+            Directory.GetFiles($"./work/avatar/").ForEach(file => {
+                try { File.Delete(file); } catch { }
+            });
+            
+            Directory.GetFiles($"./work/legacy/v1_cover/osu!web/").ForEach(file => {
+                try { File.Delete(file); } catch { }
+            });
+            
             return (userList.Count, stopwatch.Elapsed);
         }
 
+        static readonly IReadOnlyList<API.OSU.Mode> modes = [API.OSU.Mode.OSU, API.OSU.Mode.Taiko, API.OSU.Mode.Fruits, API.OSU.Mode.Mania];
         async public static Task UpdateUser(long userID, bool is_newuser)
         {
-            var modes = new API.OSU.Mode[] { API.OSU.Mode.OSU, API.OSU.Mode.Taiko, API.OSU.Mode.Fruits, API.OSU.Mode.Mania };
             foreach (var mode in modes)
             {
                 Log.Information($"正在更新用户数据....[{userID}/{mode}]");

@@ -98,6 +98,14 @@ namespace KanonBot.Functions.OSUBot
             #endregion
 
             await target.reply("少女祈祷中...");
+
+            if (DBUser is not null) {
+                var sbdbinfo = await Accounts.CheckPpysbAccount(DBUser.uid);
+                if (sbdbinfo is not null) {
+                    try { File.Delete($"./work/avatar/sb-{sbdbinfo.osu_uid}.png"); } catch { }
+                }
+            }
+
             //try { File.Delete($"./work/v1_cover/{OnlineOsuInfo!.Id}.png"); } catch { }
             try { File.Delete($"./work/avatar/{OnlineOsuInfo!.Id}.png"); } catch { }
             try { File.Delete($"./work/legacy/v1_cover/osu!web/{OnlineOsuInfo!.Id}.png"); } catch { }

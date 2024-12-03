@@ -80,6 +80,7 @@ public static class RosuCalculator
                     CountMeh = pstate.n50,
                     CountMiss = pstate.misses,
                     LargeTickHit = pstate.osu_large_tick_hits,
+                    SmallTickHit = pstate.osu_small_tick_hits,
                     LargeTickMiss = dattr.GetLargeTicks() - pstate.osu_large_tick_hits,
                     SliderTailHit = pstate.slider_end_hits,
                 },
@@ -140,6 +141,7 @@ public static class RosuCalculator
         p.N300(statistics.CountGreat);
         p.NKatu(statistics.CountKatu);
         p.NGeki(statistics.CountGeki);
+        p.SmallTickHits(statistics.SmallTickHit);
         p.LargeTickHits(statistics.LargeTickHit);
         p.SliderEndHits(statistics.SliderTailHit);
         p.Misses(statistics.CountMiss);
@@ -193,6 +195,7 @@ public static class RosuCalculator
         p.NKatu(statistics.CountKatu);
         p.NGeki(statistics.CountGeki);
         p.Misses(statistics.CountMiss);
+        p.SmallTickHits(statistics.SmallTickHit);
         p.LargeTickHits(statistics.LargeTickHit);
         p.SliderEndHits(statistics.SliderTailHit);
         var pattr = p.Calculate(beatmap);

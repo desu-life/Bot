@@ -1,5 +1,4 @@
 using KanonBot.API;
-using Polly.Caching;
 using System;
 using System.Collections.Generic;
 using System.Linq;
