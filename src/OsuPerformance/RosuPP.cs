@@ -24,14 +24,6 @@ public static class RosuCalculator
             _ => throw new ArgumentException()
         };
 
-    public static void Lazer(this Performance p, bool is_lazer) {
-        p.Lazer(new Bool(is_lazer));
-    }
-
-    public static void Lazer(this Difficulty d, bool is_lazer) {
-        d.Lazer(new Bool(is_lazer));
-    }
-
     public static uint GetLargeTicks(this DifficultyAttributes dattr) {
         return dattr.osu.ToNullable()?.n_large_ticks ?? 0;
     }

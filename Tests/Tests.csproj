@@ -25,8 +25,5 @@
   <ItemGroup>
 		<ProjectReference Include="../src/KanonBot.csproj" />
   </ItemGroup>
-  <ItemGroup>
-	  <ProjectReference Include="../rosu-pp-ffi/RosuPP/RosuPP.csproj" />
-	</ItemGroup>
 
 </Project>

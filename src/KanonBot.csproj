@@ -6,23 +6,16 @@
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<TieredPGO>true</TieredPGO>
+		<PublishSingleFile>true</PublishSingleFile>
+		<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-	  <LangVersion>preview</LangVersion>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-	  <LangVersion>preview</LangVersion>
-	</PropertyGroup>
+
 	<ItemGroup>
-		<PackageReference Include="Costura.Fody" Version="5.7.0">
-		  <PrivateAssets>all</PrivateAssets>
-		</PackageReference>
 		<PackageReference Include="DotNext.Threading" Version="5.15.0" />
 		<PackageReference Include="LanguageExt.Core" Version="4.4.9" />
 		<PackageReference Include="CronNETAsync" Version="1.0.0" />
 		<PackageReference Include="Polly.Core" Version="8.5.0" />
 		<PackageReference Include="CommandLineParser" Version="2.9.1" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.9.2" />
 
 		<PackageReference Include="Flurl.Http" Version="4.0.2" />
 		<PackageReference Include="Flurl.Http.Newtonsoft" Version="0.9.1" />

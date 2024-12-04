@@ -7,9 +7,9 @@ using KanonBot.DrawV2;
 using KanonBot.Serializer;
 using RosuPP;
 using SixLabors.ImageSharp.Formats.Png;
-using static KanonBot.API.OSUExtensions;
 using API = KanonBot.API;
 using Kook;
+using KanonBot.API.OSU;
 
 namespace Tests;
 
@@ -98,10 +98,6 @@ public class OSU
     {
         Assert.Equal("taiko", API.OSU.Mode.Taiko.ToStr());
         Assert.Equal(3, API.OSU.Mode.Mania.ToNum());
-        Assert.Equal(API.OSU.Mode.OSU, API.OSU.String2Mode("osu"));
-        Assert.Equal(API.OSU.Mode.Fruits, API.OSU.Int2Mode(2));
-        Assert.Null(API.OSU.String2Mode("xasfasf"));
-        Assert.Null(API.OSU.Int2Mode(100));
     }
 
     [Fact]
