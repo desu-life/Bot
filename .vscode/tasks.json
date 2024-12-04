@@ -9,7 +9,6 @@
                 "build",
                 "${workspaceFolder}/src/KanonBot.csproj",
                 "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
             ],
             "problemMatcher": "$msCompile",
         },
@@ -29,7 +28,7 @@
             
         },
         {
-            "label": "publish",
+            "label": "publish self-contained",
             "command": "dotnet",
             "type": "process",
             "args": [
@@ -38,12 +37,11 @@
                 "--configuration",
                 "Release",
                 "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
             ],
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "publish singlefile",
+            "label": "publish",
             "command": "dotnet",
             "type": "process",
             "args": [
@@ -54,8 +52,6 @@
                 "--self-contained",
                 "false",
                 "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary",
-                "-p:PublishSingleFile=true"
             ],
             "problemMatcher": "$msCompile"
         },
