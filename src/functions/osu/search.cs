@@ -19,7 +19,7 @@ namespace KanonBot.Functions.OSUBot
             var command = BotCmdHelper.CmdParser(
                 cmd,
                 BotCmdHelper.FuncType.Search,
-                true,
+                false,
                 true,
                 true,
                 false,
@@ -34,7 +34,7 @@ namespace KanonBot.Functions.OSUBot
             API.OSU.Models.BeatmapSearchResult? beatmaps = null;
             API.OSU.Models.Beatmapset? beatmapset = null;
 
-            beatmaps = await API.OSU.Client.SearchBeatmap(command.search_arg, command.osu_mode);
+            beatmaps = await API.OSU.Client.SearchBeatmap(command.search_arg, null);
             if (beatmaps != null && isBid) {
                 beatmaps.Beatmapsets = beatmaps.Beatmapsets.OrderByDescending(x => x.Beatmaps.Find(y => y.BeatmapId == bid) != null).ToList();
             }
@@ -55,7 +55,7 @@ namespace KanonBot.Functions.OSUBot
 
             if (!beatmapFound)
             {
-                beatmaps = await API.OSU.Client.SearchBeatmap(command.search_arg, command.osu_mode, false);
+                beatmaps = await API.OSU.Client.SearchBeatmap(command.search_arg, null, false);
                 beatmapFound = true;
             }
 
