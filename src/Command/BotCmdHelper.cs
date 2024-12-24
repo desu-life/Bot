@@ -307,10 +307,10 @@ public static class BotCmdHelper
 
                 // bid 解析成功
                 if (arg3 != "" && int.TryParse(arg3[1..], out param.order_number)) {
-                    param.search_arg = ParseString(input: arg1) ?? String.Empty;
+                    param.search_arg = arg1 ?? String.Empty;
                 } else {
                     // arg1的处理
-                    param.search_arg = ParseString(input: arg1) ?? String.Empty;
+                    param.search_arg = arg1 ?? String.Empty;
                 }
 
                 param.osu_mods = arg4 != "" ? arg4[1..] : "";

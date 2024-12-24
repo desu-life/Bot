@@ -36,6 +36,41 @@ namespace KanonBot.Functions.OSUBot
             API.OSU.Models.BeatmapSearchResult? beatmaps = null;
             API.OSU.Models.Beatmapset? beatmapset = null;
 
+            string? search_arg = null;
+            string? diff_arg = null;
+            // 检查是否有多余的方括号或不匹配的情况
+            int openBracketCount = 0;
+            int closeBracketCount = 0;
+
+            foreach (char c in command.search_arg)
+            {
+                if (c == '[') openBracketCount++;
+                if (c == ']') closeBracketCount++;
+            }
+
+            if (openBracketCount == 1 && closeBracketCount == 1) {
+                 // 找到方括号的位置
+                int startIndex = command.search_arg.IndexOf('[');
+                int endIndex = command.search_arg.IndexOf(']');
+
+                if (startIndex < endIndex && startIndex > 0)
+                {
+                    // 提取name
+                    string name = command.search_arg[..startIndex].Trim();
+
+                    // 提取subname
+                    string subname = command.search_arg.Substring(startIndex + 1, endIndex - startIndex - 1).Trim();
+                    if (!string.IsNullOrEmpty(name)) {
+                        search_arg = name;
+                        diff_arg = subname;
+                    }
+                }
+            }
+
+            search_arg ??= command.search_arg;
+            Log.Debug($"Name: {search_arg}");
+            Log.Debug($"Subname: {diff_arg}");
+
             beatmaps = await API.OSU.Client.SearchBeatmap(command.search_arg, null);
             if (beatmaps != null && isBid) {
                 beatmaps.Beatmapsets = beatmaps.Beatmapsets.OrderByDescending(x => x.Beatmaps.Find(y => y.BeatmapId == bid) != null).ToList();
@@ -99,7 +134,16 @@ namespace KanonBot.Functions.OSUBot
             }
             else
             {
-                beatmap = beatmapset.Beatmaps.First();
+                if (!string.IsNullOrEmpty(diff_arg)) {
+                    int closestIndex = Utils.FindClosestMatchIndex(
+                        diff_arg,
+                        beatmapset.Beatmaps,
+                        item => item.Version
+                    );
+                    beatmap = beatmapset.Beatmaps[closestIndex];
+                } else {
+                    beatmap = beatmapset.Beatmaps.First();
+                }
             }
 
             beatmap.Beatmapset = beatmaps!.Beatmapsets[0];

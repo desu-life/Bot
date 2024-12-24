@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using SixLabors.ImageSharp;
+using FuzzySharp;
 
 namespace KanonBot;
 
@@ -205,4 +206,63 @@ public static partial class Utils
         }
         return "";
     }
+
+    // 计算 Levenshtein 距离
+    public static int CalculateLevenshteinDistance(string s1, string s2)
+    {
+        int n = s1.Length;
+        int m = s2.Length;
+        int[,] dp = new int[n + 1, m + 1];
+
+        for (int i = 0; i <= n; i++)
+            dp[i, 0] = i;
+        for (int j = 0; j <= m; j++)
+            dp[0, j] = j;
+
+        for (int i = 1; i <= n; i++)
+        {
+            for (int j = 1; j <= m; j++)
+            {
+                int cost = (s1[i - 1] == s2[j - 1]) ? 0 : 1;
+                dp[i, j] = Math.Min(
+                    Math.Min(dp[i - 1, j] + 1, dp[i, j - 1] + 1),
+                    dp[i - 1, j - 1] + cost);
+            }
+        }
+
+        return dp[n, m];
+    }
+
+    // 计算相似度
+    public static double CalculateSimilarity(string s1, string s2, int distance)
+    {
+        int maxLength = Math.Max(s1.Length, s2.Length);
+        return maxLength == 0 ? 1.0 : 1.0 - (double)distance / maxLength;
+    }
+
+    // 泛型方法：返回最接近匹配的索引
+    public static int FindClosestMatchIndex<T>(string target, IEnumerable<T> collection, Func<T, string> selector)
+    {
+        int bestIndex = -1;
+        int highestScore = int.MinValue;
+        int currentIndex = 0;
+
+        foreach (var item in collection)
+        {
+            string value = selector(item); // 使用闭包选择字段
+            int score = Fuzz.PartialRatio(target, value); // 计算相似度分数
+
+            if (score > highestScore)
+            {
+                highestScore = score;
+                bestIndex = currentIndex;
+            }
+
+            currentIndex++;
+        }
+
+
+        return bestIndex;
+    }
+
 }
