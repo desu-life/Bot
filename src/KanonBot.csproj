@@ -8,6 +8,7 @@
 		<TieredPGO>true</TieredPGO>
 		<PublishSingleFile>true</PublishSingleFile>
 		<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+		<DebugType>portable</DebugType>
 	</PropertyGroup>
 
 	<ItemGroup>
