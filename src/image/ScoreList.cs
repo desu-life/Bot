@@ -72,12 +72,24 @@ namespace KanonBot.image
             //页中 2000x186
             //页脚 2000x70
 
+            string? MainPicPath = type switch
+            {
+                Type.TODAYBP => "./work/panelv2/tbp_main_score.png",
+                Type.BPLIST => "./work/panelv2/bplist_main_score.png",
+                _ => null
+            };
+
             //计算图像大小并生成原始图像
             Img image;
             if (scoreList.Count > 1)
             {
-                var t = 70 + 697 + 186 * (scoreList.Count - 1);
-                image = new Image<Rgba32>(2000, t);
+                if (MainPicPath is not null) {
+                    var t = 70 + 697 + 186 * (scoreList.Count - 1);
+                    image = new Image<Rgba32>(2000, t);
+                } else {
+                    var t = 70 + 454 + 186 * (scoreList.Count - 1);
+                    image = new Image<Rgba32>(2000, t);
+                }
             }
             else
             {
@@ -86,86 +98,7 @@ namespace KanonBot.image
 
             image.Mutate(x => x.Fill(Color.White));
 
-            //绘制页眉
-            string MainPicPath = "";
-            switch (type)
-            {
-                case Type.TODAYBP:
-                    MainPicPath = "./work/panelv2/tbp_main_score.png";
-                    break;
-                case Type.BPLIST:
-                    MainPicPath = "./work/panelv2/bplist_main_score.png";
-                    break;
-            }
-            using var MainPic = await Utils.ReadImageRgba(MainPicPath);
-
-            //绘制beatmap图像
-            var scorebgPath = $"./work/background/{scoreList[0].Score.Beatmap!.BeatmapId}.png";
-            if (!File.Exists(scorebgPath))
-            {
-                scorebgPath = null;
-                try
-                {
-                    scorebgPath = await OSU.Client.SayoDownloadBeatmapBackgroundImg(
-                        scoreList[0].Score.Beatmapset!.Id,
-                        scoreList[0].Score.Beatmap!.BeatmapId,
-                        "./work/background/"
-                    );
-                }
-                catch (Exception ex)
-                {
-                    var msg = $"从Sayo API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
-                    Log.Warning(msg);
-                }
-
-                if (scorebgPath is null)
-                {
-                    try
-                    {
-                        scorebgPath = await OSU.Client.DownloadBeatmapBackgroundImg(
-                            scoreList[0].Score.Beatmapset!.Id,
-                            "./work/background/",
-                            $"{scoreList[0].Score.Beatmap!.BeatmapId}.png"
-                        );
-                    }
-                    catch (Exception ex)
-                    {
-                        var msg =
-                            $"从OSU API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
-                        Log.Warning(msg);
-                    }
-                }
-            }
-            
-            Image<Rgba32> scorebg;
-            if (scorebgPath is null)
-            {
-                scorebg = await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
-            }
-            else
-            {
-                try
-                {
-                    scorebg = await Img.LoadAsync<Rgba32>(scorebgPath);
-                }
-                catch
-                {
-                    scorebg = await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
-                    try { File.Delete(scorebgPath); } catch { }
-                }
-            }
-
-            scorebg.Mutate(
-                x =>
-                    x.Resize(new ResizeOptions() { Size = new Size(365, 0), Mode = ResizeMode.Max })
-            );
-
-            using var bgtemp = new Image<Rgba32>(365, 210);
-            bgtemp.Mutate(x => x.DrawImage(scorebg, new Point(0, 0), 1));
-            image.Mutate(x => x.DrawImage(bgtemp, new Point(92, 433), 1));
-            image.Mutate(x => x.DrawImage(MainPic, new Point(0, 0), 1));
-
-            //头像、用户名、PP
+            //头像、用户名
             using var avatar = await Utils.LoadOrDownloadAvatar(userInfo);
             avatar.Mutate(x => x.Resize(160, 160).RoundCorner(new Size(160, 160), 25));
             image.Mutate(x => x.DrawImage(avatar, new Point(56, 60), 1));
@@ -182,233 +115,341 @@ namespace KanonBot.image
                         null
                     )
             );
-            //pp
-            textOptions.HorizontalAlignment = HorizontalAlignment.Left;
-            textOptions.Origin = new PointF(1782, 168);
-            textOptions.Font = new Font(TorusRegular, 58);
-            image.Mutate(
-                x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        string.Format("{0:N0}", userInfo.Statistics.PP),
-                        new SolidBrush(Color.ParseHex("#e36a79")),
-                        null
-                    )
-            );
 
-            //绘制页眉的信息 496x585
-            //title  +mods
-            textOptions.Font = new Font(TorusRegular, 90);
-            textOptions.Origin = new PointF(485, 540);
-            var title = "";
-            foreach (char c in scoreList[0].Score.Beatmapset!.Title)
-            {
-                title += c;
-                var m = TextMeasurer.MeasureSize(title, textOptions);
-                if (m.Width > 725)
+            //绘制页眉
+            if (MainPicPath is not null) {
+                using var MainPic = await Utils.ReadImageRgba(MainPicPath);
+
+                //绘制beatmap图像
+                var scorebgPath = $"./work/background/{scoreList[0].Score.Beatmap!.BeatmapId}.png";
+                if (!File.Exists(scorebgPath))
                 {
-                    title += "...";
-                    break;
-                }
-            }
-            image.Mutate(
-                x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        title,
-                        new SolidBrush(Color.ParseHex("#656b6d")),
-                        null
-                    )
-            );
-            //mods
+                    scorebgPath = null;
+                    try
+                    {
+                        scorebgPath = await OSU.Client.SayoDownloadBeatmapBackgroundImg(
+                            scoreList[0].Score.Beatmapset!.Id,
+                            scoreList[0].Score.Beatmap!.BeatmapId,
+                            "./work/background/"
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                        var msg = $"从Sayo API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
+                        Log.Warning(msg);
+                    }
 
-            if (scoreList[0].Score.IsClassic) {
-                scoreList[0].Score.Mods = scoreList[0].Score.Mods.Filter(x => !x.IsClassic).ToArray();
-            }
-
-            if (scoreList[0].Score.Mods.Length > 0)
-            {
-                textOptions.Origin = new PointF(
-                    485 + TextMeasurer.MeasureSize(title, textOptions).Width + 25,
-                    530
-                );
-                textOptions.Font = new Font(TorusRegular, 40);
-                var mainscoremods = "+";
-                foreach (var x in scoreList[0].Score.Mods) {
-                    mainscoremods += $"{x.Acronym}, ";
+                    if (scorebgPath is null)
+                    {
+                        try
+                        {
+                            scorebgPath = await OSU.Client.DownloadBeatmapBackgroundImg(
+                                scoreList[0].Score.Beatmapset!.Id,
+                                "./work/background/",
+                                $"{scoreList[0].Score.Beatmap!.BeatmapId}.png"
+                            );
+                        }
+                        catch (Exception ex)
+                        {
+                            var msg =
+                                $"从OSU API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
+                            Log.Warning(msg);
+                        }
+                    }
                 }
-                image.Mutate(
+                
+                Image<Rgba32> scorebg;
+                if (scorebgPath is null)
+                {
+                    scorebg = await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
+                }
+                else
+                {
+                    try
+                    {
+                        scorebg = await Img.LoadAsync<Rgba32>(scorebgPath);
+                    }
+                    catch
+                    {
+                        scorebg = await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
+                        try { File.Delete(scorebgPath); } catch { }
+                    }
+                }
+
+                scorebg.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            mainscoremods[..mainscoremods.LastIndexOf(",")] + $" #{scoreList[0].Rank}",
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.Resize(new ResizeOptions() { Size = new Size(365, 0), Mode = ResizeMode.Max })
                 );
-            }
-            else
-            {
-                textOptions.Origin = new PointF(
-                    485 + TextMeasurer.MeasureSize(title, textOptions).Width + 25,
-                    530
-                );
-                textOptions.Font = new Font(TorusRegular, 40);
-                image.Mutate(
-                    x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            $"#{scoreList[0].Rank}",
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
-                );
-            }
 
-            int mainScoreXPos = 585;
-            //artist
-            textOptions.Font = new Font(TorusRegular, 38);
-            textOptions.Origin = new PointF(495, mainScoreXPos);
-            var artist = "";
-            foreach (char c in scoreList[0].Score.Beatmapset!.Artist)
-            {
-                artist += c;
-                var m = TextMeasurer.MeasureSize(artist, textOptions);
-                if (m.Width > 205)
-                {
-                    artist += "...";
-                    break;
-                }
-            }
-            image.Mutate(
-                x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        artist,
-                        new SolidBrush(Color.ParseHex("#656b6d")),
-                        null
-                    )
-            );
-
-            //creator
-            textOptions.Origin = new PointF(769, mainScoreXPos);
-            var creator = "";
-            foreach (char c in scoreList[0].Score.Beatmapset!.Creator)
-            {
-                creator += c;
-                var m = TextMeasurer.MeasureSize(creator, textOptions);
-                if (m.Width > 145)
-                {
-                    creator += "...";
-                    break;
-                }
-            }
-            image.Mutate(
-                x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        creator,
-                        new SolidBrush(Color.ParseHex("#656b6d")),
-                        null
-                    )
-            );
-
-            //bid
-            textOptions.Origin = new PointF(985, mainScoreXPos);
-            image.Mutate(
-                x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        scoreList[0].Score.Beatmap!.BeatmapId.ToString(),
-                        new SolidBrush(Color.ParseHex("#656b6d")),
-                        null
-                    )
-            );
-
+                using var bgtemp = new Image<Rgba32>(365, 210);
+                bgtemp.Mutate(x => x.DrawImage(scorebg, new Point(0, 0), 1));
+                image.Mutate(x => x.DrawImage(bgtemp, new Point(92, 433), 1));
+                image.Mutate(x => x.DrawImage(MainPic, new Point(0, 0), 1));
             
+                //pp
+                textOptions.HorizontalAlignment = HorizontalAlignment.Left;
+                textOptions.VerticalAlignment = VerticalAlignment.Center;
+                textOptions.Origin = new PointF(1782, 132);
+                if (userInfo.Statistics.PP > 9999) {
+                    textOptions.Font = new Font(TorusRegular, 48);
+                } else {
+                    textOptions.Font = new Font(TorusRegular, 58);
+                }
+                image.Mutate(
+                    x =>
+                        x.DrawText(
+                            drawOptions,
+                            textOptions,
+                            string.Format("{0:N0}", userInfo.Statistics.PP),
+                            new SolidBrush(Color.ParseHex("#e36a79")),
+                            null
+                        )
+                );
 
-            textOptions.Origin = new PointF(1182, mainScoreXPos);
-            image.Mutate(
-                x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        scoreList[0].PPInfo!.star.ToString("0.##*"),
-                        new SolidBrush(Color.ParseHex("#656b6d")),
-                        null
-                    )
-            );
+                textOptions.VerticalAlignment = VerticalAlignment.Bottom;
 
-            //acc
-            textOptions.Origin = new PointF(1308, mainScoreXPos);
-            image.Mutate(
-                x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        scoreList[0].Score.AccAuto.ToString("0.##%"),
-                        new SolidBrush(Color.ParseHex("#656b6d")),
-                        null
-                    )
-            );
+                //绘制页眉的信息 496x585
+                //title  +mods
+                textOptions.Font = new Font(TorusRegular, 90);
+                textOptions.Origin = new PointF(485, 540);
+                var mainTitle = "";
+                foreach (char c in scoreList[0].Score.Beatmapset!.Title)
+                {
+                    mainTitle += c;
+                    var m = TextMeasurer.MeasureSize(mainTitle, textOptions);
+                    if (m.Width > 725)
+                    {
+                        mainTitle += "...";
+                        break;
+                    }
+                }
+                image.Mutate(
+                    x =>
+                        x.DrawText(
+                            drawOptions,
+                            textOptions,
+                            mainTitle,
+                            new SolidBrush(Color.ParseHex("#656b6d")),
+                            null
+                        )
+                );
+                //mods
 
-            //rank
-            textOptions.Origin = new PointF(1459, mainScoreXPos);
-            image.Mutate(
-                x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        scoreList[0].Score.RankAuto,
-                        new SolidBrush(Color.ParseHex("#656b6d")),
-                        null
-                    )
-            );
+                if (scoreList[0].Score.IsClassic) {
+                    scoreList[0].Score.Mods = scoreList[0].Score.Mods.Filter(x => !x.IsClassic).ToArray();
+                }
 
-            //pp
-            textOptions.Font = new Font(TorusRegular, 90);
-            textOptions.HorizontalAlignment = HorizontalAlignment.Center;
-            textOptions.Origin = new PointF(1790, 608);
-            image.Mutate(
-                x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        string.Format("{0:N1}", scoreList[0].PPInfo!.ppStat.total),
-                        new SolidBrush(Color.ParseHex("#364a75")),
-                        null
-                    )
-            );
-            var bp1pptextMeasure = TextMeasurer.MeasureSize(
-                string.Format("{0:N1}", scoreList[0].PPInfo!.ppStat.total),
-                textOptions
-            );
-            int bp1pptextpos = 1790 - (int)bp1pptextMeasure.Width / 2;
-            textOptions.Font = new Font(TorusRegular, 40);
-            textOptions.Origin = new PointF(bp1pptextpos, 522);
-            textOptions.HorizontalAlignment = HorizontalAlignment.Left;
-            image.Mutate(
-                x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        "pp",
-                        new SolidBrush(Color.ParseHex("#656b6d")),
-                        null
-                    )
-            );
+                if (scoreList[0].Score.Mods.Length > 0)
+                {
+                    textOptions.Origin = new PointF(
+                        485 + TextMeasurer.MeasureSize(mainTitle, textOptions).Width + 25,
+                        530
+                    );
+                    textOptions.Font = new Font(TorusRegular, 40);
+                    var mainscoremods = "+";
+                    foreach (var x in scoreList[0].Score.Mods) {
+                        mainscoremods += $"{x.Acronym}, ";
+                    }
+                    image.Mutate(
+                        x =>
+                            x.DrawText(
+                                drawOptions,
+                                textOptions,
+                                mainscoremods[..mainscoremods.LastIndexOf(",")] + $" #{scoreList[0].Rank}",
+                                new SolidBrush(Color.ParseHex("#656b6d")),
+                                null
+                            )
+                    );
+                }
+                else
+                {
+                    textOptions.Origin = new PointF(
+                        485 + TextMeasurer.MeasureSize(mainTitle, textOptions).Width + 25,
+                        530
+                    );
+                    textOptions.Font = new Font(TorusRegular, 40);
+                    image.Mutate(
+                        x =>
+                            x.DrawText(
+                                drawOptions,
+                                textOptions,
+                                $"#{scoreList[0].Rank}",
+                                new SolidBrush(Color.ParseHex("#656b6d")),
+                                null
+                            )
+                    );
+                }
+
+                int mainScoreXPos = 585;
+                //artist
+                textOptions.Font = new Font(TorusRegular, 38);
+                textOptions.Origin = new PointF(495, mainScoreXPos);
+                var artist = "";
+                foreach (char c in scoreList[0].Score.Beatmapset!.Artist)
+                {
+                    artist += c;
+                    var m = TextMeasurer.MeasureSize(artist, textOptions);
+                    if (m.Width > 205)
+                    {
+                        artist += "...";
+                        break;
+                    }
+                }
+                image.Mutate(
+                    x =>
+                        x.DrawText(
+                            drawOptions,
+                            textOptions,
+                            artist,
+                            new SolidBrush(Color.ParseHex("#656b6d")),
+                            null
+                        )
+                );
+
+                //creator
+                textOptions.Origin = new PointF(769, mainScoreXPos);
+                var creator = "";
+                foreach (char c in scoreList[0].Score.Beatmapset!.Creator)
+                {
+                    creator += c;
+                    var m = TextMeasurer.MeasureSize(creator, textOptions);
+                    if (m.Width > 145)
+                    {
+                        creator += "...";
+                        break;
+                    }
+                }
+                image.Mutate(
+                    x =>
+                        x.DrawText(
+                            drawOptions,
+                            textOptions,
+                            creator,
+                            new SolidBrush(Color.ParseHex("#656b6d")),
+                            null
+                        )
+                );
+
+                //bid
+                textOptions.Origin = new PointF(985, mainScoreXPos);
+                image.Mutate(
+                    x =>
+                        x.DrawText(
+                            drawOptions,
+                            textOptions,
+                            scoreList[0].Score.Beatmap!.BeatmapId.ToString(),
+                            new SolidBrush(Color.ParseHex("#656b6d")),
+                            null
+                        )
+                );
+
+                
+
+                textOptions.Origin = new PointF(1182, mainScoreXPos);
+                image.Mutate(
+                    x =>
+                        x.DrawText(
+                            drawOptions,
+                            textOptions,
+                            scoreList[0].PPInfo!.star.ToString("0.##*"),
+                            new SolidBrush(Color.ParseHex("#656b6d")),
+                            null
+                        )
+                );
+
+                //acc
+                textOptions.Origin = new PointF(1308, mainScoreXPos);
+                image.Mutate(
+                    x =>
+                        x.DrawText(
+                            drawOptions,
+                            textOptions,
+                            scoreList[0].Score.AccAuto.ToString("0.##%"),
+                            new SolidBrush(Color.ParseHex("#656b6d")),
+                            null
+                        )
+                );
+
+                //rank
+                textOptions.Origin = new PointF(1459, mainScoreXPos);
+                image.Mutate(
+                    x =>
+                        x.DrawText(
+                            drawOptions,
+                            textOptions,
+                            scoreList[0].Score.RankAuto,
+                            new SolidBrush(Color.ParseHex("#656b6d")),
+                            null
+                        )
+                );
+
+                //pp
+                textOptions.Font = new Font(TorusRegular, 90);
+                textOptions.HorizontalAlignment = HorizontalAlignment.Center;
+                textOptions.Origin = new PointF(1790, 608);
+                image.Mutate(
+                    x =>
+                        x.DrawText(
+                            drawOptions,
+                            textOptions,
+                            string.Format("{0:N1}", scoreList[0].PPInfo!.ppStat.total),
+                            new SolidBrush(Color.ParseHex("#364a75")),
+                            null
+                        )
+                );
+                var bp1pptextMeasure = TextMeasurer.MeasureSize(
+                    string.Format("{0:N1}", scoreList[0].PPInfo!.ppStat.total),
+                    textOptions
+                );
+                int bp1pptextpos = 1790 - (int)bp1pptextMeasure.Width / 2;
+                textOptions.Font = new Font(TorusRegular, 40);
+                textOptions.Origin = new PointF(bp1pptextpos, 522);
+                textOptions.HorizontalAlignment = HorizontalAlignment.Left;
+                image.Mutate(
+                    x =>
+                        x.DrawText(
+                            drawOptions,
+                            textOptions,
+                            "pp",
+                            new SolidBrush(Color.ParseHex("#656b6d")),
+                            null
+                        )
+                );
+            } else {
+                using var MainPic = await Utils.ReadImageRgba("./work/panelv2/bplist_user_pp.png");
+                image.Mutate(x => x.DrawImage(MainPic, new Point(0, 0), 1));
+            
+                //pp
+                textOptions.HorizontalAlignment = HorizontalAlignment.Left;
+                textOptions.VerticalAlignment = VerticalAlignment.Center;
+                textOptions.Origin = new PointF(1782, 132);
+                if (userInfo.Statistics.PP > 9999) {
+                    textOptions.Font = new Font(TorusRegular, 48);
+                } else {
+                    textOptions.Font = new Font(TorusRegular, 58);
+                }
+                image.Mutate(
+                    x =>
+                        x.DrawText(
+                            drawOptions,
+                            textOptions,
+                            string.Format("{0:N0}", userInfo.Statistics.PP),
+                            new SolidBrush(Color.ParseHex("#e36a79")),
+                            null
+                        )
+                );
+            }
+
+            textOptions.VerticalAlignment = VerticalAlignment.Bottom;
+
+            var startIndex = MainPicPath is null ? 0 : 1;
+            var startPos = MainPicPath is null ? 455 : 698;
 
             //页中
-            for (int i = 1; i < scoreList.Count; ++i)
+            using var ScoreListSingle = await Utils.ReadImageRgba("./work/panelv2/score_list.png");
+            for (int i = startIndex; i < scoreList.Count; ++i)
             {
-                using var SubPic = await Utils.ReadImageRgba("./work/panelv2/score_list.png");
+                using var SubPic = ScoreListSingle.Clone();
                 using var osuscoremode_icon = await Utils.ReadImageRgba(
                     $"./work/panelv2/icons/mode_icon/score/{scoreList[i].Score.Mode.ToStr()}.png"
                 );
@@ -433,7 +474,7 @@ namespace KanonBot.image
                 //main title
                 textOptions.HorizontalAlignment = HorizontalAlignment.Left;
                 textOptions.Font = new Font(TorusRegular, 50);
-                title = "";
+                var title = "";
                 foreach (char c in scoreList[i].Score.Beatmapset!.Title)
                 {
                     title += c;
@@ -698,12 +739,12 @@ namespace KanonBot.image
                 );
 
                 //draw
-                image.Mutate(x => x.DrawImage(SubPic, new Point(0, 698 + (i - 1) * 186 + 1), 1));
+                image.Mutate(x => x.DrawImage(SubPic, new Point(0, startPos + (i - 1) * 186 + 1), 1));
             }
             //页尾
             using var FooterPic = await Utils.ReadImageRgba("./work/panelv2/score_list_footer.png");
             image.Mutate(
-                x => x.DrawImage(FooterPic, new Point(0, 698 + (scoreList.Count - 1) * 186 + 1), 1)
+                x => x.DrawImage(FooterPic, new Point(0, startPos + (scoreList.Count - 1) * 186 + 1), 1)
             );
 
             // 不知道为啥更新了imagesharp后对比度(亮度)变了

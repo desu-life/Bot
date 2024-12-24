@@ -131,6 +131,12 @@ namespace KanonBot.command_parser
                         case "search":
                             await Search.Execute(target, childCmd);
                             return;
+                        case "res":
+                            await RecentList.Execute(target, childCmd, true);
+                            return;
+                        case "prs":
+                            await RecentList.Execute(target, childCmd, false);
+                            return;
                         case "recent":
                         case "re":
                             await Recent.Execute(target, childCmd, true);
@@ -157,7 +163,7 @@ namespace KanonBot.command_parser
                             await Get.Execute(target, childCmd);
                             return; // get bonuspp/elo/rolecost/bpht/todaybp/annualpass
                         case "todaybp":
-                            await Get.TodayBP(target, childCmd);
+                            await TodayBP.Execute(target, childCmd);
                             return;
                         case "badge":
                             await Badge.Execute(target, childCmd);

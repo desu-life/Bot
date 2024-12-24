@@ -16,6 +16,8 @@ namespace KanonBot.Functions.OSUBot
     {
         public static async Task Execute(Target target, string cmd)
         {
+            if (string.IsNullOrWhiteSpace(cmd)) { return; }
+
             var command = BotCmdHelper.CmdParser(
                 cmd,
                 BotCmdHelper.FuncType.Search,
