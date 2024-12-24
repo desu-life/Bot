@@ -55,7 +55,7 @@
 	<!-- RosuPP -->
 	<ItemGroup>
 	  <ProjectReference Include="../rosu-pp-ffi/SharpRosuPP/RosuPP/RosuPP.csproj" />
-	  <ProjectReference Include="../sb-pp-ffi/SBRosuPP/SBRosuPP.csproj" />
+	  <ProjectReference Include="../sb-pp-ffi/SharpRosuPP/RosuPP/SBRosuPP.csproj" />
 	  <ProjectReference Include="../OppaiSharp/OppaiSharp/OppaiSharp.csproj" />
 	  <!-- <ProjectReference Include="../osu-pp/osu-pp.csproj" /> -->
 	</ItemGroup>

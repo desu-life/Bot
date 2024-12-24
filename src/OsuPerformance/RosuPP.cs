@@ -311,7 +311,7 @@ public partial class PPInfo
                 };
             }
             default:
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException("mode", result.mode, "Unknown mode");
         }
     }
 }

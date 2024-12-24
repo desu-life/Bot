@@ -34,12 +34,17 @@ public static class SBRosuCalculator
             _ => throw new ArgumentException()
         };
 
+    public static uint GetLargeTicks(this DifficultyAttributes dattr) {
+        return dattr.osu.ToNullable()?.n_large_ticks ?? 0;
+    }
+
     public static Draw.ScorePanelData CalculatePanelSSData(
         byte[] b,
         API.OSU.Models.Beatmap map,
         API.OSU.Models.Mod[] rawMods
     )
     {
+        var is_lazer = true;
         Beatmap beatmap = Beatmap.FromBytes(b);
         var builder = BeatmapAttributesBuilder.New();
         var bmAttr = builder.Build(beatmap);
@@ -49,12 +54,17 @@ public static class SBRosuCalculator
         var js = RosuPP.OwnedString.Empty();
         rmods.Json(js.Context);
         var mods = Json.Deserialize<OSU.Models.Mod[]>(js.ToCstr())!;
-        Console.WriteLine(Json.Serialize(mods));
+
+        var d = Difficulty.New();
+        d.Lazer(is_lazer);
+        d.Mods(rmods);
+        var dattr = d.Calculate(beatmap);
 
         var p = Performance.New();
+        p.Lazer(is_lazer);
         p.Mods(rmods);
-        var pstate = p.GenerateState(beatmap);
-        var res = p.Calculate(beatmap);
+        var pstate = p.GenerateStateFromDifficulty(dattr);
+        var res = p.CalculateFromDifficulty(dattr);
         var data = new Draw.ScorePanelData
         {
             scoreInfo = new API.OSU.Models.ScoreLazer
@@ -71,6 +81,10 @@ public static class SBRosuCalculator
                     CountOk = pstate.n100,
                     CountMeh = pstate.n50,
                     CountMiss = pstate.misses,
+                    LargeTickHit = pstate.osu_large_tick_hits,
+                    SmallTickHit = pstate.osu_small_tick_hits,
+                    LargeTickMiss = dattr.GetLargeTicks() - pstate.osu_large_tick_hits,
+                    SliderTailHit = pstate.slider_end_hits,
                 },
                 Mods = mods,
                 ModeInt = map.Mode.ToNum(),
@@ -87,6 +101,7 @@ public static class SBRosuCalculator
         data.ppInfo.ppStats = accs.Select(acc =>
             {
                 var p = Performance.New();
+                p.Lazer(is_lazer);
                 p.Mods(rmods);
                 p.Accuracy(acc);
                 return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm).ppStat;
@@ -116,6 +131,7 @@ public static class SBRosuCalculator
         var bpm = bmAttr.clock_rate * beatmap.Bpm();
 
         var p = Performance.New();
+        p.Lazer(score.IsLazer);
         p.Mode(rmode);
         p.Mods(mods);
         p.Combo(data.scoreInfo.MaxCombo);
@@ -124,6 +140,9 @@ public static class SBRosuCalculator
         p.N300(statistics.CountGreat);
         p.NKatu(statistics.CountKatu);
         p.NGeki(statistics.CountGeki);
+        p.SmallTickHits(statistics.SmallTickHit);
+        p.LargeTickHits(statistics.LargeTickHit);
+        p.SliderEndHits(statistics.SliderTailHit);
         p.Misses(statistics.CountMiss);
 
         // 开始计算
@@ -135,6 +154,7 @@ public static class SBRosuCalculator
         data.ppInfo.ppStats = accs.Select(acc =>
             {
                 var p = Performance.New();
+                p.Lazer(score.IsLazer);
                 p.Mode(rmode);
                 p.Mods(mods);
                 p.Accuracy(acc);
@@ -164,6 +184,7 @@ public static class SBRosuCalculator
         var bpm = bmAttr.clock_rate * beatmap.Bpm();
 
         var p = Performance.New();
+        p.Lazer(score.IsLazer);
         p.Mode(rmode);
         p.Mods(mods);
         p.Combo(score.MaxCombo);
@@ -173,6 +194,9 @@ public static class SBRosuCalculator
         p.NKatu(statistics.CountKatu);
         p.NGeki(statistics.CountGeki);
         p.Misses(statistics.CountMiss);
+        p.SmallTickHits(statistics.SmallTickHit);
+        p.LargeTickHits(statistics.LargeTickHit);
+        p.SliderEndHits(statistics.SliderTailHit);
         var pattr = p.Calculate(beatmap);
 
         return PPInfo.New(pattr, bmAttr, bpm);
@@ -294,7 +318,7 @@ public partial class PPInfo
                 };
             }
             default:
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException("mode", result.mode, "Unknown mode");
         }
     }
 }
