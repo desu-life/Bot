@@ -71,9 +71,30 @@ namespace KanonBot.Functions.OSUBot
             Log.Debug($"Name: {search_arg}");
             Log.Debug($"Subname: {diff_arg}");
 
+            API.OSU.Mode? preferedMode = null;
+
+            var AccInfo = Accounts.GetAccInfo(target);
+            var DBUser = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
+            if (DBUser is not null) {
+                var DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
+                preferedMode = DBOsuInfo?.osu_mode?.ToMode();
+            }
+
             beatmaps = await API.OSU.Client.SearchBeatmap(command.search_arg, null);
-            if (beatmaps != null && isBid) {
-                beatmaps.Beatmapsets = beatmaps.Beatmapsets.OrderByDescending(x => x.Beatmaps.Find(y => y.BeatmapId == bid) != null).ToList();
+            if (beatmaps != null) {
+                beatmaps.Beatmapsets = [.. beatmaps.Beatmapsets.OrderByDescending(x => {
+                    var beatmaps = x.Beatmaps ?? [];
+                    // 优先检查是否匹配 BeatmapId
+                    if (isBid && beatmaps.Any(y => y.BeatmapId == bid))
+                        return 2;
+
+                    // 检查是否匹配 Mode
+                    if (beatmaps.Any(y => y.Mode == preferedMode))
+                        return 1;
+
+                    // 不匹配则返回最低优先级
+                    return 0;
+                })];
             }
             beatmapset = beatmaps?.Beatmapsets.Skip(index).FirstOrDefault();
 
@@ -96,8 +117,20 @@ namespace KanonBot.Functions.OSUBot
                 beatmapFound = true;
             }
 
-            if (beatmaps != null && isBid) {
-                beatmaps.Beatmapsets = beatmaps.Beatmapsets.OrderByDescending(x => x.Beatmaps.Find(y => y.BeatmapId == bid) != null).ToList();
+            if (beatmaps != null) {
+                beatmaps.Beatmapsets = [.. beatmaps.Beatmapsets.OrderByDescending(x => {
+                    var beatmaps = x.Beatmaps ?? [];
+                    // 优先检查是否匹配 BeatmapId
+                    if (isBid && beatmaps.Any(y => y.BeatmapId == bid))
+                        return 2;
+
+                    // 检查是否匹配 Mode
+                    if (beatmaps.Any(y => y.Mode == preferedMode))
+                        return 1;
+
+                    // 不匹配则返回最低优先级
+                    return 0;
+                })];
             }
             beatmapset = beatmaps?.Beatmapsets.Skip(index).FirstOrDefault();
 
