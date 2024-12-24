@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Optimize>true</Optimize>
-    <PublishSingleFile>true</PublishSingleFile>
+    <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,10 +15,12 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="ppy.osu.Game.Rulesets.Catch" Version="2024.1104.0" />
-    <PackageReference Include="ppy.osu.Game.Rulesets.Mania" Version="2024.1104.0" />
-    <PackageReference Include="ppy.osu.Game.Rulesets.Osu" Version="2024.1104.0" />
-    <PackageReference Include="ppy.osu.Game.Rulesets.Taiko" Version="2024.1104.0" />
+    <PackageReference Include="ppy.osu.Game.Rulesets.Catch" Version="2024.1224.1" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
+    <PackageReference Include="ppy.osu.Game.Rulesets.Mania" Version="2024.1224.1" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
+    <PackageReference Include="ppy.osu.Game.Rulesets.Osu" Version="2024.1224.1" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
+    <PackageReference Include="ppy.osu.Game.Rulesets.Taiko" Version="2024.1224.1" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
+    <PackageReference Include="ppy.osu.Game.Resources" Version="2024.1224.0" ExcludeAssets="all" PrivateAssets="all" />
+    <PackageReference Include="ppy.osu.Framework" Version="2024.1224.0" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
   </ItemGroup>
 
 </Project>

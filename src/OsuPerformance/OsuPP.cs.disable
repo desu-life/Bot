@@ -163,6 +163,11 @@ public static class OsuCalculator
         var bpm = bmAttr.clock_rate * rosubeatmap.Bpm();
         clockRate = bmAttr.clock_rate;
 
+        var difficulty = Difficulty.New();
+        difficulty.Lazer(score.IsLazer);
+        difficulty.Mods(mods);
+        var dattr = difficulty.Calculate(rosubeatmap);
+
         var ruleset = OsuPP.Utils.ParseRuleset(data.scoreInfo.ModeInt)!;
         var beatmap = new OsuPP.CalculatorWorkingBeatmap(b);
         var c = OsuPP.Calculater.New(ruleset, beatmap);
@@ -216,7 +221,18 @@ public static class OsuCalculator
             if (rmode is Mode.Osu)
             {
                 c.SliderTailHit = state.slider_end_hits;
-                c.SliderTickMiss = state.slider_tick_misses;
+                c.SliderTickMiss = 0;
+
+                var dattrosu = dattr.osu.ToNullable();
+                if (dattrosu is not null) {
+                    if (score.IsLazer) {
+                        if (mods.Contains("CL")) {
+                            c.SliderTickMiss = dattrosu.Value.n_large_ticks - state.osu_large_tick_hits;
+                        } else {
+                            c.SliderTickMiss = dattrosu.Value.n_large_ticks + dattrosu.Value.n_sliders - state.osu_large_tick_hits;
+                        }
+                    }
+                }
             }
 
             bAttr = c.Calculate();

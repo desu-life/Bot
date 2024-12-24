@@ -9,6 +9,7 @@
 		<PublishSingleFile>true</PublishSingleFile>
 		<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
 		<DebugType>portable</DebugType>
+		<SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
 	</PropertyGroup>
 
 	<ItemGroup>
