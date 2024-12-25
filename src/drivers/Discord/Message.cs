@@ -33,7 +33,7 @@ public partial class Discord
                 segList.Add((m, new RawSegment("DISCORD AT ADMIN", m.Groups[1].Value)));
             }
 
-            var AddText = (string text) =>
+            void AddText(ref Chain chain, string text)
             {
                 var x = text.Trim();
                 // 匹配一下attacment
@@ -48,20 +48,20 @@ public partial class Discord
                 }
                 if (x.Length != 0)
                     chain.Add(new TextSegment(Utils.KOOKUnEscape(x)));
-            };
+            }
 
             var pos = 0;
             foreach (var x in segList.OrderBy(x => x.m.Index)) {
                 if (pos < x.m.Index)
                 {
-                    AddText(MessageData.Content[pos..x.m.Index]);
+                    AddText(ref chain, MessageData.Content[pos..x.m.Index]);
                 }
                 chain.Add(x.seg);
                 pos = x.m.Index + x.m.Length;
             }
 
             if (pos < MessageData.Content.Length) {
-                AddText(MessageData.Content[pos..]);
+                AddText(ref chain, MessageData.Content[pos..]);
             }
 
             return chain;

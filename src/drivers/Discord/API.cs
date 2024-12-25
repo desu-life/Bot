@@ -35,17 +35,17 @@ public partial class Discord
                             case ImageSegment.Type.Base64: {
                                     var uuid = Guid.NewGuid();
                                     using var _s = Utils.Byte2Stream(Convert.FromBase64String(s.value));
-                                    await channel.SendFileAsync(_s, $"{uuid}.jpg", messageReference: messageRef);
+                                    await channel.SendFileAsync(_s, $"{uuid}.png", messageReference: messageRef);
                                 } break;
                             case ImageSegment.Type.File: {
                                     var uuid = Guid.NewGuid();
                                     using var _s = Utils.LoadFile2ReadStream(s.value);
-                                    await channel.SendFileAsync(_s, $"{uuid}.jpg", messageReference: messageRef);
+                                    await channel.SendFileAsync(_s, $"{uuid}.png", messageReference: messageRef);
                                 } break;
                             case ImageSegment.Type.Url: {
                                     var uuid = Guid.NewGuid();
                                     using var _s = await s.value.GetStreamAsync();
-                                    await channel.SendFileAsync(_s, $"{uuid}.jpg", messageReference: messageRef);
+                                    await channel.SendFileAsync(_s, $"{uuid}.png", messageReference: messageRef);
                                 } break;
                             default:
                                 break;
@@ -55,10 +55,15 @@ public partial class Discord
                         await channel.SendMessageAsync(s.value, messageReference: messageRef);
                         break;
                     case AtSegment s:
-                        // 我不管，我就先不发送
+                        if (s.value == "all") {
+                            await channel.SendMessageAsync($"@everyone", messageReference: messageRef);
+                        } else {
+                            await channel.SendMessageAsync($"<@{s.value}>", messageReference: messageRef);
+                        }
                         break;
                     default:
-                        throw new NotSupportedException("不支持的平台类型");
+                        await channel.SendMessageAsync(seg.Build(), messageReference: messageRef);
+                        break;
                 }
             }
         }
