@@ -1,4 +1,7 @@
+using System.Net;
 using Discord;
+using Discord.Net.Rest;
+using Discord.Net.WebSockets;
 using Discord.WebSocket;
 using KanonBot.Event;
 using Serilog.Events;
@@ -21,18 +24,26 @@ public partial class Discord : ISocket, IDriver
 
         this.api = new(token);
 
-        var client = new DiscordSocketClient();
+        var client = new DiscordSocketClient(
+            new() {
+                WebSocketProvider = DefaultWebSocketProvider.Create(WebRequest.DefaultWebProxy),
+                RestClientProvider = DefaultRestClientProvider.Create(true),
+            }
+        );
         client.Log += LogAsync;
 
         // client.MessageUpdated += this.Parse;
-        client.MessageReceived += msg => Task.Run(() =>
-        {
-            try
-            {
-                this.Parse(msg);
-            }
-            catch (Exception ex) { Log.Error("未捕获的异常 ↓\n{ex}", ex); }
-        });
+        client.MessageReceived += msg => {
+            Task.Run(async () => {
+                try
+                {
+                    await this.Parse(msg);
+                }
+                catch (Exception ex) { Log.Error("未捕获的异常 ↓\n{ex}", ex); }
+            });
+            return Task.CompletedTask;
+        };
+        
         client.Ready += () =>
         {
             // 连接成功
@@ -58,33 +69,36 @@ public partial class Discord : ISocket, IDriver
     }
 
 
-    private void Parse(SocketMessage message)
+    private async Task Parse(SocketMessage message)
     {
         if (message.Author.Id == this.instance.CurrentUser.Id)
             return;
 
         // 过滤掉bot消息和系统消息
-        if (message.Source != MessageSource.User)
+        if (message is SocketUserMessage m)
         {
-            this.eventAction?.Invoke(
+            if (message.Author.IsBot) return;
+            if (this.msgAction is null) return;
+            
+            var ms = await m.Channel.GetMessageAsync(m.Id);
+            await this.msgAction.Invoke(new Target()
+            {
+                platform = Platform.Discord,
+                sender = m.Author.Id.ToString(),
+                selfAccount = this.selfID,
+                msg = Message.Parse(ms),
+                raw = ms,
+                socket = this
+            });
+        }
+        else
+        {
+            if (this.eventAction is null) return;
+            await this.eventAction.Invoke(
                 this,
                 new RawEvent(message)
             );
         }
-        else
-        {
-            this.msgAction?.Invoke(new Target()
-            {
-                platform = Platform.Discord,
-                sender = message.Author.Id.ToString(),
-                selfAccount = this.selfID,
-                msg = Message.Parse(message),
-                raw = message,
-                socket = this
-            });
-        }
-        message.Channel.SendMessageAsync("hello");
-
     }
 
 

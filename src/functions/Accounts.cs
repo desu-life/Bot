@@ -59,7 +59,7 @@ namespace KanonBot.Functions
             switch (target.platform) //获取用户ID及平台信息 平台： qq qguild khl discord 四个
             {
                 case Platform.Guild:
-                    if (target.raw is Guild.Models.MessageData g)
+                    if (target.raw is QQGuild.Models.MessageData g)
                     {
                         uid = g.Author.ID;
                         if (is_regd)
@@ -131,7 +131,7 @@ namespace KanonBot.Functions
                     }
                     break;
                 case Platform.Discord:
-                    if (target.raw is Discord.WebSocket.SocketMessage d)
+                    if (target.raw is Discord.IMessage d)
                     {
                         uid = d.Author.Id.ToString();
                         if (is_regd)
@@ -474,7 +474,7 @@ namespace KanonBot.Functions
             switch (target.platform)
             {
                 case Platform.Guild:
-                    if (target.raw is Guild.Models.MessageData g)
+                    if (target.raw is QQGuild.Models.MessageData g)
                     {
                         return new AccInfo() { platform = Platform.Guild, uid = g.Author.ID };
                     }
@@ -492,7 +492,7 @@ namespace KanonBot.Functions
                     }
                     break;
                 case Platform.Discord:
-                    if (target.raw is Discord.WebSocket.SocketMessage d)
+                    if (target.raw is Discord.IMessage d)
                     {
                         return new AccInfo() { platform = Platform.Discord, uid = d.Author.Id.ToString() };
                     }

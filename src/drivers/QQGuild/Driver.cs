@@ -4,7 +4,7 @@ using KanonBot.Serializer;
 using KanonBot.Event;
 using Newtonsoft.Json.Linq;
 namespace KanonBot.Drivers;
-public partial class Guild : ISocket, IDriver
+public partial class QQGuild : ISocket, IDriver
 {
     public static readonly Platform platform = Platform.Guild;
     public string? selfID { get; private set; }
@@ -17,7 +17,7 @@ public partial class Guild : ISocket, IDriver
     Enums.Intent intents;
     System.Timers.Timer heartbeatTimer = new();
     int lastSeq = 0;
-    public Guild(long appID, string token, Enums.Intent intents, bool sandbox = false)
+    public QQGuild(long appID, string token, Enums.Intent intents, bool sandbox = false)
     {
         // 初始化变量
 

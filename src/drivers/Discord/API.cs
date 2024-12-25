@@ -2,6 +2,7 @@ using Newtonsoft.Json.Linq;
 using KanonBot.Message;
 using System.IO;
 using Discord.WebSocket;
+using libDiscord = Discord;
 using Discord;
 using System.Net.Http;
 
@@ -22,39 +23,36 @@ public partial class Discord
         //     return EndPoint.WithHeader("Authorization", this.AuthToken);
         // }
 
-        async public Task SendMessage(ISocketMessageChannel channel, Chain msgChain)
+        async public Task SendMessage(IMessageChannel channel, Chain msgChain, libDiscord.IMessage? originalTarget = null)
         {
+            var messageRef = originalTarget is null ? null : new MessageReference(originalTarget.Id);
             foreach (var seg in msgChain.Iter()) {
                 switch (seg)
                 {
                     case ImageSegment s:
                         switch (s.t)
                         {
-                            case ImageSegment.Type.Base64:
-                                var _uuid = Guid.NewGuid();
-                                using (var _s = Utils.Byte2Stream(Convert.FromBase64String(s.value)))
-                                    await channel.SendFileAsync(_s, $"{_uuid}.jpg",
-                                        embed: new EmbedBuilder { ImageUrl = $"attachment://{_uuid}.jpg" }.Build());
-                                break;
-                            case ImageSegment.Type.File:
-                                var __uuid = Guid.NewGuid();
-                                using (var __s = Utils.LoadFile2ReadStream(s.value))
-                                await channel.SendFileAsync(__s, $"{__uuid}.jpg",
-                                embed: new EmbedBuilder { ImageUrl = $"attachment://{__uuid}.jpg" }.Build());
-
-                                break;
-                            case ImageSegment.Type.Url:
-                                var ___uuid = Guid.NewGuid();
-                                using (var ___s = await s.value.GetStreamAsync())
-                                await channel.SendFileAsync(___s, $"{___uuid}.jpg",
-                                embed: new EmbedBuilder { ImageUrl = $"attachment://{___uuid}.jpg" }.Build());
-                                break;
+                            case ImageSegment.Type.Base64: {
+                                    var uuid = Guid.NewGuid();
+                                    using var _s = Utils.Byte2Stream(Convert.FromBase64String(s.value));
+                                    await channel.SendFileAsync(_s, $"{uuid}.jpg", messageReference: messageRef);
+                                } break;
+                            case ImageSegment.Type.File: {
+                                    var uuid = Guid.NewGuid();
+                                    using var _s = Utils.LoadFile2ReadStream(s.value);
+                                    await channel.SendFileAsync(_s, $"{uuid}.jpg", messageReference: messageRef);
+                                } break;
+                            case ImageSegment.Type.Url: {
+                                    var uuid = Guid.NewGuid();
+                                    using var _s = await s.value.GetStreamAsync();
+                                    await channel.SendFileAsync(_s, $"{uuid}.jpg", messageReference: messageRef);
+                                } break;
                             default:
                                 break;
                         }
                         break;
                     case TextSegment s:
-                        await channel.SendMessageAsync(s.value);
+                        await channel.SendMessageAsync(s.value, messageReference: messageRef);
                         break;
                     case AtSegment s:
                         // 我不管，我就先不发送

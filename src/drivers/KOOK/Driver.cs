@@ -33,14 +33,16 @@ public partial class Kook : ISocket, IDriver
             }
             catch (Exception ex) { Log.Error("未捕获的异常 ↓\n{ex}", ex); }
         });
-        client.MessageReceived += (msg, user, channel) => Task.Run(() =>
-        {
-            try
-            {
-                this.Parse(msg);
-            }
-            catch (Exception ex) { Log.Error("未捕获的异常 ↓\n{ex}", ex); }
-        });
+        client.MessageReceived += (msg, user, channel) => {
+            Task.Run(() => {
+                try
+                {
+                    this.Parse(msg);
+                }
+                catch (Exception ex) { Log.Error("未捕获的异常 ↓\n{ex}", ex); }
+            });
+            return Task.CompletedTask;
+        };
         client.Ready += () =>
         {
             // 连接成功

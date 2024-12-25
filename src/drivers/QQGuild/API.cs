@@ -1,7 +1,7 @@
 using Newtonsoft.Json.Linq;
 
 namespace KanonBot.Drivers;
-public partial class Guild
+public partial class QQGuild
 {
     // API 部分 * 包装 Driver
     public class API

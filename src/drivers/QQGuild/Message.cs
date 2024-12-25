@@ -3,7 +3,7 @@ using KanonBot.Message;
 using KanonBot.API;
 
 namespace KanonBot.Drivers;
-public partial class Guild
+public partial class QQGuild
 {
     public partial class Message
     {

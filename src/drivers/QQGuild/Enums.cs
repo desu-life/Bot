@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 
 namespace KanonBot.Drivers;
-public partial class Guild
+public partial class QQGuild
 {
     public class Enums
     {

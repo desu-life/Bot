@@ -207,17 +207,17 @@ foreach (var driverConfig in config.drivers)
                             }
                         ),
                 Config.Guild c
-                    => new Guild(
+                    => new QQGuild(
                         c.appID,
                         c.token!,
-                        Guild.Enums.Intent.GuildAtMessage | Guild.Enums.Intent.DirectMessages,
+                        QQGuild.Enums.Intent.GuildAtMessage | QQGuild.Enums.Intent.DirectMessages,
                         c.sandbox
                     )
                         .onMessage(
                             async (target) =>
                             {
-                                var api = (target.socket as Guild)!.api;
-                                var messageData = (target.raw as Guild.Models.MessageData)!;
+                                var api = (target.socket as QQGuild)!.api;
+                                var messageData = (target.raw as QQGuild.Models.MessageData)!;
                                 Log.Information("← 收到QQ频道消息 {0}", target.msg);
                                 Log.Debug("↑ QQ频道详情 {@0}", messageData);
                                 Log.Debug("↑ QQ频道附件 {@0}", Json.Serialize(messageData.Attachments));
@@ -248,7 +248,7 @@ foreach (var driverConfig in config.drivers)
                                 switch (e)
                                 {
                                     case RawEvent r:
-                                        var data = (r.value as Guild.Models.PayloadBase<JToken>)!;
+                                        var data = (r.value as QQGuild.Models.PayloadBase<JToken>)!;
                                         Log.Debug(
                                             "收到QQ Guild事件: {@0} 数据: {1}",
                                             data,
@@ -268,6 +268,7 @@ foreach (var driverConfig in config.drivers)
                         .onMessage(
                             async (target) =>
                             {
+                                Log.Information("← 收到Kook消息 {0}", target.msg);
                                 try
                                 {
                                     target.isFromAdmin = true;
@@ -286,6 +287,35 @@ foreach (var driverConfig in config.drivers)
                                 {
                                     case Ready l:
                                         Log.Debug("收到KOOK生命周期事件 {h}", l);
+                                        break;
+                                }
+                                return Task.CompletedTask;
+                            }
+                        ),
+                Config.Discord c
+                    => new KanonBot.Drivers.Discord(c.token!, c.botID!)
+                        .onMessage(
+                            async (target) =>
+                            {
+                                Log.Information("← 收到Discord消息 {0}", target.msg);
+                                try
+                                {
+                                    target.isFromAdmin = true;
+                                    await Universal.Parser(target);
+                                }
+                                finally
+                                {
+                                    await Universal.reduplicateTargetChecker.TryUnlock(target);
+                                }
+                            }
+                        )
+                        .onEvent(
+                            (client, e) =>
+                            {
+                                switch (e)
+                                {
+                                    case Ready l:
+                                        Log.Debug("收到Discord生命周期事件 {h}", l);
                                         break;
                                 }
                                 return Task.CompletedTask;

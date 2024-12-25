@@ -14,14 +14,12 @@ public partial class Discord
 
     public class Message
     {
-     
-
         /// <summary>
         /// 解析部分附件只支持图片
         /// </summary>
         /// <param name="MessageData"></param>
         /// <returns></returns>
-        public static Chain Parse(SocketMessage MessageData)
+        public static Chain Parse(IMessage MessageData)
         {
             var chain = new Chain();
             // 处理 content
@@ -34,6 +32,7 @@ public partial class Discord
             {
                 segList.Add((m, new RawSegment("DISCORD AT ADMIN", m.Groups[1].Value)));
             }
+
             var AddText = (string text) =>
             {
                 var x = text.Trim();
@@ -50,21 +49,20 @@ public partial class Discord
                 if (x.Length != 0)
                     chain.Add(new TextSegment(Utils.KOOKUnEscape(x)));
             };
+
             var pos = 0;
-            segList
-                .OrderBy(x => x.m.Index)
-                .ToList()
-                .ForEach(x =>
+            foreach (var x in segList.OrderBy(x => x.m.Index)) {
+                if (pos < x.m.Index)
                 {
-                    if (pos < x.m.Index)
-                    {
-                        AddText(MessageData.Content[pos..x.m.Index]);
-                    }
-                    chain.Add(x.seg);
-                    pos = x.m.Index + x.m.Length;
-                });
-            if (pos < MessageData.Content.Length)
+                    AddText(MessageData.Content[pos..x.m.Index]);
+                }
+                chain.Add(x.seg);
+                pos = x.m.Index + x.m.Length;
+            }
+
+            if (pos < MessageData.Content.Length) {
                 AddText(MessageData.Content[pos..]);
+            }
 
             return chain;
         }

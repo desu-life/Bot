@@ -53,7 +53,7 @@ public class Target
         switch (this.socket!)
         {
             case Discord d:
-                var discordRawMessage = this.raw as libDiscord.WebSocket.SocketMessage;
+                var discordRawMessage = this.raw as libDiscord.IMessage;
                 try
                 {
                     await d.api.SendMessage(discordRawMessage!.Channel, msgChain);
@@ -80,13 +80,13 @@ public class Target
                     return false;
                 }
                 break;
-            case Guild s:
-                var GuildMessageData = (this.raw as Guild.Models.MessageData)!;
+            case QQGuild s:
+                var GuildMessageData = (this.raw as QQGuild.Models.MessageData)!;
                 try
                 {
                     await s.api.SendMessage(
                         GuildMessageData.ChannelID,
-                        new Guild.Models.SendMessageData()
+                        new QQGuild.Models.SendMessageData()
                         {
                             MessageId = GuildMessageData.ID,
                             MessageReference = new() { MessageId = GuildMessageData.ID }

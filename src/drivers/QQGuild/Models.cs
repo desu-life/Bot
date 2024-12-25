@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 using NullValueHandling = Newtonsoft.Json.NullValueHandling;
 
 namespace KanonBot.Drivers;
-public partial class Guild
+public partial class QQGuild
 {
     public class Models
     {
