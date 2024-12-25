@@ -309,7 +309,7 @@ public class Client
     {
         using var db = GetInstance();
         rec.lastupdate = is_newuser ? DateTime.Today.AddDays(-1) : DateTime.Today;
-        return await db.InsertAsync(rec);
+        return await db.InsertOrReplaceAsync(rec);
     }
 
     public static async Task<bool> SetOsuUserMode(long osu_uid, API.OSU.Mode mode)
