@@ -56,7 +56,7 @@ namespace KanonBot.Functions.OSU
             var stopwatch = Stopwatch.StartNew();
             var userList = await Database.Client.GetOsuUserList();
 
-            await userList.AsParallel().WithDegreeOfParallelism(4).ForEachAsync(async (userID, _) => {
+            await Parallel.ForEachAsync(userList, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (userID, _) => {
                 try
                 {
                     await UpdateUser(userID, false);
