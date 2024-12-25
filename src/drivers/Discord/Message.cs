@@ -7,10 +7,17 @@ namespace KanonBot.Drivers;
 
 public partial class Discord
 {
-    [GeneratedRegex(@"\(met\)(.*?)\(met\)", RegexOptions.Multiline)]
+    [GeneratedRegex(@"<@(\d*?)>", RegexOptions.Multiline)]
     private static partial Regex AtPattern();
-    [GeneratedRegex(@"\(rol\)(.*?)\(rol\)", RegexOptions.Multiline)]
-    private static partial Regex AtAdminPattern();
+
+    [GeneratedRegex(@"<@&(\d*?)>", RegexOptions.Multiline)]
+    private static partial Regex AtRolePattern();
+
+    [GeneratedRegex(@"@everyone", RegexOptions.Multiline)]
+    private static partial Regex AtEveryone();
+
+    [GeneratedRegex(@"@here", RegexOptions.Multiline)]
+    private static partial Regex AtHere();
 
     public class Message
     {
@@ -24,18 +31,29 @@ public partial class Discord
             var chain = new Chain();
             // 处理 content
             var segList = new List<(Match m, IMsgSegment seg)>();
+
             foreach (Match m in AtPattern().Matches(MessageData.Content).Cast<Match>())
             {
-                segList.Add((m, new AtSegment(m.Groups[1].Value, Platform.KOOK)));
+                segList.Add((m, new AtSegment(m.Groups[1].Value, Platform.Discord)));
             }
-            foreach (Match m in AtAdminPattern().Matches(MessageData.Content).Cast<Match>())
+
+            foreach (Match m in AtRolePattern().Matches(MessageData.Content).Cast<Match>())
             {
-                segList.Add((m, new RawSegment("DISCORD AT ADMIN", m.Groups[1].Value)));
+                segList.Add((m, new AtSegment($"&{m.Groups[1].Value}", Platform.Discord)));
+            }
+
+            foreach (Match m in AtEveryone().Matches(MessageData.Content).Cast<Match>())
+            {
+                segList.Add((m, new AtSegment("all", Platform.Discord)));
+            }
+
+            foreach (Match m in AtHere().Matches(MessageData.Content).Cast<Match>())
+            {
+                segList.Add((m, new AtSegment("all", Platform.Discord)));
             }
 
             void AddText(ref Chain chain, string text)
             {
-                var x = text.Trim();
                 // 匹配一下attacment
                 foreach (var Embeds in MessageData.Embeds)
                 {
@@ -43,11 +61,11 @@ public partial class Discord
                     {
                         // 添加图片，删除文本
                         chain.Add(new ImageSegment(Embeds.Image!.Value.Url, ImageSegment.Type.Url));
-                        x = x.Replace(Embeds.Image.Value.Url, "");
+                        text = text.Replace(Embeds.Image.Value.Url, "");
                     }
                 }
-                if (x.Length != 0)
-                    chain.Add(new TextSegment(Utils.KOOKUnEscape(x)));
+                if (text.Length != 0)
+                    chain.Add(new TextSegment(Utils.KOOKUnEscape(text)));
             }
 
             var pos = 0;
