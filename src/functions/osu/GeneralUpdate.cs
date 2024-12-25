@@ -57,7 +57,14 @@ namespace KanonBot.Functions.OSU
             var userList = await Database.Client.GetOsuUserList();
 
             await userList.AsParallel().WithDegreeOfParallelism(4).ForEachAsync(async (userID, _) => {
-                await TryAsync(UpdateUser(userID, false)).IfFail(e => Log.Warning("更新用户信息时出错，ex: {@0}", e));
+                try
+                {
+                    await UpdateUser(userID, false);
+                }
+                catch (System.Exception e)
+                {
+                    Log.Warning("更新用户信息时出错，ex: {@0}", e);
+                }
             });
             
             stopwatch.Stop();
