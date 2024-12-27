@@ -55,13 +55,15 @@ public partial class Discord
             void AddText(ref Chain chain, string text)
             {
                 // 匹配一下attacment
-                foreach (var Embeds in MessageData.Embeds)
+                foreach (var embed in MessageData.Embeds)
                 {
-                    if (Embeds.Type == EmbedType.Image)
+                    if (embed.Type == EmbedType.Image)
                     {
-                        // 添加图片，删除文本
-                        chain.Add(new ImageSegment(Embeds.Image!.Value.Url, ImageSegment.Type.Url));
-                        text = text.Replace(Embeds.Image.Value.Url, "");
+                        // 添加图片
+                        if (embed.Image is not null) {
+                            chain.Add(new ImageSegment(embed.Image.Value.Url, ImageSegment.Type.Url));
+                            // text = text.Replace(embed.Image.Value.Url, "");
+                        }
                     }
                 }
                 if (text.Length != 0)
