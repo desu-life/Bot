@@ -1,9 +1,9 @@
 [submodule "rosu-pp-ffi"]
-	path = rosu-pp-ffi
+	path = dependencies/rosu-pp-ffi
 	url = https://github.com/fantasyzhjk/rosu-pp-ffi
 [submodule "sb-pp-ffi"]
-	path = sb-pp-ffi
+	path = dependencies/sb-pp-ffi
 	url = https://github.com/fantasyzhjk/rosu-pp-ffi
 [submodule "OppaiSharp"]
-	path = OppaiSharp
+	path = dependencies/OppaiSharp
 	url = https://github.com/fantasyzhjk/OppaiSharp
