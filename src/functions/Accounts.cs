@@ -242,11 +242,10 @@ namespace KanonBot.Functions
 
         async public static Task BindService(Target target, string cmd)
         {
-            cmd = cmd.Trim();
             string childCmd_1 = "", childCmd_2 = "";
             try
             {
-                var tmp = cmd.SplitOnFirstOccurence(" ");
+                var tmp = cmd.Split(' ', 2, StringSplitOptions.TrimEntries);;
                 childCmd_1 = tmp[0];
                 childCmd_2 = tmp[1];
             }

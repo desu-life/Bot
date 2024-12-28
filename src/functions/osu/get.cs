@@ -30,46 +30,46 @@ namespace KanonBot.Functions.OSUBot
         {
             string rootCmd;
             string childCmd = "";
-            string childCmdLower = "";
+
             try
             {
-                var tmp = cmd.SplitOnFirstOccurence(" ");
-                rootCmd = tmp[0].Trim();
-                childCmd = tmp[1].Trim();
-                childCmdLower = childCmd.ToLower();
+                var tmp = cmd.Split(' ', 2, StringSplitOptions.TrimEntries);
+                rootCmd = tmp[0];
+                childCmd = tmp[1];
             }
             catch
             {
                 rootCmd = cmd;
             }
+            
             switch (rootCmd.ToLower())
             {
                 case "bonuspp":
-                    await Bonuspp(target, childCmdLower);
+                    await Bonuspp(target, childCmd);
                     break;
                 case "bplist":
-                    await OSUBot.BPList.Execute(target, childCmdLower);
+                    await OSUBot.BPList.Execute(target, childCmd);
                     break;
                 case "rolecost":
-                    await Rolecost(target, childCmdLower);
+                    await Rolecost(target, childCmd);
                     break;
                 case "bpht":
-                    await Bpht(target, childCmdLower);
+                    await Bpht(target, childCmd);
                     break;
                 case "todaybp":
-                    await OSUBot.TodayBP.Execute(target, childCmdLower);
+                    await OSUBot.TodayBP.Execute(target, childCmd);
                     break;
                 case "seasonalpass":
-                    await SeasonalPass(target, childCmdLower);
+                    await SeasonalPass(target, childCmd);
                     break;
                 case "recommend":
-                    await BeatmapRecommend(target, childCmdLower);
+                    await BeatmapRecommend(target, childCmd);
                     break;
                 case "mu":
-                    await SendProfileLink(target, childCmdLower);
+                    await SendProfileLink(target, childCmd);
                     break;
                 case "profile":
-                    await SendProfileLink(target, childCmdLower);
+                    await SendProfileLink(target, childCmd);
                     break;
                 case "bg":
                     await GetBackground.Execute(target, childCmd);

@@ -112,7 +112,7 @@ public static partial class Utils
     }
 
     // 全角转半角
-    public static string ToDBC(string input)
+    public static string ToDBC(this string input)
     {
         char[] c = input.ToCharArray();
         for (int i = 0; i < c.Length; i++)

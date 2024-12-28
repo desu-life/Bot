@@ -68,9 +68,9 @@ namespace KanonBot.Functions.OSU
                 string rootCmd, childCmd = "";
                 try
                 {
-                    var tmp = cmd.SplitOnFirstOccurence(" ");
-                    rootCmd = tmp[0].Trim();
-                    childCmd = tmp[1].Trim();
+                    var tmp = cmd.Split(' ', 2, StringSplitOptions.TrimEntries);;
+                    rootCmd = tmp[0];
+                    childCmd = tmp[1];
                 }
                 catch { rootCmd = cmd; }
 

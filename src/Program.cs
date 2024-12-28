@@ -136,15 +136,8 @@ foreach (var driverConfig in config.drivers)
                                     target.msg
                                 );
                                 Log.Debug("↑ OneBot详情 {@0}", target.raw!);
-                                try
-                                {
-                                    target.isFromAdmin = c.elevated;
-                                    await Universal.Parser(target);
-                                }
-                                finally
-                                {
-                                    await Universal.reduplicateTargetChecker.TryUnlock(target);
-                                }
+                                target.isFromAdmin = c.elevated;
+                                await Universal.Parser(target);
                             }
                         )
                         .onEvent(
@@ -177,15 +170,8 @@ foreach (var driverConfig in config.drivers)
                                     target.msg
                                 );
                                 Log.Debug("↑ OneBot详情 {@0}", target.raw!);
-                                try
-                                {
-                                    target.isFromAdmin = true;
-                                    await Universal.Parser(target);
-                                }
-                                finally
-                                {
-                                    await Universal.reduplicateTargetChecker.TryUnlock(target);
-                                }
+                                target.isFromAdmin = true;
+                                await Universal.Parser(target);
                             }
                         )
                         .onEvent(
@@ -221,25 +207,8 @@ foreach (var driverConfig in config.drivers)
                                 Log.Information("← 收到QQ频道消息 {0}", target.msg);
                                 Log.Debug("↑ QQ频道详情 {@0}", messageData);
                                 Log.Debug("↑ QQ频道附件 {@0}", Json.Serialize(messageData.Attachments));
-                                try
-                                {
-                                    target.isFromAdmin = true;
-                                    await Universal.Parser(target);
-                                }
-                                catch (Flurl.Http.FlurlHttpException ex)
-                                {
-                                    Log.Error("请求 API 时发生异常<QQ Guild>，{0}", ex);
-                                    await target.reply("请求 API 时发生异常");
-                                }
-                                catch (Exception ex)
-                                {
-                                    Log.Error("发生未知错误<QQ Guild>，{0}", ex);
-                                    await target.reply("发生未知错误");
-                                }
-                                finally
-                                {
-                                    await Universal.reduplicateTargetChecker.TryUnlock(target);
-                                }
+                                target.isFromAdmin = true;
+                                await Universal.Parser(target);
                             }
                         )
                         .onEvent(
@@ -269,15 +238,8 @@ foreach (var driverConfig in config.drivers)
                             async (target) =>
                             {
                                 Log.Information("← 收到Kook消息 {0}", target.msg);
-                                try
-                                {
-                                    target.isFromAdmin = true;
-                                    await Universal.Parser(target);
-                                }
-                                finally
-                                {
-                                    await Universal.reduplicateTargetChecker.TryUnlock(target);
-                                }
+                                target.isFromAdmin = true;
+                                await Universal.Parser(target);
                             }
                         )
                         .onEvent(
@@ -298,15 +260,8 @@ foreach (var driverConfig in config.drivers)
                             async (target) =>
                             {
                                 Log.Information("← 收到Discord消息 {0}", target.msg);
-                                try
-                                {
-                                    target.isFromAdmin = true;
-                                    await Universal.Parser(target);
-                                }
-                                finally
-                                {
-                                    await Universal.reduplicateTargetChecker.TryUnlock(target);
-                                }
+                                target.isFromAdmin = true;
+                                await Universal.Parser(target);
                             }
                         )
                         .onEvent(
