@@ -56,7 +56,7 @@ public class Target
                 var discordRawMessage = this.raw as libDiscord.IMessage;
                 try
                 {
-                    await d.api.SendMessage(discordRawMessage!.Channel, msgChain);
+                    await d.api.SendMessage(discordRawMessage!.Channel, msgChain, discordRawMessage);
                 }
                 catch (Exception ex)
                 {
