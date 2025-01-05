@@ -165,15 +165,8 @@ public class Client
             osu_uid = osu_uid,
             mode = 0,
         };
-        try
-        {
-            await db.InsertOrReplaceAsync(d);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        var result = await db.InsertOrReplaceAsync(d);
+        return result > 0;
     }
 
     public static async Task<bool> InsertOsuUser(
@@ -190,15 +183,8 @@ public class Client
             customInfoEngineVer = 2,
             InfoPanelV2_Mode = 1
         };
-        try
-        {
-            await db.InsertAsync(d);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        var result = await db.InsertAsync(d);
+        return result > 0;
     }
 
     public static async Task<API.OSU.Models.PPlusData.UserData?> GetOsuPPlusData(long osu_uid)
@@ -246,7 +232,7 @@ public class Client
                 sta = ppdata.StaminaTotal
             }
         );
-        return result > -1;
+        return result > 0;
     }
 
     public static async Task<bool> SetDisplayedBadge(string userid, string displayed_ids)
@@ -258,7 +244,7 @@ public class Client
             .Set(it => it.displayed_badge_ids, displayed_ids)
             .UpdateAsync();
 
-        return res > -1;
+        return res > 0;
     }
 
     public static async Task<Model.BadgeList?> GetBadgeInfo(string badgeid)
@@ -273,7 +259,7 @@ public class Client
         var data = await db.User.FirstOrDefaultAsync(it => it.email == email);
         data.owned_badge_ids = owned_ids;
         var res = await db.UpdateAsync(data);
-        return res > -1;
+        return res > 0;
     }
 
     public static async Task<bool> SetOwnedBadge(int uid, string? owned_ids)
@@ -282,7 +268,7 @@ public class Client
         var data = await db.User.FirstOrDefaultAsync(it => it.uid == uid);
         data.owned_badge_ids = owned_ids;
         var res = await db.UpdateAsync(data);
-        return res > -1;
+        return res > 0;
     }
 
     public static async Task<bool> SetOwnedBadgeByOsuUid(string osu_uid, string? owned_ids)
@@ -296,7 +282,7 @@ public class Client
         var userinfo = await db.User.Where(it => it.uid == user.uid).FirstOrDefaultAsync();
         userinfo.owned_badge_ids = owned_ids;
         var res = await db.UpdateAsync(userinfo);
-        return res > -1;
+        return res > 0;
     }
 
     public static async Task<List<long>> GetOsuUserList()
@@ -440,19 +426,15 @@ public class Client
                     .Set(it => it.point, it => it.point + add_point)
                     .UpdateAsync() > 0;
         }
-        var t = false;
-        if (
-            await db.InsertAsync(
-                new OSUSeasonalPass()
-                {
-                    point = add_point,
-                    mode = mode,
-                    osu_id = oid
-                }
-            ) > -1
-        )
-            t = true;
-        return t;
+        var res = await db.InsertAsync(
+            new OSUSeasonalPass()
+            {
+                point = add_point,
+                mode = mode,
+                osu_id = oid
+            }
+        );
+        return res > 0;
     }
 
     public static async Task<bool> SetOsuInfoPanelVersion(long osu_uid, int ver)
@@ -462,7 +444,7 @@ public class Client
             .Where(it => it.osu_uid == osu_uid)
             .Set(it => it.customInfoEngineVer, ver)
             .UpdateAsync();
-        return result > -1;
+        return result > 0;
     }
 
     public static async Task<bool> SetOsuInfoPanelV2ColorMode(long osu_uid, int ver)
@@ -472,7 +454,7 @@ public class Client
             .Where(it => it.osu_uid == osu_uid)
             .Set(it => it.InfoPanelV2_Mode, ver)
             .UpdateAsync();
-        return result > -1;
+        return result > 0;
     }
 
     public static async Task<bool> UpdateInfoPanelV2CustomCmd(long osu_uid, string cmd)
@@ -482,7 +464,7 @@ public class Client
             .Where(it => it.osu_uid == osu_uid)
             .Set(it => it.InfoPanelV2_CustomMode, cmd)
             .UpdateAsync();
-        return result > -1;
+        return result > 0;
     }
 
     public static async Task<bool> SetOsuUserPermissionByOid(long osu_uid, string permission)
@@ -493,7 +475,7 @@ public class Client
             .Where(it => it.uid == DBUser.uid)
             .Set(it => it.permissions, permission)
             .UpdateAsync();
-        return result > -1;
+        return result > 0;
     }
 
     public static async Task<bool> SetOsuUserPermissionByEmail(string email, string permission)
@@ -503,7 +485,7 @@ public class Client
             .Where(it => it.email == email)
             .Set(it => it.permissions, permission)
             .UpdateAsync();
-        return result > -1;
+        return result > 0;
     }
 
     public static async Task<bool> InsertOsuStandardBeatmapTechData(
@@ -562,15 +544,8 @@ public class Client
                     pp_98acc = a98,
                     pp_99acc = a99,
                 };
-            try
-            {
-                await db.InsertAsync(t);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            var result = await db.InsertAsync(t);
+            return result > 0;
         }
         else
         {
@@ -599,15 +574,8 @@ public class Client
 
         //insert
         var d = new OSUSeasonalPass_ScoreRecords() { score_id = score_id, mode = mode };
-        try
-        {
-            await db.InsertAsync(d);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+        var result = await db.InsertAsync(d);
+        return result > 0;
     }
 
     public static async Task<List<OsuStandardBeatmapTechData>> GetOsuStandardBeatmapTechData(
@@ -659,16 +627,8 @@ public class Client
             expire_at = expire_at,
             badge_expiration_day = badge_expire_days
         };
-        try
-        {
-            await db.InsertAsync(d);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-            return false;
-        }
+        var result = await db.InsertAsync(d);
+        return result > 0;
     }
 
     public static async Task<BadgeRedemptionCode> RedeemBadgeRedemptionCode(long uid, string code)
@@ -698,7 +658,7 @@ public class Client
             )
             .Set(it => it.redeem_count, it => it.redeem_count + 1)
             .UpdateAsync();
-        if (result > -1)
+        if (result > 0)
             return true;
         return false;
     }
@@ -761,7 +721,7 @@ public class Client
                             it => it.expire_at,
                             it => it.expire_at.DateTime.AddDays(daysneedtobeadded)
                         )
-                        .UpdateAsync() > -1;
+                        .UpdateAsync() > 0;
                 return true;
             }
             catch
@@ -809,7 +769,7 @@ public class Client
                 organization = organization
             }
         );
-        return result > -1;
+        return result > 0;
     }
 
     public static async Task<Model.ChatBot?> GetChatBotInfo(long uid)

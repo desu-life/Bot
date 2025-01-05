@@ -125,19 +125,21 @@ namespace KanonBot.Functions.OSU
         public static async Task SuDailyUpdateAsync(Target target)
         {
             await target.reply("已手动开始数据更新，稍后会发送结果。");
-            var (count, span) = await GeneralUpdate.UpdateUsers();
-            var Text = "共用时";
-            if (span.Hours > 0) Text += $" {span.Hours} 小时";
-            if (span.Minutes > 0) Text += $" {span.Minutes} 分钟";
-            Text += $" {span.Seconds} 秒";
-            try
-            {
-                await target.reply($"数据更新完成，一共更新了 {count} 个用户\n{Text}");
-            }
-            catch
-            {
-                await target.reply($"数据更新完成\n{Text}");
-            }
+            var _ = Task.Run(async () => {
+                var (count, span) = await GeneralUpdate.UpdateUsers();
+                var Text = "共用时";
+                if (span.Hours > 0) Text += $" {span.Hours} 小时";
+                if (span.Minutes > 0) Text += $" {span.Minutes} 分钟";
+                Text += $" {span.Seconds} 秒";
+                try
+                {
+                    await target.reply($"数据更新完成，一共更新了 {count} 个用户\n{Text}");
+                }
+                catch
+                {
+                    await target.reply($"数据更新完成\n{Text}");
+                }
+            });
         }
 
 

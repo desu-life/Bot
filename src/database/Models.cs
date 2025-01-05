@@ -234,7 +234,7 @@ public class Model
         [PrimaryKey]
         public long uid { get; set; }
 
-        [PrimaryKey]
+        [Column]
         public long osu_uid { get; set; }
 
         [Column]
@@ -296,7 +296,7 @@ public class Model
         public int global_rank { get; set; }
 
         [PrimaryKey]
-        public string? gamemode { get; set; }
+        public required string gamemode { get; set; }
 
         [PrimaryKey]
         public DateTimeOffset lastupdate { get; set; }

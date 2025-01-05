@@ -28,29 +28,33 @@ public partial class OneBot
             ClientMetadata client;
             public string selfID { get; init; }
 
+            private bool isClose;
+
             public Socket(WatsonWsServer server, ClientMetadata client, string selfID)
             {
                 this.api = new(this);
                 this.server = server;
                 this.client = client;
                 this.selfID = selfID;
+                this.isClose = false;
             }
 
             public void Send(string message)
             {
-                this.server.SendAsync(client.Guid, message).Wait();
+                if (!isClose) this.server.SendAsync(client.Guid, message).Wait();
             }
 
             public async Task SendAsync(string message)
             {
-                await this.server.SendAsync(client.Guid, message);
+                if (!isClose) await this.server.SendAsync(client.Guid, message);
             }
 
             public ClientMetadata ConnectionInfo => this.client;
 
             public void Close()
             {
-                this.server.DisconnectClient(this.client.Guid);
+                try { this.server.DisconnectClient(this.client.Guid); } catch { }
+                isClose = true;
             }
         }
 
@@ -132,7 +136,8 @@ public partial class OneBot
 
             this.instance.ClientDisconnected += (sender, e) =>
             {
-                this.clients.Remove(e.Client.Guid);
+                var s = this.clients.Remove(e.Client.Guid);
+                s?.Close();
             };
 
             this.instance.MessageReceived += (sender, e) =>
