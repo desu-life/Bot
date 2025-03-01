@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using SixLabors.ImageSharp;
 using FuzzySharp;
+using KanonBot.API.OSU;
 
 namespace KanonBot;
 
@@ -20,6 +21,28 @@ public static partial class Utils
             return 80;
         }
     } // 获取失败返回80
+
+    public static IEnumerable<Models.ScoreLazer>? FilterMods(IEnumerable<Models.ScoreLazer>? scores, IEnumerable<string> mods) {
+        if (mods.Contains("NM")) {
+                return scores?.Filter(x => (x.Mods.Length == 1 && x.Mods[0].IsClassic) || x.Mods.Length == 0);
+        } else {
+            if (mods.Contains("CL")) {
+                return scores?
+                    .Filter(x =>{
+                        var scoreMods = x.Mods.Map(m => m.Acronym).Order();
+                        var requiredMods = mods.Order();
+                        return requiredMods.SequenceEqual(scoreMods);
+                    });
+            } else {
+                return scores?
+                    .Filter(x => {
+                        var scoreMods = x.Mods.Filter(m => !m.IsClassic).Map(m => m.Acronym).Order();
+                        var requiredMods = mods.Order();
+                        return requiredMods.SequenceEqual(scoreMods);
+                    });
+            }
+        }
+    }
 
     public static async Task<Option<T>> TimeOut<T>(this Task<T> task, TimeSpan delay)
     {

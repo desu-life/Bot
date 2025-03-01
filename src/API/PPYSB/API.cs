@@ -101,10 +101,10 @@ namespace KanonBot.API.PPYSB
             }
         }
 
-        async public static Task<Models.Score?> GetMapScore(long userId, long beatmapId, Mode mode = Mode.OSU, uint mods = 0)
+        async public static Task<Models.Score?> GetMapScore(long userId, long beatmapId, Mode mode = Mode.OSU, uint mods = 0, bool pp_order = false)
         {
             var scores = await GetMapScores(userId, beatmapId, mode, 1, mods);
-            var score = scores?.FirstOrDefault();
+            var score = pp_order ? scores?.OrderByDescending(s => s.PP).FirstOrDefault() : scores?.FirstOrDefault();
 
             if (score is not null) {
                 var map = score.Beatmap;

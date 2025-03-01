@@ -13,7 +13,7 @@ namespace KanonBot.Functions.OSUBot
 {
     public class Score
     {
-        async public static Task Execute(Target target, string cmd)
+        async public static Task Execute(Target target, string cmd, bool ppFirst = false)
         {
             #region 验证
             long? osuID = null;
@@ -180,7 +180,7 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
 
-            API.OSU.Models.BeatmapScoreLazer? scoreData = null;
+            API.OSU.Models.ScoreLazer? scoreData = null;
 
             if (is_ppysb) {
                 // config mods
@@ -195,31 +195,50 @@ namespace KanonBot.Functions.OSUBot
                 }
 
                 var tmpScore = await API.PPYSB.Client.GetMapScore(
-                    osuID!.Value,
+                    userId: osuID!.Value,
                     command.order_number,
                     sbmode!.Value,
-                    RosuPP.Mods.FromAcronyms(string.Concat(mods), sbmode.Value.ToOsu().ToRosu()).Bits()
+                    RosuPP.Mods.FromAcronyms(string.Concat(mods), sbmode.Value.ToOsu().ToRosu()).Bits(),
+                    ppFirst
                 );
 
                 if (tmpScore is not null) {
-                    scoreData = new API.OSU.Models.BeatmapScoreLazer
-                    {
-                        Score = tmpScore.ToOsu(sbinfo!, sbmode!.Value)
-                    };
+                    scoreData = tmpScore.ToOsu(sbinfo!, sbmode!.Value);
                 }
             } else {
-                scoreData = await API.OSU.Client.GetUserBeatmapScore(
+                var scoreDatas = await API.OSU.Client.GetUserBeatmapScores(
                     osuID!.Value,
                     command.order_number,
-                    mods,
                     mode!.Value
-                ) ?? await API.OSU.Client.GetUserBeatmapScore(
-                    osuID!.Value,
-                    command.order_number,
-                    mods,
-                    mode!.Value,
-                    true
                 );
+                if (ppFirst) {
+                    if (mods.Count > 0) {
+                        scoreData = Utils.FilterMods(scoreDatas, mods)?.OrderByDescending(s => s.pp).FirstOrDefault();
+                    } else {
+                        scoreData = scoreDatas?.OrderByDescending(s => s.pp).FirstOrDefault();
+                    }
+                } else {
+                    if (scoreDatas != null && scoreDatas.All(s => s.IsClassic)) {
+                        if (mods.Count > 0) {
+                            scoreData = Utils.FilterMods(scoreDatas, mods)?.OrderByDescending(s => s.ScoreAuto).FirstOrDefault();
+                        } else {
+                            scoreData = scoreDatas?.OrderByDescending(s => s.ScoreAuto).FirstOrDefault();
+                        }
+                    } else {
+                        scoreData = (await API.OSU.Client.GetUserBeatmapScore(
+                            osuID!.Value,
+                            command.order_number,
+                            mods,
+                            mode!.Value
+                        ) ?? await API.OSU.Client.GetUserBeatmapScore(
+                            osuID!.Value,
+                            command.order_number,
+                            mods,
+                            mode!.Value,
+                            true
+                        ))?.Score;
+                    }
+                }
             }
 
             if (scoreData == null)
@@ -231,13 +250,18 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
             //ppy的getscore api不会返回beatmapsets信息，需要手动获取
-            if (scoreData.Score.Beatmapset is null) {
-                var beatmapSetInfo = await API.OSU.Client.GetBeatmap(scoreData!.Score.Beatmap!.BeatmapId);
-                scoreData.Score.Beatmapset = beatmapSetInfo!.Beatmapset;
+            if (scoreData.Beatmapset is null) {
+                var beatmapInfo = await API.OSU.Client.GetBeatmap(scoreData.BeatmapId);
+                scoreData.Beatmap = beatmapInfo;
+                scoreData.Beatmapset = beatmapInfo!.Beatmapset;
+            }
+
+            if (scoreData.User is null) {
+                scoreData.User = tempOsuInfo;
             }
 
             LegacyImage.Draw.ScorePanelData data;
-            data = await UniversalCalculator.CalculatePanelData(scoreData.Score, command.lazer ? is_ppysb ? CalculatorKind.Sb : CalculatorKind.Oppai : CalculatorKind.Unset);
+            data = await UniversalCalculator.CalculatePanelData(scoreData, command.lazer ? is_ppysb ? CalculatorKind.Sb : CalculatorKind.Rosu : CalculatorKind.Unset);
 
             using var stream = new MemoryStream();
             using var img = await LegacyImage.Draw.DrawScore(data);

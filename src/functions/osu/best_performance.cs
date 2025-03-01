@@ -216,7 +216,7 @@ namespace KanonBot.Functions.OSUBot
                 score.User ??= tempOsuInfo;
 
                 LegacyImage.Draw.ScorePanelData data;
-                data = await UniversalCalculator.CalculatePanelData(score, command.lazer ? is_ppysb ? CalculatorKind.Sb : CalculatorKind.Oppai : CalculatorKind.Unset);
+                data = await UniversalCalculator.CalculatePanelData(score, command.lazer ? is_ppysb ? CalculatorKind.Sb : CalculatorKind.Rosu : CalculatorKind.Unset);
                 using var stream = new MemoryStream();
 
                 using var img =

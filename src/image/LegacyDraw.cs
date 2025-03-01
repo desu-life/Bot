@@ -44,6 +44,7 @@ namespace KanonBot.LegacyImage
             public OSU.Models.ScoreLazer scoreInfo;
             public RosuPP.Mode mode;
             public string server;
+            public double? oldPP;
         }
 
         public class PPVSPanelData
@@ -1278,7 +1279,11 @@ namespace KanonBot.LegacyImage
 
             // total pp
             textOptions.Font = new Font(TorusRegular, 61f);
+
+
             pptext = Math.Round(ppInfo.ppStat.total).ToString("0");
+            var ppm = TextMeasurer.MeasureSize(pptext, textOptions);
+
             textOptions.HorizontalAlignment = HorizontalAlignment.Right;
             textOptions.Origin = new PointF(1825, 500);
             score.Mutate(x =>
@@ -1288,6 +1293,25 @@ namespace KanonBot.LegacyImage
             score.Mutate(x =>
                 x.DrawText(drawOptions, textOptions, "pp", new SolidBrush(ppTColor), null)
             );
+
+            
+            if (data.oldPP is not null) {
+                pptext = Math.Round(data.oldPP.Value).ToString("0");
+                textOptions.HorizontalAlignment = HorizontalAlignment.Right;
+                textOptions.Origin = new PointF(1825 - ppm.Width - 175, 500);
+                score.Mutate(x =>
+                    x.DrawText(drawOptions, textOptions, pptext, new SolidBrush(ppColor), null)
+                );
+                textOptions.Origin = new PointF(1899 - ppm.Width - 100, 500);
+                score.Mutate(x =>
+                    x.DrawText(drawOptions, textOptions, "pp →", new SolidBrush(ppTColor), null)
+                );
+                textOptions.Font = new Font(TorusRegular, 20);
+                textOptions.Origin = new PointF(1825 - ppm.Width - 150, 450);
+                score.Mutate(x =>
+                    x.DrawText(drawOptions, textOptions, "(oldpp)", new SolidBrush(ppTColor), null)
+                );
+            }
 
             // score
             textOptions.HorizontalAlignment = HorizontalAlignment.Center;

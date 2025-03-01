@@ -197,7 +197,7 @@ namespace KanonBot.Functions.OSUBot
             if (scoreInfos.Length > 0)
             {
                 LegacyImage.Draw.ScorePanelData data;
-                data = await UniversalCalculator.CalculatePanelData(scoreInfos[0], command.lazer ? is_ppysb ? CalculatorKind.Sb : CalculatorKind.Oppai : CalculatorKind.Unset);
+                data = await UniversalCalculator.CalculatePanelData(scoreInfos[0], command.lazer ? is_ppysb ? CalculatorKind.Sb : CalculatorKind.Rosu : CalculatorKind.Unset);
                 
                 
                 using var stream = new MemoryStream();

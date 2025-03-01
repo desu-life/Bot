@@ -60,6 +60,6 @@
 	  <ProjectReference Include="../dependencies/rosu-pp-ffi/SharpRosuPP/RosuPP/RosuPP.csproj" />
 	  <ProjectReference Include="../dependencies/sb-pp-ffi/SharpRosuPP/RosuPP/SBRosuPP.csproj" />
 	  <ProjectReference Include="../dependencies/OppaiSharp/OppaiSharp/OppaiSharp.csproj" />
-	  <!-- <ProjectReference Include="../dependencies/osu-pp/osu-pp.csproj" /> -->
+	  <ProjectReference Include="../dependencies/osu-pp/osu-pp.csproj" />
 	</ItemGroup>
 </Project>

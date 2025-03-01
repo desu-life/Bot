@@ -263,17 +263,17 @@ namespace KanonBot.API.OSU
         // 获取用户在特定谱面上的成绩
         // 返回null代表找不到beatmap / beatmap无排行榜
         // 返回[]则用户无在此谱面的成绩
-        async public static Task<Models.Score[]?> GetUserBeatmapScores(long UserId, long bid, Mode mode = Mode.OSU)
+        async public static Task<Models.ScoreLazer[]?> GetUserBeatmapScores(long UserId, long bid, Mode mode = Mode.OSU)
         {
-            var res = await http()
-                .AppendPathSegments(new object[] { "beatmaps", bid, "scores", "users", UserId, "all" })
+            var res = await withLazerScore(http())
+                .AppendPathSegments(["beatmaps", bid, "scores", "users", UserId, "all"])
                 .SetQueryParam("mode", mode.ToStr())
                 .GetAsync();
 
             if (res.StatusCode == 404)
                 return null;
             else
-                return (await res.GetJsonAsync<JObject>())["scores"]!.ToObject<Models.Score[]>();
+                return (await res.GetJsonAsync<JObject>())["scores"]!.ToObject<Models.ScoreLazer[]>();
         }
 
         // 通过osuv1 api osu uid获取用户信息

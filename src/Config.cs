@@ -221,6 +221,8 @@ public class Config
 
         [TomlProperty("dev")]
         public bool dev { get; set; }
+        [TomlProperty("calc_old_pp")]
+        public bool calcOldPP { get; set; }
 
         [TomlDoNotInlineObject]
         [TomlProperty("osu")]
@@ -251,6 +253,7 @@ public class Config
             {
                 debug = true,
                 dev = true,
+                calcOldPP = false,
                 osu = new()
                 {
                     clientId = 0,
