@@ -157,15 +157,38 @@ namespace KanonBot.command_parser
                 }
 
                 // 有些例外，用StartsWith匹配
-                if (rootCmd.StartsWith("bp"))
-                {
-                    string numberPart = cmd[2..];
-                    if (!string.IsNullOrEmpty(numberPart) && int.TryParse(numberPart, out int number))
-                    {
-                        await BestPerformance.Execute(target, cmd[2..].Trim());
-                        return;
-                    }                    
+                // if (rootCmd.StartsWith("bp"))
+                // {
+                //     string numberPart = cmd[2..];
+                //     if (!string.IsNullOrEmpty(numberPart) && int.TryParse(numberPart, out int number))
+                //     {
+                //         await BestPerformance.Execute(target, cmd[2..].Trim());
+                //         return;
+                //     }                    
                     
+                // }
+
+                if (cmd.StartsWith("bp"))
+                {
+                    // 防止和某抽象bot冲突
+                    if (cmd.StartsWith("bpa"))
+                    {
+                        return;
+                    }
+
+                    // 修复白菜bpme兼容
+                    if (cmd.StartsWith("bpme"))
+                    {
+                        return;
+                    }
+
+                    if (cmd.StartsWith("bplist"))
+                    {
+                        return;
+                    }
+
+                    await BestPerformance.Execute(target, cmd[2..].Trim());
+                    return;
                 }
             }
             catch (Flurl.Http.FlurlHttpTimeoutException)
