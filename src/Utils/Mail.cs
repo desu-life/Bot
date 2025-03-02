@@ -55,7 +55,7 @@ public static partial class Utils
         }
     }
 
-    public static void SendDebugMail(string body)
+    public static async Task SendDebugMail(string body)
     {
         if (Config.inner!.mail is not null) {
             Mail.MailStruct ms =
@@ -68,13 +68,13 @@ public static partial class Utils
                 };
             try
             {
-                Mail.Send(ms);
+                await Mail.Send(ms);
             }
             catch { }
         }
     }
 
-    public static void SendMail(IEnumerable<string> mailto, string title, string body, bool isBodyHtml)
+    public static async Task SendMail(IEnumerable<string> mailto, string title, string body, bool isBodyHtml)
     {
         Mail.MailStruct ms =
             new()
@@ -86,7 +86,7 @@ public static partial class Utils
             };
         try
         {
-            Mail.Send(ms);
+            await Mail.Send(ms);
         }
         catch { }
     }

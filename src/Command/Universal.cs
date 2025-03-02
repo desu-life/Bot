@@ -205,7 +205,7 @@ namespace KanonBot.command_parser
                     Target Message: {target.msg}
                     Exception: {ex}
                     """;
-                Utils.SendDebugMail(rtmp);
+                await Utils.SendDebugMail(rtmp);
                 Log.Error("网络异常 ↓\n{ex}", ex);
             }
             catch (System.IO.IOException ex)
@@ -225,7 +225,7 @@ namespace KanonBot.command_parser
                         Target Message: {target.msg}
                         Exception: {ex}
                         """;
-                    Utils.SendDebugMail(rtmp);
+                    await Utils.SendDebugMail(rtmp);
                     Log.Error("文件操作异常 ↓\n{ex}", ex);
                 }
             }
@@ -254,7 +254,7 @@ namespace KanonBot.command_parser
                     Target Message: {target.msg}
                     Exception: {ae}
                     """;
-                Utils.SendDebugMail(rtmp);
+                await Utils.SendDebugMail(rtmp);
                 Log.Error("执行指令异常 ↓\n{ex}", ae);
             }
             catch (Exception ex)
@@ -267,7 +267,7 @@ namespace KanonBot.command_parser
                     Target Message: {target.msg}
                     Exception: {ex}
                     """;
-                Utils.SendDebugMail(rtmp);
+                await Utils.SendDebugMail(rtmp);
                 Log.Error("执行指令异常 ↓\n{ex}", ex);
             }
         }

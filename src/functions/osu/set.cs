@@ -334,7 +334,7 @@ namespace KanonBot.Functions.OSUBot
                 temppic.Dispose();
                 File.Delete(imagePath);
                 await target.reply("已成功上传，请耐心等待审核。\n（*如长时间审核未通过则表示不符合规定，请重新上传或联系管理员）");
-                Utils.SendMail(
+                await Utils.SendMail(
                     Config.inner!.mail!.mailTo,
                     "有新的v2 info image需要审核",
                     $"osuid: {DBOsuInfo.osu_uid}  请及时查看\n<img src={cmd}>",
@@ -438,7 +438,7 @@ namespace KanonBot.Functions.OSUBot
                 temppic.Dispose();
                 File.Delete(imagePath);
                 await target.reply("已成功上传，请耐心等待审核。\n（*如长时间审核未通过则表示不符合规定，请重新上传或联系管理员）");
-                Utils.SendMail(
+                await Utils.SendMail(
                     Config.inner!.mail!.mailTo,
                     "有新的v1 info image需要审核",
                     $"osuid: {DBOsuInfo.osu_uid}  请及时查看\n<img src={cmd}>",
@@ -590,7 +590,7 @@ namespace KanonBot.Functions.OSUBot
                 );
                 File.Delete(imagePath);
                 await target.reply("已成功上传，请耐心等待审核。\n（*如长时间审核未通过则表示不符合规定，请重新上传或联系管理员）");
-                Utils.SendMail(
+                await Utils.SendMail(
                     Config.inner!.mail!.mailTo,
                     "有新的v2 info panel需要审核",
                     $"osuid: {DBOsuInfo.osu_uid}  请及时查看\n<img src={cmd}>",
@@ -691,7 +691,7 @@ namespace KanonBot.Functions.OSUBot
                 );
                 File.Delete(imagePath);
                 await target.reply("已成功上传，请耐心等待审核。\n（*如长时间审核未通过则表示不符合规定，请重新上传或联系管理员）");
-                Utils.SendMail(
+                await Utils.SendMail(
                     Config.inner!.mail!.mailTo,
                     "有新的v1 info panel需要审核",
                     $"osuid: {DBOsuInfo.osu_uid}  请及时查看\n<img src={cmd}>",

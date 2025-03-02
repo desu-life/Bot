@@ -35,7 +35,7 @@ public static partial class Utils
         using var fs = LoadFile2ReadStream(filePath);
         byte[] bt = new byte[fs.Length];
         var mem = new Memory<Byte>(bt);
-        await fs.ReadAsync(mem);
+        await fs.ReadExactlyAsync(mem);
         fs.Close();
         return mem.ToArray();
     }

@@ -511,7 +511,7 @@ namespace KanonBot.Functions.OSUBot
             };
             try
             {
-                Mail.Send(ms);
+                await Mail.Send(ms);
             }
             catch { }
             File.Delete(filepath);
@@ -922,7 +922,7 @@ namespace KanonBot.Functions.OSUBot
                     };
                     try
                     {
-                        Mail.Send(ms);
+                        await Mail.Send(ms);
                     }
                     catch { }
 
@@ -1005,7 +1005,7 @@ namespace KanonBot.Functions.OSUBot
                 };
                 try
                 {
-                    Mail.Send(ms);
+                    await Mail.Send(ms);
                     await target.reply("徽章兑换码已通过邮件发送至管理员邮箱，请从邮箱内查阅。");
                 }
                 catch
@@ -1130,7 +1130,7 @@ namespace KanonBot.Functions.OSUBot
                 mailmsg += "\n\n desu.life";
                 if (hadbadgeexpired && user.email!.Length > 4)
                 {
-                    Utils.SendMail([user.email!], "desu.life - 徽章过期通知", mailmsg, false);
+                    await Utils.SendMail([user.email!], "desu.life - 徽章过期通知", mailmsg, false);
                     Log.Information($"已向用户 {user.uid} 发送徽章过期通知邮件。");
                 }
             }
@@ -1176,7 +1176,7 @@ namespace KanonBot.Functions.OSUBot
                     mailmsg += "\n\n desu.life";
                     if (user.email!.Length > 5)
                     {
-                        Utils.SendMail([user.email!], "desu.life - 徽章过期通知", mailmsg, false);
+                        await Utils.SendMail([user.email!], "desu.life - 徽章过期通知", mailmsg, false);
                         Log.Information($"已向用户 {user.uid} 发送徽章过期通知邮件。");
                     }
                 }

@@ -182,7 +182,7 @@ namespace KanonBot.Functions
                 };
                 try
                 {
-                    Mail.Send(ms);
+                    await Mail.Send(ms);
                     await target.reply("绑定验证邮件发送成功，请继续从邮箱内操作，注意检查垃圾箱。");
                     await Database.Client.SetVerifyMail(mailAddr, verifyCode); //设置临时验证码
                 }
@@ -205,7 +205,7 @@ namespace KanonBot.Functions
                 };
                 try
                 {
-                    Mail.Send(ms);
+                    await Mail.Send(ms);
                     await target.reply("注册验证邮件发送成功，请继续从邮箱内操作，注意检查垃圾箱。");
                     await Database.Client.SetVerifyMail(mailAddr, verifyCode); //设置临时验证码
                 }
@@ -228,7 +228,7 @@ namespace KanonBot.Functions
                 };
                 try
                 {
-                    Mail.Send(ms);
+                    await Mail.Send(ms);
                     await target.reply("电子邮箱追加验证邮件发送成功，请继续从邮箱内操作，注意检查垃圾箱。");
                     await Database.Client.SetVerifyMail(mailAddr, verifyCode); //设置临时验证码
                 }
