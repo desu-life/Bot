@@ -194,11 +194,12 @@ namespace KanonBot.Functions.OSUBot
                     if (mods.Count == 1) { mods = []; }
                 }
 
+                using var rmods = RosuPP.Mods.FromAcronyms(string.Concat(mods), sbmode!.Value.ToOsu().ToRosu());
                 var tmpScore = await API.PPYSB.Client.GetMapScore(
                     userId: osuID!.Value,
                     command.order_number,
-                    sbmode!.Value,
-                    RosuPP.Mods.FromAcronyms(string.Concat(mods), sbmode.Value.ToOsu().ToRosu()).Bits(),
+                    sbmode.Value,
+                    rmods.Bits(),
                     ppFirst
                 );
 
