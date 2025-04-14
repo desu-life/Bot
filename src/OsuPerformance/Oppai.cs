@@ -26,15 +26,15 @@ public static class OppaiCalculator
         }
         var statistics = data.scoreInfo.ConvertStatistics;
 
-        var rosubeatmap = Beatmap.FromBytes(b);
+        using var rosubeatmap = Beatmap.FromBytes(b);
 
         Mode rmode = data.scoreInfo.Mode.ToRosu();
         rosubeatmap.Convert(rmode);
 
         var clockRate = 1.0;
-        var mods = Mods.FromJson(data.scoreInfo.JsonMods, rmode);
+        using var mods = Mods.FromJson(data.scoreInfo.JsonMods, rmode);
 
-        var builder = BeatmapAttributesBuilder.New();
+        using var builder = BeatmapAttributesBuilder.New();
         builder.Mode(rmode);
         builder.Mods(mods);
         var bmAttr = builder.Build(rosubeatmap);
@@ -68,7 +68,7 @@ public static class OppaiCalculator
         {
             ref var acc = ref accs[i];
 
-            var p = Performance.New();
+            using var p = Performance.New();
             p.Lazer(score.IsLazer);
             p.Mode(rmode);
             p.Mods(mods);
@@ -100,14 +100,14 @@ public static class OppaiCalculator
     {
         var statistics = score.ConvertStatistics;
 
-        var rosubeatmap = Beatmap.FromBytes(b);
+        using var rosubeatmap = Beatmap.FromBytes(b);
 
         Mode rmode = score.Mode.ToRosu();
 
         var mods_json = score.JsonMods;
-        var mods = Mods.FromJson(mods_json, rmode);
+        using var mods = Mods.FromJson(mods_json, rmode);
 
-        var builder = BeatmapAttributesBuilder.New();
+        using var builder = BeatmapAttributesBuilder.New();
         builder.Mode(rmode);
         builder.Mods(mods);
         var bmAttr = builder.Build(rosubeatmap);

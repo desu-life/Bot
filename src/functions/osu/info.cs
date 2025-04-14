@@ -376,8 +376,9 @@ namespace KanonBot.Functions.OSUBot
                         false,
                         isDataOfDayAvaiavle,
                         false,
-                        kind: command.lazer ? is_ppysb ? CalculatorKind.Sb : CalculatorKind.Unset : CalculatorKind.Unset
+                        kind: command.special_version_pp ? (is_ppysb ? CalculatorKind.Sb : CalculatorKind.Old) : CalculatorKind.Unset
                     );
+                    
                     await img.SaveAsync(stream, new PngEncoder());
                     break;
                 default:

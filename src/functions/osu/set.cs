@@ -312,7 +312,7 @@ namespace KanonBot.Functions.OSUBot
             try
             {
                 image = new Image<Rgba32>(1382, 2456);
-                var temppic = await Utils.ReadImageRgba(imagePath);
+                using var temppic = await Utils.ReadImageRgba(imagePath);
                 temppic.Mutate(
                     x =>
                         x.Resize(
@@ -416,7 +416,7 @@ namespace KanonBot.Functions.OSUBot
             try
             {
                 image = new Image<Rgba32>(1200, 350);
-                var temppic = await Utils.ReadImageRgba(imagePath);
+                using var temppic = await Utils.ReadImageRgba(imagePath);
                 temppic.Mutate(
                     x =>
                         x.Resize(

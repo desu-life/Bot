@@ -42,8 +42,7 @@ public static partial class Utils
 
     async public static Task<Image<Rgba32>> ReadImageRgba(string path)
     {
-        using var img = await Img.LoadAsync(path);
-        return img.CloneAs<Rgba32>();
+        return await Img.LoadAsync<Rgba32>(path);
     }
 
     async public static Task<(Image<Rgba32>, IImageFormat)> ReadImageRgbaWithFormat(string path)

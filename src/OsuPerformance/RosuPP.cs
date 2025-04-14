@@ -34,23 +34,23 @@ public static class RosuCalculator
         API.OSU.Models.Mod[] rawMods
     )
     {
-        Beatmap beatmap = Beatmap.FromBytes(b);
-        var builder = BeatmapAttributesBuilder.New();
+        using var beatmap = Beatmap.FromBytes(b);
+        using var builder = BeatmapAttributesBuilder.New();
         var bmAttr = builder.Build(beatmap);
         var bpm = bmAttr.clock_rate * beatmap.Bpm();
-        var rmods = Mods.FromJson(Serializer.Json.Serialize(rawMods), beatmap.Mode());
+        using var rmods = Mods.FromJson(Serializer.Json.Serialize(rawMods), beatmap.Mode());
 
-        var js = RosuPP.OwnedString.Empty();
+        using var js = RosuPP.OwnedString.Empty();
         rmods.Json(js.Context);
         var mods = Json.Deserialize<OSU.Models.Mod[]>(js.ToCstr())!;
         var is_lazer = !mods.Any(m => m.IsClassic);
 
-        var d = Difficulty.New();
+        using var d = Difficulty.New();
         d.Lazer(is_lazer);
         d.Mods(rmods);
         var dattr = d.Calculate(beatmap);
 
-        var p = Performance.New();
+        using var p = Performance.New();
         p.Lazer(is_lazer);
         p.Mods(rmods);
         var pstate = p.GenerateStateFromDifficulty(dattr);
@@ -89,7 +89,7 @@ public static class RosuCalculator
         double[] accs = [100.00, 99.00, 98.00, 97.00, 95.00, data.scoreInfo.Accuracy * 100.00];
         data.ppInfo.ppStats = accs.Select(acc =>
             {
-                var p = Performance.New();
+                using var p = Performance.New();
                 p.Lazer(is_lazer);
                 p.Mods(rmods);
                 p.Accuracy(acc);
@@ -111,19 +111,19 @@ public static class RosuCalculator
         }
         var statistics = data.scoreInfo.ConvertStatistics;
 
-        Beatmap beatmap = Beatmap.FromBytes(b);
+        using var beatmap = Beatmap.FromBytes(b);
 
         Mode rmode = data.scoreInfo.Mode.ToRosu();
 
-        var mods = Mods.FromJson(data.scoreInfo.JsonMods, rmode);
+        using var mods = Mods.FromJson(data.scoreInfo.JsonMods, rmode);
 
-        var builder = BeatmapAttributesBuilder.New();
+        using var builder = BeatmapAttributesBuilder.New();
         builder.Mode(rmode);
         builder.Mods(mods);
         var bmAttr = builder.Build(beatmap);
         var bpm = bmAttr.clock_rate * beatmap.Bpm();
 
-        var p = Performance.New();
+        using var p = Performance.New();
         p.Lazer(score.IsLazer);
         p.Mode(rmode);
         p.Mods(mods);
@@ -146,7 +146,7 @@ public static class RosuCalculator
 
         data.ppInfo.ppStats = accs.Select(acc =>
             {
-                var p = Performance.New();
+                using var p = Performance.New();
                 p.Lazer(score.IsLazer);
                 p.Mode(rmode);
                 p.Mods(mods);
@@ -164,19 +164,19 @@ public static class RosuCalculator
     {
         var statistics = score.ConvertStatistics;
 
-        Beatmap beatmap = Beatmap.FromBytes(b);
+        using var beatmap = Beatmap.FromBytes(b);
 
         Mode rmode = score.Mode.ToRosu();
 
-        var mods = Mods.FromJson(score.JsonMods, rmode);
+        using var mods = Mods.FromJson(score.JsonMods, rmode);
 
-        var builder = BeatmapAttributesBuilder.New();
+        using var builder = BeatmapAttributesBuilder.New();
         builder.Mode(rmode);
         builder.Mods(mods);
         var bmAttr = builder.Build(beatmap);
         var bpm = bmAttr.clock_rate * beatmap.Bpm();
 
-        var p = Performance.New();
+        using var p = Performance.New();
         p.Lazer(score.IsLazer);
         p.Mode(rmode);
         p.Mods(mods);

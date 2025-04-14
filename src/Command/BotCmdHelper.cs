@@ -20,7 +20,7 @@ public static class BotCmdHelper
         public string osu_username, osu_mods, match_name, search_arg, server;           //用于获取具体要查询的模式，未提供返回osu
         public long osu_user_id, bid;
         public int order_number;//用于info的查询n天之前、pr，bp的序号，score的bid，如未提供则返回0
-        public bool lazer; //是否获取lazer数据
+        public bool special_version_pp; //是否获取lazer数据
         public bool self_query;
         public Option<int> StartAt;
         public Option<int> EndAt;
@@ -124,7 +124,7 @@ public static class BotCmdHelper
         if (tolower) {
             cmd?.ToLower();
         }
-        BotParameter param = new() { lazer = false, self_query = false };
+        BotParameter param = new() { special_version_pp = false, self_query = false };
         if (!String.IsNullOrEmpty(cmd)) {
             string arg1 = "", arg2 = "", arg3 = "", arg4 = "", arg5 = "";
             int section = 0;
@@ -152,7 +152,7 @@ public static class BotCmdHelper
                         arg4 += cmd[i]; // +
                         break;
                     case 4:
-                        param.lazer = true;
+                        param.special_version_pp = true;
                         arg5 += cmd[i]; // &
                         break;
                     default:

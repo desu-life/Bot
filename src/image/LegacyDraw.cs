@@ -927,7 +927,7 @@ namespace KanonBot.LegacyImage
             {
                 foreach (var mod in mods)
                 {
-                    var modPic = await DrawMod(mod, data.scoreInfo.IsLazer);
+                    using var modPic = await DrawMod(mod, data.scoreInfo.IsLazer);
                     if (modPic is null)
                         continue;
                     modPic.Mutate(x => x.Resize(200, 0));
@@ -939,7 +939,7 @@ namespace KanonBot.LegacyImage
             {
                 foreach (var mod in mods)
                 {
-                    var modPic = await DrawMod(mod, data.scoreInfo.IsLazer);
+                    using var modPic = await DrawMod(mod, data.scoreInfo.IsLazer);
                     if (modPic is null)
                         continue;
                     modPic.Mutate(x => x.Resize(200, 0));

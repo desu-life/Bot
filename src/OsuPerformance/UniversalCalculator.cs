@@ -5,6 +5,7 @@ namespace KanonBot.OsuPerformance
     public enum CalculatorKind
     {
         Unset,
+        Old,
         Osu,
         Rosu,
         Oppai,
@@ -46,7 +47,8 @@ namespace KanonBot.OsuPerformance
                 CalculatorKind.Rosu => RosuCalculator.CalculatePanelData(b, score),
                 CalculatorKind.Oppai => OppaiCalculator.CalculatePanelData(b, score),
                 CalculatorKind.Sb => SBRosuCalculator.CalculatePanelData(b, score),
-                _ => OsuCalculator.CalculatePanelData(b, score),
+                CalculatorKind.Old => OppaiCalculator.CalculatePanelData(b, score),
+                _ => RosuCalculator.CalculatePanelData(b, score),
             };
         }
 
@@ -75,7 +77,8 @@ namespace KanonBot.OsuPerformance
                 CalculatorKind.Rosu => RosuCalculator.CalculateData(b, score),
                 CalculatorKind.Oppai => OppaiCalculator.CalculateData(b,score),
                 CalculatorKind.Sb => SBRosuCalculator.CalculateData(b,score),
-                _ => OsuCalculator.CalculateData(b,score),
+                CalculatorKind.Old => OppaiCalculator.CalculateData(b, score),
+                _ => RosuCalculator.CalculateData(b,score),
             };
         }
     }

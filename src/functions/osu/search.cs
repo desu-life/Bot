@@ -176,9 +176,10 @@ namespace KanonBot.Functions.OSUBot
 
             var b = await Utils.LoadOrDownloadBeatmap(beatmap);
 
-            var rmods = RosuPP.Mods.FromAcronyms(command.osu_mods, beatmap.Mode.ToRosu());
-            rmods.RemoveIncompatibleMods();
-            var js = RosuPP.OwnedString.Empty();
+            using var rmods = RosuPP.Mods.FromAcronyms(command.osu_mods, beatmap.Mode.ToRosu());
+            rmods.Sanitize();
+            rmods.RemoveUnknownMods();
+            using var js = RosuPP.OwnedString.Empty();
             rmods.Json(js.Context);
             mods_lazer = Serializer.Json.Deserialize<API.OSU.Models.Mod[]>(js.ToCstr())!;
             Log.Debug($"Mods: {string.Join(",", mods_lazer.Select(x => x.Acronym))}");

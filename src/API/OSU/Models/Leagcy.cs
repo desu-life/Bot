@@ -65,9 +65,9 @@ public partial class Models
         public ScoreLazer ToLazerScore(Mode mode)
         {
             var s = this;
-            var rmods = RosuPP.Mods.FromBits(s.EnabledMods, mode.ToRosu());
-            var js = RosuPP.OwnedString.Empty();
-            rmods.Json(ref js);
+            using var rmods = RosuPP.Mods.FromBits(s.EnabledMods, mode.ToRosu());
+            using var js = RosuPP.OwnedString.Empty();
+            rmods.Json(js);
             var mods = Json.Deserialize<List<Models.Mod>>(js.ToCstr());
             mods?.Add(Mod.FromString("CL"));
 

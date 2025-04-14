@@ -240,7 +240,7 @@ namespace KanonBot.Functions.OSUBot
 
                 await Parallel.ForEachAsync(scores, async (s, _) => {
                     var b = await Utils.LoadOrDownloadBeatmap(s.Score.Beatmap!);
-                    s.PPInfo = UniversalCalculator.CalculateData(b, s.Score, command.lazer ? is_ppysb ? CalculatorKind.Sb : CalculatorKind.Rosu : CalculatorKind.Unset);
+                    s.PPInfo = UniversalCalculator.CalculateData(b, s.Score, command.special_version_pp ? (is_ppysb ? CalculatorKind.Sb : CalculatorKind.Old) : CalculatorKind.Unset);
                 });
 
                 scores.Sort((a, b) => b.PPInfo!.ppStat.total > a.PPInfo!.ppStat.total ? 1 : -1);

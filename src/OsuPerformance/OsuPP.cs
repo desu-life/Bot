@@ -20,23 +20,23 @@ public static class OsuCalculator
         API.OSU.Models.Mod[] mods
     )
     {
-        var rosubeatmap = Beatmap.FromBytes(b);
+        using var rosubeatmap = Beatmap.FromBytes(b);
 
         Mode rmode = rosubeatmap.Mode();
         var jmods = Serializer.Json.Serialize(mods);
-        var rmods = Mods.FromJson(jmods, rmode);
+        using var rmods = Mods.FromJson(jmods, rmode);
 
         // 开始计算
         var clockRate = 1.0;
 
-        var builder = BeatmapAttributesBuilder.New();
+        using var builder = BeatmapAttributesBuilder.New();
         builder.Mode(rmode);
         builder.Mods(rmods);
         var bmAttr = builder.Build(rosubeatmap);
         var bpm = bmAttr.clock_rate * rosubeatmap.Bpm();
         clockRate = bmAttr.clock_rate;
 
-        var perf = Performance.New();
+        using var perf = Performance.New();
         perf.Lazer(!mods.Any(m => m.IsClassic));
         perf.Mode(rmode);
         perf.Mods(rmods);
@@ -104,7 +104,7 @@ public static class OsuCalculator
         {
             ref var acc = ref accs[i];
 
-            var p = Performance.New();
+            using var p = Performance.New();
             p.Lazer(!mods.Any(m => m.IsClassic));
             p.Mode(rmode);
             p.Mods(rmods);
@@ -148,22 +148,22 @@ public static class OsuCalculator
             data.server = "Lazer";
         var statistics = data.scoreInfo.ConvertStatistics;
 
-        var rosubeatmap = Beatmap.FromBytes(b);
+        using var rosubeatmap = Beatmap.FromBytes(b);
 
         Mode rmode = data.scoreInfo.Mode.ToRosu();
         rosubeatmap.Convert(rmode);
 
         var clockRate = 1.0;
-        var mods = Mods.FromJson(data.scoreInfo.JsonMods, rmode);
+        using var mods = Mods.FromJson(data.scoreInfo.JsonMods, rmode);
 
-        var builder = BeatmapAttributesBuilder.New();
+        using var builder = BeatmapAttributesBuilder.New();
         builder.Mode(rmode);
         builder.Mods(mods);
         var bmAttr = builder.Build(rosubeatmap);
         var bpm = bmAttr.clock_rate * rosubeatmap.Bpm();
         clockRate = bmAttr.clock_rate;
 
-        var difficulty = Difficulty.New();
+        using var difficulty = Difficulty.New();
         difficulty.Lazer(score.IsLazer);
         difficulty.Mods(mods);
         var dattr = difficulty.Calculate(rosubeatmap);
@@ -202,7 +202,7 @@ public static class OsuCalculator
         {
             ref var acc = ref accs[i];
 
-            var p = Performance.New();
+            using var p = Performance.New();
             p.Lazer(score.IsLazer);
             p.Mode(rmode);
             p.Mods(mods);
@@ -249,14 +249,14 @@ public static class OsuCalculator
     {
         var statistics = score.ConvertStatistics;
 
-        var rosubeatmap = Beatmap.FromBytes(b);
+        using var rosubeatmap = Beatmap.FromBytes(b);
 
         Mode rmode = score.Mode.ToRosu();
 
         var mods_json = score.JsonMods;
-        var mods = Mods.FromJson(mods_json, rmode);
+        using var mods = Mods.FromJson(mods_json, rmode);
 
-        var builder = BeatmapAttributesBuilder.New();
+        using var builder = BeatmapAttributesBuilder.New();
         builder.Mode(rmode);
         builder.Mods(mods);
         var bmAttr = builder.Build(rosubeatmap);

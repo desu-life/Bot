@@ -119,8 +119,12 @@ namespace KanonBot.DrawV3
             };
             bgstatus.Mutate(x => x.Fill(beatmap_status_color).RoundCorner(new Size(619, 80), 20));
             bgarea.Mutate(x => x.DrawImage(bgstatus, new Point(6, 358), 1));
-            bgarea.Mutate(x => x.DrawImage(bg.Clone(x => x.RoundCorner(new Size(619, 401), 20)), new Point(6, 6), 1));
+            var bg2 = bg.Clone(x => x.RoundCorner(new Size(619, 401), 20));
+            bgarea.Mutate(x => x.DrawImage(bg2, new Point(6, 6), 1));
             scoreimg.Mutate(x => x.DrawImage(bgarea, new Point(70, 51), 1));
+
+            bg2.Dispose(); // 手动丢弃
+            bg.Dispose(); // 手动丢弃
 
             //TODO beatmap status icon
 

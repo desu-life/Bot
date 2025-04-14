@@ -9,7 +9,7 @@ public class Ali
     private static Config.OSS config = Config.inner!.oss!;
     public static string? PutFile(string key, byte[] data)
     {
-        var stream = Utils.Byte2Stream(data);
+        using var stream = Utils.Byte2Stream(data);
         var client = new OssClient(config.endPoint, config.accessKeyId!, config.accessKeySecret!);
         try
         {                

@@ -406,7 +406,7 @@ namespace KanonBot.Functions.OSUBot
 
                 var rtmsg = new Chain();
                 using var stream = new MemoryStream();
-                var badge_img = await Utils.ReadImageRgba($"./work/badges/{badgeinfo!.id}.png");
+                using var badge_img = await Utils.ReadImageRgba($"./work/badges/{badgeinfo!.id}.png");
                 await badge_img.SaveAsync(stream, new PngEncoder());
                 rtmsg.image(Convert.ToBase64String(stream.ToArray(), 0, (int)stream.Length), ImageSegment.Type.Base64).msg(
                     $"徽章信息如下：\n" +
@@ -885,7 +885,7 @@ namespace KanonBot.Functions.OSUBot
 
                     var rtmsg = new Chain();
                     using var stream = new MemoryStream();
-                    var badge_img = await Utils.ReadImageRgba($"./work/badges/{badgeinfo!.id}.png");
+                    using var badge_img = await Utils.ReadImageRgba($"./work/badges/{badgeinfo!.id}.png");
                     await badge_img.SaveAsync(stream, new PngEncoder());
                     var rtmsg_s = $"已成功兑换徽章。\n" +
                         $"徽章信息如下：\n" +

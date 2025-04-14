@@ -534,7 +534,7 @@ namespace KanonBot.Functions.OSUBot
                 mode!.Value,
                 100,
                 0,
-                LegacyOnly: command.lazer
+                LegacyOnly: command.special_version_pp
             );
             if (allBP == null)
             {
@@ -978,7 +978,7 @@ namespace KanonBot.Functions.OSUBot
                 mode!.Value,
                 100,
                 0,
-                LegacyOnly: command.lazer
+                LegacyOnly: command.special_version_pp
             );
             if (allBP == null)
             {

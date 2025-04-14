@@ -1129,6 +1129,7 @@ namespace KanonBot.DrawV2
                 ); //355x200
                 bp1bg.Mutate(x => x.Brightness(MainBPImgBrightness));
                 info.Mutate(x => x.DrawImage(bp1bg, new Point(1566, 1550), 1));
+                bp1bg.Dispose(); // 手动丢弃
             }
             else
             {
@@ -1607,7 +1608,7 @@ namespace KanonBot.DrawV2
                     $"./work/panelv2/icons/indicator.png"
                 );
                 indicator_icon_increase.Mutate(x => x.Resize(42, 42));
-                //Img indicator_icon_decrease = await Utils.ReadImageRgba($"./work/panelv2/icons/indicator.png");
+                //using var indicator_icon_decrease = await Utils.ReadImageRgba($"./work/panelv2/icons/indicator.png");
                 //indicator_icon_decrease.Mutate(x => x.Resize(42, 42).Rotate(180));
                 var text = "";
                 //play time

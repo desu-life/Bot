@@ -180,7 +180,7 @@ namespace KanonBot.Functions.OSUBot
             API.OSU.Models.ScoreLazer[]? scores = null;
 
             
-            if (command.lazer && is_ppysb)
+            if (command.special_version_pp && is_ppysb)
             {
                 var ss = await API.PPYSB.Client.GetUserScores(
                     osuID!.Value,
@@ -216,7 +216,7 @@ namespace KanonBot.Functions.OSUBot
                 score.User ??= tempOsuInfo;
 
                 LegacyImage.Draw.ScorePanelData data;
-                data = await UniversalCalculator.CalculatePanelData(score, command.lazer ? is_ppysb ? CalculatorKind.Sb : CalculatorKind.Rosu : CalculatorKind.Unset);
+                data = await UniversalCalculator.CalculatePanelData(score, command.special_version_pp ? (is_ppysb ? CalculatorKind.Sb : CalculatorKind.Old) : CalculatorKind.Unset);
                 using var stream = new MemoryStream();
 
                 using var img =

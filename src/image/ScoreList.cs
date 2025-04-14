@@ -185,7 +185,9 @@ namespace KanonBot.image
                 bgtemp.Mutate(x => x.DrawImage(scorebg, new Point(0, 0), 1));
                 image.Mutate(x => x.DrawImage(bgtemp, new Point(92, 433), 1));
                 image.Mutate(x => x.DrawImage(MainPic, new Point(0, 0), 1));
-            
+
+                scorebg.Dispose(); // 手动释放资源
+
                 //pp
                 textOptions.HorizontalAlignment = HorizontalAlignment.Left;
                 textOptions.VerticalAlignment = VerticalAlignment.Center;
