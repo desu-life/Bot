@@ -40,12 +40,12 @@ namespace KanonBot.Functions.OSUBot
             int StartAt = command.StartAt.Value();
             int EndAt = command.EndAt.Value();
 
-            if (StartAt < 1 || StartAt > 99)
+            if (StartAt < 1 || StartAt > 199)
             {
                 await target.reply("指定的范围不正确");
                 return;
             }
-            if (EndAt < 2 || EndAt > 100)
+            if (EndAt < 2 || EndAt > 200)
             {
                 await target.reply("指定的范围不正确");
                 return;
@@ -207,14 +207,15 @@ namespace KanonBot.Functions.OSUBot
                 );
                 scoreInfos = ss?.Map(s => s.ToOsu(sbinfo!, sbmode!.Value)).ToArray();
             } else {
-                scoreInfos = await API.OSU.Client.GetUserScores(
+                scoreInfos = await API.OSU.Client.GetUserScoresPage(
                     osuID!.Value,
                     API.OSU.UserScoreType.Best,
                     mode!.Value,
-                    100,
+                    200,
                     0,
                     includeFails
                 );
+                
             }
 
             if (scoreInfos == null)

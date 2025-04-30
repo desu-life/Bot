@@ -180,6 +180,33 @@ namespace KanonBot.API.OSU
             }
         }
 
+        async public static Task<Models.ScoreLazer[]?> GetUserScoresPage(long userId, UserScoreType scoreType = UserScoreType.Best, Mode mode = Mode.OSU, int limit = 1, int offset = 0, bool includeFails = true, bool LegacyOnly = false)
+        {
+            const int MAX_LIMIT = 100;  // API单次请求最大限制
+            List<Models.ScoreLazer> allScores = [];
+            int remaining = limit;
+            int currentOffset = offset;
+
+            while (remaining > 0)
+            {
+                int currentLimit = Math.Min(remaining, MAX_LIMIT);
+                
+                var scores = await GetUserScores(userId, scoreType, mode, currentLimit, currentOffset, includeFails, LegacyOnly);
+                if (scores == null || scores.Length == 0)
+                    break;
+
+                allScores.AddRange(scores);
+                remaining -= scores.Length;
+                currentOffset += scores.Length;
+
+                // 如果返回数量不足请求量，说明没有更多数据
+                if (scores.Length < currentLimit)
+                    break;
+            }
+
+            return [.. allScores];
+        }
+
         // 获取用户成绩
         // Score type. Must be one of these: best, firsts, recent.
         // 默认 best

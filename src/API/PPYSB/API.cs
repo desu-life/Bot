@@ -164,6 +164,7 @@ namespace KanonBot.API.PPYSB
                 .SetQueryParam("include_loved", includeLoved ? 1 : 0)
                 .SetQueryParam("mode", mode.ToNum());
             
+            if ((limit + offset) > 100) return [];
             
             req.SetQueryParam("limit", limit + offset);
 
