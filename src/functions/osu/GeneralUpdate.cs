@@ -44,7 +44,7 @@ namespace KanonBot.Functions.OSU
                 Log.Information("启动检查徽章有效期任务");
                 await OSUBot.Badge.CheckBadgeIsVaildJob();
                 Log.Information("检查徽章有效期任务完成");
-                Environment.Exit(0);
+                // Environment.Exit(0);
             }, "DailyUpdate", "0 4 * * *"));   // 每天早上4点运行的意思，具体参考https://crontab.cronhub.io/
             daemon.Start(CancellationToken.None);
         }
