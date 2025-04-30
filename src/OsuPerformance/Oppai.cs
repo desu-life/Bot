@@ -31,6 +31,14 @@ public static class OppaiCalculator
         Mode rmode = data.scoreInfo.Mode.ToRosu();
         rosubeatmap.Convert(rmode);
 
+        if (rmode != Mode.Catch && score.Rank == "F") {
+            var hitobjects = HitObjects.New(rosubeatmap);
+            var playtime = hitobjects.Get(statistics.PassedObjects(data.scoreInfo.Mode) - 1).ToNullable()?.start_time;
+            if (playtime.HasValue) {
+                data.playtime = playtime / 1000.0;
+            }
+        }
+
         var clockRate = 1.0;
         using var mods = Mods.FromJson(data.scoreInfo.JsonMods, rmode);
 

@@ -480,6 +480,20 @@ public partial class Models
         [JsonProperty("legacy_combo_increase", NullValueHandling = NullValueHandling.Ignore)]
         public uint LegacyComboIncrease { get; set; }
 
+        public uint PassedObjects(Mode mode)
+        {
+            return mode switch
+            {
+                Mode.OSU => CountGreat + CountOk + CountMeh + CountMiss,
+                Mode.Taiko => CountGreat + CountOk + CountMiss,
+                Mode.Fruits
+                    => CountGreat + CountOk + CountMeh + CountMiss,
+                Mode.Mania
+                    => CountGeki + CountKatu + CountGreat + CountOk + CountMeh + CountMiss,
+                _ => 0
+            };
+        }
+
         public uint TotalHits(Mode mode)
         {
             return mode switch

@@ -14,6 +14,14 @@ namespace KanonBot.OsuPerformance;
 
 public static class RosuCalculator
 {
+    public static uint GetMaxCombo(this DifficultyAttributes dattr) => dattr.mode switch {
+        Mode.Osu => dattr.osu.Unwrap().max_combo,
+        Mode.Taiko => dattr.taiko.Unwrap().max_combo,
+        Mode.Catch => dattr.fruit.Unwrap().max_combo,
+        Mode.Mania => dattr.mania.Unwrap().max_combo,
+        _ => throw new ArgumentException("Invalid mode for DifficultyAttributes")
+    };
+
     public static RosuPP.Mode ToRosu(this API.OSU.Mode mode) =>
         mode switch
         {
@@ -122,6 +130,22 @@ public static class RosuCalculator
         builder.Mods(mods);
         var bmAttr = builder.Build(beatmap);
         var bpm = bmAttr.clock_rate * beatmap.Bpm();
+        beatmap.Convert(rmode, mods);
+
+        if (rmode != Mode.Catch && score.Rank == "F") {
+            var hitobjects = HitObjects.New(beatmap);
+            var playtime = hitobjects.Get(statistics.PassedObjects(data.scoreInfo.Mode) - 1).ToNullable()?.start_time;
+            if (playtime.HasValue) {
+                data.playtime = playtime / 1000.0;
+            }
+        }
+
+        using var d = Difficulty.New();
+        d.Lazer(score.IsLazer);
+        d.Mods(mods);
+        var dattr_full = d.Calculate(beatmap);
+        d.PassedObjects(statistics.TotalHits(data.scoreInfo.Mode));
+        var dattr = d.Calculate(beatmap);
 
         using var p = Performance.New();
         p.Lazer(score.IsLazer);
@@ -139,21 +163,34 @@ public static class RosuCalculator
         p.Misses(statistics.CountMiss);
 
         // 开始计算
-        data.ppInfo = PPInfo.New(p.Calculate(beatmap), bmAttr, bpm);
+        var state = p.GenerateStateFromDifficulty(dattr);
+        data.ppInfo = PPInfo.New(p.CalculateFromDifficulty(dattr), bmAttr, bpm, dattr_full);
 
         // 5种acc + 全连
         double[] accs = [100.00, 99.00, 98.00, 97.00, 95.00, data.scoreInfo.AccAuto * 100.00];
 
-        data.ppInfo.ppStats = accs.Select(acc =>
+        data.ppInfo.ppStats = [.. accs.Select(acc =>
             {
                 using var p = Performance.New();
                 p.Lazer(score.IsLazer);
                 p.Mode(rmode);
                 p.Mods(mods);
                 p.Accuracy(acc);
-                return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm).ppStat;
-            })
-            .ToList();
+                var s = p.GenerateStateFromDifficulty(dattr_full);
+                
+                if (dattr.mode == Mode.Osu && score.IsLazer) {
+                    var a = state.Acc(ref dattr_full, OsuScoreOrigin.WithoutSliderAcc);
+                    var a2 = s.Acc(ref dattr_full, OsuScoreOrigin.WithoutSliderAcc);
+                    if (a > a2) {
+                        p.SliderEndHits(statistics.SliderTailHit);
+                    }
+                }
+                
+                var pattr = p.CalculateFromDifficulty(dattr_full);
+                return PPInfo.New(pattr, bmAttr, bpm).ppStat;
+            })];
+
+        
 
         data.mode = rmode;
 
@@ -201,23 +238,25 @@ public partial class PPInfo
     public static PPInfo New(
         RosuPP.PerformanceAttributes result,
         RosuPP.BeatmapAttributes bmAttr,
-        double bpm
+        double bpm,
+        RosuPP.DifficultyAttributes? dresult = null
     )
     {
         switch (result.mode)
         {
             case RosuPP.Mode.Osu:
             {
-                var attr = result.osu.ToNullable()!.Value;
+                var attr = result.osu.Unwrap();
+                var dattr = dresult is not null ? dresult!.Value.osu.Unwrap() : attr.difficulty;
                 return new PPInfo()
                 {
-                    star = attr.stars,
+                    star = dattr.stars,
                     CS = bmAttr.cs,
                     HP = bmAttr.hp,
                     AR = bmAttr.ar,
                     OD = bmAttr.od,
                     accuracy = attr.pp_acc,
-                    maxCombo = attr.max_combo,
+                    maxCombo = dattr.max_combo,
                     bpm = bpm,
                     clockrate = bmAttr.clock_rate,
                     ppStat = new PPInfo.PPStat()
@@ -234,16 +273,17 @@ public partial class PPInfo
             }
             case RosuPP.Mode.Taiko:
             {
-                var attr = result.taiko.ToNullable()!.Value;
+                var attr = result.taiko.Unwrap();
+                var dattr = dresult is not null ? dresult!.Value.taiko.Unwrap() : attr.difficulty;
                 return new PPInfo()
                 {
-                    star = attr.stars,
+                    star = dattr.stars,
                     CS = bmAttr.cs,
                     HP = bmAttr.hp,
                     AR = bmAttr.ar,
                     OD = bmAttr.od,
                     accuracy = attr.pp_acc,
-                    maxCombo = attr.max_combo,
+                    maxCombo = dattr.max_combo,
                     bpm = bpm,
                     clockrate = bmAttr.clock_rate,
                     ppStat = new PPInfo.PPStat()
@@ -260,16 +300,17 @@ public partial class PPInfo
             }
             case RosuPP.Mode.Catch:
             {
-                var attr = result.fruit.ToNullable()!.Value;
+                var attr = result.fruit.Unwrap();
+                var dattr = dresult is not null ? dresult!.Value.fruit.Unwrap() : attr.difficulty;
                 return new PPInfo()
                 {
-                    star = attr.stars,
+                    star = dattr.stars,
                     CS = bmAttr.cs,
                     HP = bmAttr.hp,
                     AR = bmAttr.ar,
                     OD = bmAttr.od,
                     accuracy = null,
-                    maxCombo = attr.max_combo,
+                    maxCombo = dattr.max_combo,
                     bpm = bpm,
                     clockrate = bmAttr.clock_rate,
                     ppStat = new PPInfo.PPStat()
@@ -286,16 +327,17 @@ public partial class PPInfo
             }
             case RosuPP.Mode.Mania:
             {
-                var attr = result.mania.ToNullable()!.Value;
+                var attr = result.mania.Unwrap();
+                var dattr = dresult is not null ? dresult!.Value.mania.Unwrap() : attr.difficulty;
                 return new PPInfo()
                 {
-                    star = attr.stars,
+                    star = dattr.stars,
                     CS = bmAttr.cs,
                     HP = bmAttr.hp,
                     AR = bmAttr.ar,
                     OD = bmAttr.od,
                     accuracy = null,
-                    maxCombo = attr.max_combo,
+                    maxCombo = dattr.max_combo,
                     bpm = bpm,
                     clockrate = bmAttr.clock_rate,
                     ppStat = new PPInfo.PPStat()

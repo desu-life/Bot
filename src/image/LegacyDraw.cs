@@ -45,6 +45,7 @@ namespace KanonBot.LegacyImage
             public RosuPP.Mode mode;
             public string server;
             public double? oldPP;
+            public double? playtime;
         }
 
         public class PPVSPanelData
@@ -1059,6 +1060,13 @@ namespace KanonBot.LegacyImage
             var song_time = Utils.Duration2TimeString(
                 (long)Math.Round(data.scoreInfo.Beatmap.TotalLength / data.ppInfo.clockrate)
             );
+            if (data.playtime is not null) {
+                var pt = Utils.Duration2TimeString(
+                    (long)Math.Round(data.playtime.Value / data.ppInfo.clockrate)
+                );
+
+                song_time = $"{pt} / {song_time}";
+            }
             textOptions.Origin = new PointF(1741, 127);
             score.Mutate(x =>
                 x.DrawText(drawOptions, textOptions, song_time, new SolidBrush(Color.Black), null)
