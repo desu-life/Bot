@@ -32,7 +32,7 @@ public static class OppaiCalculator
         rosubeatmap.Convert(rmode);
 
         if (rmode != Mode.Catch && score.Rank == "F") {
-            var hitobjects = HitObjects.New(rosubeatmap);
+            using var hitobjects = HitObjects.New(rosubeatmap);
             var playtime = hitobjects.Get(statistics.PassedObjects(data.scoreInfo.Mode) - 1).ToNullable()?.start_time;
             if (playtime.HasValue) {
                 data.playtime = playtime / 1000.0;

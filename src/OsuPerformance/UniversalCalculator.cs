@@ -43,7 +43,7 @@ namespace KanonBot.OsuPerformance
 
             return kind switch
             {
-                CalculatorKind.Osu => RosuCalculator.CalculatePanelData(b, score),
+                // CalculatorKind.Osu => OsuCalculator.CalculatePanelData(b, score),
                 CalculatorKind.Rosu => RosuCalculator.CalculatePanelData(b, score),
                 CalculatorKind.Oppai => OppaiCalculator.CalculatePanelData(b, score),
                 CalculatorKind.Sb => SBRosuCalculator.CalculatePanelData(b, score),
@@ -73,7 +73,7 @@ namespace KanonBot.OsuPerformance
 
             return kind switch
             {
-                CalculatorKind.Osu => RosuCalculator.CalculateData(b, score),
+                // CalculatorKind.Osu => OsuCalculator.CalculateData(b, score),
                 CalculatorKind.Rosu => RosuCalculator.CalculateData(b, score),
                 CalculatorKind.Oppai => OppaiCalculator.CalculateData(b,score),
                 CalculatorKind.Sb => SBRosuCalculator.CalculateData(b,score),

@@ -153,6 +153,14 @@ public static class OsuCalculator
         Mode rmode = data.scoreInfo.Mode.ToRosu();
         rosubeatmap.Convert(rmode);
 
+        if (rmode != Mode.Catch && score.Rank == "F") {
+            using var hitobjects = HitObjects.New(rosubeatmap);
+            var playtime = hitobjects.Get(statistics.PassedObjects(data.scoreInfo.Mode) - 1).ToNullable()?.start_time;
+            if (playtime.HasValue) {
+                data.playtime = playtime / 1000.0;
+            }
+        }
+
         var clockRate = 1.0;
         using var mods = Mods.FromJson(data.scoreInfo.JsonMods, rmode);
 
@@ -207,29 +215,47 @@ public static class OsuCalculator
             p.Mode(rmode);
             p.Mods(mods);
             p.Accuracy(acc);
-            var state = p.GenerateState(rosubeatmap);
+            var s = p.GenerateStateFromDifficulty(dattr);
 
-            c.N50 = state.n50;
-            c.N100 = state.n100;
-            c.N300 = state.n300;
-            c.NKatu = state.n_katu;
-            c.NGeki = state.n_geki;
-            c.NMiss = state.misses;
-            c.combo = state.max_combo;
+            if (dattr.mode == Mode.Osu && score.IsLazer) {
+                var state = new ScoreState {
+                    max_combo = data.scoreInfo.MaxCombo,
+                    n50 = statistics.CountMeh,
+                    n100 = statistics.CountOk,
+                    n300 = statistics.CountGreat,
+                    n_katu = statistics.CountKatu,
+                    n_geki = statistics.CountGeki,
+                    misses = statistics.CountMiss,
+                };
+                var a = state.Acc(ref dattr, OsuScoreOrigin.WithoutSliderAcc);
+                var a2 = s.Acc(ref dattr, OsuScoreOrigin.WithoutSliderAcc);
+                if (a > a2) {
+                    p.SliderEndHits(statistics.SliderTailHit);
+                    s = p.GenerateStateFromDifficulty(dattr);
+                }
+            }
+
+            c.N50 = s.n50;
+            c.N100 = s.n100;
+            c.N300 = s.n300;
+            c.NKatu = s.n_katu;
+            c.NGeki = s.n_geki;
+            c.NMiss = s.misses;
+            c.combo = s.max_combo;
             c.accuracy = acc;
 
             if (rmode is Mode.Osu)
             {
-                c.SliderTailHit = state.slider_end_hits;
+                c.SliderTailHit = s.slider_end_hits;
                 c.SliderTickMiss = 0;
 
                 var dattrosu = dattr.osu.ToNullable();
                 if (dattrosu is not null) {
                     if (score.IsLazer) {
                         if (mods.Contains("CL")) {
-                            c.SliderTickMiss = dattrosu.Value.n_large_ticks - state.osu_large_tick_hits;
+                            c.SliderTickMiss = dattrosu.Value.n_large_ticks - s.osu_large_tick_hits;
                         } else {
-                            c.SliderTickMiss = dattrosu.Value.n_large_ticks + dattrosu.Value.n_sliders - state.osu_large_tick_hits;
+                            c.SliderTickMiss = dattrosu.Value.n_large_ticks + dattrosu.Value.n_sliders - s.osu_large_tick_hits;
                         }
                     }
                 }

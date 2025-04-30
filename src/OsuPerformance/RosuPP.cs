@@ -133,7 +133,7 @@ public static class RosuCalculator
         beatmap.Convert(rmode, mods);
 
         if (rmode != Mode.Catch && score.Rank == "F") {
-            var hitobjects = HitObjects.New(beatmap);
+            using var hitobjects = HitObjects.New(beatmap);
             var playtime = hitobjects.Get(statistics.PassedObjects(data.scoreInfo.Mode) - 1).ToNullable()?.start_time;
             if (playtime.HasValue) {
                 data.playtime = playtime / 1000.0;
@@ -177,14 +177,6 @@ public static class RosuCalculator
                 p.Mods(mods);
                 p.Accuracy(acc);
                 var s = p.GenerateStateFromDifficulty(dattr_full);
-                
-                if (dattr.mode == Mode.Osu && score.IsLazer) {
-                    var a = state.Acc(ref dattr_full, OsuScoreOrigin.WithoutSliderAcc);
-                    var a2 = s.Acc(ref dattr_full, OsuScoreOrigin.WithoutSliderAcc);
-                    if (a > a2) {
-                        p.SliderEndHits(statistics.SliderTailHit);
-                    }
-                }
                 
                 var pattr = p.CalculateFromDifficulty(dattr_full);
                 return PPInfo.New(pattr, bmAttr, bpm).ppStat;
