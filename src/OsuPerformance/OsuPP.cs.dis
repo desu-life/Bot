@@ -217,7 +217,7 @@ public static class OsuCalculator
             p.Accuracy(acc);
             var s = p.GenerateStateFromDifficulty(dattr);
 
-            if (dattr.mode == Mode.Osu && score.IsLazer) {
+            if (dattr.mode == Mode.Osu && score.IsLazer && score.Rank != "F") {
                 var state = new ScoreState {
                     max_combo = data.scoreInfo.MaxCombo,
                     n50 = statistics.CountMeh,

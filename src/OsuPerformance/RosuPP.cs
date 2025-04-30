@@ -177,6 +177,14 @@ public static class RosuCalculator
                 p.Mods(mods);
                 p.Accuracy(acc);
                 var s = p.GenerateStateFromDifficulty(dattr_full);
+
+                if (dattr.mode == Mode.Osu && score.IsLazer && score.Rank != "F") {
+                    var a = state.Acc(ref dattr_full, OsuScoreOrigin.WithoutSliderAcc);
+                    var a2 = s.Acc(ref dattr_full, OsuScoreOrigin.WithoutSliderAcc);
+                    if (a > a2) {
+                        p.SliderEndHits(statistics.SliderTailHit);
+                    }
+                }
                 
                 var pattr = p.CalculateFromDifficulty(dattr_full);
                 return PPInfo.New(pattr, bmAttr, bpm).ppStat;
