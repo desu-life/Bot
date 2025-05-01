@@ -35,7 +35,7 @@ public static class OppaiCalculator
             using var hitobjects = HitObjects.New(rosubeatmap);
             var obj = hitobjects.Get(statistics.PassedObjects(data.scoreInfo.Mode) - 1).ToNullable();
             if (obj.HasValue) {
-                var endTime = obj.Value.kind.duration + obj.Value.start_time;
+                var endTime = obj.Value.data.duration + obj.Value.start_time;
                 data.playtime = endTime / 1000.0;
             }
         }

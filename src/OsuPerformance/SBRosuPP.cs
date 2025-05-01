@@ -118,17 +118,31 @@ public static class SBRosuCalculator
         var data = new Draw.ScorePanelData { scoreInfo = score, server = "ppy.sb" };
         var statistics = data.scoreInfo.ConvertStatistics;
 
-        using var beatmap = Beatmap.FromBytes(b);
-
         Mode rmode = data.scoreInfo.Mode.ToSBRosu();
-
         using var mods = Mods.FromJson(data.scoreInfo.JsonMods, rmode);
+        using var beatmap = Beatmap.FromBytes(b);
+        beatmap.Convert(rmode, mods);
 
         using var builder = BeatmapAttributesBuilder.New();
         builder.Mode(rmode);
         builder.Mods(mods);
         var bmAttr = builder.Build(beatmap);
         var bpm = bmAttr.clock_rate * beatmap.Bpm();
+        var passedObjects = statistics.PassedObjects(data.scoreInfo.Mode);
+
+        if (score.Passed == false) {
+            using var hitobjects = HitObjects.New(beatmap);
+            var obj = hitobjects.Get(passedObjects - 1).ToNullable();
+            if (obj.HasValue) {
+                var endTime = obj.Value.data.duration + obj.Value.start_time;
+                data.playtime = endTime / 1000.0;
+            }
+        }
+
+        using var d = Difficulty.New();
+        d.Lazer(score.IsLazer);
+        d.Mods(mods);
+        var dattr = d.Calculate(beatmap);
 
         using var p = Performance.New();
         p.Lazer(score.IsLazer);
@@ -144,23 +158,23 @@ public static class SBRosuCalculator
         p.LargeTickHits(statistics.LargeTickHit);
         p.SliderEndHits(statistics.SliderTailHit);
         p.Misses(statistics.CountMiss);
+        p.PassedObjects(passedObjects);
 
         // 开始计算
-        data.ppInfo = PPInfo.New(p.Calculate(beatmap), bmAttr, bpm);
+        data.ppInfo = PPInfo.New(p.Calculate(beatmap), bmAttr, bpm, dattr);
 
         // 5种acc + 全连
         double[] accs = [100.00, 99.00, 98.00, 97.00, 95.00, data.scoreInfo.AccAuto * 100.00];
 
-        data.ppInfo.ppStats = accs.Select(acc =>
+        data.ppInfo.ppStats = [.. accs.Select(acc =>
             {
                 using var p = Performance.New();
                 p.Lazer(score.IsLazer);
                 p.Mode(rmode);
                 p.Mods(mods);
                 p.Accuracy(acc);
-                return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm).ppStat;
-            })
-            .ToList();
+                return PPInfo.New(p.CalculateFromDifficulty(dattr), bmAttr, bpm).ppStat;
+            })];
 
         data.mode = rmode.ToRosu();
 
@@ -208,23 +222,25 @@ public partial class PPInfo
     public static PPInfo New(
         SBRosuPP.PerformanceAttributes result,
         SBRosuPP.BeatmapAttributes bmAttr,
-        double bpm
+        double bpm,
+        SBRosuPP.DifficultyAttributes? dresult = null
     )
     {
         switch (result.mode)
         {
             case SBRosuPP.Mode.Osu:
             {
-                var attr = result.osu.ToNullable()!.Value;
+                var attr = result.osu.Unwrap();
+                var dattr = dresult is not null ? dresult!.Value.osu.Unwrap() : attr.difficulty;
                 return new PPInfo()
                 {
-                    star = attr.stars,
+                    star = dattr.stars,
                     CS = bmAttr.cs,
                     HP = bmAttr.hp,
                     AR = bmAttr.ar,
                     OD = bmAttr.od,
                     accuracy = attr.pp_acc,
-                    maxCombo = attr.max_combo,
+                    maxCombo = dattr.max_combo,
                     bpm = bpm,
                     clockrate = bmAttr.clock_rate,
                     ppStat = new PPInfo.PPStat()
@@ -241,16 +257,17 @@ public partial class PPInfo
             }
             case SBRosuPP.Mode.Taiko:
             {
-                var attr = result.taiko.ToNullable()!.Value;
+                var attr = result.taiko.Unwrap();
+                var dattr = dresult is not null ? dresult!.Value.taiko.Unwrap() : attr.difficulty;
                 return new PPInfo()
                 {
-                    star = attr.stars,
+                    star = dattr.stars,
                     CS = bmAttr.cs,
                     HP = bmAttr.hp,
                     AR = bmAttr.ar,
                     OD = bmAttr.od,
                     accuracy = attr.pp_acc,
-                    maxCombo = attr.max_combo,
+                    maxCombo = dattr.max_combo,
                     bpm = bpm,
                     clockrate = bmAttr.clock_rate,
                     ppStat = new PPInfo.PPStat()
@@ -267,16 +284,17 @@ public partial class PPInfo
             }
             case SBRosuPP.Mode.Catch:
             {
-                var attr = result.fruit.ToNullable()!.Value;
+                var attr = result.fruit.Unwrap();
+                var dattr = dresult is not null ? dresult!.Value.fruit.Unwrap() : attr.difficulty;
                 return new PPInfo()
                 {
-                    star = attr.stars,
+                    star = dattr.stars,
                     CS = bmAttr.cs,
                     HP = bmAttr.hp,
                     AR = bmAttr.ar,
                     OD = bmAttr.od,
                     accuracy = null,
-                    maxCombo = attr.max_combo,
+                    maxCombo = dattr.max_combo,
                     bpm = bpm,
                     clockrate = bmAttr.clock_rate,
                     ppStat = new PPInfo.PPStat()
@@ -293,16 +311,17 @@ public partial class PPInfo
             }
             case SBRosuPP.Mode.Mania:
             {
-                var attr = result.mania.ToNullable()!.Value;
+                var attr = result.mania.Unwrap();
+                var dattr = dresult is not null ? dresult!.Value.mania.Unwrap() : attr.difficulty;
                 return new PPInfo()
                 {
-                    star = attr.stars,
+                    star = dattr.stars,
                     CS = bmAttr.cs,
                     HP = bmAttr.hp,
                     AR = bmAttr.ar,
                     OD = bmAttr.od,
                     accuracy = null,
-                    maxCombo = attr.max_combo,
+                    maxCombo = dattr.max_combo,
                     bpm = bpm,
                     clockrate = bmAttr.clock_rate,
                     ppStat = new PPInfo.PPStat()

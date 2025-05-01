@@ -119,24 +119,23 @@ public static class RosuCalculator
         }
         var statistics = data.scoreInfo.ConvertStatistics;
 
-        using var beatmap = Beatmap.FromBytes(b);
-
         Mode rmode = data.scoreInfo.Mode.ToRosu();
-
         using var mods = Mods.FromJson(data.scoreInfo.JsonMods, rmode);
+        using var beatmap = Beatmap.FromBytes(b);
+        beatmap.Convert(rmode, mods);
 
         using var builder = BeatmapAttributesBuilder.New();
         builder.Mode(rmode);
         builder.Mods(mods);
         var bmAttr = builder.Build(beatmap);
         var bpm = bmAttr.clock_rate * beatmap.Bpm();
-        beatmap.Convert(rmode, mods);
+        var passedObjects = statistics.PassedObjects(data.scoreInfo.Mode);
 
         if (score.Passed == false) {
             using var hitobjects = HitObjects.New(beatmap);
-            var obj = hitobjects.Get(statistics.PassedObjects(data.scoreInfo.Mode) - 1).ToNullable();
+            var obj = hitobjects.Get(passedObjects - 1).ToNullable();
             if (obj.HasValue) {
-                var endTime = obj.Value.kind.duration + obj.Value.start_time;
+                var endTime = obj.Value.data.duration + obj.Value.start_time;
                 data.playtime = endTime / 1000.0;
             }
         }
@@ -145,7 +144,7 @@ public static class RosuCalculator
         d.Lazer(score.IsLazer);
         d.Mods(mods);
         var dattr_full = d.Calculate(beatmap);
-        d.PassedObjects(statistics.TotalHits(data.scoreInfo.Mode));
+        d.PassedObjects(passedObjects);
         var dattr = d.Calculate(beatmap);
 
         using var p = Performance.New();
