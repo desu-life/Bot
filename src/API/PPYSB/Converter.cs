@@ -57,7 +57,7 @@ public static class PPYSBConverters
             TotalScore = u.TotalScore,
             RankedScore = u.RankedScore,
             PP = u.PP,
-            PlayTime = u.PlayTime,
+            PlayTime = u.PlayTime / 1000,
             PlayCount = u.Plays,
             HitAccuracy = u.Accuracy,
             MaximumCombo = u.MaxCombo,

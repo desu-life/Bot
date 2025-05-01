@@ -686,7 +686,7 @@ namespace KanonBot.LegacyImage
                 x.DrawText(
                     drawOptions,
                     textOptions,
-                    Utils.Duration2String(Statistics.PlayTime),
+                    Utils.Duration2StringWithoutSec(Statistics.PlayTime),
                     new SolidBrush(Color.White),
                     null
                 )

@@ -24,7 +24,7 @@ public static partial class Utils
         return DateTimeOffset.FromUnixTimeSeconds(timeStamp);
     }
 
-    public static string Duration2String(long duration)
+    public static string DayDuration2String(long duration)
     {
         long day,
             hour,
@@ -39,7 +39,7 @@ public static partial class Utils
         return $"{day}d {hour}h {minute}m {second}s";
     }
 
-    public static string Duration2StringWithoutSec(long duration)
+    public static string DayDuration2StringWithoutSec(long duration)
     {
         long day,
             hour,
@@ -52,6 +52,35 @@ public static partial class Utils
         minute = duration / 60;
         second = duration % 60;
         return $"{day}d {hour}h {minute}m";
+    }
+
+    public static string Duration2String(long duration)
+    {
+        long hour,
+            minute,
+            second;
+        hour = duration / 3600;
+        duration %= 3600;
+        minute = duration / 60;
+        second = duration % 60;
+        if (hour > 0)
+            return $"{hour}h {minute}m {second}s";
+        return $"{minute}m {second}s";
+    }
+
+    
+    public static string Duration2StringWithoutSec(long duration)
+    {
+        long hour,
+            minute,
+            second;
+        hour = duration / 3600;
+        duration %= 3600;
+        minute = duration / 60;
+        second = duration % 60;
+        if (hour > 0)
+            return $"{hour}h {minute}m";
+        return $"{minute}m";
     }
 
     public static string Duration2TimeString(long duration)
