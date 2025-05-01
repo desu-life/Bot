@@ -487,7 +487,7 @@ public partial class Models
                 Mode.OSU => CountGreat + CountOk + CountMeh + CountMiss,
                 Mode.Taiko => CountGreat + CountOk + CountMiss,
                 Mode.Fruits
-                    => CountGreat + CountOk + CountMeh + CountMiss,
+                    => CountGreat + CountOk + CountMiss,
                 Mode.Mania
                     => CountGeki + CountKatu + CountGreat + CountOk + CountMeh + CountMiss,
                 _ => 0

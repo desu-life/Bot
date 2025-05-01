@@ -132,11 +132,12 @@ public static class RosuCalculator
         var bpm = bmAttr.clock_rate * beatmap.Bpm();
         beatmap.Convert(rmode, mods);
 
-        if (rmode != Mode.Catch && score.Rank == "F") {
+        if (score.Passed == false) {
             using var hitobjects = HitObjects.New(beatmap);
-            var playtime = hitobjects.Get(statistics.PassedObjects(data.scoreInfo.Mode) - 1).ToNullable()?.start_time;
-            if (playtime.HasValue) {
-                data.playtime = playtime / 1000.0;
+            var obj = hitobjects.Get(statistics.PassedObjects(data.scoreInfo.Mode) - 1).ToNullable();
+            if (obj.HasValue) {
+                var endTime = obj.Value.kind.duration + obj.Value.start_time;
+                data.playtime = endTime / 1000.0;
             }
         }
 
