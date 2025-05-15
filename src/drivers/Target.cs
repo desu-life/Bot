@@ -36,6 +36,7 @@ public class Target
     public required string? sender { get; init; }
     public required Platform platform { get; init; }
     public bool isFromAdmin { get; set; } = false;
+    public DateTimeOffset time { get; set; } = DateTimeOffset.Now;
 
     // 原平台消息结构
     public object? raw { get; init; }

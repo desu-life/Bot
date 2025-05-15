@@ -134,7 +134,7 @@ public partial class OneBot
             /// 事件发生的时间戳
             /// </summary>
             [JsonProperty(PropertyName = "time", NullValueHandling = NullValueHandling.Ignore)]
-            public long? Time { get; set; }
+            public long Time { get; set; }
 
             /// <summary>
             /// 收到事件的机器人 QQ 号

@@ -101,6 +101,7 @@ public partial class OneBot
                                 }
                                 var target = new Target
                                 {
+                                    time = DateTimeOffset.FromUnixTimeSeconds(obj.Time),
                                     platform = Platform.OneBot,
                                     sender = obj.UserId.ToString(),
                                     selfAccount = this.selfID,

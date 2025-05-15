@@ -135,6 +135,10 @@ foreach (var driverConfig in config.drivers)
                                     target.sender,
                                     target.msg
                                 );
+                                
+                                // 丢弃消息，考虑到时间不同步，暂时不搞
+                                // Log.Warning("{0}", (DateTimeOffset.Now - target.time) > TimeSpan.FromSeconds(5));
+
                                 Log.Debug("↑ OneBot详情 {@0}", target.raw!);
                                 target.isFromAdmin = c.elevated;
                                 await Universal.Parser(target);
