@@ -86,6 +86,9 @@ public class Config
 
         [TomlProperty("v2_end_point")]
         public string? v2EndPoint { get; set; }
+
+        [TomlProperty("pp_plus_end_point")]
+        public string? pppEndPoint { get; set; }
     }
 
     public class OSS
@@ -259,7 +262,8 @@ public class Config
                     clientId = 0,
                     clientSecret = "",
                     v1key = "",
-                    v2EndPoint = "https://osu.ppy.sh/api/v2/"
+                    v2EndPoint = "https://osu.ppy.sh/api/v2/",
+                    pppEndPoint = "http://localhost:9001/"
                 },
                 drivers =
                 [

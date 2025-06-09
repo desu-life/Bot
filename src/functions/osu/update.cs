@@ -112,7 +112,11 @@ namespace KanonBot.Functions.OSUBot
             await target.reply("主要数据已更新完毕，pp+数据正在后台更新，请稍后使用info功能查看结果。");
 
             _ = Task.Run(async () => {
-                try { await Database.Client.UpdateOsuPPlusData((await API.OSU.Client.TryGetUserPlusData(OnlineOsuInfo!))!.User, OnlineOsuInfo!.Id); }
+                try
+                {
+                    var data = await Client.UpdateUserPlusDataNext(OnlineOsuInfo!.Id);
+                    await Database.Client.UpdateOsuPPlusDataNext(data!);   
+                }
                 catch { }//更新pp+失败，不返回信息
             });
 

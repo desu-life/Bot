@@ -22,7 +22,7 @@ namespace KanonBot.LegacyImage
         {
             public OSU.Models.UserExtended userInfo;
             public OSU.Models.User? prevUserInfo;
-            public OSU.Models.PPlusData.UserData? pplusInfo;
+            public OSU.Models.PPlusData.UserPerformancesNext? pplusInfo;
             public required long osuId; // 官方服务器的id
             public int daysBefore = 0;
             public List<int> badgeId = [];
@@ -52,8 +52,8 @@ namespace KanonBot.LegacyImage
         {
             public string u1Name;
             public string u2Name;
-            public OSU.Models.PPlusData.UserData u1;
-            public OSU.Models.PPlusData.UserData u2;
+            public OSU.Models.PPlusData.UserPerformancesNext u1;
+            public OSU.Models.PPlusData.UserPerformancesNext u2;
         }
 
         public static FontCollection fonts = new();
@@ -306,15 +306,15 @@ namespace KanonBot.LegacyImage
                         nodesize = new SizeF(5f, 5f)
                     };
                 // acc ,flow, jump, pre, speed, sta
-                var ppd = new int[6]; // 这里就强制转换了
+                var ppd = new double[6]; // 这里就强制转换了
                 try
                 {
-                    ppd[0] = (int)data.pplusInfo.AccuracyTotal;
-                    ppd[1] = (int)data.pplusInfo.FlowAimTotal;
-                    ppd[2] = (int)data.pplusInfo.JumpAimTotal;
-                    ppd[3] = (int)data.pplusInfo.PrecisionTotal;
-                    ppd[4] = (int)data.pplusInfo.SpeedTotal;
-                    ppd[5] = (int)data.pplusInfo.StaminaTotal;
+                    ppd[0] = data.pplusInfo.AccuracyTotal;
+                    ppd[1] = data.pplusInfo.FlowAimTotal;
+                    ppd[2] = data.pplusInfo.JumpAimTotal;
+                    ppd[3] = data.pplusInfo.PrecisionTotal;
+                    ppd[4] = data.pplusInfo.SpeedTotal;
+                    ppd[5] = data.pplusInfo.StaminaTotal;
                 }
                 catch
                 {
@@ -338,10 +338,10 @@ namespace KanonBot.LegacyImage
                 {
                     pppto.Origin = new Vector2(
                         x_offset[i],
-                        (i % 3 != 0) ? (i < 3 ? 642 : 831) : 736
+                        (i % 3 != 0) ? (i < 3 ? 640 : 829) : 734
                     );
                     info.Mutate(x =>
-                        x.DrawText(drawOptions, pppto, $"({ppd[i]})", new SolidBrush(color), null)
+                        x.DrawText(drawOptions, pppto, $"({Math.Round(ppd[i])})", new SolidBrush(color), null)
                     );
                 }
             }
@@ -1657,20 +1657,20 @@ namespace KanonBot.LegacyImage
             // hi.abilityLineColor = Color.ParseHex("#FF7BAC");
             var multi = new double[6] { 14.1, 69.7, 1.92, 19.8, 0.588, 3.06 };
             var exp = new double[6] { 0.769, 0.596, 0.953, 0.8, 1.175, 0.993 };
-            var u1d = new int[6];
-            u1d[0] = (int)data.u1.AccuracyTotal;
-            u1d[1] = (int)data.u1.FlowAimTotal;
-            u1d[2] = (int)data.u1.JumpAimTotal;
-            u1d[3] = (int)data.u1.PrecisionTotal;
-            u1d[4] = (int)data.u1.SpeedTotal;
-            u1d[5] = (int)data.u1.StaminaTotal;
-            var u2d = new int[6];
-            u2d[0] = (int)data.u2.AccuracyTotal;
-            u2d[1] = (int)data.u2.FlowAimTotal;
-            u2d[2] = (int)data.u2.JumpAimTotal;
-            u2d[3] = (int)data.u2.PrecisionTotal;
-            u2d[4] = (int)data.u2.SpeedTotal;
-            u2d[5] = (int)data.u2.StaminaTotal;
+            var u1d = new double[6];
+            u1d[0] = data.u1.AccuracyTotal;
+            u1d[1] = data.u1.FlowAimTotal;
+            u1d[2] = data.u1.JumpAimTotal;
+            u1d[3] = data.u1.PrecisionTotal;
+            u1d[4] = data.u1.SpeedTotal;
+            u1d[5] = data.u1.StaminaTotal;
+            var u2d = new double[6];
+            u2d[0] = data.u2.AccuracyTotal;
+            u2d[1] = data.u2.FlowAimTotal;
+            u2d[2] = data.u2.JumpAimTotal;
+            u2d[3] = data.u2.PrecisionTotal;
+            u2d[4] = data.u2.SpeedTotal;
+            u2d[5] = data.u2.StaminaTotal;
             // acc ,flow, jump, pre, speed, sta
 
             if (data.u1.PerformanceTotal < data.u2.PerformanceTotal)
@@ -1734,7 +1734,7 @@ namespace KanonBot.LegacyImage
                     x.DrawText(
                         drawOptions,
                         textOptions,
-                        u1d[i].ToString(),
+                        Math.Round(u1d[i]).ToString(),
                         new SolidBrush(color),
                         null
                     )
@@ -1757,7 +1757,7 @@ namespace KanonBot.LegacyImage
                     x.DrawText(
                         drawOptions,
                         textOptions,
-                        u2d[i].ToString(),
+                        Math.Round(u2d[i]).ToString(),
                         new SolidBrush(color),
                         null
                     )
@@ -1782,7 +1782,7 @@ namespace KanonBot.LegacyImage
                 x.DrawText(
                     drawOptions,
                     textOptions,
-                    string.Format("{0:0}", (data.u2.PerformanceTotal - data.u1.PerformanceTotal)),
+                    Math.Round(data.u2.PerformanceTotal - data.u1.PerformanceTotal).ToString(),
                     new SolidBrush(color),
                     null
                 )
@@ -1792,7 +1792,7 @@ namespace KanonBot.LegacyImage
                 x.DrawText(
                     drawOptions,
                     textOptions,
-                    (u2d[2] - u1d[2]).ToString(),
+                    Math.Round(u2d[2] - u1d[2]).ToString(),
                     new SolidBrush(color),
                     null
                 )
@@ -1802,7 +1802,7 @@ namespace KanonBot.LegacyImage
                 x.DrawText(
                     drawOptions,
                     textOptions,
-                    (u2d[1] - u1d[1]).ToString(),
+                    Math.Round(u2d[1] - u1d[1]).ToString(),
                     new SolidBrush(color),
                     null
                 )
@@ -1812,7 +1812,7 @@ namespace KanonBot.LegacyImage
                 x.DrawText(
                     drawOptions,
                     textOptions,
-                    (u2d[3] - u1d[3]).ToString(),
+                    Math.Round(u2d[3] - u1d[3]).ToString(),
                     new SolidBrush(color),
                     null
                 )
@@ -1822,7 +1822,7 @@ namespace KanonBot.LegacyImage
                 x.DrawText(
                     drawOptions,
                     textOptions,
-                    (u2d[4] - u1d[4]).ToString(),
+                    Math.Round(u2d[4] - u1d[4]).ToString(),
                     new SolidBrush(color),
                     null
                 )
@@ -1832,7 +1832,7 @@ namespace KanonBot.LegacyImage
                 x.DrawText(
                     drawOptions,
                     textOptions,
-                    (u2d[5] - u1d[5]).ToString(),
+                    Math.Round(u2d[5] - u1d[5]).ToString(),
                     new SolidBrush(color),
                     null
                 )
@@ -1842,7 +1842,7 @@ namespace KanonBot.LegacyImage
                 x.DrawText(
                     drawOptions,
                     textOptions,
-                    (u2d[0] - u1d[0]).ToString(),
+                    Math.Round(u2d[0] - u1d[0]).ToString(),
                     new SolidBrush(color),
                     null
                 )
@@ -1915,7 +1915,7 @@ namespace KanonBot.LegacyImage
             // ppd          pp_plus_data, 注意要与下面的multi和exp参数数量相同且对齐
             // multi, exp   加权值 y = multi * x ^ exp
             // hi           pp+图片的一些设置参数, hi.nodeCount
-            public static Img Draw(int[] ppd, double[] multi, double[] exp, HexagramInfo hi)
+            public static Img Draw(double[] ppd, double[] multi, double[] exp, HexagramInfo hi)
             {
                 var image = new Image<Rgba32>(hi.size, hi.size);
                 PointF[] points = new PointF[hi.nodeCount];

@@ -179,10 +179,20 @@ namespace KanonBot.Functions.OSUBot
             };
             // 覆写
 
-            if (is_ppysb) {
+            if (is_ppysb)
+            {
+                data.userInfo.Mode = sbmode!.Value.ToOsu();
                 data.modeString = sbmode?.ToDisplay();
                 data.osuId = 0;
-            } else {
+
+                if (data.userInfo.Mode == Mode.OSU)
+                {
+                    data.pplusInfo = new();
+                }
+                
+            }
+            else
+            {
                 data.userInfo.Mode = mode!.Value;
                 if (DBOsuInfo != null)
                 {
@@ -216,55 +226,20 @@ namespace KanonBot.Functions.OSUBot
                         }
                     }
 
-                    var d = await Database.Client.GetOsuPPlusData(osuID!.Value);
-                    if (d != null)
-                    {
-                        data.pplusInfo = d;
-                    }
-                    else
-                    {
-                        // 设置空数据
-                        data.pplusInfo = new();
-                        // 异步获取osupp数据，下次请求的时候就有了
-                        new Task(async () =>
-                        {
-                            try
-                            {
-                                await Database.Client.UpdateOsuPPlusData(
-                                    (await API.OSU.Client.TryGetUserPlusData(tempOsuInfo!))!.User,
-                                    tempOsuInfo!.Id
-                                );
-                            }
-                            catch { } //更新pp+失败，不返回信息
-                        }).RunSynchronously();
-                    }
+                    
+
                 }
-                else
+                
+                if (data.userInfo.Mode == Mode.OSU)
                 {
-                    var d = await Database.Client.GetOsuPPlusData(osuID!.Value);
+                    var d = await Client.GetUserPlusDataNext(osuID!.Value);
                     if (d != null)
                     {
-                        data.pplusInfo = d;
+                        data.pplusInfo = d.Performances;
                     }
                     else
                     {
-                        // 设置空数据
                         data.pplusInfo = new();
-                        // 异步获取osupp数据，下次请求的时候就有了
-                        new Task(async () =>
-                        {
-                            try
-                            {
-                                var temppppinfo = await API.OSU.Client.TryGetUserPlusData(tempOsuInfo!);
-                                if (temppppinfo == null)
-                                    return;
-                                await Database.Client.UpdateOsuPPlusData(
-                                    temppppinfo!.User,
-                                    tempOsuInfo!.Id
-                                );
-                            }
-                            catch { } //更新pp+失败，不返回信息
-                        }).RunSynchronously();
                     }
                 }
             }

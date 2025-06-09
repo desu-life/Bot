@@ -49,35 +49,53 @@ namespace KanonBot.Functions.OSUBot
 
                 LegacyImage.Draw.PPVSPanelData data = new();
 
-                var d1 = await Database.Client.GetOsuPPlusData(userSelf.Id);
+                // var d1 = await Database.Client.GetOsuPPlusDataNext(userSelf.Id);
+                // if (d1 == null)
+                // {
+                //     var d1temp = await API.OSU.Client.GetUserPlusDataNext(userSelf.Id);
+                //     if (d1temp == null)
+                //     {
+                //         await target.reply("获取pp+数据时出错，等会儿再试试吧");
+                //         return;
+                //     }
+                //     d1 = d1temp;
+                //     await Database.Client.UpdateOsuPPlusDataNext(d1);
+                // }
+                // data.u2Name = userSelf.Username;
+                // data.u2 = d1.Performances;
+
+                // var d2 = await Database.Client.GetOsuPPlusDataNext(user2.Id);
+                // if (d2 == null)
+                // {
+                //     var d2temp = await API.OSU.Client.GetUserPlusDataNext(user2.Id);
+                //     if (d2temp == null)
+                //     {
+                //         await target.reply("获取pp+数据时出错，等会儿再试试吧");
+                //         return;
+                //     }
+                //     d2 = d2temp;
+                //     await Database.Client.UpdateOsuPPlusDataNext(d2);
+                // }
+                // data.u1Name = user2.Username;
+                // data.u1 = d2.Performances;
+
+                var d1 = await API.OSU.Client.GetUserPlusDataNext(userSelf.Id);
                 if (d1 == null)
                 {
-                    var d1temp = await API.OSU.Client.TryGetUserPlusData(userSelf);
-                    if (d1temp == null)
-                    {
-                        await target.reply("获取pp+数据时出错，等会儿再试试吧");
-                        return;
-                    }
-                    d1 = d1temp.User;
-                    await Database.Client.UpdateOsuPPlusData(d1, userSelf.Id);
+                    await target.reply("获取pp+数据时出错，等会儿再试试吧");
+                    return;
                 }
                 data.u2Name = userSelf.Username;
-                data.u2 = d1;
+                data.u2 = d1.Performances;
 
-                var d2 = await Database.Client.GetOsuPPlusData(user2.Id);
+                var d2 = await API.OSU.Client.GetUserPlusDataNext(user2.Id);
                 if (d2 == null)
                 {
-                    var d2temp = await API.OSU.Client.TryGetUserPlusData(user2);
-                    if (d2temp == null)
-                    {
-                        await target.reply("获取pp+数据时出错，等会儿再试试吧");
-                        return;
-                    }
-                    d2 = d2temp.User;
-                    await Database.Client.UpdateOsuPPlusData(d2, user2.Id);
+                    await target.reply("获取pp+数据时出错，等会儿再试试吧");
+                    return;
                 }
                 data.u1Name = user2.Username;
-                data.u1 = d2;
+                data.u1 = d2.Performances;
 
                 using var stream = new MemoryStream();
                 using var img = await LegacyImage.Draw.DrawPPVS(data);
@@ -109,35 +127,23 @@ namespace KanonBot.Functions.OSUBot
 
                 LegacyImage.Draw.PPVSPanelData data = new();
 
-                var d1 = await Database.Client.GetOsuPPlusData(user1.Id);
+                var d1 = await API.OSU.Client.GetUserPlusDataNext(user1.Id);
                 if (d1 == null)
                 {
-                    var d1temp = await API.OSU.Client.TryGetUserPlusData(user1);
-                    if (d1temp == null)
-                    {
-                        await target.reply("获取pp+数据时出错，等会儿再试试吧");
-                        return;
-                    }
-                    d1 = d1temp.User;
-                    await Database.Client.UpdateOsuPPlusData(d1, user1.Id);
+                    await target.reply("获取pp+数据时出错，等会儿再试试吧");
+                    return;
                 }
                 data.u2Name = user1.Username;
-                data.u2 = d1;
+                data.u2 = d1.Performances;
 
-                var d2 = await Database.Client.GetOsuPPlusData(user2.Id);
+                var d2 = await API.OSU.Client.GetUserPlusDataNext(user2.Id);
                 if (d2 == null)
                 {
-                    var d2temp = await API.OSU.Client.TryGetUserPlusData(user2);
-                    if (d2temp == null)
-                    {
-                        await target.reply("获取pp+数据时出错，等会儿再试试吧");
-                        return;
-                    }
-                    d2 = d2temp.User;
-                    await Database.Client.UpdateOsuPPlusData(d2, user2.Id);
+                    await target.reply("获取pp+数据时出错，等会儿再试试吧");
+                    return;
                 }
                 data.u1Name = user2.Username;
-                data.u1 = d2;
+                data.u1 = d2.Performances;
 
 
                 using var stream = new MemoryStream();

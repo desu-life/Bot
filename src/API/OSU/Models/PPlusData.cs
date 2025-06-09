@@ -68,6 +68,42 @@ public partial class Models
             public int CountRankS { get; set; }
         }
 
+        public class UserDataNext
+        {
+            [JsonProperty("id")]
+            public long Id { get; set; }
+
+            [JsonProperty("performances")]
+            public UserPerformancesNext Performances { get; set; }
+        }
+
+        public class UserPerformancesNext
+        {
+            [JsonProperty("pp")]
+            public double PerformanceTotal { get; set; }
+
+            [JsonProperty("ppAim")]
+            public double AimTotal { get; set; }
+
+            [JsonProperty("ppJumpAim")]
+            public double JumpAimTotal { get; set; }
+
+            [JsonProperty("ppFlowAim")]
+            public double FlowAimTotal { get; set; }
+
+            [JsonProperty("ppPrecision")]
+            public double PrecisionTotal { get; set; }
+
+            [JsonProperty("ppSpeed")]
+            public double SpeedTotal { get; set; }
+
+            [JsonProperty("ppStamina")]
+            public double StaminaTotal { get; set; }
+
+            [JsonProperty("ppAcc")]
+            public double AccuracyTotal { get; set; }
+        }
+
         public class UserPerformances
         {
             [JsonProperty("SetID")]

@@ -211,6 +211,56 @@ public class Client
             return null;
         }
     }
+    
+    public static async Task<API.OSU.Models.PPlusData.UserDataNext?> GetOsuPPlusDataNext(long osu_uid)
+    {
+        using var db = GetInstance();
+        var data = await db.OsuPPlus.FirstOrDefaultAsync(it => it.uid == osu_uid && it.pp != 0);
+        if (data != null)
+        {
+            var realData = new API.OSU.Models.PPlusData.UserDataNext
+            {
+                Id = data.uid,
+                Performances = new API.OSU.Models.PPlusData.UserPerformancesNext
+                {
+                    PerformanceTotal = data.pp,
+                    AccuracyTotal = data.acc,
+                    FlowAimTotal = data.flow,
+                    JumpAimTotal = data.jump,
+                    PrecisionTotal = data.pre,
+                    SpeedTotal = data.spd,
+                    StaminaTotal = data.sta
+                }
+            };
+            return realData;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+     public static async Task<bool> UpdateOsuPPlusDataNext(
+        API.OSU.Models.PPlusData.UserDataNext ppdata
+    )
+    {
+        using var db = GetInstance();
+        var data = await db.OsuPPlus.FirstOrDefaultAsync(it => it.uid == ppdata.Id);
+        var result = await db.InsertOrReplaceAsync(
+            new Model.OsuPPlus()
+            {
+                uid = ppdata.Id,
+                pp = ppdata.Performances.PerformanceTotal,
+                acc = ppdata.Performances.AccuracyTotal,
+                flow = ppdata.Performances.FlowAimTotal,
+                jump = ppdata.Performances.JumpAimTotal,
+                pre = ppdata.Performances.PrecisionTotal,
+                spd = ppdata.Performances.SpeedTotal,
+                sta = ppdata.Performances.StaminaTotal
+            }
+        );
+        return result > 0;
+    }
 
     public static async Task<bool> UpdateOsuPPlusData(
         API.OSU.Models.PPlusData.UserData ppdata,

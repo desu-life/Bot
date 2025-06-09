@@ -24,6 +24,7 @@ namespace KanonBot.API.OSU
         private static long TokenExpireTime = 0;
         private static readonly string EndPointV1 = "https://osu.ppy.sh/api/";
         private static readonly string EndPointV2 = "https://osu.ppy.sh/api/v2/";
+        private static readonly string pppEndPoint = "http://localhost:9001/";
 
         static IFlurlRequest http()
         {
@@ -35,6 +36,12 @@ namespace KanonBot.API.OSU
         {
             var ep = EndPointV1;
             return ep.SetQueryParam("k", config.osu!.v1key).AllowHttpStatus("404");
+        }
+
+        static IFlurlRequest pplus()
+        {
+            var ep = config.osu?.pppEndPoint ?? pppEndPoint;
+            return ep.AllowHttpStatus("404");
         }
 
         static IFlurlRequest withLazerScore(IFlurlRequest req) {
@@ -411,12 +418,51 @@ namespace KanonBot.API.OSU
                 .GetJsonAsync<JObject>();
             return body["user"] as JObject;
         }
+        
+        async public static Task<Models.PPlusData.UserDataNext?> GetUserPlusDataNext(long uid)
+        {
+            var res = await pplus()
+                .AppendPathSegments("player", "info")
+                .SetQueryParam("id", uid)
+                .GetAsync();
+
+            if (res.StatusCode == 404)
+            {
+                return null;
+            }
+            else
+            {
+                var s = await res.GetJsonAsync<JObject>();
+                var data = s["data"]?.ToObject<Models.PPlusData.UserDataNext>();
+                return data;
+            }
+        }
+        
+        async public static Task<Models.PPlusData.UserDataNext?> UpdateUserPlusDataNext(long uid)
+        {
+            var res = await pplus()
+                .AppendPathSegments("player", "update")
+                .SetQueryParam("id", uid)
+                .PostAsync();
+
+            if (res.StatusCode == 404)
+            {
+                return null;
+            }
+            else
+            {
+                var s = await res.GetJsonAsync<JObject>();
+                var data = s["data"]?.ToObject<Models.PPlusData.UserDataNext>();
+                return data;
+            }
+        }
 
         // 获取pp+数据
         async public static Task<Models.PPlusData> GetUserPlusData(long uid)
         {
             var res = await $"https://syrin.me/pp+/api/user/{uid}/".GetJsonAsync<JObject>();
-            var data = new Models.PPlusData() {
+            var data = new Models.PPlusData()
+            {
                 User = res["user_data"]!.ToObject<Models.PPlusData.UserData>()!,
                 Performances = res["user_performances"]!["total"]!.ToObject<Models.PPlusData.UserPerformances[]>()
             };
@@ -433,6 +479,11 @@ namespace KanonBot.API.OSU
             return data;
         }
 
+        /// <summary>
+        /// deprecated
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         async public static Task<Models.PPlusData?> TryGetUserPlusData(OSU.Models.User user)
         {
             try
