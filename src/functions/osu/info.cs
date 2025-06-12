@@ -232,14 +232,23 @@ namespace KanonBot.Functions.OSUBot
                 
                 if (data.userInfo.Mode == Mode.OSU)
                 {
-                    var d = await Client.GetUserPlusDataNext(osuID!.Value);
-                    if (d != null)
+                    var d = await Database.Client.GetOsuPPlusDataNext(osuID!.Value);
+                    if (d is not null)
                     {
                         data.pplusInfo = d.Performances;
                     }
                     else
                     {
-                        data.pplusInfo = new();
+                        d = await Client.PPlus.GetUserPlusDataNext(osuID!.Value);
+                        if (d is not null)
+                        {
+                            data.pplusInfo = d.Performances;
+                            await Database.Client.UpdateOsuPPlusDataNext(d);
+                        }
+                        else
+                        {
+                            data.pplusInfo = new();
+                        }
                     }
                 }
             }

@@ -79,7 +79,7 @@ namespace KanonBot.Functions.OSUBot
                 // data.u1Name = user2.Username;
                 // data.u1 = d2.Performances;
 
-                var d1 = await API.OSU.Client.GetUserPlusDataNext(userSelf.Id);
+                var d1 = await API.OSU.Client.PPlus.GetUserPlusDataNext(userSelf.Id);
                 if (d1 == null)
                 {
                     await target.reply("获取pp+数据时出错，等会儿再试试吧");
@@ -88,7 +88,7 @@ namespace KanonBot.Functions.OSUBot
                 data.u2Name = userSelf.Username;
                 data.u2 = d1.Performances;
 
-                var d2 = await API.OSU.Client.GetUserPlusDataNext(user2.Id);
+                var d2 = await API.OSU.Client.PPlus.GetUserPlusDataNext(user2.Id);
                 if (d2 == null)
                 {
                     await target.reply("获取pp+数据时出错，等会儿再试试吧");
@@ -127,7 +127,7 @@ namespace KanonBot.Functions.OSUBot
 
                 LegacyImage.Draw.PPVSPanelData data = new();
 
-                var d1 = await API.OSU.Client.GetUserPlusDataNext(user1.Id);
+                var d1 = await API.OSU.Client.PPlus.GetUserPlusDataNext(user1.Id);
                 if (d1 == null)
                 {
                     await target.reply("获取pp+数据时出错，等会儿再试试吧");
@@ -136,7 +136,7 @@ namespace KanonBot.Functions.OSUBot
                 data.u2Name = user1.Username;
                 data.u2 = d1.Performances;
 
-                var d2 = await API.OSU.Client.GetUserPlusDataNext(user2.Id);
+                var d2 = await API.OSU.Client.PPlus.GetUserPlusDataNext(user2.Id);
                 if (d2 == null)
                 {
                     await target.reply("获取pp+数据时出错，等会儿再试试吧");

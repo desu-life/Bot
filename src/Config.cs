@@ -87,6 +87,12 @@ public class Config
         [TomlProperty("v2_end_point")]
         public string? v2EndPoint { get; set; }
 
+        [TomlProperty("ppp_client_id")]
+        public int pppClientId { get; set; }
+
+        [TomlProperty("ppp_client_secret")]
+        public required string pppClientSecret { get; set; }
+
         [TomlProperty("pp_plus_end_point")]
         public string? pppEndPoint { get; set; }
     }
@@ -263,6 +269,8 @@ public class Config
                     clientSecret = "",
                     v1key = "",
                     v2EndPoint = "https://osu.ppy.sh/api/v2/",
+                    pppClientId = 0,
+                    pppClientSecret = "",
                     pppEndPoint = "http://localhost:9001/"
                 },
                 drivers =
