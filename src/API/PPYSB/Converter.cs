@@ -135,7 +135,7 @@ public static class PPYSBConverters
 
         return new OSU.Models.ScoreLazer
         {
-            Accuracy = statistics.Accuracy(mode.ToOsu()),
+            Accuracy = s.Acc / 100.0,
             EndedAt = s.PlayTime,
             Id = s.Id,
             MaxCombo = s.MaxCombo,
