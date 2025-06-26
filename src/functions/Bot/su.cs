@@ -141,8 +141,5 @@ namespace KanonBot.Functions.OSU
                 }
             });
         }
-
-
-
     }
 }
