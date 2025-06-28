@@ -42,8 +42,9 @@ var users = File.ReadAllLines("users.txt")
     .Where(line => !string.IsNullOrWhiteSpace(line))
     .Select(line => line.Trim());
 
-var semaphore = new SemaphoreSlim(5, 5);
+await KanonBot.API.OSU.Client.CheckToken();
 
+var semaphore = new SemaphoreSlim(5, 5);
 var tasks = users.Select(
     async (user_qq) =>
     {   
