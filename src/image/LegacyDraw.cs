@@ -145,10 +145,6 @@ public static class InfoV1
         }
 
         // obj
-        var drawOptions = new DrawingOptions
-        {
-            GraphicsOptions = new GraphicsOptions { Antialias = true }
-        };
 
         using var flags = await Img.LoadAsync($"./work/flags/{data.userInfo.Country!.Code}.png");
         info.Mutate(x => x.DrawImage(flags, new Point(272, 212), 1));
@@ -209,13 +205,7 @@ public static class InfoV1
             {
                 pppto.Origin = new Vector2(x_offset[i], (i % 3 != 0) ? (i < 3 ? 640 : 829) : 734);
                 info.Mutate(x =>
-                    x.DrawText(
-                        drawOptions,
-                        pppto,
-                        $"({Math.Round(ppd[i])})",
-                        new SolidBrush(color),
-                        null
-                    )
+                    x.DrawText(pppto, $"({Math.Round(ppd[i])})", color)
                 );
             }
         }
@@ -234,13 +224,7 @@ public static class InfoV1
             FallbackFontFamilies = [HarmonySans, HarmonySansArabic]
         };
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                $"update: {DateTime.Now:yyyy/MM/dd HH:mm:ss}",
-                new SolidBrush(Color.White),
-                null
-            )
+            x.DrawText(textOptions, $"update: {DateTime.Now:yyyy/MM/dd HH:mm:ss}", Color.White)
         );
         if (data.daysBefore > 1)
         {
@@ -253,26 +237,14 @@ public static class InfoV1
             {
                 textOptions.Origin = new PointF(300, 25);
                 info.Mutate(x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        $"对比自{data.daysBefore}天前",
-                        new SolidBrush(Color.White),
-                        null
-                    )
+                    x.DrawText(textOptions, $"对比自{data.daysBefore}天前", Color.White)
                 );
             }
             else
             {
                 textOptions.Origin = new PointF(300, 25);
                 info.Mutate(x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        $" 请求的日期没有数据.." + $"当前数据对比自{data.daysBefore}天前",
-                        new SolidBrush(Color.White),
-                        null
-                    )
+                    x.DrawText(textOptions, $" 请求的日期没有数据.." + $"当前数据对比自{data.daysBefore}天前", Color.White)
                 );
             }
         }
@@ -280,13 +252,7 @@ public static class InfoV1
         textOptions.Font = Exo2SemiBold.Get(60);
         textOptions.Origin = new PointF(268, 140);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                data.userInfo.Username,
-                new SolidBrush(Color.White),
-                null
-            )
+            x.DrawText(textOptions, data.userInfo.Username, Color.White)
         );
 
         var Statistics = data.userInfo.Statistics;
@@ -315,7 +281,7 @@ public static class InfoV1
         textOptions.Font = Exo2SemiBold.Get(20);
         textOptions.Origin = new PointF(350, 260);
         info.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, countryRank, new SolidBrush(Color.White), null)
+            x.DrawText(textOptions,  countryRank, Color.White)
         );
         // global_rank
         string diffStr;
@@ -336,18 +302,12 @@ public static class InfoV1
         textOptions.Font = Exo2Regular.Get(40);
         textOptions.Origin = new PointF(40, 410);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                string.Format("{0:N0}", Statistics.GlobalRank),
-                new SolidBrush(Color.White),
-                null
-            )
+            x.DrawText(textOptions, string.Format("{0:N0}", Statistics.GlobalRank), Color.White)
         );
         textOptions.Font = HarmonySans.Get(14);
         textOptions.Origin = new PointF(40, 430);
         info.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, diffStr, new SolidBrush(Color.White), null)
+            x.DrawText(textOptions,  diffStr, Color.White)
         );
         // pp
         if (isBonded)
@@ -367,83 +327,41 @@ public static class InfoV1
         textOptions.Font = Exo2Regular.Get(40);
         textOptions.Origin = new PointF(246, 410);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                string.Format("{0:0.##}", Statistics.PP),
-                new SolidBrush(Color.White),
-                null
-            )
+            x.DrawText(textOptions, string.Format("{0:0.##}", Statistics.PP), Color.White)
         );
         textOptions.Font = HarmonySans.Get(14);
         textOptions.Origin = new PointF(246, 430);
         info.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, diffStr, new SolidBrush(Color.White), null)
+            x.DrawText(textOptions,  diffStr, Color.White)
         );
         // ssh ss
         textOptions.Font = Exo2Regular.Get(30);
         textOptions.HorizontalAlignment = HorizontalAlignment.Center;
         textOptions.Origin = new PointF(80, 540);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                Statistics.GradeCounts.SSH.ToString(),
-                new SolidBrush(Color.White),
-                null
-            )
+            x.DrawText(textOptions, Statistics.GradeCounts.SSH.ToString(), Color.White)
         );
         textOptions.Origin = new PointF(191, 540);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                Statistics.GradeCounts.SS.ToString(),
-                new SolidBrush(Color.White),
-                null
-            )
+            x.DrawText(textOptions, Statistics.GradeCounts.SS.ToString(), Color.White)
         );
         textOptions.Origin = new PointF(301, 540);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                Statistics.GradeCounts.SH.ToString(),
-                new SolidBrush(Color.White),
-                null
-            )
+            x.DrawText(textOptions, Statistics.GradeCounts.SH.ToString(), Color.White)
         );
         textOptions.Origin = new PointF(412, 540);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                Statistics.GradeCounts.S.ToString(),
-                new SolidBrush(Color.White),
-                null
-            )
+            x.DrawText(textOptions, Statistics.GradeCounts.S.ToString(), Color.White)
         );
         textOptions.Origin = new PointF(522, 540);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                Statistics.GradeCounts.A.ToString(),
-                new SolidBrush(Color.White),
-                null
-            )
+            x.DrawText(textOptions, Statistics.GradeCounts.A.ToString(), Color.White)
         );
         // level
         textOptions.Font = Exo2SemiBold.Get(34);
         textOptions.Origin = new PointF(1115, 385);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                Statistics.Level.Current.ToString(),
-                new SolidBrush(Color.White),
-                null
-            )
+            x.DrawText(textOptions, Statistics.Level.Current.ToString(), Color.White)
         );
         // Level%
         var levelper = Statistics.Level.Progress;
@@ -451,7 +369,7 @@ public static class InfoV1
         textOptions.Font = Exo2SemiBold.Get(20);
         textOptions.Origin = new PointF(1060, 400);
         info.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, $"{levelper}%", new SolidBrush(Color.White), null)
+            x.DrawText(textOptions,  $"{levelper}%", Color.White)
         );
         try
         {
@@ -476,7 +394,7 @@ public static class InfoV1
         rankedScore = string.Format("{0:N0}", Statistics.RankedScore);
         textOptions.Origin = new PointF(1180, 625);
         info.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, rankedScore, new SolidBrush(Color.White), null)
+            x.DrawText(textOptions,  rankedScore, Color.White)
         );
         string acc;
         if (isBonded)
@@ -495,7 +413,7 @@ public static class InfoV1
         }
         textOptions.Origin = new PointF(1180, 665);
         info.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, acc, new SolidBrush(Color.White), null)
+            x.DrawText(textOptions,  acc, Color.White)
         );
         string playCount;
         if (isBonded)
@@ -514,7 +432,7 @@ public static class InfoV1
         }
         textOptions.Origin = new PointF(1180, 705);
         info.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, playCount, new SolidBrush(Color.White), null)
+            x.DrawText(textOptions,  playCount, Color.White)
         );
         string totalScore;
         // if (isBonded){
@@ -528,7 +446,7 @@ public static class InfoV1
         totalScore = string.Format("{0:N0}", Statistics.TotalScore);
         textOptions.Origin = new PointF(1180, 745);
         info.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, totalScore, new SolidBrush(Color.White), null)
+            x.DrawText(textOptions,  totalScore, Color.White)
         );
         string totalHits;
         if (isBonded)
@@ -547,17 +465,11 @@ public static class InfoV1
         }
         textOptions.Origin = new PointF(1180, 785);
         info.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, totalHits, new SolidBrush(Color.White), null)
+            x.DrawText(textOptions,  totalHits, Color.White)
         );
         textOptions.Origin = new PointF(1180, 825);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                Utils.Duration2StringWithoutSec(Statistics.PlayTime),
-                new SolidBrush(Color.White),
-                null
-            )
+            x.DrawText(textOptions, Utils.Duration2StringWithoutSec(Statistics.PlayTime), Color.White)
         );
         info.Mutate(x => x.RoundCorner(new Size(1200, 857), 24));
 

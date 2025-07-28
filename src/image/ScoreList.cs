@@ -62,10 +62,6 @@ namespace KanonBot.Image
                 HorizontalAlignment = HorizontalAlignment.Left,
                 FallbackFontFamilies = [HarmonySans, HarmonySansArabic]
             };
-            var drawOptions = new DrawingOptions
-            {
-                GraphicsOptions = new GraphicsOptions { Antialias = true }
-            };
 
             //页眉 2000x697
             //页中 2000x186
@@ -106,13 +102,7 @@ namespace KanonBot.Image
             textOptions.Font = TorusSemiBold.Get(100);
             image.Mutate(
                 x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        userInfo.Username,
-                        new SolidBrush(Color.ParseHex("#4d4d4d")),
-                        null
-                    )
+                    x.DrawText(textOptions, userInfo.Username, Color.ParseHex("#4d4d4d"))
             );
 
             //绘制页眉
@@ -198,13 +188,7 @@ namespace KanonBot.Image
                 }
                 image.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            string.Format("{0:N0}", userInfo.Statistics.PP),
-                            new SolidBrush(Color.ParseHex("#e36a79")),
-                            null
-                        )
+                        x.DrawText(textOptions, string.Format("{0:N0}", userInfo.Statistics.PP), Color.ParseHex("#e36a79"))
                 );
 
                 textOptions.VerticalAlignment = VerticalAlignment.Bottom;
@@ -226,13 +210,7 @@ namespace KanonBot.Image
                 }
                 image.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            mainTitle,
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.DrawText(textOptions, mainTitle, Color.ParseHex("#656b6d"))
                 );
                 //mods
 
@@ -253,13 +231,7 @@ namespace KanonBot.Image
                     }
                     image.Mutate(
                         x =>
-                            x.DrawText(
-                                drawOptions,
-                                textOptions,
-                                mainscoremods[..mainscoremods.LastIndexOf(",")] + $" #{scoreList[0].Rank}",
-                                new SolidBrush(Color.ParseHex("#656b6d")),
-                                null
-                            )
+                            x.DrawText(textOptions, mainscoremods[..mainscoremods.LastIndexOf(",")] + $" #{scoreList[0].Rank}", Color.ParseHex("#656b6d"))
                     );
                 }
                 else
@@ -271,13 +243,7 @@ namespace KanonBot.Image
                     textOptions.Font = TorusRegular.Get(40);
                     image.Mutate(
                         x =>
-                            x.DrawText(
-                                drawOptions,
-                                textOptions,
-                                $"#{scoreList[0].Rank}",
-                                new SolidBrush(Color.ParseHex("#656b6d")),
-                                null
-                            )
+                            x.DrawText(textOptions, $"#{scoreList[0].Rank}", Color.ParseHex("#656b6d"))
                     );
                 }
 
@@ -298,13 +264,7 @@ namespace KanonBot.Image
                 }
                 image.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            artist,
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.DrawText(textOptions, artist, Color.ParseHex("#656b6d"))
                 );
 
                 //creator
@@ -322,26 +282,14 @@ namespace KanonBot.Image
                 }
                 image.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            creator,
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.DrawText(textOptions, creator, Color.ParseHex("#656b6d"))
                 );
 
                 //bid
                 textOptions.Origin = new PointF(985, mainScoreXPos);
                 image.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            scoreList[0].Score.Beatmap!.BeatmapId.ToString(),
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.DrawText(textOptions, scoreList[0].Score.Beatmap!.BeatmapId.ToString(), Color.ParseHex("#656b6d"))
                 );
 
                 
@@ -349,39 +297,21 @@ namespace KanonBot.Image
                 textOptions.Origin = new PointF(1182, mainScoreXPos);
                 image.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            scoreList[0].PPInfo!.star.ToString("0.##*"),
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.DrawText(textOptions, scoreList[0].PPInfo!.star.ToString("0.##*"), Color.ParseHex("#656b6d"))
                 );
 
                 //acc
                 textOptions.Origin = new PointF(1308, mainScoreXPos);
                 image.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            scoreList[0].Score.AccAuto.ToString("0.##%"),
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.DrawText(textOptions, scoreList[0].Score.AccAuto.ToString("0.##%"), Color.ParseHex("#656b6d"))
                 );
 
                 //rank
                 textOptions.Origin = new PointF(1459, mainScoreXPos);
                 image.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            scoreList[0].Score.RankAuto,
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.DrawText(textOptions, scoreList[0].Score.RankAuto, Color.ParseHex("#656b6d"))
                 );
 
                 //pp
@@ -390,13 +320,7 @@ namespace KanonBot.Image
                 textOptions.Origin = new PointF(1790, 608);
                 image.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            string.Format("{0:N1}", scoreList[0].PPInfo!.ppStat.total),
-                            new SolidBrush(Color.ParseHex("#364a75")),
-                            null
-                        )
+                        x.DrawText(textOptions, string.Format("{0:N1}", scoreList[0].PPInfo!.ppStat.total), Color.ParseHex("#364a75"))
                 );
                 var bp1pptextMeasure = TextMeasurer.MeasureSize(
                     string.Format("{0:N1}", scoreList[0].PPInfo!.ppStat.total),
@@ -408,13 +332,7 @@ namespace KanonBot.Image
                 textOptions.HorizontalAlignment = HorizontalAlignment.Left;
                 image.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            "pp",
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.DrawText(textOptions, "pp", Color.ParseHex("#656b6d"))
                 );
             } else {
                 using var MainPic = await Utils.ReadImageRgba("./work/panelv2/bplist_user_pp.png");
@@ -431,13 +349,7 @@ namespace KanonBot.Image
                 }
                 image.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            string.Format("{0:N0}", userInfo.Statistics.PP),
-                            new SolidBrush(Color.ParseHex("#e36a79")),
-                            null
-                        )
+                        x.DrawText(textOptions, string.Format("{0:N0}", userInfo.Statistics.PP), Color.ParseHex("#e36a79"))
                 );
             }
 
@@ -489,26 +401,14 @@ namespace KanonBot.Image
                 textOptions.Origin = new PointF(204, 96);
                 SubPic.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            title,
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.DrawText(textOptions, title, Color.ParseHex("#656b6d"))
                 );
                 //Rank
                 textOptions.Font = TorusRegular.Get(34);
                 textOptions.Origin = new PointF(204, 138);
                 SubPic.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            $"#{scoreList[i].Rank}",
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.DrawText(textOptions, $"#{scoreList[i].Rank}", Color.ParseHex("#656b6d"))
                 );
                 var textMeasurePos =
                     204 + TextMeasurer.MeasureSize($"#{scoreList[i].Rank}", textOptions).Width + 5;
@@ -517,13 +417,7 @@ namespace KanonBot.Image
                 textOptions.Origin = new PointF(textMeasurePos, 138);
                 SubPic.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            " | ",
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.DrawText(textOptions, " | ", Color.ParseHex("#656b6d"))
                 );
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
@@ -543,13 +437,7 @@ namespace KanonBot.Image
                 textOptions.Origin = new PointF(textMeasurePos, 138);
                 SubPic.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            title,
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.DrawText(textOptions, title, Color.ParseHex("#656b6d"))
                 );
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(title, textOptions).Width + 5;
@@ -558,13 +446,7 @@ namespace KanonBot.Image
                 textOptions.Origin = new PointF(textMeasurePos, 138);
                 SubPic.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            " | ",
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.DrawText(textOptions, " | ", Color.ParseHex("#656b6d"))
                 );
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
@@ -573,13 +455,7 @@ namespace KanonBot.Image
                 textOptions.Origin = new PointF(textMeasurePos, 138);
                 SubPic.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            scoreList[i].Score.Beatmap!.BeatmapId.ToString(),
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.DrawText(textOptions, scoreList[i].Score.Beatmap!.BeatmapId.ToString(), Color.ParseHex("#656b6d"))
                 );
                 textMeasurePos =
                     textMeasurePos
@@ -590,13 +466,7 @@ namespace KanonBot.Image
                 textOptions.Origin = new PointF(textMeasurePos, 138);
                 SubPic.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            " | ",
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.DrawText(textOptions, " | ", Color.ParseHex("#656b6d"))
                 );
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
@@ -605,13 +475,7 @@ namespace KanonBot.Image
                 textOptions.Origin = new PointF(textMeasurePos, 138);
                 SubPic.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            scoreList[i].PPInfo!.star.ToString("0.##*"),
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.DrawText(textOptions, scoreList[i].PPInfo!.star.ToString("0.##*"), Color.ParseHex("#656b6d"))
                 );
                 textMeasurePos =
                     textMeasurePos
@@ -622,13 +486,7 @@ namespace KanonBot.Image
                 textOptions.Origin = new PointF(textMeasurePos, 138);
                 SubPic.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            " | ",
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.DrawText(textOptions, " | ", Color.ParseHex("#656b6d"))
                 );
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
@@ -637,13 +495,7 @@ namespace KanonBot.Image
                 textOptions.Origin = new PointF(textMeasurePos, 138);
                 SubPic.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            scoreList[i].Score.AccAuto.ToString("0.##%"),
-                            new SolidBrush(Color.ParseHex("#ffcd22")),
-                            null
-                        )
+                        x.DrawText(textOptions, scoreList[i].Score.AccAuto.ToString("0.##%"), Color.ParseHex("#ffcd22"))
                 );
                 textMeasurePos =
                     textMeasurePos
@@ -654,13 +506,7 @@ namespace KanonBot.Image
                 textOptions.Origin = new PointF(textMeasurePos, 138);
                 SubPic.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            " | ",
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.DrawText(textOptions, " | ", Color.ParseHex("#656b6d"))
                 );
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
@@ -669,13 +515,7 @@ namespace KanonBot.Image
                 textOptions.Origin = new PointF(textMeasurePos, 138);
                 SubPic.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            scoreList[i].Score.RankAuto,
-                            new SolidBrush(Color.ParseHex("#656b6d")),
-                            null
-                        )
+                        x.DrawText(textOptions, scoreList[i].Score.RankAuto, Color.ParseHex("#656b6d"))
                 );
 
                 //mods
@@ -730,13 +570,7 @@ namespace KanonBot.Image
                 textOptions.Origin = new PointF(1790, 128);
                 SubPic.Mutate(
                     x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            string.Format("{0:N0}pp", scoreList[i].PPInfo!.ppStat.total),
-                            new SolidBrush(Color.ParseHex("#ff7bac")),
-                            null
-                        )
+                        x.DrawText(textOptions, string.Format("{0:N0}pp", scoreList[i].PPInfo!.ppStat.total), Color.ParseHex("#ff7bac"))
                 );
 
                 //draw

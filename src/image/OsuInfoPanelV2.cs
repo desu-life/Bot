@@ -886,10 +886,6 @@ public static class OsuInfoPanelV2
             HorizontalAlignment = HorizontalAlignment.Left,
             FallbackFontFamilies = [HarmonySans, HarmonySansArabic]
         };
-        var drawOptions = new DrawingOptions
-        {
-            GraphicsOptions = new GraphicsOptions { Antialias = true }
-        };
 
         //自定义侧图
         string sidePicPath;
@@ -1186,13 +1182,7 @@ public static class OsuInfoPanelV2
         textOptions.Origin = new PointF(1972, 481);
         textOptions.VerticalAlignment = VerticalAlignment.Center;
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                string.Format("{0:N0}", data.userInfo.Statistics.GlobalRank),
-                new SolidBrush(RankColor),
-                null
-            )
+            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.GlobalRank), RankColor)
         );
 
         //country_flag
@@ -1212,13 +1202,7 @@ public static class OsuInfoPanelV2
         textOptions.HorizontalAlignment = HorizontalAlignment.Left;
         textOptions.Origin = new PointF(1687, 629);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                string.Format("#{0:N0}", data.userInfo.Statistics.CountryRank),
-                new SolidBrush(CountryRankColor),
-                null
-            )
+            x.DrawText(textOptions, string.Format("#{0:N0}", data.userInfo.Statistics.CountryRank), CountryRankColor)
         );
         if (isBonded)
         {
@@ -1229,7 +1213,6 @@ public static class OsuInfoPanelV2
                 textOptions.Font = TorusRegular.Get(44);
                 info.Mutate(x =>
                     x.DrawText(
-                        drawOptions,
                         textOptions,
                         string.Format(
                             "{0:N0}",
@@ -1237,8 +1220,7 @@ public static class OsuInfoPanelV2
                                 data.userInfo.Statistics.CountryRank - prevStatistics.CountryRank
                             )
                         ),
-                        new SolidBrush(CountryRankDiffColor),
-                        null
+                        CountryRankDiffColor
                     )
                 );
                 using var cr_indicator_icon_increase = await Utils.ReadImageRgba(
@@ -1270,13 +1252,7 @@ public static class OsuInfoPanelV2
         textOptions.Origin = new PointF(3120, 350);
         textOptions.Font = TorusRegular.Get(60);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                string.Format("{0:N0}", data.userInfo.Statistics.PP),
-                new SolidBrush(ppMainColor),
-                null
-            )
+            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.PP), ppMainColor)
         );
         if (isBonded)
         {
@@ -1287,14 +1263,12 @@ public static class OsuInfoPanelV2
                 textOptions.Font = TorusRegular.Get(40);
                 info.Mutate(x =>
                     x.DrawText(
-                        drawOptions,
                         textOptions,
                         string.Format(
                             "{0:N0}",
                             Math.Abs(data.userInfo.Statistics.PP - prevStatistics.PP)
                         ),
-                        new SolidBrush(ppDiffColor),
-                        null
+                        ppDiffColor
                     )
                 );
                 using var pp_indicator_icon_increase = await Utils.ReadImageRgba(
@@ -1326,13 +1300,7 @@ public static class OsuInfoPanelV2
         textOptions.Origin = new PointF(3120, 551);
         textOptions.Font = TorusRegular.Get(60);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                string.Format("{0:0.##}%", data.userInfo.Statistics.HitAccuracy),
-                new SolidBrush(accMainColor),
-                null
-            )
+            x.DrawText(textOptions, string.Format("{0:0.##}%", data.userInfo.Statistics.HitAccuracy), accMainColor)
         );
         if (isBonded)
         {
@@ -1343,14 +1311,12 @@ public static class OsuInfoPanelV2
                 textOptions.Font = TorusRegular.Get(40);
                 info.Mutate(x =>
                     x.DrawText(
-                        drawOptions,
                         textOptions,
                         string.Format(
                             "{0:0.##}%",
                             data.userInfo.Statistics.HitAccuracy - prevStatistics.HitAccuracy
                         ),
-                        new SolidBrush(accDiffColor),
-                        null
+                        accDiffColor
                     )
                 );
                 using var acc_indicator_icon_increase = await Utils.ReadImageRgba(
@@ -1384,13 +1350,7 @@ public static class OsuInfoPanelV2
             var ppsub_point = 2374 + pp_front_length - 40;
             textOptions.Origin = new PointF(ppsub_point, 440);
             info.Mutate(x =>
-                x.DrawText(
-                    drawOptions,
-                    textOptions,
-                    string.Format("{0:N0}", scorePP),
-                    new SolidBrush(ppProgressBarColorTextColor),
-                    null
-                )
+                x.DrawText(textOptions, string.Format("{0:N0}", scorePP), ppProgressBarColorTextColor)
             );
         }
 
@@ -1403,13 +1363,7 @@ public static class OsuInfoPanelV2
             var accsub_point = 2374 + (percent * 1443.00) - 40;
             textOptions.Origin = new PointF((float)accsub_point, 641f);
             info.Mutate(x =>
-                x.DrawText(
-                    drawOptions,
-                    textOptions,
-                    "300",
-                    new SolidBrush(accProgressBarColorTextColor),
-                    null
-                )
+                x.DrawText(textOptions, "300", accProgressBarColorTextColor)
             );
         }
 
@@ -1418,66 +1372,30 @@ public static class OsuInfoPanelV2
         textOptions.HorizontalAlignment = HorizontalAlignment.Center;
         textOptions.Origin = new PointF(2646, 988);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.SSH),
-                new SolidBrush(GradeStatisticsColor_XH),
-                null
-            )
+            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.SSH), GradeStatisticsColor_XH)
         );
         textOptions.Origin = new PointF(2646 + 218, 988);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.SS),
-                new SolidBrush(GradeStatisticsColor_X),
-                null
-            )
+            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.SS), GradeStatisticsColor_X)
         );
         textOptions.Origin = new PointF(2646 + 218 * 2, 988);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.SH),
-                new SolidBrush(GradeStatisticsColor_SH),
-                null
-            )
+            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.SH), GradeStatisticsColor_SH)
         );
         textOptions.Origin = new PointF(2646 + 218 * 3, 988);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.S),
-                new SolidBrush(GradeStatisticsColor_S),
-                null
-            )
+            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.S), GradeStatisticsColor_S)
         );
         textOptions.Origin = new PointF(2646 + 218 * 4, 988);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.A),
-                new SolidBrush(GradeStatisticsColor_A),
-                null
-            )
+            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.A), GradeStatisticsColor_A)
         );
 
         //level main
         textOptions.Origin = new PointF(3906, 2470);
         textOptions.Font = TorusRegular.Get(48);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                data.userInfo.Statistics.Level.Current.ToString(),
-                new SolidBrush(LevelTitleColor),
-                null
-            )
+            x.DrawText(textOptions, data.userInfo.Statistics.Level.Current.ToString(), LevelTitleColor)
         );
 
         //update time
@@ -1485,26 +1403,14 @@ public static class OsuInfoPanelV2
         textOptions.HorizontalAlignment = HorizontalAlignment.Right;
         textOptions.Font = TorusRegular.Get(40);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                $"Update at {DateTime.Now:yyyy/MM/dd HH:mm:ss}",
-                new SolidBrush(footerColor),
-                null
-            )
+            x.DrawText(textOptions, $"Update at {DateTime.Now:yyyy/MM/dd HH:mm:ss}", footerColor)
         );
 
         //desu.life
         textOptions.HorizontalAlignment = HorizontalAlignment.Left;
         textOptions.Origin = new PointF(90, 2582);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                $"Kanonbot - desu.life",
-                new SolidBrush(footerColor),
-                null
-            )
+            x.DrawText(textOptions, $"Kanonbot - desu.life", footerColor)
         );
 
         //details
@@ -1513,46 +1419,22 @@ public static class OsuInfoPanelV2
         //play time
         textOptions.Origin = new PointF(1705, 1217);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                Utils.Duration2StringWithoutSec(data.userInfo.Statistics.PlayTime),
-                new SolidBrush(Details_PlayTimeColor),
-                null
-            )
+            x.DrawText(textOptions, Utils.Duration2StringWithoutSec(data.userInfo.Statistics.PlayTime), Details_PlayTimeColor)
         );
         //total hits
         textOptions.Origin = new PointF(2285, 1217);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                string.Format("{0:N0}", data.userInfo.Statistics.TotalHits),
-                new SolidBrush(Details_TotalHitsColor),
-                null
-            )
+            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.TotalHits), Details_TotalHitsColor)
         );
         //play count
         textOptions.Origin = new PointF(2853, 1217);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                string.Format("{0:N0}", data.userInfo.Statistics.PlayCount),
-                new SolidBrush(Details_PlayCountColor),
-                null
-            )
+            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.PlayCount), Details_PlayCountColor)
         );
         //ranked scores
         textOptions.Origin = new PointF(3420, 1217);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                string.Format("{0:N0}", data.userInfo.Statistics.RankedScore),
-                new SolidBrush(Details_RankedScoreColor),
-                null
-            )
+            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.RankedScore), Details_RankedScoreColor)
         );
 
         //details diff
@@ -1572,13 +1454,7 @@ public static class OsuInfoPanelV2
                 data.userInfo.Statistics.PlayTime - prevStatistics.PlayTime
             );
             info.Mutate(x =>
-                x.DrawText(
-                    drawOptions,
-                    textOptions,
-                    text,
-                    new SolidBrush(DetailsDiff_PlayTimeColor),
-                    null
-                )
+                x.DrawText(textOptions, text, DetailsDiff_PlayTimeColor)
             );
             var m = TextMeasurer.MeasureSize(text, textOptions);
             indicator_icon_increase.Mutate(x =>
@@ -1606,13 +1482,7 @@ public static class OsuInfoPanelV2
                 data.userInfo.Statistics.TotalHits - prevStatistics.TotalHits
             );
             info.Mutate(x =>
-                x.DrawText(
-                    drawOptions,
-                    textOptions,
-                    text,
-                    new SolidBrush(DetailsDiff_TotalHitsColor),
-                    null
-                )
+                x.DrawText(textOptions, text, DetailsDiff_TotalHitsColor)
             );
             m = TextMeasurer.MeasureSize(text, textOptions);
             indicator_icon_increase.Mutate(x =>
@@ -1640,13 +1510,7 @@ public static class OsuInfoPanelV2
                 data.userInfo.Statistics.PlayCount - prevStatistics.PlayCount
             );
             info.Mutate(x =>
-                x.DrawText(
-                    drawOptions,
-                    textOptions,
-                    text,
-                    new SolidBrush(DetailsDiff_PlayCountColor),
-                    null
-                )
+                x.DrawText(textOptions, text, DetailsDiff_PlayCountColor)
             );
             m = TextMeasurer.MeasureSize(text, textOptions);
             indicator_icon_increase.Mutate(x =>
@@ -1674,13 +1538,7 @@ public static class OsuInfoPanelV2
                 data.userInfo.Statistics.RankedScore - prevStatistics.RankedScore
             );
             info.Mutate(x =>
-                x.DrawText(
-                    drawOptions,
-                    textOptions,
-                    text,
-                    new SolidBrush(DetailsDiff_RankedScoreColor),
-                    null
-                )
+                x.DrawText(textOptions, text, DetailsDiff_RankedScoreColor)
             );
             m = TextMeasurer.MeasureSize(text, textOptions);
             indicator_icon_increase.Mutate(x =>
@@ -1730,7 +1588,7 @@ public static class OsuInfoPanelV2
             }
 
             info.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, title, new SolidBrush(MainBPTitleColor), null)
+                x.DrawText(textOptions,  title, MainBPTitleColor)
             );
 
             //mods
@@ -1757,13 +1615,7 @@ public static class OsuInfoPanelV2
                     mainscoremods += $"{x.Acronym}, ";
                 }
                 info.Mutate(x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        mainscoremods[..mainscoremods.LastIndexOf(",")],
-                        new SolidBrush(MainBPTitleColor),
-                        null
-                    )
+                    x.DrawText(textOptions, mainscoremods[..mainscoremods.LastIndexOf(",")], MainBPTitleColor)
                 );
             }
 
@@ -1782,13 +1634,7 @@ public static class OsuInfoPanelV2
                 }
             }
             info.Mutate(x =>
-                x.DrawText(
-                    drawOptions,
-                    textOptions,
-                    artist,
-                    new SolidBrush(MainBPArtistColor),
-                    null
-                )
+                x.DrawText(textOptions, artist, MainBPArtistColor)
             );
 
             //creator
@@ -1805,103 +1651,73 @@ public static class OsuInfoPanelV2
                 }
             }
             info.Mutate(x =>
-                x.DrawText(
-                    drawOptions,
-                    textOptions,
-                    creator,
-                    new SolidBrush(MainBPMapperColor),
-                    null
-                )
+                x.DrawText(textOptions, creator, MainBPMapperColor)
             );
 
             //bid
             textOptions.Origin = new PointF(2447, 1668);
             info.Mutate(x =>
-                x.DrawText(
-                    drawOptions,
-                    textOptions,
-                    allBP![0].Beatmap!.BeatmapId.ToString(),
-                    new SolidBrush(MainBPBIDColor),
-                    null
-                )
+                x.DrawText(textOptions, allBP![0].Beatmap!.BeatmapId.ToString(), MainBPBIDColor)
             );
 
             textOptions.Origin = new PointF(2657, 1668);
             info.Mutate(x =>
-                x.DrawText(
-                    drawOptions,
-                    textOptions,
-                    ppinfos[0].star.ToString("0.##*"),
-                    new SolidBrush(MainBPStarsColor),
-                    null
-                )
+                x.DrawText(textOptions, ppinfos[0].star.ToString("0.##*"), MainBPStarsColor)
             );
 
             //acc
             textOptions.Origin = new PointF(2813, 1668);
             info.Mutate(x =>
-                x.DrawText(
-                    drawOptions,
-                    textOptions,
-                    allBP![0].AccAuto.ToString("0.##%"),
-                    new SolidBrush(MainBPAccColor),
-                    null
-                )
+                x.DrawText(textOptions, allBP![0].AccAuto.ToString("0.##%"), MainBPAccColor)
             );
 
             //rank
             textOptions.Origin = new PointF(2988, 1668);
             info.Mutate(x =>
-                x.DrawText(
-                    drawOptions,
-                    textOptions,
-                    allBP![0].RankAuto,
-                    new SolidBrush(MainBPRankColor),
-                    null
-                )
+                x.DrawText(textOptions, allBP![0].RankAuto, MainBPRankColor)
             );
         }
         else
         {
             info.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, "-", new SolidBrush(MainBPTitleColor), null)
+                x.DrawText(textOptions,  "-", MainBPTitleColor)
             );
 
             //artist
             textOptions.Font = TorusRegular.Get(42);
             textOptions.Origin = new PointF(1956, 1668);
             info.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, "-", new SolidBrush(MainBPArtistColor), null)
+                x.DrawText(textOptions,  "-", MainBPArtistColor)
             );
 
             //creator
             textOptions.Origin = new PointF(2231, 1668);
             info.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, "-", new SolidBrush(MainBPMapperColor), null)
+                x.DrawText(textOptions,  "-", MainBPMapperColor)
             );
 
             //bid
             textOptions.Origin = new PointF(2447, 1668);
             info.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, "-", new SolidBrush(MainBPBIDColor), null)
+                x.DrawText(textOptions,  "-", MainBPBIDColor)
             );
 
             //star
             textOptions.Origin = new PointF(2657, 1668);
             info.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, "-", new SolidBrush(MainBPStarsColor), null)
+                x.DrawText(textOptions,  "-", MainBPStarsColor)
             );
 
             //acc
             textOptions.Origin = new PointF(2813, 1668);
             info.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, "-", new SolidBrush(MainBPAccColor), null)
+                x.DrawText(textOptions,  "-", MainBPAccColor)
             );
 
             //rank
             textOptions.Origin = new PointF(2988, 1668);
             info.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, "-", new SolidBrush(MainBPRankColor), null)
+                x.DrawText(textOptions,  "-", MainBPRankColor)
             );
         }
 
@@ -1936,46 +1752,22 @@ public static class OsuInfoPanelV2
                 {
                     case 1:
                         info.Mutate(x =>
-                            x.DrawText(
-                                drawOptions,
-                                textOptions,
-                                title,
-                                new SolidBrush(SubBp2ndBPTitleColor),
-                                null
-                            )
+                            x.DrawText(textOptions, title, SubBp2ndBPTitleColor)
                         );
                         break;
                     case 2:
                         info.Mutate(x =>
-                            x.DrawText(
-                                drawOptions,
-                                textOptions,
-                                title,
-                                new SolidBrush(SubBp3rdBPTitleColor),
-                                null
-                            )
+                            x.DrawText(textOptions, title, SubBp3rdBPTitleColor)
                         );
                         break;
                     case 3:
                         info.Mutate(x =>
-                            x.DrawText(
-                                drawOptions,
-                                textOptions,
-                                title,
-                                new SolidBrush(SubBp4thBPTitleColor),
-                                null
-                            )
+                            x.DrawText(textOptions, title, SubBp4thBPTitleColor)
                         );
                         break;
                     case 4:
                         info.Mutate(x =>
-                            x.DrawText(
-                                drawOptions,
-                                textOptions,
-                                title,
-                                new SolidBrush(SubBp5thBPTitleColor),
-                                null
-                            )
+                            x.DrawText(textOptions, title, SubBp5thBPTitleColor)
                         );
                         break;
                     default:
@@ -1992,46 +1784,22 @@ public static class OsuInfoPanelV2
                 {
                     case 1:
                         info.Mutate(x =>
-                            x.DrawText(
-                                drawOptions,
-                                textOptions,
-                                "-",
-                                new SolidBrush(SubBp2ndBPTitleColor),
-                                null
-                            )
+                            x.DrawText(textOptions, "-", SubBp2ndBPTitleColor)
                         );
                         break;
                     case 2:
                         info.Mutate(x =>
-                            x.DrawText(
-                                drawOptions,
-                                textOptions,
-                                "-",
-                                new SolidBrush(SubBp3rdBPTitleColor),
-                                null
-                            )
+                            x.DrawText(textOptions, "-", SubBp3rdBPTitleColor)
                         );
                         break;
                     case 3:
                         info.Mutate(x =>
-                            x.DrawText(
-                                drawOptions,
-                                textOptions,
-                                "-",
-                                new SolidBrush(SubBp4thBPTitleColor),
-                                null
-                            )
+                            x.DrawText(textOptions, "-", SubBp4thBPTitleColor)
                         );
                         break;
                     case 4:
                         info.Mutate(x =>
-                            x.DrawText(
-                                drawOptions,
-                                textOptions,
-                                "-",
-                                new SolidBrush(SubBp5thBPTitleColor),
-                                null
-                            )
+                            x.DrawText(textOptions, "-", SubBp5thBPTitleColor)
                         );
                         break;
                     default:
@@ -2109,7 +1877,7 @@ public static class OsuInfoPanelV2
                     1925 + 186 * (i - 1)
                 );
                 info.Mutate(x =>
-                    x.DrawText(drawOptions, textOptions, title, new SolidBrush(versionC), null)
+                    x.DrawText(textOptions,  title, versionC)
                 );
                 var textMeasurePos =
                     MainTitleAndDifficultyTitlePos_X
@@ -2118,7 +1886,7 @@ public static class OsuInfoPanelV2
                 //split
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
                 info.Mutate(x =>
-                    x.DrawText(drawOptions, textOptions, " | ", new SolidBrush(splitC), null)
+                    x.DrawText(textOptions,  " | ", splitC)
                 );
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
@@ -2126,13 +1894,7 @@ public static class OsuInfoPanelV2
                 //bid
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
                 info.Mutate(x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        allBP![i].Beatmap!.BeatmapId.ToString(),
-                        new SolidBrush(bidC),
-                        null
-                    )
+                    x.DrawText(textOptions, allBP![i].Beatmap!.BeatmapId.ToString(), bidC)
                 );
                 textMeasurePos =
                     textMeasurePos
@@ -2144,7 +1906,7 @@ public static class OsuInfoPanelV2
                 //split
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
                 info.Mutate(x =>
-                    x.DrawText(drawOptions, textOptions, " | ", new SolidBrush(splitC), null)
+                    x.DrawText(textOptions,  " | ", splitC)
                 );
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
@@ -2152,13 +1914,7 @@ public static class OsuInfoPanelV2
                 //star
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
                 info.Mutate(x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        ppinfos[i].star.ToString("0.##*"),
-                        new SolidBrush(starC),
-                        null
-                    )
+                    x.DrawText(textOptions, ppinfos[i].star.ToString("0.##*"), starC)
                 );
                 textMeasurePos =
                     textMeasurePos
@@ -2168,7 +1924,7 @@ public static class OsuInfoPanelV2
                 //split
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
                 info.Mutate(x =>
-                    x.DrawText(drawOptions, textOptions, " | ", new SolidBrush(splitC), null)
+                    x.DrawText(textOptions,  " | ", splitC)
                 );
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
@@ -2176,13 +1932,7 @@ public static class OsuInfoPanelV2
                 //acc
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
                 info.Mutate(x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        allBP![i].AccAuto.ToString("0.##%"),
-                        new SolidBrush(accC),
-                        null
-                    )
+                    x.DrawText(textOptions, allBP![i].AccAuto.ToString("0.##%"), accC)
                 );
                 textMeasurePos =
                     textMeasurePos
@@ -2194,7 +1944,7 @@ public static class OsuInfoPanelV2
                 //split
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
                 info.Mutate(x =>
-                    x.DrawText(drawOptions, textOptions, " | ", new SolidBrush(splitC), null)
+                    x.DrawText(textOptions,  " | ", splitC)
                 );
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
@@ -2202,13 +1952,7 @@ public static class OsuInfoPanelV2
                 //ranking
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
                 info.Mutate(x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        allBP![i].RankAuto,
-                        new SolidBrush(rankC),
-                        null
-                    )
+                    x.DrawText(textOptions, allBP![i].RankAuto, rankC)
                 );
                 //shdklahdksadkjkcna5hoacsporjasldjlksakdlsa
 
@@ -2374,7 +2118,7 @@ public static class OsuInfoPanelV2
                     1925 + 186 * (i - 1)
                 );
                 info.Mutate(x =>
-                    x.DrawText(drawOptions, textOptions, "-", new SolidBrush(versionC), null)
+                    x.DrawText(textOptions,  "-", versionC)
                 );
                 var textMeasurePos =
                     MainTitleAndDifficultyTitlePos_X
@@ -2383,7 +2127,7 @@ public static class OsuInfoPanelV2
                 //split
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
                 info.Mutate(x =>
-                    x.DrawText(drawOptions, textOptions, " | ", new SolidBrush(splitC), null)
+                    x.DrawText(textOptions,  " | ", splitC)
                 );
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
@@ -2391,7 +2135,7 @@ public static class OsuInfoPanelV2
                 //bid
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
                 info.Mutate(x =>
-                    x.DrawText(drawOptions, textOptions, "-", new SolidBrush(bidC), null)
+                    x.DrawText(textOptions,  "-", bidC)
                 );
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize("-", textOptions).Width + 5;
@@ -2399,7 +2143,7 @@ public static class OsuInfoPanelV2
                 //split
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
                 info.Mutate(x =>
-                    x.DrawText(drawOptions, textOptions, " | ", new SolidBrush(splitC), null)
+                    x.DrawText(textOptions,  " | ", splitC)
                 );
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
@@ -2407,7 +2151,7 @@ public static class OsuInfoPanelV2
                 //star
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
                 info.Mutate(x =>
-                    x.DrawText(drawOptions, textOptions, "-", new SolidBrush(starC), null)
+                    x.DrawText(textOptions,  "-", starC)
                 );
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize("-", textOptions).Width + 5;
@@ -2415,7 +2159,7 @@ public static class OsuInfoPanelV2
                 //split
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
                 info.Mutate(x =>
-                    x.DrawText(drawOptions, textOptions, " | ", new SolidBrush(splitC), null)
+                    x.DrawText(textOptions,  " | ", splitC)
                 );
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
@@ -2423,7 +2167,7 @@ public static class OsuInfoPanelV2
                 //acc
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
                 info.Mutate(x =>
-                    x.DrawText(drawOptions, textOptions, "-", new SolidBrush(accC), null)
+                    x.DrawText(textOptions,  "-", accC)
                 );
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize("-", textOptions).Width + 5;
@@ -2431,7 +2175,7 @@ public static class OsuInfoPanelV2
                 //split
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
                 info.Mutate(x =>
-                    x.DrawText(drawOptions, textOptions, " | ", new SolidBrush(splitC), null)
+                    x.DrawText(textOptions,  " | ", splitC)
                 );
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
@@ -2439,7 +2183,7 @@ public static class OsuInfoPanelV2
                 //ranking
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
                 info.Mutate(x =>
-                    x.DrawText(drawOptions, textOptions, "-", new SolidBrush(rankC), null)
+                    x.DrawText(textOptions,  "-", rankC)
                 );
                 otherbp_mods_pos_y += 186;
             }
@@ -2464,7 +2208,7 @@ public static class OsuInfoPanelV2
         }
 
         info.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, pp_text, new SolidBrush(MainBPppMainColor), null)
+            x.DrawText(textOptions,  pp_text, MainBPppMainColor)
         );
         var bp1pptextMeasure = TextMeasurer.MeasureSize(pp_text, textOptions);
         int bp1pptextpos = 3642 - (int)bp1pptextMeasure.Width / 2;
@@ -2472,7 +2216,7 @@ public static class OsuInfoPanelV2
         textOptions.Origin = new PointF(bp1pptextpos, 1610);
         textOptions.HorizontalAlignment = HorizontalAlignment.Left;
         info.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, "pp", new SolidBrush(MainBPppTitleColor), null)
+            x.DrawText(textOptions,  "pp", MainBPppTitleColor)
         );
 
         textOptions.HorizontalAlignment = HorizontalAlignment.Center;
@@ -2489,13 +2233,7 @@ public static class OsuInfoPanelV2
         }
 
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                pp_text,
-                new SolidBrush(SubBp2ndBPppMainColor),
-                null
-            )
+            x.DrawText(textOptions, pp_text, SubBp2ndBPppMainColor)
         );
         textOptions.Origin = new PointF(3642, 2081);
 
@@ -2509,13 +2247,7 @@ public static class OsuInfoPanelV2
         }
 
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                pp_text,
-                new SolidBrush(SubBp3rdBPppMainColor),
-                null
-            )
+            x.DrawText(textOptions, pp_text, SubBp3rdBPppMainColor)
         );
         textOptions.Origin = new PointF(3642, 2266);
 
@@ -2529,13 +2261,7 @@ public static class OsuInfoPanelV2
         }
 
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                pp_text,
-                new SolidBrush(SubBp4thBPppMainColor),
-                null
-            )
+            x.DrawText(textOptions, pp_text, SubBp4thBPppMainColor)
         );
         textOptions.Origin = new PointF(3642, 2450);
 
@@ -2549,13 +2275,7 @@ public static class OsuInfoPanelV2
         }
 
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                pp_text,
-                new SolidBrush(SubBp5thBPppMainColor),
-                null
-            )
+            x.DrawText(textOptions, pp_text, SubBp5thBPppMainColor)
         );
 
         //badges
@@ -2675,13 +2395,7 @@ public static class OsuInfoPanelV2
         textOptions.HorizontalAlignment = HorizontalAlignment.Left;
         textOptions.Origin = new PointF(1780, 230);
         info.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                data.userInfo.Username,
-                new SolidBrush(UsernameColor),
-                null
-            )
+            x.DrawText(textOptions, data.userInfo.Username, UsernameColor)
         );
 
         //osu!mode
@@ -2712,13 +2426,7 @@ public static class OsuInfoPanelV2
         osuprofilemode.Mutate(x => x.DrawImage(osuprofilemode_icon, new Point(0, 21), 1));
         textOptions.Origin = new PointF(70, 48);
         osuprofilemode.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                osuprofilemode_text,
-                new SolidBrush(footerColor),
-                null
-            )
+            x.DrawText(textOptions, osuprofilemode_text, footerColor)
         );
         osuprofilemode.Mutate(x =>
             x.ProcessPixelRowsAsVector4(row =>
@@ -2774,57 +2482,11 @@ public static class OsuInfoPanelV2
         {
             textOptions.Origin = new PointF(DateXPos, 960);
             info.Mutate(x =>
-                x.DrawText(
-                    drawOptions,
-                    textOptions,
-                    $"{DateValue.Month}.{DateValue.Day}",
-                    new SolidBrush(RankLineChartDateTextColor),
-                    null
-                )
+                x.DrawText(textOptions, $"{DateValue.Month}.{DateValue.Day}", RankLineChartDateTextColor)
             );
             DateXPos -= 100;
             DateValue = DateValue.AddDays(-1);
         }
-
-        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!test info!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //textOptions.Font = TorusRegular.Get(40);
-        //textOptions.Origin = new PointF(2000, 2582);
-        //info.Mutate(x => x.DrawText(drawOptions, textOptions, "this is a test version and does not represent the final quality", new SolidBrush(footerColor), null));
-
-        /*
-        if (data.daysBefore > 1)
-        {
-            if (isDataOfDayAvaiavle)
-            {
-                textOptions.Origin = new PointF(300, 25);
-                info.Mutate(
-                    x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            $"对比自{data.daysBefore}天前",
-                            new SolidBrush(Color.White),
-                            null
-                        )
-                );
-            }
-            else
-            {
-                textOptions.Origin = new PointF(300, 25);
-                info.Mutate(
-                    x =>
-                        x.DrawText(
-                            drawOptions,
-                            textOptions,
-                            $" 请求的日期没有数据.." + $"当前数据对比自{data.daysBefore}天前",
-                            new SolidBrush(Color.White),
-                            null
-                        )
-                );
-            }
-        }
-
-        */
 
         //resize to 1920x?
         if (!output4k)
@@ -2914,10 +2576,6 @@ public static class OsuInfoPanelV2
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center
             };
-            var drawOptions = new DrawingOptions
-            {
-                GraphicsOptions = new GraphicsOptions { Antialias = true }
-            };
 
             textOptions.Font = TorusRegular.Get(40);
             Data = RawData.Reverse().ToArray();
@@ -2925,13 +2583,7 @@ public static class OsuInfoPanelV2
             {
                 textOptions.Origin = new PointF(xPos[i], yPos[i] - 34);
                 image.Mutate(x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        ((Data[i + 1] - Data[i]) * -1).ToString(),
-                        new SolidBrush(ChartTextColor),
-                        null
-                    )
+                    x.DrawText(textOptions, ((Data[i + 1] - Data[i]) * -1).ToString(), ChartTextColor)
                 );
             }
         }

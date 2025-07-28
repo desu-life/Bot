@@ -43,7 +43,6 @@ static class Helpers
         HorizontalAlignment horizontalAlignment = HorizontalAlignment.Left
     )
     {
-        var drawingOptions = ctx.GetDrawingOptions();
         var textOptions = new RichTextOptions(font)
         {
             FallbackFontFamilies = [Fonts.HarmonySans, Fonts.HarmonySansArabic],
@@ -51,6 +50,17 @@ static class Helpers
             HorizontalAlignment = horizontalAlignment,
             Origin = point,
         };
+        return ctx.DrawText(textOptions, text, color);
+    }
+
+     public static IImageProcessingContext DrawText(
+        this IImageProcessingContext ctx,
+        RichTextOptions textOptions,
+        string text,
+        Color color
+    )
+    {
+        var drawingOptions = ctx.GetDrawingOptions();
         return ctx.DrawText(drawingOptions, textOptions, text, new SolidBrush(color), null);
     }
 }

@@ -219,10 +219,6 @@ public static class ScoreV2
         score.Mutate(x => x.DrawImage(rankPic, new Point(913, 874), 1));
         // text part (文字部分)
         var font = TorusRegular.Get(60);
-        var drawOptions = new DrawingOptions
-        {
-            GraphicsOptions = new GraphicsOptions { Antialias = true }
-        };
         var textOptions = new RichTextOptions(font)
         {
             VerticalAlignment = VerticalAlignment.Bottom,
@@ -243,11 +239,11 @@ public static class ScoreV2
         }
         textOptions.Origin = new PointF(499, 110);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, title, new SolidBrush(Color.Black), null)
+            x.DrawText(textOptions,  title, Color.Black)
         );
         textOptions.Origin = new PointF(499, 105);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, title, new SolidBrush(Color.White), null)
+            x.DrawText(textOptions,  title, Color.White)
         );
         // artist
         textOptions.Font = TorusRegular.Get(40);
@@ -264,11 +260,11 @@ public static class ScoreV2
         }
         textOptions.Origin = new PointF(519, 178);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, artist, new SolidBrush(Color.Black), null)
+            x.DrawText(textOptions,  artist, Color.Black)
         );
         textOptions.Origin = new PointF(519, 175);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, artist, new SolidBrush(Color.White), null)
+            x.DrawText(textOptions,  artist, Color.White)
         );
         // creator
         var creator = "";
@@ -284,21 +280,21 @@ public static class ScoreV2
         }
         textOptions.Origin = new PointF(795, 178);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, creator, new SolidBrush(Color.Black), null)
+            x.DrawText(textOptions,  creator, Color.Black)
         );
         textOptions.Origin = new PointF(795, 175);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, creator, new SolidBrush(Color.White), null)
+            x.DrawText(textOptions,  creator, Color.White)
         );
         // beatmap_id
         var beatmap_id = data.scoreInfo.Beatmap.BeatmapId.ToString();
         textOptions.Origin = new PointF(1008, 178);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, beatmap_id, new SolidBrush(Color.Black), null)
+            x.DrawText(textOptions,  beatmap_id, Color.Black)
         );
         textOptions.Origin = new PointF(1008, 175);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, beatmap_id, new SolidBrush(Color.White), null)
+            x.DrawText(textOptions,  beatmap_id, Color.White)
         );
         // ar,od info
         var color = Color.ParseHex("#f1ce59");
@@ -317,61 +313,61 @@ public static class ScoreV2
         }
         textOptions.Origin = new PointF(1741, 127);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, song_time, new SolidBrush(Color.Black), null)
+            x.DrawText(textOptions,  song_time, Color.Black)
         );
         textOptions.Origin = new PointF(1741, 124);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, song_time, new SolidBrush(color), null)
+            x.DrawText(textOptions,  song_time, color)
         );
         // bpm
         var bpm = data.ppInfo.bpm.ToString("0.##");
         textOptions.Origin = new PointF(1457, 127);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, bpm, new SolidBrush(Color.Black), null)
+            x.DrawText(textOptions,  bpm, Color.Black)
         );
         textOptions.Origin = new PointF(1457, 124);
-        score.Mutate(x => x.DrawText(drawOptions, textOptions, bpm, new SolidBrush(color), null));
+        score.Mutate(x => x.DrawText(textOptions,  bpm, color));
         // ar
         var ar = ppInfo.AR.ToString("0.0#");
         textOptions.Origin = new PointF(1457, 218);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, ar, new SolidBrush(Color.Black), null)
+            x.DrawText(textOptions,  ar, Color.Black)
         );
         textOptions.Origin = new PointF(1457, 215);
-        score.Mutate(x => x.DrawText(drawOptions, textOptions, ar, new SolidBrush(color), null));
+        score.Mutate(x => x.DrawText(textOptions,  ar, color));
         // od
         var od = ppInfo.OD.ToString("0.0#");
         textOptions.Origin = new PointF(1741, 218);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, od, new SolidBrush(Color.Black), null)
+            x.DrawText(textOptions,  od, Color.Black)
         );
         textOptions.Origin = new PointF(1741, 215);
-        score.Mutate(x => x.DrawText(drawOptions, textOptions, od, new SolidBrush(color), null));
+        score.Mutate(x => x.DrawText(textOptions,  od, color));
         // cs
         var cs = ppInfo.CS.ToString("0.0#");
         textOptions.Origin = new PointF(1457, 312);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, cs, new SolidBrush(Color.Black), null)
+            x.DrawText(textOptions,  cs, Color.Black)
         );
         textOptions.Origin = new PointF(1457, 309);
-        score.Mutate(x => x.DrawText(drawOptions, textOptions, cs, new SolidBrush(color), null));
+        score.Mutate(x => x.DrawText(textOptions,  cs, color));
         // hp
         var hp = ppInfo.HP.ToString("0.0#");
         textOptions.Origin = new PointF(1741, 312);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, hp, new SolidBrush(Color.Black), null)
+            x.DrawText(textOptions,  hp, Color.Black)
         );
         textOptions.Origin = new PointF(1741, 309);
-        score.Mutate(x => x.DrawText(drawOptions, textOptions, hp, new SolidBrush(color), null));
+        score.Mutate(x => x.DrawText(textOptions,  hp, color));
         // stars, version
         var starText = $"Stars: {ppInfo.star:0.##}";
         textOptions.Origin = new PointF(584, 292);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, starText, new SolidBrush(Color.Black), null)
+            x.DrawText(textOptions,  starText, Color.Black)
         );
         textOptions.Origin = new PointF(584, 289);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, starText, new SolidBrush(color), null)
+            x.DrawText(textOptions,  starText, color)
         );
         var version = "";
         foreach (char c in data.scoreInfo.Beatmap.Version)
@@ -386,11 +382,11 @@ public static class ScoreV2
         }
         textOptions.Origin = new PointF(584, 320);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, version, new SolidBrush(Color.Black), null)
+            x.DrawText(textOptions,  version, Color.Black)
         );
         textOptions.Origin = new PointF(584, 317);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, version, new SolidBrush(Color.White), null)
+            x.DrawText(textOptions,  version, Color.White)
         );
         // avatar
         avatar.Mutate(x => x.Resize(80, 80).RoundCorner(new Size(80, 80), 40));
@@ -401,11 +397,11 @@ public static class ScoreV2
         var username = data.scoreInfo.User!.Username;
         textOptions.Origin = new PointF(145, 470);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, username, new SolidBrush(Color.Black), null)
+            x.DrawText(textOptions,  username, Color.Black)
         );
         textOptions.Origin = new PointF(145, 467);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, username, new SolidBrush(Color.White), null)
+            x.DrawText(textOptions,  username, Color.White)
         );
         // time
         textOptions.Font = TorusRegular.Get(27.61f);
@@ -413,11 +409,11 @@ public static class ScoreV2
         var time = data.scoreInfo.EndedAt.ToString("yyyy/MM/dd HH:mm:ss");
         textOptions.Origin = new PointF(145, 505);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, time, new SolidBrush(Color.Black), null)
+            x.DrawText(textOptions,  time, Color.Black)
         );
         textOptions.Origin = new PointF(145, 502);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, time, new SolidBrush(Color.White), null)
+            x.DrawText(textOptions,  time, Color.White)
         );
 
         // pp
@@ -433,11 +429,11 @@ public static class ScoreV2
         var metric = TextMeasurer.MeasureSize(pptext, textOptions);
         textOptions.Origin = new PointF(1532, 638);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, pptext, new SolidBrush(ppColor), null)
+            x.DrawText(textOptions,  pptext, ppColor)
         );
         textOptions.Origin = new PointF(1532 + metric.Width, 638);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, "pp", new SolidBrush(ppTColor), null)
+            x.DrawText(textOptions,  "pp", ppTColor)
         );
         if (ppInfo.ppStat.speed == null)
             pptext = "-";
@@ -446,11 +442,11 @@ public static class ScoreV2
         metric = TextMeasurer.MeasureSize(pptext, textOptions);
         textOptions.Origin = new PointF(1672, 638);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, pptext, new SolidBrush(ppColor), null)
+            x.DrawText(textOptions,  pptext, ppColor)
         );
         textOptions.Origin = new PointF(1672 + metric.Width, 638);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, "pp", new SolidBrush(ppTColor), null)
+            x.DrawText(textOptions,  "pp", ppTColor)
         );
         if (ppInfo.ppStat.acc == null)
             pptext = "-";
@@ -459,11 +455,11 @@ public static class ScoreV2
         metric = TextMeasurer.MeasureSize(pptext, textOptions);
         textOptions.Origin = new PointF(1812, 638);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, pptext, new SolidBrush(ppColor), null)
+            x.DrawText(textOptions,  pptext, ppColor)
         );
         textOptions.Origin = new PointF(1812 + metric.Width, 638);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, "pp", new SolidBrush(ppTColor), null)
+            x.DrawText(textOptions,  "pp", ppTColor)
         );
 
         // if (data.scoreInfo.Mode is OSU.Mode.Mania)
@@ -473,9 +469,9 @@ public static class ScoreV2
         //     for (var i = 0; i < 5; i++)
         //     {
         //         textOptions.Origin = new PointF(50 + 139 * i, 638);
-        //         score.Mutate(x => x.DrawText(drawOptions, textOptions, pptext, new SolidBrush(ppColor), null));
+        //         score.Mutate(x => x.DrawText(textOptions,  pptext, ppColor));
         //         textOptions.Origin = new PointF(50 + 139 * i + metric.Width, 638);
-        //         score.Mutate(x => x.DrawText(drawOptions, textOptions, "pp", new SolidBrush(ppTColor), null));
+        //         score.Mutate(x => x.DrawText(textOptions,  "pp", ppTColor));
         //     }
         // }
         // else
@@ -495,11 +491,11 @@ public static class ScoreV2
             metric = TextMeasurer.MeasureSize(pptext, textOptions);
             textOptions.Origin = new PointF(50 + 139 * i, 638);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, pptext, new SolidBrush(ppColor), null)
+                x.DrawText(textOptions,  pptext, ppColor)
             );
             textOptions.Origin = new PointF(50 + 139 * i + metric.Width, 638);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, "pp", new SolidBrush(ppTColor), null)
+                x.DrawText(textOptions,  "pp", ppTColor)
             );
         }
 
@@ -516,11 +512,11 @@ public static class ScoreV2
         metric = TextMeasurer.MeasureSize(pptext, textOptions);
         textOptions.Origin = new PointF(99, 562);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, pptext, new SolidBrush(ppColor), null)
+            x.DrawText(textOptions,  pptext, ppColor)
         );
         textOptions.Origin = new PointF(99 + metric.Width, 562);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, "pp", new SolidBrush(ppTColor), null)
+            x.DrawText(textOptions,  "pp", ppTColor)
         );
 
         // total pp
@@ -532,11 +528,11 @@ public static class ScoreV2
         textOptions.HorizontalAlignment = HorizontalAlignment.Right;
         textOptions.Origin = new PointF(1825, 500);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, pptext, new SolidBrush(ppColor), null)
+            x.DrawText(textOptions,  pptext, ppColor)
         );
         textOptions.Origin = new PointF(1899, 500);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, "pp", new SolidBrush(ppTColor), null)
+            x.DrawText(textOptions,  "pp", ppTColor)
         );
 
         if (data.oldPP is not null)
@@ -545,16 +541,16 @@ public static class ScoreV2
             textOptions.HorizontalAlignment = HorizontalAlignment.Right;
             textOptions.Origin = new PointF(1825 - ppm.Width - 175, 500);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, pptext, new SolidBrush(ppColor), null)
+                x.DrawText(textOptions,  pptext, ppColor)
             );
             textOptions.Origin = new PointF(1899 - ppm.Width - 100, 500);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, "pp →", new SolidBrush(ppTColor), null)
+                x.DrawText(textOptions,  "pp →", ppTColor)
             );
             textOptions.Font = TorusRegular.Get(20);
             textOptions.Origin = new PointF(1825 - ppm.Width - 150, 450);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, "(oldpp)", new SolidBrush(ppTColor), null)
+                x.DrawText(textOptions,  "(oldpp)", ppTColor)
             );
         }
 
@@ -563,13 +559,7 @@ public static class ScoreV2
         textOptions.Font = TorusRegular.Get(40);
         textOptions.Origin = new PointF(980, 745);
         score.Mutate(x =>
-            x.DrawText(
-                drawOptions,
-                textOptions,
-                data.scoreInfo.ScoreAuto.ToString("N0"),
-                new SolidBrush(Color.White),
-                null
-            )
+            x.DrawText(textOptions, data.scoreInfo.ScoreAuto.ToString("N0"), Color.White)
         );
 
         if (data.mode is RosuPP.Mode.Catch)
@@ -584,38 +574,38 @@ public static class ScoreV2
             // great
             textOptions.Origin = new PointF(790, 852);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, great, new SolidBrush(Color.Black), null)
+                x.DrawText(textOptions,  great, Color.Black)
             );
             textOptions.Origin = new PointF(790, 849);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, great, new SolidBrush(Color.White), null)
+                x.DrawText(textOptions,  great, Color.White)
             );
             // ok
             textOptions.Origin = new PointF(790, 975);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, ok, new SolidBrush(Color.Black), null)
+                x.DrawText(textOptions,  ok, Color.Black)
             );
             textOptions.Origin = new PointF(790, 972);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, ok, new SolidBrush(Color.White), null)
+                x.DrawText(textOptions,  ok, Color.White)
             );
             // meh
             textOptions.Origin = new PointF(1152, 852);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, meh, new SolidBrush(Color.Black), null)
+                x.DrawText(textOptions,  meh, Color.Black)
             );
             textOptions.Origin = new PointF(1152, 849);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, meh, new SolidBrush(Color.White), null)
+                x.DrawText(textOptions,  meh, Color.White)
             );
             // miss
             textOptions.Origin = new PointF(1152, 975);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, miss, new SolidBrush(Color.Black), null)
+                x.DrawText(textOptions,  miss, Color.Black)
             );
             textOptions.Origin = new PointF(1152, 972);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, miss, new SolidBrush(Color.White), null)
+                x.DrawText(textOptions,  miss, Color.White)
             );
         }
         else if (data.mode is RosuPP.Mode.Mania)
@@ -631,56 +621,56 @@ public static class ScoreV2
             // great
             textOptions.Origin = new PointF(790, 834);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, great, new SolidBrush(Color.Black), null)
+                x.DrawText(textOptions,  great, Color.Black)
             );
             textOptions.Origin = new PointF(790, 832);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, great, new SolidBrush(Color.White), null)
+                x.DrawText(textOptions,  great, Color.White)
             );
             // geki
             textOptions.Origin = new PointF(1156, 836);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, geki, new SolidBrush(Color.Black), null)
+                x.DrawText(textOptions,  geki, Color.Black)
             );
             textOptions.Origin = new PointF(1156, 834);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, geki, new SolidBrush(Color.White), null)
+                x.DrawText(textOptions,  geki, Color.White)
             );
             // katu
             textOptions.Origin = new PointF(790, 909);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, katu, new SolidBrush(Color.Black), null)
+                x.DrawText(textOptions,  katu, Color.Black)
             );
             textOptions.Origin = new PointF(790, 907);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, katu, new SolidBrush(Color.White), null)
+                x.DrawText(textOptions,  katu, Color.White)
             );
             // ok
             textOptions.Origin = new PointF(1156, 909);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, ok, new SolidBrush(Color.Black), null)
+                x.DrawText(textOptions,  ok, Color.Black)
             );
             textOptions.Origin = new PointF(1156, 907);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, ok, new SolidBrush(Color.White), null)
+                x.DrawText(textOptions,  ok, Color.White)
             );
             // meh
             textOptions.Origin = new PointF(790, 984);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, meh, new SolidBrush(Color.Black), null)
+                x.DrawText(textOptions,  meh, Color.Black)
             );
             textOptions.Origin = new PointF(790, 982);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, meh, new SolidBrush(Color.White), null)
+                x.DrawText(textOptions,  meh, Color.White)
             );
             // miss
             textOptions.Origin = new PointF(1156, 984);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, miss, new SolidBrush(Color.Black), null)
+                x.DrawText(textOptions,  miss, Color.Black)
             );
             textOptions.Origin = new PointF(1156, 982);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, miss, new SolidBrush(Color.White), null)
+                x.DrawText(textOptions,  miss, Color.White)
             );
         }
         else
@@ -694,38 +684,38 @@ public static class ScoreV2
             // great
             textOptions.Origin = new PointF(792, 857);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, great, new SolidBrush(Color.Black), null)
+                x.DrawText(textOptions,  great, Color.Black)
             );
             textOptions.Origin = new PointF(792, 854);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, great, new SolidBrush(Color.White), null)
+                x.DrawText(textOptions,  great, Color.White)
             );
             // ok
             textOptions.Origin = new PointF(792, 985);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, ok, new SolidBrush(Color.Black), null)
+                x.DrawText(textOptions,  ok, Color.Black)
             );
             textOptions.Origin = new PointF(792, 982);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, ok, new SolidBrush(Color.White), null)
+                x.DrawText(textOptions,  ok, Color.White)
             );
             // meh
             textOptions.Origin = new PointF(1154, 857);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, meh, new SolidBrush(Color.Black), null)
+                x.DrawText(textOptions,  meh, Color.Black)
             );
             textOptions.Origin = new PointF(1154, 854);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, meh, new SolidBrush(Color.White), null)
+                x.DrawText(textOptions,  meh, Color.White)
             );
             // miss
             textOptions.Origin = new PointF(1154, 985);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, miss, new SolidBrush(Color.Black), null)
+                x.DrawText(textOptions,  miss, Color.Black)
             );
             textOptions.Origin = new PointF(1154, 982);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, miss, new SolidBrush(Color.White), null)
+                x.DrawText(textOptions,  miss, Color.White)
             );
         }
 
@@ -737,13 +727,13 @@ public static class ScoreV2
         color = Color.ParseHex("#87ff6a");
         textOptions.Origin = new PointF(360, 966);
         score.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, $"{acc:0.0#}%", new SolidBrush(Color.Black), null)
+            x.DrawText(textOptions,  $"{acc:0.0#}%", Color.Black)
         );
         using var acchue = new Image<Rgba32>(1950 - 2, 1088);
         var hue = acc < 60 ? 260f : (acc - 60) * 2 + 280f;
         textOptions.Origin = new PointF(360, 963);
         acchue.Mutate(x =>
-            x.DrawText(drawOptions, textOptions, $"{acc:0.0#}%", new SolidBrush(color), null)
+            x.DrawText(textOptions,  $"{acc:0.0#}%", color)
         );
         acchue.Mutate(x => x.Hue(((float)hue)));
         score.Mutate(x => x.DrawImage(acchue, 1));
@@ -756,49 +746,31 @@ public static class ScoreV2
             {
                 textOptions.Origin = new PointF(1598, 966);
                 score.Mutate(x =>
-                    x.DrawText(drawOptions, textOptions, " / ", new SolidBrush(Color.Black), null)
+                    x.DrawText(textOptions,  " / ", Color.Black)
                 );
                 textOptions.Origin = new PointF(1598, 963);
                 score.Mutate(x =>
-                    x.DrawText(drawOptions, textOptions, " / ", new SolidBrush(Color.White), null)
+                    x.DrawText(textOptions,  " / ", Color.White)
                 );
                 textOptions.HorizontalAlignment = HorizontalAlignment.Left;
                 textOptions.Origin = new PointF(1607, 966);
                 score.Mutate(x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        $"{maxCombo}x",
-                        new SolidBrush(Color.Black),
-                        null
-                    )
+                    x.DrawText(textOptions, $"{maxCombo}x", Color.Black)
                 );
                 textOptions.Origin = new PointF(1607, 963);
                 score.Mutate(x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        $"{maxCombo}x",
-                        new SolidBrush(color),
-                        null
-                    )
+                    x.DrawText(textOptions, $"{maxCombo}x", color)
                 );
                 textOptions.HorizontalAlignment = HorizontalAlignment.Right;
                 textOptions.Origin = new PointF(1588, 966);
                 score.Mutate(x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        $"{combo}x",
-                        new SolidBrush(Color.Black),
-                        null
-                    )
+                    x.DrawText(textOptions, $"{combo}x", Color.Black)
                 );
                 using var combohue = new Image<Rgba32>(1950 - 2, 1088);
                 hue = (((float)combo / (float)maxCombo) * 100) + 260;
                 textOptions.Origin = new PointF(1588, 963);
                 combohue.Mutate(x =>
-                    x.DrawText(drawOptions, textOptions, $"{combo}x", new SolidBrush(color), null)
+                    x.DrawText(textOptions,  $"{combo}x", color)
                 );
                 combohue.Mutate(x => x.Hue(((float)hue)));
                 score.Mutate(x => x.DrawImage(combohue, 1));
@@ -808,17 +780,11 @@ public static class ScoreV2
                 textOptions.HorizontalAlignment = HorizontalAlignment.Center;
                 textOptions.Origin = new PointF(1598, 966);
                 score.Mutate(x =>
-                    x.DrawText(
-                        drawOptions,
-                        textOptions,
-                        $"{combo}x",
-                        new SolidBrush(Color.Black),
-                        null
-                    )
+                    x.DrawText(textOptions, $"{combo}x", Color.Black)
                 );
                 textOptions.Origin = new PointF(1598, 963);
                 score.Mutate(x =>
-                    x.DrawText(drawOptions, textOptions, $"{combo}x", new SolidBrush(color), null)
+                    x.DrawText(textOptions,  $"{combo}x", color)
                 );
             }
         }
@@ -827,11 +793,11 @@ public static class ScoreV2
             textOptions.HorizontalAlignment = HorizontalAlignment.Center;
             textOptions.Origin = new PointF(1598, 966);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, $"{combo}x", new SolidBrush(Color.Black), null)
+                x.DrawText(textOptions,  $"{combo}x", Color.Black)
             );
             textOptions.Origin = new PointF(1598, 963);
             score.Mutate(x =>
-                x.DrawText(drawOptions, textOptions, $"{combo}x", new SolidBrush(color), null)
+                x.DrawText(textOptions,  $"{combo}x", color)
             );
         }
 
