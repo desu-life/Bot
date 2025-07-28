@@ -114,8 +114,7 @@ namespace KanonBot.Functions.OSUBot
             _ = Task.Run(async () => {
                 try
                 {
-                    var data = await Client.PPlus.UpdateUserPlusDataNext(OnlineOsuInfo!.Id);
-                    await Database.Client.UpdateOsuPPlusDataNext(data!);   
+                    await Client.PPlus.UpdateUserPlusDataNext(OnlineOsuInfo!.Id);
                 }
                 catch { }//更新pp+失败，不返回信息
             });
