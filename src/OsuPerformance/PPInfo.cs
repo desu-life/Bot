@@ -2,7 +2,7 @@ using System.Collections.Immutable;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using KanonBot.LegacyImage;
+using KanonBot.Image;
 using LanguageExt.ClassInstances.Pred;
 using static KanonBot.API.OSU.OSUExtensions;
 using OSU = KanonBot.API.OSU;

@@ -47,7 +47,7 @@ namespace KanonBot.Functions.OSUBot
 
                 await target.reply("正在获取pp+数据，请稍等。。");
 
-                LegacyImage.Draw.PPVSPanelData data = new();
+                Image.PPVS.PPVSPanelData data = new();
 
                 // var d1 = await Database.Client.GetOsuPPlusDataNext(userSelf.Id);
                 // if (d1 == null)
@@ -98,7 +98,7 @@ namespace KanonBot.Functions.OSUBot
                 data.u1 = d2.Performances;
 
                 using var stream = new MemoryStream();
-                using var img = await LegacyImage.Draw.DrawPPVS(data);
+                using var img = await Image.PPVS.DrawPPVS(data);
                 await img.SaveAsync(stream, new JpegEncoder());
                 await target.reply(new Chain().image(Convert.ToBase64String(stream.ToArray(), 0, (int)stream.Length), ImageSegment.Type.Base64));
             } else if (cmds.Length == 2) {
@@ -125,7 +125,7 @@ namespace KanonBot.Functions.OSUBot
 
                 await target.reply("正在获取pp+数据，请稍等。。");
 
-                LegacyImage.Draw.PPVSPanelData data = new();
+                Image.PPVS.PPVSPanelData data = new();
 
                 var d1 = await API.OSU.Client.PPlus.GetUserPlusDataNext(user1.Id);
                 if (d1 == null)
@@ -147,7 +147,7 @@ namespace KanonBot.Functions.OSUBot
 
 
                 using var stream = new MemoryStream();
-                using var img = await LegacyImage.Draw.DrawPPVS(data);
+                using var img = await Image.PPVS.DrawPPVS(data);
                 await img.SaveAsync(stream, new JpegEncoder());
                 await target.reply(new Chain().image(Convert.ToBase64String(stream.ToArray(), 0, (int)stream.Length), ImageSegment.Type.Base64));
             } else {

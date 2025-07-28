@@ -3,7 +3,6 @@ using System.Numerics;
 using OSU = KanonBot.API.OSU;
 using static KanonBot.API.OSU.OSUExtensions;
 using KanonBot.Image;
-using KanonBot.LegacyImage;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
@@ -14,14 +13,14 @@ using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using static KanonBot.LegacyImage.Draw;
 using Img = SixLabors.ImageSharp.Image;
 using ResizeOptions = SixLabors.ImageSharp.Processing.ResizeOptions;
 using KanonBot.OsuPerformance;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using static KanonBot.Image.Fonts;
 
-namespace KanonBot.image
+namespace KanonBot.Image
 {
     public static class ScoreList
     {
@@ -57,7 +56,7 @@ namespace KanonBot.image
             
 
             //设定textOption/drawOption
-            var textOptions = new RichTextOptions(new Font(TorusSemiBold, 120))
+            var textOptions = new RichTextOptions(TorusSemiBold.Get(120))
             {
                 VerticalAlignment = VerticalAlignment.Bottom,
                 HorizontalAlignment = HorizontalAlignment.Left,
@@ -104,7 +103,7 @@ namespace KanonBot.image
             image.Mutate(x => x.DrawImage(avatar, new Point(56, 60), 1));
             //username
             textOptions.Origin = new PointF(256, 195);
-            textOptions.Font = new Font(TorusSemiBold, 100);
+            textOptions.Font = TorusSemiBold.Get(100);
             image.Mutate(
                 x =>
                     x.DrawText(
@@ -193,9 +192,9 @@ namespace KanonBot.image
                 textOptions.VerticalAlignment = VerticalAlignment.Center;
                 textOptions.Origin = new PointF(1782, 132);
                 if (userInfo.Statistics.PP > 9999) {
-                    textOptions.Font = new Font(TorusRegular, 48);
+                    textOptions.Font = TorusRegular.Get(48);
                 } else {
-                    textOptions.Font = new Font(TorusRegular, 58);
+                    textOptions.Font = TorusRegular.Get(58);
                 }
                 image.Mutate(
                     x =>
@@ -212,7 +211,7 @@ namespace KanonBot.image
 
                 //绘制页眉的信息 496x585
                 //title  +mods
-                textOptions.Font = new Font(TorusRegular, 90);
+                textOptions.Font = TorusRegular.Get(90);
                 textOptions.Origin = new PointF(485, 540);
                 var mainTitle = "";
                 foreach (char c in scoreList[0].Score.Beatmapset!.Title)
@@ -247,7 +246,7 @@ namespace KanonBot.image
                         485 + TextMeasurer.MeasureSize(mainTitle, textOptions).Width + 25,
                         530
                     );
-                    textOptions.Font = new Font(TorusRegular, 40);
+                    textOptions.Font = TorusRegular.Get(40);
                     var mainscoremods = "+";
                     foreach (var x in scoreList[0].Score.Mods) {
                         mainscoremods += $"{x.Acronym}, ";
@@ -269,7 +268,7 @@ namespace KanonBot.image
                         485 + TextMeasurer.MeasureSize(mainTitle, textOptions).Width + 25,
                         530
                     );
-                    textOptions.Font = new Font(TorusRegular, 40);
+                    textOptions.Font = TorusRegular.Get(40);
                     image.Mutate(
                         x =>
                             x.DrawText(
@@ -284,7 +283,7 @@ namespace KanonBot.image
 
                 int mainScoreXPos = 585;
                 //artist
-                textOptions.Font = new Font(TorusRegular, 38);
+                textOptions.Font = TorusRegular.Get(38);
                 textOptions.Origin = new PointF(495, mainScoreXPos);
                 var artist = "";
                 foreach (char c in scoreList[0].Score.Beatmapset!.Artist)
@@ -386,7 +385,7 @@ namespace KanonBot.image
                 );
 
                 //pp
-                textOptions.Font = new Font(TorusRegular, 90);
+                textOptions.Font = TorusRegular.Get(90);
                 textOptions.HorizontalAlignment = HorizontalAlignment.Center;
                 textOptions.Origin = new PointF(1790, 608);
                 image.Mutate(
@@ -404,7 +403,7 @@ namespace KanonBot.image
                     textOptions
                 );
                 int bp1pptextpos = 1790 - (int)bp1pptextMeasure.Width / 2;
-                textOptions.Font = new Font(TorusRegular, 40);
+                textOptions.Font = TorusRegular.Get(40);
                 textOptions.Origin = new PointF(bp1pptextpos, 522);
                 textOptions.HorizontalAlignment = HorizontalAlignment.Left;
                 image.Mutate(
@@ -426,9 +425,9 @@ namespace KanonBot.image
                 textOptions.VerticalAlignment = VerticalAlignment.Center;
                 textOptions.Origin = new PointF(1782, 132);
                 if (userInfo.Statistics.PP > 9999) {
-                    textOptions.Font = new Font(TorusRegular, 48);
+                    textOptions.Font = TorusRegular.Get(48);
                 } else {
-                    textOptions.Font = new Font(TorusRegular, 58);
+                    textOptions.Font = TorusRegular.Get(58);
                 }
                 image.Mutate(
                     x =>
@@ -475,7 +474,7 @@ namespace KanonBot.image
 
                 //main title
                 textOptions.HorizontalAlignment = HorizontalAlignment.Left;
-                textOptions.Font = new Font(TorusRegular, 50);
+                textOptions.Font = TorusRegular.Get(50);
                 var title = "";
                 foreach (char c in scoreList[i].Score.Beatmapset!.Title)
                 {
@@ -499,7 +498,7 @@ namespace KanonBot.image
                         )
                 );
                 //Rank
-                textOptions.Font = new Font(TorusRegular, 34);
+                textOptions.Font = TorusRegular.Get(34);
                 textOptions.Origin = new PointF(204, 138);
                 SubPic.Mutate(
                     x =>
@@ -726,7 +725,7 @@ namespace KanonBot.image
                 }
 
                 //pp
-                textOptions.Font = new Font(TorusRegular, 70);
+                textOptions.Font = TorusRegular.Get(70);
                 textOptions.HorizontalAlignment = HorizontalAlignment.Center;
                 textOptions.Origin = new PointF(1790, 128);
                 SubPic.Mutate(

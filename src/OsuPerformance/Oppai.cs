@@ -1,5 +1,5 @@
 using System.IO;
-using KanonBot.LegacyImage;
+using KanonBot.Image;
 using KanonBot.Serializer;
 using LanguageExt.ClassInstances.Pred;
 using RosuPP;
@@ -18,9 +18,9 @@ public static class OppaiCalculator
         return Oppai.Beatmap.Read(reader);
     }
 
-    public static Draw.ScorePanelData CalculatePanelData(byte[] b, API.OSU.Models.ScoreLazer score)
+    public static ScoreV2.ScorePanelData CalculatePanelData(byte[] b, API.OSU.Models.ScoreLazer score)
     {
-        var data = new Draw.ScorePanelData { scoreInfo = score };
+        var data = new ScoreV2.ScorePanelData { scoreInfo = score };
         if (score.IsLazer) {
             data.server = "Lazer";
         }

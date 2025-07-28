@@ -196,7 +196,7 @@ namespace KanonBot.Functions.OSUBot
             // 正常是找不到玩家，但是上面有验证，这里做保险
             if (scoreInfos.Length > 0)
             {
-                List<image.ScoreList.ScoreRank> scores = [];
+                List<Image.ScoreList.ScoreRank> scores = [];
                 var now = DateTime.Now;
                 var t = now.Hour < 4 ? now.Date.AddDays(-1).AddHours(4) : now.Date.AddHours(4);
 
@@ -209,7 +209,7 @@ namespace KanonBot.Functions.OSUBot
 
                     if (bp_time >= t)
                     {
-                        scores.Add(new image.ScoreList.ScoreRank {
+                        scores.Add(new Image.ScoreList.ScoreRank {
                             Score = item,
                             Rank = i + 1
                         });
@@ -234,8 +234,8 @@ namespace KanonBot.Functions.OSUBot
                 
                 scores.Sort((a, b) => b.PPInfo!.ppStat.total > a.PPInfo!.ppStat.total ? 1 : -1);
 
-                using var img = await KanonBot.image.ScoreList.Draw(
-                    KanonBot.image.ScoreList.Type.TODAYBP,
+                using var img = await KanonBot.Image.ScoreList.Draw(
+                    KanonBot.Image.ScoreList.Type.TODAYBP,
                     scores,
                     tempOsuInfo
                 );

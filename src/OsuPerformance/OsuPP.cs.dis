@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using KanonBot.LegacyImage;
+using KanonBot.Image;
 using KanonBot.Serializer;
 using LanguageExt.ClassInstances.Pred;
 using RosuPP;

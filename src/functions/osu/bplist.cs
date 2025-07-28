@@ -226,9 +226,9 @@ namespace KanonBot.Functions.OSUBot
             // 正常是找不到玩家，但是上面有验证，这里做保险
             if (scoreInfos.Length > 0)
             {
-                List<image.ScoreList.ScoreRank> scores = [];
+                List<Image.ScoreList.ScoreRank> scores = [];
                 for (int i = StartAt - 1; i < (scoreInfos.Length > EndAt ? EndAt : scoreInfos.Length); ++i) {
-                    scores.Add(new image.ScoreList.ScoreRank {
+                    scores.Add(new Image.ScoreList.ScoreRank {
                         Score = scoreInfos[i],
                         Rank = i + 1,
                     });
@@ -246,8 +246,8 @@ namespace KanonBot.Functions.OSUBot
 
                 scores.Sort((a, b) => b.PPInfo!.ppStat.total > a.PPInfo!.ppStat.total ? 1 : -1);
 
-                using var img = await KanonBot.image.ScoreList.Draw(
-                    KanonBot.image.ScoreList.Type.BPLIST,
+                using var img = await KanonBot.Image.ScoreList.Draw(
+                    KanonBot.Image.ScoreList.Type.BPLIST,
                     scores,
                     tempOsuInfo
                 );

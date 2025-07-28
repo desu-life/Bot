@@ -172,7 +172,7 @@ namespace KanonBot.Functions.OSUBot
             #endregion
 
             #region 获取信息
-            LegacyImage.Draw.UserPanelData data = new()
+            Image.InfoV1.UserPanelData data = new()
             {
                 osuId = osuID!.Value,
                 userInfo = tempOsuInfo!
@@ -297,10 +297,10 @@ namespace KanonBot.Functions.OSUBot
             {
                 custominfoengineVer = DBOsuInfo!.customInfoEngineVer;
                 data.osuId = DBOsuInfo!.osu_uid;
-                if (Enum.IsDefined(typeof(LegacyImage.Draw.UserPanelData.CustomMode), DBOsuInfo.InfoPanelV2_Mode))
+                if (Enum.IsDefined(typeof(Image.InfoV1.UserPanelData.CustomMode), DBOsuInfo.InfoPanelV2_Mode))
                 {
-                    data.customMode = (LegacyImage.Draw.UserPanelData.CustomMode)DBOsuInfo.InfoPanelV2_Mode;
-                    if (data.customMode == LegacyImage.Draw.UserPanelData.CustomMode.Custom)
+                    data.customMode = (Image.InfoV1.UserPanelData.CustomMode)DBOsuInfo.InfoPanelV2_Mode;
+                    if (data.customMode == Image.InfoV1.UserPanelData.CustomMode.Custom)
                         data.ColorConfigRaw = DBOsuInfo.InfoPanelV2_CustomMode!;
                 }
                 else
@@ -316,7 +316,7 @@ namespace KanonBot.Functions.OSUBot
             switch (custominfoengineVer) //0=null 1=v1 2=v2
             {
                 case 1:
-                    img = await LegacyImage.Draw.DrawInfo(
+                    img = await Image.InfoV1.DrawInfo(
                         data,
                         DBOsuInfo != null,
                         isDataOfDayAvaiavle
@@ -326,9 +326,9 @@ namespace KanonBot.Functions.OSUBot
                 case 2:
                     var v2Options = data.customMode switch
                     {
-                        LegacyImage.Draw.UserPanelData.CustomMode.Custom => DrawV2.OsuInfoPanelV2.InfoCustom.ParseColors(data.ColorConfigRaw, None),
-                        LegacyImage.Draw.UserPanelData.CustomMode.Light => DrawV2.OsuInfoPanelV2.InfoCustom.LightDefault,
-                        LegacyImage.Draw.UserPanelData.CustomMode.Dark => DrawV2.OsuInfoPanelV2.InfoCustom.DarkDefault,
+                        Image.InfoV1.UserPanelData.CustomMode.Custom => Image.OsuInfoPanelV2.InfoCustom.ParseColors(data.ColorConfigRaw, None),
+                        Image.InfoV1.UserPanelData.CustomMode.Light => Image.OsuInfoPanelV2.InfoCustom.LightDefault,
+                        Image.InfoV1.UserPanelData.CustomMode.Dark => Image.OsuInfoPanelV2.InfoCustom.DarkDefault,
                         _ => throw new ArgumentOutOfRangeException("未知的自定义模式")
                     };
                     
@@ -352,7 +352,7 @@ namespace KanonBot.Functions.OSUBot
                         );
                     }
 
-                    img = await DrawV2.OsuInfoPanelV2.Draw(
+                    img = await Image.OsuInfoPanelV2.Draw(
                         data,
                         allBP!,
                         v2Options,

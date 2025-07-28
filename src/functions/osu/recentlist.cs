@@ -196,9 +196,9 @@ namespace KanonBot.Functions.OSUBot
             // 正常是找不到玩家，但是上面有验证，这里做保险
             if (scoreInfos.Length > 0)
             {
-                List<image.ScoreList.ScoreRank> scores = [];
+                List<Image.ScoreList.ScoreRank> scores = [];
                 for (int i = 0; i < scoreInfos.Length; ++i) {
-                    scores.Add(new image.ScoreList.ScoreRank {
+                    scores.Add(new Image.ScoreList.ScoreRank {
                         Score = scoreInfos[i],
                         Rank = i + 1,
                     });
@@ -209,8 +209,8 @@ namespace KanonBot.Functions.OSUBot
                     s.PPInfo = UniversalCalculator.CalculateData(b, s.Score, command.special_version_pp ? (is_ppysb ? CalculatorKind.Sb : CalculatorKind.Old) : CalculatorKind.Unset);
                 });
 
-                using var img = await KanonBot.image.ScoreList.Draw(
-                    KanonBot.image.ScoreList.Type.RECENTLIST,
+                using var img = await KanonBot.Image.ScoreList.Draw(
+                    KanonBot.Image.ScoreList.Type.RECENTLIST,
                     scores,
                     tempOsuInfo
                 );

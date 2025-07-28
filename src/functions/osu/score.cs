@@ -261,11 +261,11 @@ namespace KanonBot.Functions.OSUBot
                 scoreData.User = tempOsuInfo;
             }
 
-            LegacyImage.Draw.ScorePanelData data;
+            Image.ScoreV2.ScorePanelData data;
             data = await UniversalCalculator.CalculatePanelData(scoreData, command.special_version_pp ? (is_ppysb ? CalculatorKind.Sb : CalculatorKind.Old) : CalculatorKind.Unset);
 
             using var stream = new MemoryStream();
-            using var img = await LegacyImage.Draw.DrawScore(data);
+            using var img = await Image.ScoreV2.DrawScore(data);
             await img.SaveAsync(stream, new JpegEncoder());
             await target.reply(
                 new Chain().image(

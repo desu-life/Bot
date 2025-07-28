@@ -196,15 +196,15 @@ namespace KanonBot.Functions.OSUBot
             // 正常是找不到玩家，但是上面有验证，这里做保险
             if (scoreInfos.Length > 0)
             {
-                LegacyImage.Draw.ScorePanelData data;
+                Image.ScoreV2.ScorePanelData data;
                 data = await UniversalCalculator.CalculatePanelData(scoreInfos[0], command.special_version_pp ? (is_ppysb ? CalculatorKind.Sb : CalculatorKind.Old) : CalculatorKind.Unset);
                 
                 
                 using var stream = new MemoryStream();
                 using var img =
                     (Config.inner != null && Config.inner.debug)
-                        ? await DrawV3.OsuScorePanelV3.Draw(data)
-                        : await LegacyImage.Draw.DrawScore(data);
+                        ? await Image.OsuScorePanelV3.Draw(data)
+                        : await Image.ScoreV2.DrawScore(data);
 
                 await img.SaveAsync(stream, new JpegEncoder());
                 await target.reply(

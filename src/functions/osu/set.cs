@@ -8,7 +8,6 @@ using KanonBot.API.OSU;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
 using KanonBot.Image;
-using KanonBot.LegacyImage;
 using KanonBot.Message;
 using LanguageExt.UnsafeValueAccess;
 using Serilog;
@@ -22,7 +21,6 @@ using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using static System.Runtime.InteropServices.JavaScript.JSType;
-using static KanonBot.LegacyImage.Draw;
 using Img = SixLabors.ImageSharp.Image;
 using ResizeOptions = SixLabors.ImageSharp.Processing.ResizeOptions;
 
@@ -734,7 +732,7 @@ namespace KanonBot.Functions.OSUBot
                 );
                 return;
             }
-            if (Try(() => DrawV2.OsuInfoPanelV2.InfoCustom.ParseColors(tmp, None)).IsFail())
+            if (Try(() => OsuInfoPanelV2.InfoCustom.ParseColors(tmp, None)).IsFail())
             {
                 await target.reply("配置不正确，请检查后重试。\n!set osuinfopanelv2customcolorvalue [配置]");
                 return;

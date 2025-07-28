@@ -2,7 +2,7 @@ using System.Runtime.InteropServices;
 using KanonBot;
 using KanonBot.API;
 using KanonBot.Functions.OSU;
-using KanonBot.LegacyImage;
+using KanonBot.Image;
 using KanonBot.DrawV2;
 using KanonBot.Serializer;
 using RosuPP;

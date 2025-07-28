@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
-using KanonBot.LegacyImage;
+using KanonBot.Image;
 using KanonBot.Serializer;
 using LanguageExt.ClassInstances.Pred;
 using SBRosuPP;
@@ -38,7 +38,7 @@ public static class SBRosuCalculator
         return dattr.osu.ToNullable()?.n_large_ticks ?? 0;
     }
 
-    public static Draw.ScorePanelData CalculatePanelSSData(
+    public static ScoreV2.ScorePanelData CalculatePanelSSData(
         byte[] b,
         API.OSU.Models.Beatmap map,
         API.OSU.Models.Mod[] rawMods
@@ -65,7 +65,7 @@ public static class SBRosuCalculator
         p.Mods(rmods);
         var pstate = p.GenerateStateFromDifficulty(dattr);
         var res = p.CalculateFromDifficulty(dattr);
-        var data = new Draw.ScorePanelData
+        var data = new ScoreV2.ScorePanelData
         {
             scoreInfo = new API.OSU.Models.ScoreLazer
             {
@@ -113,9 +113,9 @@ public static class SBRosuCalculator
         return data;
     }
 
-    public static Draw.ScorePanelData CalculatePanelData(byte[] b, API.OSU.Models.ScoreLazer score)
+    public static ScoreV2.ScorePanelData CalculatePanelData(byte[] b, API.OSU.Models.ScoreLazer score)
     {
-        var data = new Draw.ScorePanelData { scoreInfo = score, server = "ppy.sb" };
+        var data = new ScoreV2.ScorePanelData { scoreInfo = score, server = "ppy.sb" };
         var statistics = data.scoreInfo.ConvertStatistics;
 
         Mode rmode = data.scoreInfo.Mode.ToSBRosu();

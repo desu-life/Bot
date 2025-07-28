@@ -3,7 +3,6 @@ using System.Numerics;
 using KanonBot.API;
 using KanonBot.Functions.OSU;
 using KanonBot.Image;
-using KanonBot.LegacyImage;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
@@ -14,7 +13,6 @@ using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using static KanonBot.LegacyImage.Draw;
 using Img = SixLabors.ImageSharp.Image;
 using ResizeOptions = SixLabors.ImageSharp.Processing.ResizeOptions;
 using System.Collections.Generic;
@@ -24,8 +22,10 @@ using static KanonBot.API.OSU.Models;
 using LanguageExt.ClassInstances;
 using OSU = KanonBot.API.OSU;
 using static KanonBot.API.OSU.OSUExtensions;
+using static KanonBot.Image.Fonts;
+using static KanonBot.Image.ScoreV2;
 
-namespace KanonBot.DrawV3
+namespace KanonBot.Image
 {
     public static class OsuScorePanelV3
     {
@@ -157,7 +157,7 @@ namespace KanonBot.DrawV3
             scoreimg.Mutate(x => x.DrawImage(avatar, new Point(90, 568), 1));
 
             //设定textOption/drawOption
-            var textOptions = new RichTextOptions(new Font(TorusSemiBold, 120))
+            var textOptions = new RichTextOptions(TorusSemiBold.Get(120))
             {
                 VerticalAlignment = VerticalAlignment.Bottom,
                 HorizontalAlignment = HorizontalAlignment.Left
@@ -179,7 +179,7 @@ namespace KanonBot.DrawV3
                     break;
                 }
             }
-            textOptions.Font = new Font(TorusSemiBold, 100);
+            textOptions.Font = TorusSemiBold.Get(100);
             textOptions.Origin = new PointF(769, 160);
             scoreimg.Mutate(
                 x => x.DrawText(drawOptions, textOptions, temp_string, new SolidBrush(Color.ParseHex("#404040")), null)
@@ -201,7 +201,7 @@ namespace KanonBot.DrawV3
                     break;
                 }
             }
-            textOptions.Font = new Font(TorusRegular, 60);
+            textOptions.Font = TorusRegular.Get(60);
             textOptions.Origin = new PointF(1070, 234);
             scoreimg.Mutate(
                 x =>
@@ -226,7 +226,7 @@ namespace KanonBot.DrawV3
             );
             // beatmap_id
             textOptions.HorizontalAlignment = HorizontalAlignment.Right;
-            textOptions.Font = new Font(TorusRegular, 50);
+            textOptions.Font = TorusRegular.Get(50);
             textOptions.Origin = new PointF(1770, 322);
             scoreimg.Mutate(
                 x =>
@@ -241,7 +241,7 @@ namespace KanonBot.DrawV3
 
             //stars 
             textOptions.HorizontalAlignment = HorizontalAlignment.Left;
-            textOptions.Font = new Font(TorusSemiBold, 50);
+            textOptions.Font = TorusSemiBold.Get(50);
 
             var stars = $"Stars: {data.ppInfo.star:0.##}";
             var stars_measure = TextMeasurer.MeasureSize(stars, textOptions);
@@ -299,7 +299,7 @@ namespace KanonBot.DrawV3
                     );
 
             //version
-            textOptions.Font = new Font(TorusRegular, 40);
+            textOptions.Font = TorusRegular.Get(40);
 
             temp_string = "";
             foreach (char c in data.scoreInfo.Beatmap.Version)
@@ -338,7 +338,7 @@ namespace KanonBot.DrawV3
             );
 
             //username 
-            textOptions.Font = new Font(TorusSemiBold, 50);
+            textOptions.Font = TorusSemiBold.Get(50);
             textOptions.Origin = new PointF(235, 630);
             scoreimg.Mutate(
                 x =>
@@ -352,7 +352,7 @@ namespace KanonBot.DrawV3
             );
 
             //archived at
-            textOptions.Font = new Font(TorusRegular, 36);
+            textOptions.Font = TorusRegular.Get(36);
             textOptions.Origin = new PointF(235, 664);
             scoreimg.Mutate(
                 x =>
@@ -390,7 +390,7 @@ namespace KanonBot.DrawV3
 
             //main pp 
             textOptions.HorizontalAlignment = HorizontalAlignment.Right;
-            textOptions.Font = new Font(TorusSemiBold, 80);
+            textOptions.Font = TorusSemiBold.Get(80);
             textOptions.Origin = new PointF(2745, 655);
             scoreimg.Mutate(
                 x =>
@@ -417,7 +417,7 @@ namespace KanonBot.DrawV3
 
 
             //length graph 70x? -50    max 2708
-            textOptions.Font = new Font(TorusRegular, 30);
+            textOptions.Font = TorusRegular.Get(30);
             textOptions.Origin = new PointF(2750, 747);
             var beatmap_length_text = Utils.Duration2TimeStringForScoreV3(data.scoreInfo.Beatmap.TotalLength);
             var beatmap_length_text_measure = TextMeasurer.MeasureSize(beatmap_length_text, textOptions);
@@ -493,7 +493,7 @@ namespace KanonBot.DrawV3
             );
             if (!data.scoreInfo.Passed)
             {
-                textOptions.Font = new Font(TorusSemiBold, 80);
+                textOptions.Font = TorusSemiBold.Get(80);
                 textOptions.Origin = new PointF(length_graph_length + 120, 770);
                 scoreimg.Mutate(
                     x =>
@@ -507,7 +507,7 @@ namespace KanonBot.DrawV3
                 );
             }
             textOptions.HorizontalAlignment = HorizontalAlignment.Left;
-            textOptions.Font = new Font(TorusRegular, 30);
+            textOptions.Font = TorusRegular.Get(30);
             textOptions.Origin = new PointF(90, 747);
             scoreimg.Mutate(
                 x =>
@@ -535,7 +535,7 @@ namespace KanonBot.DrawV3
             //main pp details
             var mainpp_details_pos_base = 2196;
             var pp_details_posy_base = 938; //942
-            textOptions.Font = new Font(TorusSemiBold, 50);
+            textOptions.Font = TorusSemiBold.Get(50);
             textOptions.Origin = new PointF(mainpp_details_pos_base, pp_details_posy_base);
             //aim
             var mainpp_text = ((int)data.ppInfo.ppStat.aim!).ToString();
@@ -653,7 +653,7 @@ namespace KanonBot.DrawV3
             }
 
             //if fc
-            textOptions.Font = new Font(TorusRegular, 36);
+            textOptions.Font = TorusRegular.Get(36);
             mainpp_details_pos_base = 178;
             pp_details_posy_base = 831;
             mainpp_text = ((int)data.ppInfo.ppStats![5].total).ToString();

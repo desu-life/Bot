@@ -11,7 +11,7 @@ using Flurl.Util;
 using KanonBot.API;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
-using KanonBot.image;
+using KanonBot.Image;
 using KanonBot.Message;
 using KanonBot.OsuPerformance;
 using LanguageExt.UnsafeValueAccess;

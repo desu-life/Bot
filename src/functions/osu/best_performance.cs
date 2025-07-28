@@ -215,14 +215,14 @@ namespace KanonBot.Functions.OSUBot
 
                 score.User ??= tempOsuInfo;
 
-                LegacyImage.Draw.ScorePanelData data;
+                Image.ScoreV2.ScorePanelData data;
                 data = await UniversalCalculator.CalculatePanelData(score, command.special_version_pp ? (is_ppysb ? CalculatorKind.Sb : CalculatorKind.Old) : CalculatorKind.Unset);
                 using var stream = new MemoryStream();
 
                 using var img =
                     (Config.inner != null && Config.inner.debug)
-                        ? await DrawV3.OsuScorePanelV3.Draw(data)
-                        : await LegacyImage.Draw.DrawScore(data);
+                        ? await Image.OsuScorePanelV3.Draw(data)
+                        : await Image.ScoreV2.DrawScore(data);
 
                 await img.SaveAsync(stream, new JpegEncoder());
                 await target.reply(
@@ -244,7 +244,7 @@ namespace KanonBot.Functions.OSUBot
 
         private static async Task BeatmapTechDataProcess(
             Models.ScoreLazer score,
-            LegacyImage.Draw.ScorePanelData data
+            Image.ScoreV2.ScorePanelData data
         )
         {
             if (Config.inner!.dev) return;

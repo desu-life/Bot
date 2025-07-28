@@ -1,4 +1,4 @@
-using KanonBot.LegacyImage;
+using KanonBot.Image;
 
 namespace KanonBot.OsuPerformance
 {
@@ -14,7 +14,7 @@ namespace KanonBot.OsuPerformance
 
     public static class UniversalCalculator
     {
-        public static async Task<Draw.ScorePanelData> CalculatePanelData(
+        public static async Task<ScoreV2.ScorePanelData> CalculatePanelData(
             API.OSU.Models.ScoreLazer score,
             CalculatorKind kind = CalculatorKind.Unset
         )
@@ -23,7 +23,7 @@ namespace KanonBot.OsuPerformance
             return CalculatePanelData(b, score, kind);
         }
 
-        public static Draw.ScorePanelData CalculatePanelData(
+        public static ScoreV2.ScorePanelData CalculatePanelData(
             byte[] b,
             API.OSU.Models.ScoreLazer score,
             CalculatorKind kind = CalculatorKind.Unset

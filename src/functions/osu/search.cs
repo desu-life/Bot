@@ -3,7 +3,7 @@ using DotNext.Collections.Generic;
 using KanonBot.API;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
-using KanonBot.LegacyImage;
+using KanonBot.Image;
 using KanonBot.Message;
 using KanonBot.OsuPerformance;
 using LanguageExt.UnsafeValueAccess;
@@ -184,7 +184,7 @@ namespace KanonBot.Functions.OSUBot
             mods_lazer = Serializer.Json.Deserialize<API.OSU.Models.Mod[]>(js.ToCstr())!;
             Log.Debug($"Mods: {string.Join(",", mods_lazer.Select(x => x.Acronym))}");
 
-            Draw.ScorePanelData data;
+            ScoreV2.ScorePanelData data;
             API.OSU.Models.User? user = await API.OSU.Client.GetUser(3);
             if (mods_lazer.Any(x => x.Acronym is "RX" or "AP")) {
                 data = SBRosuCalculator.CalculatePanelSSData(b, beatmap, mods_lazer);
@@ -207,7 +207,7 @@ namespace KanonBot.Functions.OSUBot
             data.scoreInfo.Score = 1000000;
 
             using var stream = new MemoryStream();
-            using var img = await LegacyImage.Draw.DrawScore(data);
+            using var img = await Image.ScoreV2.DrawScore(data);
             await img.SaveAsync(stream, new JpegEncoder());
             await target.reply(
                 new Chain()
