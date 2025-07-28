@@ -29,7 +29,7 @@ namespace KanonBot.Functions.OSUBot
             var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.BestPerformance);
             mode = command.osu_mode;
             sbmode = command.sb_osu_mode;
-            bool is_query_sb = command.server == "sb";
+            bool is_query_sb = command.sb_server;
 
             // 解析指令
             if (command.self_query)
@@ -220,7 +220,7 @@ namespace KanonBot.Functions.OSUBot
                 using var stream = new MemoryStream();
 
                 using var img =
-                    (Config.inner != null && Config.inner.debug)
+                    command.dev_panel
                         ? await Image.OsuScorePanelV3.Draw(data)
                         : await Image.ScoreV2.DrawScore(data);
 

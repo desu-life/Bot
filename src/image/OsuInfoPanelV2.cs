@@ -889,9 +889,14 @@ public static class OsuInfoPanelV2
 
         //自定义侧图
         string sidePicPath;
+        bool hasSidePic = false;
         if (File.Exists($"./work/panelv2/user_customimg/{data.osuId}.png"))
+        {
             sidePicPath = $"./work/panelv2/user_customimg/{data.osuId}.png";
+            hasSidePic = true;
+        }
         else
+        {
             sidePicPath = ColorMode switch
             {
                 UserPanelData.CustomMode.Custom => "./work/panelv2/infov2-dark-customimg.png",
@@ -899,6 +904,8 @@ public static class OsuInfoPanelV2
                 UserPanelData.CustomMode.Dark => "./work/panelv2/infov2-dark-customimg.png",
                 _ => throw new ArgumentOutOfRangeException("未知的自定义模式")
             };
+        }
+            
         using var sidePic = await Utils.ReadImageRgba(sidePicPath); // 读取
         sidePic.Mutate(x => x.Brightness(SideImgBrightness));
         info.Mutate(x => x.DrawImage(sidePic, new Point(90, 72), 1));
@@ -2287,6 +2294,12 @@ public static class OsuInfoPanelV2
                     {
                         if (data.badgeId[i] == -9)
                             continue;
+
+                        if (!File.Exists($"./work/badges/{data.badgeId[i]}.png") && KanonBot.Config.inner!.dev!)
+                        {
+                            continue;
+                        }
+                        
                         var (_badge, format) = await Utils.ReadImageRgbaWithFormat(
                             $"./work/badges/{data.badgeId[i]}.png"
                         );
@@ -2487,6 +2500,39 @@ public static class OsuInfoPanelV2
             DateXPos -= 100;
             DateValue = DateValue.AddDays(-1);
         }
+
+        if (!hasSidePic && !isBonded) {
+            info.Mutate(x => x.Crop(new(1500, 0, 2500, 2640)));
+            var originalWidth = info.Width;
+            var originalHeight = info.Height;
+            // 创建扩展后的新图像
+            using (var newImage = new Image<Rgba32>(originalWidth + 100, originalHeight))
+            {
+                // 将原图像绘制到右侧（偏移100px）
+                newImage.Mutate(x => x.DrawImage(info, new Point(100, 0), 1f));
+                
+                // 获取最左边缘的像素列并重复填充到左侧扩展区域
+                for (int x = 0; x < 100; x++)
+                {
+                    for (int y = 0; y < originalHeight; y++)
+                    {
+                        var edgeColor = info[0, y]; // 获取原图最左边缘的颜色
+                        newImage[x, y] = edgeColor;
+                    }
+                }
+                
+                // 替换原图像
+                info = newImage.Clone();
+            }
+
+            //desu.life
+            textOptions.HorizontalAlignment = HorizontalAlignment.Left;
+            textOptions.Origin = new PointF(90, 2582);
+            info.Mutate(x =>
+                x.DrawText(textOptions, $"Kanonbot - desu.life", footerColor)
+            );
+        }
+
 
         //resize to 1920x?
         if (!output4k)

@@ -25,7 +25,7 @@ namespace KanonBot.Functions.OSUBot
             var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Info);
             mode = command.osu_mode;
             sbmode = command.sb_osu_mode;
-            bool is_query_sb = command.server == "sb";
+            bool is_query_sb = command.sb_server;
 
             // 解析指令
             if (command.self_query)

@@ -29,7 +29,7 @@ namespace KanonBot.Functions.OSUBot
             var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Info);
             mode = command.osu_mode;
             sbmode = command.sb_osu_mode;
-            bool is_query_sb = command.server == "sb";
+            bool is_query_sb = command.sb_server;
 
             // 解析指令
             if (command.self_query)
@@ -262,9 +262,10 @@ namespace KanonBot.Functions.OSUBot
                 isDataOfDayAvaiavle = true;
 
             int custominfoengineVer = 1;
-            if (DBUser != null) {
+            
+            if (DBUser != null)
+            {
                 var badgeID = DBUser.displayed_badge_ids;
-                // 由于v1v2绘制位置以及绘制方向的不同，legacy(v1)只取第一个badge
                 if (badgeID != null)
                 {
                     try
@@ -289,7 +290,9 @@ namespace KanonBot.Functions.OSUBot
                 {
                     data.badgeId = [-1];
                 }
-            } else {
+            }
+            else
+            {
                 data.badgeId = [-1];
             }
 
@@ -308,6 +311,8 @@ namespace KanonBot.Functions.OSUBot
                     throw new Exception("未知的自定义模式");
                 }
             }
+
+            if (command.special_panel) custominfoengineVer = custominfoengineVer == 1 ? 2 : 1;
 
             using var stream = new MemoryStream();
             //info默认输出高质量图片？
