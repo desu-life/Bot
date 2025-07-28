@@ -261,7 +261,7 @@ namespace KanonBot.Functions.OSUBot
             if (data.daysBefore > 0)
                 isDataOfDayAvaiavle = true;
 
-            int custominfoengineVer = 2;
+            int custominfoengineVer = 1;
             if (DBUser != null) {
                 var badgeID = DBUser.displayed_badge_ids;
                 // 由于v1v2绘制位置以及绘制方向的不同，legacy(v1)只取第一个badge
