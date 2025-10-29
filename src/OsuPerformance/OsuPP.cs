@@ -14,7 +14,7 @@ namespace KanonBot.OsuPerformance;
 
 public static class OsuCalculator
 {
-    public static Draw.ScorePanelData CalculatePanelSSData(
+    public static ScoreV2.ScorePanelData CalculatePanelSSData(
         byte[] b,
         API.OSU.Models.Beatmap map,
         API.OSU.Models.Mod[] mods
@@ -65,7 +65,7 @@ public static class OsuCalculator
         var dAttr = c.CalculateDifficulty();
         var bAttr = c.Calculate();
 
-        var data = new Draw.ScorePanelData
+        var data = new ScoreV2.ScorePanelData
         {
             scoreInfo = new API.OSU.Models.ScoreLazer
             {
@@ -138,12 +138,12 @@ public static class OsuCalculator
         return data;
     }
 
-    public static Draw.ScorePanelData CalculatePanelData(
+    public static ScoreV2.ScorePanelData CalculatePanelData(
         byte[] b,
         API.OSU.Models.ScoreLazer score
     )
     {
-        var data = new Draw.ScorePanelData { scoreInfo = score };
+        var data = new ScoreV2.ScorePanelData { scoreInfo = score };
         if (score.IsLazer)
             data.server = "Lazer";
         var statistics = data.scoreInfo.ConvertStatistics;
@@ -157,7 +157,7 @@ public static class OsuCalculator
             using var hitobjects = HitObjects.New(rosubeatmap);
             var obj = hitobjects.Get(statistics.PassedObjects(data.scoreInfo.Mode) - 1).ToNullable();
             if (obj.HasValue) {
-                var endTime = obj.Value.kind.duration + obj.Value.start_time;
+                var endTime = obj.Value.data.duration + obj.Value.start_time;
                 data.playtime = endTime / 1000.0;
             }
         }

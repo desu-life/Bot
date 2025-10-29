@@ -52,7 +52,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="SixLabors.Fonts" Version="2.0.2" />
-		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
+		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
 		<PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.2" />
 		<PackageReference Include="Svg.Skia" Version="3.0.4" />
 	</ItemGroup>
@@ -62,6 +62,6 @@
 	  <ProjectReference Include="../dependencies/rosu-pp-ffi/SharpRosuPP/RosuPP/RosuPP.csproj" />
 	  <ProjectReference Include="../dependencies/sb-pp-ffi/SharpRosuPP/RosuPP/SBRosuPP.csproj" />
 	  <ProjectReference Include="../dependencies/OppaiSharp/OppaiSharp/OppaiSharp.csproj" />
-	  <!-- <ProjectReference Include="../dependencies/osu-pp/osu-pp.csproj" /> -->
+	  <ProjectReference Include="../dependencies/osu-pp/osu-pp.csproj" />
 	</ItemGroup>
 </Project>

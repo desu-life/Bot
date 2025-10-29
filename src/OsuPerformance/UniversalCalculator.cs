@@ -35,7 +35,7 @@ namespace KanonBot.OsuPerformance
 
             // oldpp_calc
             if (kind == CalculatorKind.Unset && KanonBot.Config.inner!.calcOldPP) {
-                var currpp = RosuCalculator.CalculatePanelData(b, score);
+                var currpp = OsuCalculator.CalculatePanelData(b, score);
                 var oldpp = RosuCalculator.CalculatePanelData(b, score);
                 currpp.oldPP = oldpp.ppInfo!.ppStat.total;
                 return currpp;
@@ -43,11 +43,11 @@ namespace KanonBot.OsuPerformance
 
             return kind switch
             {
-                // CalculatorKind.Osu => OsuCalculator.CalculatePanelData(b, score),
+                CalculatorKind.Osu => OsuCalculator.CalculatePanelData(b, score),
                 CalculatorKind.Rosu => RosuCalculator.CalculatePanelData(b, score),
                 CalculatorKind.Oppai => OppaiCalculator.CalculatePanelData(b, score),
                 CalculatorKind.Sb => SBRosuCalculator.CalculatePanelData(b, score),
-                CalculatorKind.Old => OppaiCalculator.CalculatePanelData(b, score),
+                CalculatorKind.Old => OsuCalculator.CalculatePanelData(b, score),
                 _ => RosuCalculator.CalculatePanelData(b, score),
             };
         }
@@ -73,11 +73,11 @@ namespace KanonBot.OsuPerformance
 
             return kind switch
             {
-                // CalculatorKind.Osu => OsuCalculator.CalculateData(b, score),
+                CalculatorKind.Osu => OsuCalculator.CalculateData(b, score),
                 CalculatorKind.Rosu => RosuCalculator.CalculateData(b, score),
                 CalculatorKind.Oppai => OppaiCalculator.CalculateData(b,score),
                 CalculatorKind.Sb => SBRosuCalculator.CalculateData(b,score),
-                CalculatorKind.Old => OppaiCalculator.CalculateData(b, score),
+                CalculatorKind.Old => OsuCalculator.CalculateData(b, score),
                 _ => RosuCalculator.CalculateData(b,score),
             };
         }
