@@ -109,61 +109,8 @@ namespace KanonBot.Image
             if (MainPicPath is not null) {
                 using var MainPic = await Utils.ReadImageRgba(MainPicPath);
 
-                //绘制beatmap图像
-                var scorebgPath = $"./work/background/{scoreList[0].Score.Beatmap!.BeatmapId}.png";
-                if (!File.Exists(scorebgPath))
-                {
-                    scorebgPath = null;
-                    try
-                    {
-                        scorebgPath = await OSU.Client.SayoDownloadBeatmapBackgroundImg(
-                            scoreList[0].Score.Beatmapset!.Id,
-                            scoreList[0].Score.Beatmap!.BeatmapId,
-                            "./work/background/"
-                        );
-                    }
-                    catch (Exception ex)
-                    {
-                        var msg = $"从Sayo API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
-                        Log.Warning(msg);
-                    }
-
-                    if (scorebgPath is null)
-                    {
-                        try
-                        {
-                            scorebgPath = await OSU.Client.DownloadBeatmapBackgroundImg(
-                                scoreList[0].Score.Beatmapset!.Id,
-                                "./work/background/",
-                                $"{scoreList[0].Score.Beatmap!.BeatmapId}.png"
-                            );
-                        }
-                        catch (Exception ex)
-                        {
-                            var msg =
-                                $"从OSU API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
-                            Log.Warning(msg);
-                        }
-                    }
-                }
-                
-                Image<Rgba32> scorebg;
-                if (scorebgPath is null)
-                {
-                    scorebg = await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
-                }
-                else
-                {
-                    try
-                    {
-                        scorebg = await Img.LoadAsync<Rgba32>(scorebgPath);
-                    }
-                    catch
-                    {
-                        scorebg = await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
-                        try { File.Delete(scorebgPath); } catch { }
-                    }
-                }
+                var scorebg = await Utils.LoadOrDownloadBackground(scoreList[0].Score.Beatmapset!.Id, scoreList[0].Score.Beatmap!.BeatmapId);
+                scorebg ??= await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
 
                 scorebg.Mutate(
                     x =>

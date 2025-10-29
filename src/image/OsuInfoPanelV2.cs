@@ -1064,65 +1064,8 @@ public static class OsuInfoPanelV2
         //download background image
         if (allBP!.Length > 0)
         {
-            var bp1bgPath = $"./work/background/{allBP![0].Beatmap!.BeatmapId}.png";
-            if (!File.Exists(bp1bgPath))
-            {
-                bp1bgPath = null;
-                try
-                {
-                    bp1bgPath = await OSU.Client.SayoDownloadBeatmapBackgroundImg(
-                        allBP![0].Beatmapset!.Id,
-                        allBP![0].Beatmap!.BeatmapId,
-                        "./work/background/"
-                    );
-                }
-                catch (Exception ex)
-                {
-                    var msg =
-                        $"从Sayo API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
-                    Log.Warning(msg);
-                }
-
-                if (bp1bgPath is null)
-                {
-                    try
-                    {
-                        bp1bgPath = await OSU.Client.DownloadBeatmapBackgroundImg(
-                            allBP![0].Beatmap!.BeatmapsetId,
-                            "./work/background/",
-                            $"{allBP![0].Beatmap!.BeatmapId}.png"
-                        );
-                    }
-                    catch (Exception ex)
-                    {
-                        var msg =
-                            $"从OSU API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
-                        Log.Warning(msg);
-                    }
-                }
-            }
-
-            Image<Rgba32> bp1bg;
-            if (bp1bgPath is null)
-            {
-                bp1bg = await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
-            }
-            else
-            {
-                try
-                {
-                    bp1bg = await Img.LoadAsync<Rgba32>(bp1bgPath);
-                }
-                catch
-                {
-                    bp1bg = await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
-                    try
-                    {
-                        File.Delete(bp1bgPath);
-                    }
-                    catch { }
-                }
-            }
+            var bp1bg = await Utils.LoadOrDownloadBackground(allBP![0].Beatmap!.BeatmapsetId, allBP![0].Beatmap!.BeatmapId);
+            bp1bg ??= await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
             //bp1bg.Mutate(x => x.Resize(355, 200));
             bp1bg.Mutate(x =>
                 x.Resize(new ResizeOptions() { Size = new Size(355, 0), Mode = ResizeMode.Max })

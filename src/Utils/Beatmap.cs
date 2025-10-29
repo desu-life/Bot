@@ -16,17 +16,14 @@ public static partial class Utils
                 f = await File.ReadAllBytesAsync($"./work/beatmap/{bm.BeatmapId}.osu");
                 if (bm.Checksum is not null)
                 {
-                    using (var md5 = MD5.Create())
-                    {
-                        var hash = md5.ComputeHash(f);
-                        var hash_online = System.Convert.FromHexString(bm.Checksum);
+                    var hash = MD5.HashData(f);
+                    var hash_online = System.Convert.FromHexString(bm.Checksum);
 
-                        if (!hash.SequenceEqual(hash_online))
-                        {
-                            // 删除本地的谱面
-                            File.Delete($"./work/beatmap/{bm.BeatmapId}.osu");
-                            f = null;
-                        }
+                    if (!hash.SequenceEqual(hash_online))
+                    {
+                        // 删除本地的谱面
+                        File.Delete($"./work/beatmap/{bm.BeatmapId}.osu");
+                        f = null;
                     }
                 }
             }

@@ -45,6 +45,18 @@ public static partial class Utils
         return await Img.LoadAsync<Rgba32>(path);
     }
 
+    async public static Task<Image<Rgba32>?> TryReadImageRgba(string path)
+    {
+        try
+        {
+            return await Img.LoadAsync<Rgba32>(path);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     async public static Task<(Image<Rgba32>, IImageFormat)> ReadImageRgbaWithFormat(string path)
     {
         using var s = Utils.LoadFile2ReadStream(path);

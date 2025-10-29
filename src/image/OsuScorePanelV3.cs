@@ -35,45 +35,6 @@ namespace KanonBot.Image
 
             var ppInfo = data.ppInfo;
 
-            //下载BG
-            var bgPath = $"./work/background/{data.scoreInfo.Beatmap!.BeatmapId}.png";
-            if (!File.Exists(bgPath))
-            {
-                bgPath = null;
-                try
-                {
-                    bgPath = await OSU.Client.SayoDownloadBeatmapBackgroundImg(
-                        data.scoreInfo.Beatmap.BeatmapsetId,
-                        data.scoreInfo.Beatmap.BeatmapId,
-                        "./work/background/"
-                    );
-                }
-                catch (Exception ex)
-                {
-                    var msg =
-                        $"从Sayo API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
-                    Log.Warning(msg);
-                }
-
-                if (bgPath is null)
-                {
-                    try
-                    {
-                        bgPath = await OSU.Client.DownloadBeatmapBackgroundImg(
-                            data.scoreInfo.Beatmap.BeatmapsetId,
-                            "./work/background/",
-                            $"{data.scoreInfo.Beatmap!.BeatmapId}.png"
-                        );
-                    }
-                    catch (Exception ex)
-                    {
-                        var msg =
-                            $"从OSU API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
-                        Log.Warning(msg);
-                    }
-                }
-            }
-
             //下载头像
             using var avatar = await Utils.LoadOrDownloadAvatar(data.scoreInfo.User!);
 
@@ -86,24 +47,9 @@ namespace KanonBot.Image
             else
                 scoreimg.Mutate(x => x.DrawImage(panel, 1));
 
-            // bg
-            Image<Rgba32> bg;
-            if (bgPath is null)
-            {
-                bg = await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
-            }
-            else
-            {
-                try
-                {
-                    bg = await Img.LoadAsync<Rgba32>(bgPath);
-                }
-                catch
-                {
-                    bg = await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
-                    try { File.Delete(bgPath); } catch { }
-                }
-            }
+
+            var bg = await Utils.LoadOrDownloadBackground(data.scoreInfo.Beatmap!.BeatmapsetId, data.scoreInfo.Beatmap.BeatmapId);
+            bg ??= await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
 
             using var bgarea = new Image<Rgba32>(631, 444);
             bgarea.Mutate(x => x.Fill(Color.ParseHex("#f2f2f2")).RoundCorner(new Size(631, 444), 20));

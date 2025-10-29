@@ -31,45 +31,6 @@ public static class ScoreV2
     {
         var ppInfo = data.ppInfo;
         var score = new Image<Rgba32>(1950, 1088);
-        // 先下载必要文件
-        var bgPath = $"./work/background/{data.scoreInfo.Beatmap!.BeatmapId}.png";
-        if (!File.Exists(bgPath))
-        {
-            bgPath = null;
-            try
-            {
-                bgPath = await OSU.Client.SayoDownloadBeatmapBackgroundImg(
-                    data.scoreInfo.Beatmap.BeatmapsetId,
-                    data.scoreInfo.Beatmap.BeatmapId,
-                    "./work/background/"
-                );
-            }
-            catch (Exception ex)
-            {
-                var msg = $"从Sayo API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
-                Log.Warning(msg);
-            }
-
-            if (bgPath is null)
-            {
-                try
-                {
-                    bgPath = await OSU.Client.DownloadBeatmapBackgroundImg(
-                        data.scoreInfo.Beatmap.BeatmapsetId,
-                        "./work/background/",
-                        $"{data.scoreInfo.Beatmap!.BeatmapId}.png"
-                    );
-                }
-                catch (Exception ex)
-                {
-                    var msg = $"从OSU API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
-                    Log.Warning(msg);
-                }
-            }
-        }
-
-        using var avatar = await Utils.LoadOrDownloadAvatar(data.scoreInfo.User!);
-
         using var panel = data.mode switch
         {
             RosuPP.Mode.Catch
@@ -79,28 +40,11 @@ public static class ScoreV2
             _ => await Img.LoadAsync("work/legacy/v2_scorepanel/default-score-v2.png")
         };
 
+        using var avatar = await Utils.LoadOrDownloadAvatar(data.scoreInfo.User!);
+
         // bg
-        Image<Rgba32> bg;
-        if (bgPath is null)
-        {
-            bg = await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
-        }
-        else
-        {
-            try
-            {
-                bg = await Img.LoadAsync<Rgba32>(bgPath);
-            }
-            catch
-            {
-                bg = await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
-                try
-                {
-                    File.Delete(bgPath);
-                }
-                catch { }
-            }
-        }
+        var bg = await Utils.LoadOrDownloadBackground(data.scoreInfo.Beatmap!.BeatmapsetId, data.scoreInfo.Beatmap.BeatmapId);
+        bg ??= await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
         using var smallBg = bg.Clone(x => x.RoundCorner(new Size(433, 296), 20));
         using var backBlack = new Image<Rgba32>(1950 - 2, 1088);
         backBlack.Mutate(x =>
@@ -462,22 +406,6 @@ public static class ScoreV2
             x.DrawText(textOptions,  "pp", ppTColor)
         );
 
-        // if (data.scoreInfo.Mode is OSU.Mode.Mania)
-        // {
-        //     pptext = "-";
-        //     metric = TextMeasurer.MeasureSize(pptext, textOptions);
-        //     for (var i = 0; i < 5; i++)
-        //     {
-        //         textOptions.Origin = new PointF(50 + 139 * i, 638);
-        //         score.Mutate(x => x.DrawText(textOptions,  pptext, ppColor));
-        //         textOptions.Origin = new PointF(50 + 139 * i + metric.Width, 638);
-        //         score.Mutate(x => x.DrawText(textOptions,  "pp", ppTColor));
-        //     }
-        // }
-        // else
-        // {
-        // }
-        // 这边不再需要匹配mania模式
         for (var i = 0; i < 5; i++)
         {
             try

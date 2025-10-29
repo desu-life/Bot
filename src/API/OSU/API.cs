@@ -374,27 +374,53 @@ namespace KanonBot.API.OSU
 
         async public static Task<string?> DownloadBeatmapBackgroundImg(long sid, string folderPath, string? fileName = null)
         {
-            return await $"https://assets.ppy.sh/beatmaps/{sid}/covers/raw.jpg".DownloadFileAsync(folderPath, fileName);
+            try
+            {
+                return await $"https://assets.ppy.sh/beatmaps/{sid}/covers/fullsize.jpg".DownloadFileAsync(folderPath, fileName);
+            }
+            catch (Exception ex)
+            {
+                var msg = $"从OSU API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
+                Log.Warning(msg);
+                return null;
+            }
         }
 
         // 小夜api版（备选方案）
-        async public static Task<string?> SayoDownloadBeatmapBackgroundImg(long sid, long bid, string folderPath, string? fileName = null)
+        public static async Task<string?> SayoDownloadBeatmapBackgroundImg(long sid, long bid, string folderPath, string? fileName = null)
         {
-            var url = $"https://api.sayobot.cn/v2/beatmapinfo?K={sid}";
-            var body = await url.GetJsonAsync<JObject>()!;
-            fileName ??= $"{bid}.png";
-
-            foreach (var item in body["data"]!["bid_data"]!)
+            try
             {
-                if (((long)item["bid"]!) == bid)
+                // 获取谱面信息
+                var apiUrl = $"https://api.sayobot.cn/v2/beatmapinfo?K={sid}";
+                var response = await apiUrl.GetJsonAsync<JObject>();
+
+                if (response?.SelectToken("data.bid_data") is not JArray bidDataArray) return null;
+
+                // 查找目标谱面并获取背景图片文件名
+                foreach (var beatmap in bidDataArray)
                 {
-                    string bgFileName;
-                    try { bgFileName = ((string?)item["bg"])!; }
-                    catch { return null; }
-                    return await $"https://dl.sayobot.cn/beatmaps/files/{sid}/{bgFileName}".DownloadFileAsync(folderPath, fileName);
+                    if (beatmap.SelectToken("bid")?.Value<long>() == bid)
+                    {
+                        var bgFileName = beatmap.SelectToken("bg")?.Value<string>();
+                        if (string.IsNullOrEmpty(bgFileName)) return null;
+
+                        // 下载背景图片
+                        var downloadUrl = $"https://dl.sayobot.cn/beatmaps/files/{sid}/{bgFileName}";
+                        var finalFileName = fileName ?? $"{bid}.png";
+                        
+                        return await downloadUrl.DownloadFileAsync(folderPath, finalFileName);
+                    }
                 }
+                
+                return null;
             }
-            return null;
+            catch (Exception ex)
+            {
+                var msg = $"从Sayo API下载背景图片时发生了一处异常\n异常类型: {ex.GetType()}\n异常信息: '{ex.Message}'";
+                Log.Warning(msg);
+                return null;
+            }
         }
 
         // 搜索用户数量 未使用
