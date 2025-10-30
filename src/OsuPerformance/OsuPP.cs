@@ -197,14 +197,10 @@ public static class OsuCalculator
             c.SliderTailHit = statistics.SliderTailHit;
         }
 
-
-
         c.accuracy = data.scoreInfo.AccAuto * 100.00;
         var dAttr = c.CalculateDifficulty();
         var bAttr = c.Calculate();
 
-        Log.Information("{@0}", dAttr);
-        Log.Information("{@0}", bAttr);
         // 开始计算
         data.ppInfo = PPInfo.New(score, bAttr, dAttr, bmAttr, bpm, clockRate);
 
