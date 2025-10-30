@@ -186,16 +186,19 @@ namespace KanonBot.Functions.OSUBot
 
             ScoreV2.ScorePanelData data;
             API.OSU.Models.User? user = await API.OSU.Client.GetUser(3);
-            if (mods_lazer.Any(x => x.Acronym is "RX" or "AP")) {
+            if (mods_lazer.Any(x => x.Acronym is "RX" or "AP"))
+            {
                 data = SBRosuCalculator.CalculatePanelSSData(b, beatmap, mods_lazer);
                 user!.Id = 1;
                 user!.Username = "ChinoBot";
                 user!.IsBot = true;
                 user!.AvatarUrl = new Uri("https://a.ppy.sb/1");
-            } else {
-                data = RosuCalculator.CalculatePanelSSData(b, beatmap, mods_lazer);
             }
-
+            else
+            {
+                data = OsuCalculator.CalculatePanelSSData(b, beatmap, mods_lazer);
+            }
+            
             data.scoreInfo.UserId = user!.Id;
             data.scoreInfo.User = user;
             data.scoreInfo.Beatmapset = beatmapset;

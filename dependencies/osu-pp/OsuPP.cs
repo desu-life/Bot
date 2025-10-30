@@ -62,6 +62,7 @@ public class Calculater {
 
     public double? accuracy { get; set; }
     public uint? combo { get; set; }
+    public uint? score { get; set; }
     public uint? N300 { get; set; }
     public uint? N100 { get; set; }
     public uint? N50 { get; set; }
@@ -149,15 +150,20 @@ public class Calculater {
             }
         }
 
-        if (ruleset is OsuRuleset) {
-            if (SliderTailHit is not null) {
+        if (ruleset is OsuRuleset)
+        {
+            if (SliderTailHit is not null)
+            {
                 statistics[HitResult.SliderTailHit] = (int)SliderTailHit;
             }
 
-            if (SliderTickMiss is not null) {
+            if (SliderTickMiss is not null)
+            {
                 statistics[HitResult.LargeTickMiss] = (int)SliderTickMiss;
             }
         }
+        
+
 
         if (N300 is not null) {
             statistics[HitResult.Great] = (int)N300;
@@ -175,8 +181,14 @@ public class Calculater {
             scoreInfo.MaxCombo = (int)combo;
         }
 
-        if (accuracy is not null) {
+        if (accuracy is not null)
+        {
             scoreInfo.Accuracy = accuracy.Value / 100.0;
+        }
+
+        if (score is not null)
+        {
+            scoreInfo.LegacyTotalScore  = (long)score;
         }
 
 

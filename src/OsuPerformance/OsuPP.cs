@@ -180,8 +180,10 @@ public static class OsuCalculator
         var ruleset = OsuPP.Utils.ParseRuleset(data.scoreInfo.ModeInt)!;
         var beatmap = new OsuPP.CalculatorWorkingBeatmap(b);
         var c = OsuPP.Calculater.New(ruleset, beatmap);
+        
         c.Mods(data.scoreInfo.JsonMods);
         c.combo = data.scoreInfo.MaxCombo;
+        c.score = data.scoreInfo.LegacyTotalScore;
         c.N50 = statistics.CountMeh;
         c.N100 = statistics.CountOk;
         c.N300 = statistics.CountGreat;
@@ -195,10 +197,14 @@ public static class OsuCalculator
             c.SliderTailHit = statistics.SliderTailHit;
         }
 
+
+
         c.accuracy = data.scoreInfo.AccAuto * 100.00;
         var dAttr = c.CalculateDifficulty();
         var bAttr = c.Calculate();
 
+        Log.Information("{@0}", dAttr);
+        Log.Information("{@0}", bAttr);
         // 开始计算
         data.ppInfo = PPInfo.New(score, bAttr, dAttr, bmAttr, bpm, clockRate);
 
@@ -297,6 +303,7 @@ public static class OsuCalculator
 
         c.Mods(mods_json);
         c.combo = score.MaxCombo;
+        c.score = score.LegacyTotalScore;
         c.N50 = statistics.CountMeh;
         c.N100 = statistics.CountOk;
         c.N300 = statistics.CountGreat;
