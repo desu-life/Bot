@@ -172,7 +172,7 @@ namespace KanonBot.Functions
             if (is_regd) //检查此邮箱是否已存在于数据库中
             {
                 // 如果存在，执行绑定
-                read_html = read_html.Replace("{{{{mailaddress}}}}", mailAddr).Replace("{{{{veritylink}}}}", $"https://desu.life/verify-email?mailAddr={mailAddr}&verifyCode={verifyCode}&platform={platform}&uid={uid}&op=2");
+                read_html = read_html.Replace("{{{{mailaddress}}}}", mailAddr).Replace("{{{{veritylink}}}}", $"https://kanonbot-fallback-api.desu.life/verify-email?mailAddr={mailAddr}&verifyCode={verifyCode}&platform={platform}&uid={uid}&op=2");
                 Mail.MailStruct ms = new()
                 {
                     MailTo = new string[] { mailAddr },
@@ -195,7 +195,7 @@ namespace KanonBot.Functions
             else if (!is_append)
             {
                 //如果不存在，新建
-                read_html = read_html.Replace("{{{{mailaddress}}}}", mailAddr).Replace("{{{{veritylink}}}}", $"https://desu.life/verify-email?mailAddr={mailAddr}&verifyCode={verifyCode}&platform={platform}&uid={uid}&op=1");
+                read_html = read_html.Replace("{{{{mailaddress}}}}", mailAddr).Replace("{{{{veritylink}}}}", $"https://kanonbot-fallback-api.desu.life/verify-email?mailAddr={mailAddr}&verifyCode={verifyCode}&platform={platform}&uid={uid}&op=1");
                 Mail.MailStruct ms = new()
                 {
                     MailTo = new string[] { mailAddr },
@@ -218,7 +218,7 @@ namespace KanonBot.Functions
             else
             {
                 //追加邮箱信息
-                read_html = read_html.Replace("{{{{mailaddress}}}}", mailAddr).Replace("{{{{veritylink}}}}", $"https://desu.life/verify-email?mailAddr={mailAddr}&verifyCode={verifyCode}&platform={platform}&uid={uid}&op=3");
+                read_html = read_html.Replace("{{{{mailaddress}}}}", mailAddr).Replace("{{{{veritylink}}}}", $"https://kanonbot-fallback-api.desu.life/verify-email?mailAddr={mailAddr}&verifyCode={verifyCode}&platform={platform}&uid={uid}&op=3");
                 Mail.MailStruct ms = new()
                 {
                     MailTo = new string[] { mailAddr },

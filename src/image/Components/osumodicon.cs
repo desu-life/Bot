@@ -62,8 +62,8 @@ public static class OsuModIcon
             var font = Fonts.Mizolet.Get(40);
             var modPic = await Img.LoadAsync($"./work/mods/Unknown.png");
             modPic.Mutate(x => x.Resize(200, 0));
-            modPic.Mutate(operation: x => x.DrawText(modName, font, Color.Black, 96, 34));
-            modPic.Mutate(x => x.DrawText(modName, font, Color.White, 96, 33));
+            modPic.Mutate(operation: x => x.DrawText(modName, font, Color.Black, 96, 34, VerticalAlignment.Center));
+            modPic.Mutate(x => x.DrawText(modName, font, Color.White, 96, 33, VerticalAlignment.Center));
             return modPic;
         }
     }

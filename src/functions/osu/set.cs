@@ -728,7 +728,7 @@ namespace KanonBot.Functions.OSUBot
             if (string.IsNullOrEmpty(tmp))
             {
                 await target.reply(
-                    "请输入正确的配置。\nset osuinfopanelv2color [配置]\n具体格式可以在 https://info.desu.life/?page_id=407 查询到。"
+                    "请输入正确的配置。\nset osuinfopanelv2color [配置]\n具体格式可以在 https://support.desu.life/posts/2022-kanonbot-usage-doc/ 查询到。"
                 );
                 return;
             }
