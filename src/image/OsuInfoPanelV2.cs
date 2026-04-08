@@ -888,28 +888,45 @@ public static class OsuInfoPanelV2
             FallbackFontFamilies = [HarmonySans, HarmonySansArabic]
         };
 
-        //自定义侧图
-        string sidePicPath;
+        //自定义侧图 - try URL from Kagami first, then local file
+        Image<Rgba32>? sidePic = null;
         bool hasSidePic = false;
-        if (File.Exists($"./work/panelv2/user_customimg/{data.osuId}.png"))
+        if (!string.IsNullOrEmpty(data.v2SideImageUrl))
         {
-            sidePicPath = $"./work/panelv2/user_customimg/{data.osuId}.png";
-            hasSidePic = true;
-        }
-        else
-        {
-            sidePicPath = ColorMode switch
+            try
             {
-                UserPanelData.CustomMode.Custom => "./work/panelv2/infov2-dark-customimg.png",
-                UserPanelData.CustomMode.Light => "./work/panelv2/infov2-light-customimg.png",
-                UserPanelData.CustomMode.Dark => "./work/panelv2/infov2-dark-customimg.png",
-                _ => throw new ArgumentOutOfRangeException("未知的自定义模式")
-            };
+                using var sideStream = await data.v2SideImageUrl.GetStreamAsync();
+                sidePic = await Img.LoadAsync<Rgba32>(sideStream);
+                hasSidePic = true;
+            }
+            catch
+            {
+                sidePic = null;
+            }
         }
-            
-        using var sidePic = await Utils.ReadImageRgba(sidePicPath); // 读取
+        if (sidePic == null)
+        {
+            if (File.Exists($"./work/panelv2/user_customimg/{data.osuId}.png"))
+            {
+                sidePic = await Utils.ReadImageRgba($"./work/panelv2/user_customimg/{data.osuId}.png");
+                hasSidePic = true;
+            }
+            else
+            {
+                var sidePicPath = ColorMode switch
+                {
+                    UserPanelData.CustomMode.Custom => "./work/panelv2/infov2-dark-customimg.png",
+                    UserPanelData.CustomMode.Light => "./work/panelv2/infov2-light-customimg.png",
+                    UserPanelData.CustomMode.Dark => "./work/panelv2/infov2-dark-customimg.png",
+                    _ => throw new ArgumentOutOfRangeException("未知的自定义模式")
+                };
+                sidePic = await Utils.ReadImageRgba(sidePicPath);
+            }
+        }
+
         sidePic.Mutate(x => x.Brightness(SideImgBrightness));
         info.Mutate(x => x.DrawImage(sidePic, new Point(90, 72), 1));
+        sidePic.Dispose();
 
         //进度条 - 先绘制进度条，再覆盖面板
         //pp
@@ -1113,20 +1130,37 @@ public static class OsuInfoPanelV2
         levelprogress_background.Mutate(x => x.Rotate(-90));
         info.Mutate(x => x.DrawImage(levelprogress_background, new Point(3900, 72), 1));
 
-        //用户面板/自定义面板
-        string panelPath;
-        if (File.Exists($"./work/panelv2/user_infopanel/{data.osuId}.png"))
-            panelPath = $"./work/panelv2/user_infopanel/{data.osuId}.png";
-        else
-            panelPath = ColorMode switch
+        //用户面板/自定义面板 - try URL from Kagami first, then local file
+        Image<Rgba32>? panel = null;
+        if (!string.IsNullOrEmpty(data.v2PanelUrl))
+        {
+            try
             {
-                UserPanelData.CustomMode.Custom => "./work/panelv2/infov2-dark.png",
-                UserPanelData.CustomMode.Light => "./work/panelv2/infov2-light.png",
-                UserPanelData.CustomMode.Dark => "./work/panelv2/infov2-dark.png",
-                _ => throw new ArgumentOutOfRangeException("未知的颜色模式"),
-            };
-        using var panel = await Utils.ReadImageRgba(panelPath); // 读取
+                using var panelStream = await data.v2PanelUrl.GetStreamAsync();
+                panel = await Img.LoadAsync<Rgba32>(panelStream);
+            }
+            catch
+            {
+                panel = null;
+            }
+        }
+        if (panel == null)
+        {
+            string panelPath;
+            if (File.Exists($"./work/panelv2/user_infopanel/{data.osuId}.png"))
+                panelPath = $"./work/panelv2/user_infopanel/{data.osuId}.png";
+            else
+                panelPath = ColorMode switch
+                {
+                    UserPanelData.CustomMode.Custom => "./work/panelv2/infov2-dark.png",
+                    UserPanelData.CustomMode.Light => "./work/panelv2/infov2-light.png",
+                    UserPanelData.CustomMode.Dark => "./work/panelv2/infov2-dark.png",
+                    _ => throw new ArgumentOutOfRangeException("未知的颜色模式"),
+                };
+            panel = await Utils.ReadImageRgba(panelPath);
+        }
         info.Mutate(x => x.DrawImage(panel, new Point(0, 0), 1));
+        panel.Dispose();
 
         //rank
         textOptions.Font = TorusRegular.Get(60);
@@ -2230,7 +2264,68 @@ public static class OsuInfoPanelV2
         );
 
         //badges
-        if (data.badgeId != null)
+        // Prefer badge image URLs from Kagami
+        if (data.badgeImageUrls != null && data.badgeImageUrls.Count > 0)
+        {
+            for (int i = 0; i < data.badgeImageUrls.Count; ++i)
+            {
+                if (string.IsNullOrEmpty(data.badgeImageUrls[i])) continue;
+                try
+                {
+                    using var badgeStream = await data.badgeImageUrls[i].GetStreamAsync();
+                    using var badge = await Img.LoadAsync<Rgba32>(badgeStream);
+
+                    //绘制
+                    if (i < 5)
+                    {
+                        //top
+                        badge.Mutate(x => x.Resize(236, 110).Brightness(BadgeBrightness));
+                        badge.Mutate(x =>
+                            x.ProcessPixelRowsAsVector4(row =>
+                            {
+                                for (int p = 0; p < row.Length; p++)
+                                    if (row[p].W > 0.2f)
+                                        row[p].W = BadgeAlpha;
+                            })
+                        );
+                        if (data.userInfo.IsSupporter && DisplaySupporterStatus)
+                            info.Mutate(x =>
+                                x.DrawImage(badge, new Point(3420 - i * 276, 93), 1)
+                            );
+                        else
+                            info.Mutate(x =>
+                                x.DrawImage(badge, new Point(3566 - i * 276, 93), 1)
+                            );
+                    }
+                    else
+                    {
+                        //bottom
+                        badge.Mutate(x =>
+                            x.Brightness(BadgeBrightness).Resize(108, 50)
+                        );
+                        badge.Mutate(x =>
+                            x.ProcessPixelRowsAsVector4(row =>
+                            {
+                                for (int p = 0; p < row.Length; p++)
+                                    if (row[p].W > 0.2f)
+                                        row[p].W = BadgeAlpha;
+                            })
+                        );
+                        if (data.userInfo.IsSupporter && DisplaySupporterStatus)
+                            info.Mutate(x =>
+                                x.DrawImage(badge, new Point(3414 - (i - 6) * 132, 223), 1)
+                            );
+                        else
+                            info.Mutate(x =>
+                                x.DrawImage(badge, new Point(3560 - (i - 6) * 132, 223), 1)
+                            );
+                    }
+                }
+                catch { }
+            }
+        }
+        // Fallback to local badge files
+        else if (data.badgeId != null)
             if (data.badgeId.Count > 0)
                 if (data.badgeId[0] != -1)
                 {
@@ -2248,27 +2343,16 @@ public static class OsuInfoPanelV2
                             $"./work/badges/{data.badgeId[i]}.png"
                         );
                         using var badge = _badge;
-                        //检测上传的badge format是否正确，否则重新格式化
                         if (format.DefaultMimeType.Trim().ToLower()[..3] != "png")
                         {
                             File.Delete($"./work/badges/{data.badgeId[i]}.png");
                             badge.Save($"./work/badges/{data.badgeId[i]}.png", new PngEncoder());
                         }
 
-                        // var roundedCorner = true;
-                        // badge.ProcessPixelRows(row =>
-                        // {
-                        //     roundedCorner = row.GetRowSpan(0)[0] == Rgba32.ParseHex("#000000");
-                        // });
-                        // if (!roundedCorner)
-                        //     badge.Mutate(x => x.RoundCorner(badge.Size, 20));
-
                         //绘制
                         if (i < 5)
                         {
-                            //top
                             badge.Mutate(x => x.Resize(236, 110).Brightness(BadgeBrightness));
-
                             badge.Mutate(x =>
                                 x.ProcessPixelRowsAsVector4(row =>
                                 {
@@ -2288,12 +2372,9 @@ public static class OsuInfoPanelV2
                         }
                         else
                         {
-                            //bottom
                             badge.Mutate(x =>
                                 x.Brightness(BadgeBrightness).Resize(108, 50)
-                            //.RoundCorner(new Size(108, 50), 6.0f)
                             );
-
                             badge.Mutate(x =>
                                 x.ProcessPixelRowsAsVector4(row =>
                                 {

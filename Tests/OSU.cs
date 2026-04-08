@@ -3,7 +3,6 @@ using KanonBot;
 using KanonBot.API;
 using KanonBot.Functions.OSU;
 using KanonBot.Image;
-using KanonBot.DrawV2;
 using KanonBot.Serializer;
 using RosuPP;
 using SixLabors.ImageSharp.Formats.Png;

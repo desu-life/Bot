@@ -17,344 +17,164 @@ namespace KanonBot.Functions
             public required Platform platform;
             public required string uid;
         }
+
+        /// <summary>
+        /// Resolved user context from IAM + local DB.
+        /// </summary>
+        public class UserContext
+        {
+            public required string IamUserId { get; set; }
+            public long? OsuUid { get; set; }
+            public string? DisplayName { get; set; }
+            public Database.Model.UserOSU? OsuSettings { get; set; }
+        }
+
+        /// <summary>
+        /// Resolve a platform user to IAM UUID + osu UID + local osu settings.
+        /// </summary>
+        public static async Task<UserContext?> ResolveIamUser(Target target)
+        {
+            var accInfo = GetAccInfo(target);
+            if (accInfo.platform == Platform.Unknown) return null;
+
+            var provider = API.IAM.Client.PlatformToProvider(accInfo.platform);
+            var iamUserId = await API.IAM.Client.GetIamUserIdByExternalId(provider, accInfo.uid);
+            if (iamUserId == null) return null;
+
+            var profile = await API.IAM.Client.GetIamUserPublicProfile(iamUserId);
+            if (profile == null) return new UserContext { IamUserId = iamUserId };
+
+            var osuUid = API.IAM.Client.ExtractOsuUid(profile);
+            Database.Model.UserOSU? osuSettings = null;
+            if (osuUid.HasValue)
+            {
+                osuSettings = await Database.Client.GetOsuUser(osuUid.Value);
+            }
+
+            return new UserContext
+            {
+                IamUserId = iamUserId,
+                OsuUid = osuUid,
+                DisplayName = profile.DisplayName ?? profile.UserName,
+                OsuSettings = osuSettings
+            };
+        }
+
+        /// <summary>
+        /// Resolve IAM user by IAM User ID directly (for @osu:xxx lookups).
+        /// </summary>
+        public static async Task<UserContext?> ResolveIamUserById(string iamUserId)
+        {
+            var profile = await API.IAM.Client.GetIamUserPublicProfile(iamUserId);
+            if (profile == null) return null;
+
+            var osuUid = API.IAM.Client.ExtractOsuUid(profile);
+            Database.Model.UserOSU? osuSettings = null;
+            if (osuUid.HasValue)
+            {
+                osuSettings = await Database.Client.GetOsuUser(osuUid.Value);
+            }
+
+            return new UserContext
+            {
+                IamUserId = iamUserId,
+                OsuUid = osuUid,
+                DisplayName = profile.DisplayName ?? profile.UserName,
+                OsuSettings = osuSettings
+            };
+        }
+
         public static async Task RegAccount(Target target, string cmd)
         {
-            //var is_private_msg = target.raw switch
-            //{
-            //    OneBot.Models.GroupMessage => false,
-            //    OneBot.Models.PrivateMessage => true,
-            //    _ => true,//无法调试qq频道私聊 暂时默认私聊
-            //};
-            //if (!is_private_msg)
-            //{
-            //    await target.reply("请私聊bot以使用本功能。");
-            //    return;
-            //}
+            var code = cmd.Trim();
 
-            var mailAddr = cmd.Trim(); // reg 邮箱地址
-            var verifyCode = Utils.RandomStr(22, true); //生成验证码
-
-            if (!Utils.IsMailAddr(mailAddr))
+            if (string.IsNullOrEmpty(code) || code.Length > 6)
             {
-                await target.reply("请输入有效的电子邮件地址。");
+                await target.reply("请输入您在网页端获取的验证码。\n用法: !reg 验证码");
                 return;
             }
-            string uid = "-1";
 
-            var AccInfo = Accounts.GetAccInfo(target);
-            var DBUserSelf = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
-            if (DBUserSelf is not null) {
-                if (!string.IsNullOrEmpty(DBUserSelf.email))
-                {
-                    await target.reply($"您目前的平台账户已经和邮箱为 {Utils.HideMailAddr(DBUserSelf.email ?? "undefined@undefined.undefined")} 的用户绑定了。");
-                    return;
-                }
+            var accInfo = GetAccInfo(target);
+            if (accInfo.platform == Platform.Unknown)
+            {
+                await target.reply("无法获取您的平台信息。");
+                return;
             }
 
-            bool is_regd = await Database.Client.IsRegd(mailAddr);
-            bool is_append = false;
-            Database.Model.User dbuser = new();
-
-            if (is_regd) dbuser = (await Database.Client.GetUser(mailAddr))!;
-            switch (target.platform) //获取用户ID及平台信息 平台： qq qguild khl discord 四个
+            // Check if already bound
+            var provider = API.IAM.Client.PlatformToProvider(accInfo.platform);
+            var existingIamId = await API.IAM.Client.GetIamUserIdByExternalId(provider, accInfo.uid);
+            if (existingIamId != null)
             {
-                case Platform.Guild:
-                    if (target.raw is QQGuild.Models.MessageData g)
-                    {
-                        uid = g.Author.ID;
-                        if (is_regd)
-                            if (dbuser.qq_guild_uid == g.Author.ID) { await target.reply("您提供的邮箱已经与您目前的平台绑定了。"); return; }
-                        var g1 = await Database.Client.GetUsersByUID(uid, Platform.Guild);
-                        if (g1 != null)
-                        {
-                            if (g1.email != null)
-                            {
-                                is_append = true;
-                            }
-                            else
-                            {
-                                await target.reply(new Chain()
-                                    .msg($"您目前的平台账户已经和邮箱为" +
-                                    $"{Utils.HideMailAddr(g1.email ?? "undefined@undefined.undefined")}" +
-                                    $"的用户绑定了。"));
-                                return;
-                            }
-                        }
-                    }
-                    break;
-                case Platform.OneBot:
-                    if (target.raw is OneBot.Models.CQMessageEventBase o)
-                    {
-                        uid = o.UserId.ToString();
-                        if (is_regd)
-                            if (dbuser.qq_id == o.UserId) { await target.reply("您提供的邮箱已经与您目前的平台绑定了。"); return; }
-                        var o1 = await Database.Client.GetUsersByUID(uid, Platform.OneBot);
-                        if (o1 != null)
-                        {
-                            if (o1.email != null)
-                            {
-                                is_append = true;
-                            }
-                            else
-                            {
-                                await target.reply(new Chain()
-                                    .msg($"您目前的平台账户已经和邮箱为" +
-                                    $"{Utils.HideMailAddr(o1.email ?? "undefined@undefined.undefined")}" +
-                                    $"的用户绑定了。"));
-                                return;
-                            }
-                        }
-                    }
-                    break;
-                case Platform.KOOK:
-                    if (target.raw is Kook.WebSocket.SocketMessage k)
-                    {
-                        uid = k.Author.Id.ToString();
-                        if (is_regd)
-                            if (dbuser.kook_uid == uid) { await target.reply("您提供的邮箱已经与您目前的平台绑定了。"); return; }
-                        var k1 = await Database.Client.GetUsersByUID(uid, Platform.KOOK);
-                        if (k1 != null)
-                        {
-                            if (k1.email != null)
-                            {
-                                is_append = true;
-                            }
-                            else
-                            {
-                                await target.reply(new Chain()
-                                    .msg($"您目前的平台账户已经和邮箱为" +
-                                    $"{Utils.HideMailAddr(k1.email ?? "undefined@undefined.undefined")}" +
-                                    $"的用户绑定了。"));
-                                return;
-                            }
-                        }
-                    }
-                    break;
-                case Platform.Discord:
-                    if (target.raw is Discord.IMessage d)
-                    {
-                        uid = d.Author.Id.ToString();
-                        if (is_regd)
-                            if (dbuser.discord_uid == uid) { await target.reply("您提供的邮箱已经与您目前的平台绑定了。"); return; }
-                        var k1 = await Database.Client.GetUsersByUID(uid, Platform.Discord);
-                        if (k1 != null)
-                        {
-                            if (k1.email != null)
-                            {
-                                is_append = true;
-                            }
-                            else
-                            {
-                                await target.reply(new Chain()
-                                    .msg($"您目前的平台账户已经和邮箱为" +
-                                    $"{Utils.HideMailAddr(k1.email ?? "undefined@undefined.undefined")}" +
-                                    $"的用户绑定了。"));
-                                return;
-                            }
-                        }
-                    }
-                    break;
-                default: break;
+                await target.reply("您的账户已经绑定了 desu.life 账户。");
+                return;
             }
-            var platform = target.platform! switch
-            {
-                Platform.Guild => "qguild",
-                Platform.KOOK => "kook",
-                Platform.OneBot => "qq",
-                Platform.Discord => "discord",
-                _ => throw new NotSupportedException()
-            };
 
+            var result = await API.IAM.Client.SubmitVerification(provider, code, accInfo.uid);
 
-
-            string read_html = System.IO.File.ReadAllText("./mail_desu_life_mailaddr_verify_template.txt");
-           
-            if (is_regd) //检查此邮箱是否已存在于数据库中
+            switch (result)
             {
-                // 如果存在，执行绑定
-                read_html = read_html.Replace("{{{{mailaddress}}}}", mailAddr).Replace("{{{{veritylink}}}}", $"https://kanonbot-fallback-api.desu.life/verify-email?mailAddr={mailAddr}&verifyCode={verifyCode}&platform={platform}&uid={uid}&op=2");
-                Mail.MailStruct ms = new()
-                {
-                    MailTo = new string[] { mailAddr },
-                    Subject = "[来自desu.life自动发送的邮件]请验证您的邮箱",
-                    Body = read_html,
-                    IsBodyHtml = true
-                };
-                try
-                {
-                    await Mail.Send(ms);
-                    await target.reply("绑定验证邮件发送成功，请继续从邮箱内操作，注意检查垃圾箱。");
-                    await Database.Client.SetVerifyMail(mailAddr, verifyCode); //设置临时验证码
-                }
-                catch (Exception ex)
-                {
-                    Log.Logger.Error("Error: " + ex.ToString());
-                    await target.reply("发送验证邮件失败，请联系管理员。");
-                }
-            }
-            else if (!is_append)
-            {
-                //如果不存在，新建
-                read_html = read_html.Replace("{{{{mailaddress}}}}", mailAddr).Replace("{{{{veritylink}}}}", $"https://kanonbot-fallback-api.desu.life/verify-email?mailAddr={mailAddr}&verifyCode={verifyCode}&platform={platform}&uid={uid}&op=1");
-                Mail.MailStruct ms = new()
-                {
-                    MailTo = new string[] { mailAddr },
-                    Subject = "[来自desu.life自动发送的邮件]请验证您的邮箱",
-                    Body = read_html,
-                    IsBodyHtml = true
-                };
-                try
-                {
-                    await Mail.Send(ms);
-                    await target.reply("注册验证邮件发送成功，请继续从邮箱内操作，注意检查垃圾箱。");
-                    await Database.Client.SetVerifyMail(mailAddr, verifyCode); //设置临时验证码
-                }
-                catch (Exception ex)
-                {
-                    Log.Logger.Error("Error: " + ex.ToString());
-                    await target.reply("发送验证邮件失败，请联系管理员。");
-                }
-            }
-            else
-            {
-                //追加邮箱信息
-                read_html = read_html.Replace("{{{{mailaddress}}}}", mailAddr).Replace("{{{{veritylink}}}}", $"https://kanonbot-fallback-api.desu.life/verify-email?mailAddr={mailAddr}&verifyCode={verifyCode}&platform={platform}&uid={uid}&op=3");
-                Mail.MailStruct ms = new()
-                {
-                    MailTo = new string[] { mailAddr },
-                    Subject = "[来自desu.life自动发送的邮件]请验证您的邮箱",
-                    Body = read_html,
-                    IsBodyHtml = true
-                };
-                try
-                {
-                    await Mail.Send(ms);
-                    await target.reply("电子邮箱追加验证邮件发送成功，请继续从邮箱内操作，注意检查垃圾箱。");
-                    await Database.Client.SetVerifyMail(mailAddr, verifyCode); //设置临时验证码
-                }
-                catch (Exception ex)
-                {
-                    Log.Logger.Error("Error: " + ex.ToString());
-                    await target.reply("发送验证邮件失败，请联系管理员。");
-                }
+                case API.IAM.VerifyResult.Success:
+                    await target.reply("绑定成功！您的平台账户已与 desu.life 账户关联。");
+                    break;
+                case API.IAM.VerifyResult.InvalidCode:
+                    await target.reply("验证码无效或已过期，请重新在网页端生成验证码。");
+                    break;
+                case API.IAM.VerifyResult.InvalidApiKey:
+                    Log.Error("IAM API Key is invalid for provider {Provider}", provider);
+                    await target.reply("服务配置错误，请联系管理员。");
+                    break;
+                case API.IAM.VerifyResult.Misconfigured:
+                    Log.Error("IAM integration is misconfigured for provider {Provider}", provider);
+                    await target.reply("服务配置错误，请联系管理员。");
+                    break;
+                default:
+                    await target.reply("绑定过程中出现错误，请稍后再试。");
+                    break;
             }
         }
 
-        async public static Task BindService(Target target, string cmd)
+        public static async Task BindService(Target target, string cmd)
         {
-            string childCmd_1 = "", childCmd_2 = "";
+            string childCmd_1 = "";
             try
             {
-                var tmp = cmd.Split(' ', 2, StringSplitOptions.TrimEntries);;
+                var tmp = cmd.Split(' ', 2, StringSplitOptions.TrimEntries);
                 childCmd_1 = tmp[0];
-                childCmd_2 = tmp[1];
             }
             catch { }
 
-            var AccInfo = Accounts.GetAccInfo(target);
-            var DBUser = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
-            // 查询当前kanon账户是否有效
-            if (DBUser == null) { await target.reply("你还没有绑定 desu.life 账户，先使用 !reg 你的邮箱 来进行绑定或注册哦。"); return; }
-
             if (childCmd_1 == "osu")
             {
-                if (string.IsNullOrEmpty(childCmd_2)) { await target.reply("请按照以下格式进行绑定。\n!bind osu 您的osu用户名 "); return; }
-                // 先检查查询的用户是否有效
-                API.OSU.Models.User? online_osu_userinfo;
-                online_osu_userinfo = await API.OSU.Client.GetUser(childCmd_2);
-                if (online_osu_userinfo == null) { await target.reply($"没有找到用户名为 {childCmd_2} 的 osu 用户，绑定失败。"); return; }
-
-                // 检查要绑定的osu是否没有被Kanon用户绑定过
-                var db_osu_userinfo = await Database.Client.GetOsuUser(online_osu_userinfo.Id);
-                if (db_osu_userinfo != null)
-                {
-                    if (DBUser != null && DBUser.uid == db_osu_userinfo.uid) {
-                        await target.reply($"你已绑定该账户。"); return;
-                    }
-                    await target.reply($"此 osu 账户已被用户 ID 为 {db_osu_userinfo.uid} 的用户绑定了，如果这是你的账户，请联系管理员更新账户信息。"); return;
-                }
-
-                // 检查用户是否已绑定osu账户
-                var osuuserinfo = await Database.Client.GetOsuUserByUID(DBUser.uid);
-                if (osuuserinfo != null) { await target.reply($"您已经与 osu uid 为 {osuuserinfo.osu_uid} 的用户绑定过了。"); return; }
-
-                // 通过osu username搜索osu用户id
-                try
-                {
-                    // 没被他人绑定，开始绑定流程
-                    if (await Database.Client.InsertOsuUser(DBUser.uid, online_osu_userinfo.Id))
-                    {
-                        await target.reply($"绑定成功，已将 osu 用户 {online_osu_userinfo.Id} 绑定至 desu.life 账户 {DBUser.uid} 。");
-                        await GeneralUpdate.UpdateUser(online_osu_userinfo.Id, true); //插入用户每日数据记录
-                    }
-                    else { await target.reply($"绑定失败，请稍后再试。"); }
-                }
-                catch { await target.reply($"在绑定用户时出错，请联系猫妈处理.png"); return; }
+                await target.reply("osu 账户绑定已迁移至网页端，请前往 https://iam.neonprizma.com 绑定您的 osu 账户。");
+                return;
             }
             else if (childCmd_1 == "ppysb")
             {
-                if (string.IsNullOrEmpty(childCmd_2)) { await target.reply("请按照以下格式进行绑定。\n!bind ppysb 您在sb服的用户名\n如果无法通过用户名找到账号\n!bind ppysb uid:您在sb服的id"); return; }
-                Option<int> uid = None;
-                // 处理uid绑定
-                if (childCmd_2.StartsWith("uid:")) {
-                    childCmd_2 = childCmd_2.Replace("uid:", "").Trim();
-                    uid = parseInt(childCmd_2);
-                    if (uid.IsNone) { await target.reply("请输入正确的id"); return; }
-                }
-
-                // 检查用户是否已绑定osu账户
-                var osuuserinfo = await Database.Client.GetOsuUserByUID(DBUser.uid);
-                if (osuuserinfo == null) { await target.reply($"请先绑定官服 osu 账户。"); return; }
-
-                // 先检查查询的用户是否有效
-                API.PPYSB.Models.User? online_osu_userinfo;
-                if (uid.IsSome) { 
-                    online_osu_userinfo = await API.PPYSB.Client.GetUser(uid.Value()); 
-                } else {
-                    online_osu_userinfo = await API.PPYSB.Client.GetUser(childCmd_2);
-                }
-                if (online_osu_userinfo == null) { await target.reply($"没有在ppy.sb找到用户名为 {childCmd_2} 的用户，绑定失败。"); return; }
-
-                // 检查要绑定的osu是否没有被Kanon用户绑定过
-                var db_osu_userinfo = await Database.Client.GetPpysbUser(online_osu_userinfo.Info.Id);
-                if (db_osu_userinfo != null)
-                {
-                    if (DBUser != null && DBUser.uid == db_osu_userinfo.uid) {
-                        await target.reply($"你已绑定该账户。"); return;
-                    }
-                    await target.reply($"此 ppy.sb 账户已被用户ID为 {db_osu_userinfo.uid} 的用户绑定了，如果这是你的账户，请联系管理员更新账户信息。"); return;
-                }
-
-                // 通过osu username搜索osu用户id
-                try
-                {
-                    // 没被他人绑定，开始绑定流程
-                    if (await Database.Client.InsertPpysbUser(DBUser.uid, online_osu_userinfo.Info.Id))
-                    {
-                        await target.reply($"绑定成功，已将 ppy.sb 用户 {online_osu_userinfo.Info.Id} 绑定至 desu.life 账户 {DBUser.uid} 。");
-                    }
-                    else { await target.reply($"绑定失败，请稍后再试。"); }
-                }
-                catch { await target.reply($"在绑定用户时出错，请联系猫妈处理.png"); return; }
+                await target.reply("ppy.sb 账户绑定已迁移至网页端，请前往 https://iam.neonprizma.com 绑定您的 ppy.sb 账户。");
+                return;
             }
             else
             {
-                await target.reply("请按照以下格式进行绑定。\n!bind osu 您的osu用户名 "); return;
+                await target.reply("请按照以下格式进行绑定。\n!bind osu\n!bind ppysb");
+                return;
             }
         }
-        
-        public static async Task<(Option<API.OSU.Models.UserExtended>, Option<Database.Model.User>)> ParseAtOsu(string atmsg) {
+
+        public static async Task<(Option<API.OSU.Models.UserExtended>, Option<Database.Model.User>)> ParseAtOsu(string atmsg)
+        {
             var res = Utils.SplitKvp(atmsg);
             if (res.IsNone)
                 return (None, None);
 
             var (k, v) = res.Value();
 
-            if (k == "osu") {
+            if (k == "osu")
+            {
                 var uid = parseLong(v).IfNone(() => 0);
                 if (uid == 0)
                     return (None, None);
-                
+
                 var osuacc_ = await API.OSU.Client.GetUser(uid);
                 if (osuacc_ is null)
                     return (None, None);
@@ -369,7 +189,7 @@ namespace KanonBot.Functions
             var user = await ParseAtBase(atmsg);
             if (user.IsNone)
                 return (None, None);
-            
+
             var dbuser = user.ValueUnsafe();
 
             var dbosu = await CheckOsuAccount(dbuser.uid);
@@ -383,18 +203,20 @@ namespace KanonBot.Functions
                 return (Some(osuacc), Some(dbuser));
         }
 
-        public static async Task<(Option<API.OSU.Models.UserExtended>, Option<Database.Model.User>)> ParseAtPpysb(string atmsg) {
+        public static async Task<(Option<API.OSU.Models.UserExtended>, Option<Database.Model.User>)> ParseAtPpysb(string atmsg)
+        {
             var res = Utils.SplitKvp(atmsg);
             if (res.IsNone)
                 return (None, None);
 
             var (k, v) = res.Value();
 
-            if (k == "sb") {
+            if (k == "sb")
+            {
                 var uid = parseLong(v).IfNone(() => 0);
                 if (uid == 0)
                     return (None, None);
-                
+
                 var osuacc_ = await API.PPYSB.Client.GetUser(uid);
                 if (osuacc_ is null)
                     return (None, None);
@@ -403,13 +225,13 @@ namespace KanonBot.Functions
                 if (dbuser_ is null)
                     return (Some(osuacc_.ToOsu(null)!), None);
                 else
-                    return (Some(osuacc_.ToOsu(null)!), Some(dbuser_));
+                    return (Some(osuacc_.ToOsu(null)!), Some(dbuser_!));
             }
 
             var user = await ParseAtBase(atmsg);
             if (user.IsNone)
                 return (None, None);
-            
+
             var dbuser = user.ValueUnsafe();
 
             var dbosu = await CheckPpysbAccount(dbuser.uid);
@@ -423,23 +245,25 @@ namespace KanonBot.Functions
                 return (Some(osuacc.ToOsu(dbosu.mode?.ToPpysbMode())!), Some(dbuser));
         }
 
-        public static async Task<Option<Database.Model.User>> ParseAtBase(string atmsg) {
+        public static async Task<Option<Database.Model.User>> ParseAtBase(string atmsg)
+        {
             var res = Utils.SplitKvp(atmsg);
             if (res.IsNone)
                 return None;
 
             var (k, v) = res.Value();
 
-            var platform =  k switch {
+            var platform = k switch
+            {
                 "qq" => Platform.OneBot,
-                "gulid" => Platform.Guild,
+                "guild" => Platform.Guild,
                 "discord" => Platform.Discord,
                 "kook" => Platform.KOOK,
                 _ => Platform.Unknown
             };
             if (platform == Platform.Unknown)
                 return None;
-            
+
             var dbuser = await GetAccount(v, platform);
             if (dbuser is null)
                 return None;
@@ -447,27 +271,9 @@ namespace KanonBot.Functions
             return Some(dbuser!);
         }
 
-        public static async Task<Database.Model.User?> GetAccount(string uid, Platform platform)
-        {
-            return await Database.Client.GetUsersByUID(uid, platform);
-        }
-        public static async Task<Database.Model.User?> GetAccountByOsuUid(long osu_uid)
-        {
-            return await Database.Client.GetUserByOsuUID(osu_uid);
-        }
-        public static async Task<Database.Model.UserOSU?> CheckOsuAccount(long uid)
-        {
-            return await Database.Client.GetOsuUserByUID(uid);
-        }
-        public static async Task<Database.Model.User?> GetAccountByPpysbUid(long osu_uid)
-        {
-            return await Database.Client.GetUserByPpysbUID(osu_uid);
-        }
-        public static async Task<Database.Model.UserPPYSB?> CheckPpysbAccount(long uid)
-        {
-            return await Database.Client.GetPpysbUserByUID(uid);
-        }
-
+        /// <summary>
+        /// Get platform account info from target (unchanged).
+        /// </summary>
         public static AccInfo GetAccInfo(Target target)
         {
             switch (target.platform)
@@ -498,6 +304,29 @@ namespace KanonBot.Functions
                     break;
             }
             return new() { platform = Platform.Unknown, uid = "" };
+        }
+
+        // === Backward compatibility methods (delegate to local DB, still used by many callers) ===
+
+        public static async Task<Database.Model.User?> GetAccount(string uid, Platform platform)
+        {
+            return await Database.Client.GetUsersByUID(uid, platform);
+        }
+        public static async Task<Database.Model.User?> GetAccountByOsuUid(long osu_uid)
+        {
+            return await Database.Client.GetUserByOsuUID(osu_uid);
+        }
+        public static async Task<Database.Model.UserOSU?> CheckOsuAccount(long uid)
+        {
+            return await Database.Client.GetOsuUserByUID(uid);
+        }
+        public static async Task<Database.Model.User?> GetAccountByPpysbUid(long osu_uid)
+        {
+            return await Database.Client.GetUserByPpysbUID(osu_uid);
+        }
+        public static async Task<Database.Model.UserPPYSB?> CheckPpysbAccount(long uid)
+        {
+            return await Database.Client.GetPpysbUserByUID(uid);
         }
     }
 }

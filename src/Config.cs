@@ -115,6 +115,30 @@ public class Config
         public string? bucketName { get; set; }
     }
 
+    public class IAM
+    {
+        [TomlProperty("base_url")]
+        public string baseUrl { get; set; } = "https://iam.neonprizma.com";
+
+        [TomlProperty("discord_api_key")]
+        public string? discordApiKey { get; set; }
+
+        [TomlProperty("qq_api_key")]
+        public string? qqApiKey { get; set; }
+
+        [TomlProperty("qq_guild_api_key")]
+        public string? qqGuildApiKey { get; set; }
+    }
+
+    public class Kagami
+    {
+        [TomlProperty("base_url")]
+        public string baseUrl { get; set; } = "https://hub.kagamistudio.com";
+
+        [TomlProperty("api_key")]
+        public string? apiKey { get; set; }
+    }
+
     public enum ConfigType
     {
         OneBotServer,
@@ -253,6 +277,14 @@ public class Config
         [TomlProperty("openai")]
         public OpenAI? openai { get; set; }
 
+        [TomlDoNotInlineObject]
+        [TomlProperty("iam")]
+        public IAM? iam { get; set; }
+
+        [TomlDoNotInlineObject]
+        [TomlProperty("kagami")]
+        public Kagami? kagami { get; set; }
+
         [TomlProperty("drivers")]
         public DriverConfig[] drivers { get; set; } = [];
 
@@ -327,6 +359,17 @@ public class Config
                     Temperature = 0,
                     TopP = 1,
                     PreDefine = ""
+                },
+                iam = new()
+                {
+                    baseUrl = "https://iam.neonprizma.com",
+                    discordApiKey = "",
+                    qqApiKey = "",
+                    qqGuildApiKey = ""
+                },
+                kagami = new()
+                {
+                    baseUrl = "https://hub.kagamistudio.com"
                 }
             };
         }

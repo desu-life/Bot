@@ -29,9 +29,16 @@ public static class InfoV1
         public required long osuId; // 官方服务器的id
         public int daysBefore = 0;
         public List<int> badgeId = [];
+        public List<string> badgeImageUrls = [];
         public CustomMode customMode = CustomMode.Dark; //0=custom 1=light 2=dark
         public string ColorConfigRaw;
         public string? modeString;
+
+        // Kagami image URLs (loaded from kanon-images API)
+        public string? v1PanelUrl;      // V1 panel overlay (replaces v1_infopanel/{osuId}.png)
+        public string? v1CoverUrl;      // V1 cover/background (replaces v1_cover/custom/{osuId}.png)
+        public string? v2SideImageUrl;  // V2 side image (replaces user_customimg/{osuId}.png)
+        public string? v2PanelUrl;      // V2 panel overlay (replaces user_infopanel/{osuId}.png)
 
         public enum CustomMode
         {
@@ -49,51 +56,83 @@ public static class InfoV1
     )
     {
         var info = new Image<Rgba32>(1200, 857);
-        // custom panel
-        var panelPath = "./work/legacy/default-info-v1.png";
-        if (File.Exists($"./work/legacy/v1_infopanel/{data.osuId}.png"))
-            panelPath = $"./work/legacy/v1_infopanel/{data.osuId}.png";
-        using var panel = await Img.LoadAsync(panelPath);
-        // cover
-        var coverPath = $"./work/legacy/v1_cover/custom/{data.osuId}.png";
-        if (!File.Exists(coverPath))
+        // custom panel - try URL from Kagami first, then local file
+        Img? panel = null;
+        if (!string.IsNullOrEmpty(data.v1PanelUrl))
         {
-            coverPath = $"./work/legacy/v1_cover/osu!web/{data.osuId}.png";
+            try
+            {
+                using var panelStream = await data.v1PanelUrl.GetStreamAsync();
+                panel = await Img.LoadAsync(panelStream);
+            }
+            catch
+            {
+                panel = null;
+            }
+        }
+        if (panel == null)
+        {
+            var panelPath = "./work/legacy/default-info-v1.png";
+            if (File.Exists($"./work/legacy/v1_infopanel/{data.osuId}.png"))
+                panelPath = $"./work/legacy/v1_infopanel/{data.osuId}.png";
+            panel = await Img.LoadAsync(panelPath);
+        }
+
+        // cover - try URL from Kagami first, then local files
+        Img? cover = null;
+        if (!string.IsNullOrEmpty(data.v1CoverUrl))
+        {
+            try
+            {
+                using var coverStream = await data.v1CoverUrl.GetStreamAsync();
+                cover = await Img.LoadAsync(coverStream);
+            }
+            catch
+            {
+                cover = null;
+            }
+        }
+        if (cover == null)
+        {
+            var coverPath = $"./work/legacy/v1_cover/custom/{data.osuId}.png";
             if (!File.Exists(coverPath))
             {
-                coverPath = null;
-                if (data.userInfo.Cover is not null)
+                coverPath = $"./work/legacy/v1_cover/osu!web/{data.osuId}.png";
+                if (!File.Exists(coverPath))
                 {
-                    if (data.userInfo.Cover.CustomUrl is not null)
+                    coverPath = null;
+                    if (data.userInfo.Cover is not null)
                     {
-                        coverPath = await data.userInfo.Cover.CustomUrl.DownloadFileAsync(
-                            "./work/legacy/v1_cover/osu!web/",
-                            $"{data.osuId}.png"
-                        );
-                    }
-                    else
-                    {
-                        var cover_id = data.userInfo.Cover.Id ?? "0";
-                        coverPath = $"./work/legacy/v1_cover/osu!web/default_{cover_id}.png";
-                        if (!File.Exists(coverPath))
+                        if (data.userInfo.Cover.CustomUrl is not null)
                         {
-                            coverPath = await data.userInfo.Cover.Url.DownloadFileAsync(
+                            coverPath = await data.userInfo.Cover.CustomUrl.DownloadFileAsync(
                                 "./work/legacy/v1_cover/osu!web/",
-                                $"default_{cover_id}.png"
+                                $"{data.osuId}.png"
                             );
+                        }
+                        else
+                        {
+                            var cover_id = data.userInfo.Cover.Id ?? "0";
+                            coverPath = $"./work/legacy/v1_cover/osu!web/default_{cover_id}.png";
+                            if (!File.Exists(coverPath))
+                            {
+                                coverPath = await data.userInfo.Cover.Url.DownloadFileAsync(
+                                    "./work/legacy/v1_cover/osu!web/",
+                                    $"default_{cover_id}.png"
+                                );
+                            }
                         }
                     }
                 }
             }
-        }
 
-        if (coverPath is null)
-        {
-            int n = new Random().Next(1, 6);
-            coverPath = $"./work/legacy/v1_cover/default/default_{n}.png";
+            if (coverPath is null)
+            {
+                int n = new Random().Next(1, 6);
+                coverPath = $"./work/legacy/v1_cover/default/default_{n}.png";
+            }
+            cover = await Img.LoadAsync(coverPath);
         }
-
-        using var cover = await Img.LoadAsync(coverPath);
         var resizeOptions = new ResizeOptions
         {
             Size = new Size(1200, 350),
@@ -105,18 +144,41 @@ public static class InfoV1
         // cover.Mutate(x => x.RoundCorner(new Size(1200, 350), 20));
         info.Mutate(x => x.DrawImage(cover, 1));
         info.Mutate(x => x.DrawImage(panel, 1));
+        cover.Dispose();
+        panel.Dispose();
 
         //avatar
         using var avatar = await Utils.LoadOrDownloadAvatar(data.userInfo);
         avatar.Mutate(x => x.Resize(190, 190).RoundCorner(new Size(190, 190), 40));
         info.Mutate(x => x.DrawImage(avatar, new Point(39, 55), 1));
 
-        // badge 取第一个绘制
-        if (data.badgeId[0] != -1)
+        // badge rendering
+        try
         {
-            try
+            int dbcountl = 0;
+            // Prefer badge image URLs from Kagami
+            if (data.badgeImageUrls.Count > 0)
             {
-                int dbcountl = 0;
+                foreach (var url in data.badgeImageUrls)
+                {
+                    if (string.IsNullOrEmpty(url)) continue;
+                    try
+                    {
+                        using var badgeStream = await url.GetStreamAsync();
+                        using var badge = await Img.LoadAsync<Rgba32>(badgeStream);
+                        badge.Mutate(x => x.Resize(86, 40));
+                        info.Mutate(x =>
+                            x.DrawImage(badge, new Point(272 + (dbcountl * 100), 152), 1)
+                        );
+                        ++dbcountl;
+                        if (dbcountl > 4) break;
+                    }
+                    catch { }
+                }
+            }
+            // Fallback to local badge files
+            else if (data.badgeId.Count > 0 && data.badgeId[0] != -1)
+            {
                 for (int i = 0; i < data.badgeId.Count; ++i)
                 {
                     if (data.badgeId[i] > -1)
@@ -124,25 +186,17 @@ public static class InfoV1
                         using var badge = await Img.LoadAsync<Rgba32>(
                             $"./work/badges/{data.badgeId[i]}.png"
                         );
-                        // var roundedCorner = true;
-                        // badge.ProcessPixelRows(row =>
-                        // {
-                        //     roundedCorner = row.GetRowSpan(0)[0] == Rgba32.ParseHex("#000000");
-                        // });
-                        // if (!roundedCorner)
-                        //     badge.Mutate(x => x.RoundCorner(badge.Size, 20));
-                        badge.Mutate(x => x.Resize(86, 40)); //.RoundCorner(new Size(86, 40), 5));
+                        badge.Mutate(x => x.Resize(86, 40));
                         info.Mutate(x =>
                             x.DrawImage(badge, new Point(272 + (dbcountl * 100), 152), 1)
                         );
                         ++dbcountl;
-                        if (dbcountl > 4)
-                            break;
+                        if (dbcountl > 4) break;
                     }
                 }
             }
-            catch { }
         }
+        catch { }
 
         // obj
 

@@ -265,51 +265,121 @@ namespace KanonBot.Functions.OSUBot
             
             if (DBUser != null)
             {
-                var badgeID = DBUser.displayed_badge_ids;
-                if (badgeID != null)
+                // Try to fetch badges + settings + images from Kagami via IAM
+                API.Kagami.KanonBotProfile? kagamiProfile = null;
+                API.Kagami.KanonImages? kagamiImages = null;
+                try
                 {
-                    try
+                    var iamCtx = await Accounts.ResolveIamUser(target);
+                    if (iamCtx != null)
                     {
-                        if (badgeID.Contains(','))
+                        // Fetch profile (badges + panel settings) and images in parallel
+                        var profileTask = API.Kagami.Client.GetPublicKanonBotProfile(iamCtx.IamUserId);
+                        var imagesTask = API.Kagami.Client.GetKanonImages(iamCtx.IamUserId);
+                        await Task.WhenAll(profileTask, imagesTask);
+
+                        kagamiProfile = profileTask.Result;
+                        kagamiImages = imagesTask.Result;
+
+                        // Populate badges from Kagami
+                        if (kagamiProfile != null && kagamiProfile.InstalledBadges.Count > 0)
                         {
-                            var y = badgeID.Split(",");
-                            foreach (var x in y)
-                                data.badgeId.Add(int.Parse(x));
+                            data.badgeImageUrls = kagamiProfile.InstalledBadges
+                                .Where(b => !string.IsNullOrEmpty(b.ImageUrl))
+                                .Select(b => b.ImageUrl!)
+                                .ToList();
                         }
-                        else
+
+                        // Populate image URLs from Kagami
+                        if (kagamiImages != null)
                         {
-                            data.badgeId.Add(int.Parse(badgeID!));
+                            data.v1PanelUrl = kagamiImages.InfoPanelV1CoverImageUrl;
+                            data.v1CoverUrl = kagamiImages.InfoPanelV1ImageUrl;
+                            data.v2SideImageUrl = kagamiImages.InfoPanelV2ImageUrl;
+                            data.v2PanelUrl = kagamiImages.InfoPanelV2CoverImageUrl;
                         }
                     }
-                    catch
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex, "Failed to fetch data from Kagami, falling back to local DB");
+                }
+
+                // Fallback to local DB badge IDs if Kagami didn't provide any
+                if (data.badgeImageUrls.Count == 0)
+                {
+                    var badgeID = DBUser.displayed_badge_ids;
+                    if (badgeID != null)
+                    {
+                        try
+                        {
+                            if (badgeID.Contains(','))
+                            {
+                                var y = badgeID.Split(",");
+                                foreach (var x in y)
+                                    data.badgeId.Add(int.Parse(x));
+                            }
+                            else
+                            {
+                                data.badgeId.Add(int.Parse(badgeID!));
+                            }
+                        }
+                        catch
+                        {
+                            data.badgeId = [-1];
+                        }
+                    }
+                    else
                     {
                         data.badgeId = [-1];
                     }
                 }
-                else
+
+                // Read panel config from Kagami settings, fallback to local DB
+                var kagamiSettings = kagamiProfile?.KanonBot;
+                var panelVersionStr = kagamiImages?.InfoPanelDefaultVersion;
+                if (!string.IsNullOrEmpty(panelVersionStr))
                 {
-                    data.badgeId = [-1];
+                    custominfoengineVer = panelVersionStr.ToLowerInvariant() == "v2" ? 2 : 1;
                 }
+                else if (DBOsuInfo != null)
+                {
+                    custominfoengineVer = DBOsuInfo.customInfoEngineVer;
+                }
+
+                var colorModeStr = kagamiSettings?.InfoPanelV2ColorMode;
+                if (!string.IsNullOrEmpty(colorModeStr))
+                {
+                    var parsed = colorModeStr.ToLowerInvariant() switch
+                    {
+                        "custom" => Image.InfoV1.UserPanelData.CustomMode.Custom,
+                        "light" => Image.InfoV1.UserPanelData.CustomMode.Light,
+                        "dark" => Image.InfoV1.UserPanelData.CustomMode.Dark,
+                        _ => (Image.InfoV1.UserPanelData.CustomMode?)null
+                    };
+                    if (parsed != null)
+                    {
+                        data.customMode = parsed.Value;
+                        if (data.customMode == Image.InfoV1.UserPanelData.CustomMode.Custom)
+                            data.ColorConfigRaw = kagamiSettings!.InfoPanelV2CustomThemeJson ?? "";
+                    }
+                }
+                else if (DBOsuInfo != null)
+                {
+                    if (Enum.IsDefined(typeof(Image.InfoV1.UserPanelData.CustomMode), DBOsuInfo.InfoPanelV2_Mode))
+                    {
+                        data.customMode = (Image.InfoV1.UserPanelData.CustomMode)DBOsuInfo.InfoPanelV2_Mode;
+                        if (data.customMode == Image.InfoV1.UserPanelData.CustomMode.Custom)
+                            data.ColorConfigRaw = DBOsuInfo.InfoPanelV2_CustomMode!;
+                    }
+                }
+
+                if (DBOsuInfo != null)
+                    data.osuId = DBOsuInfo.osu_uid;
             }
             else
             {
                 data.badgeId = [-1];
-            }
-
-            if (DBOsuInfo != null)
-            {
-                custominfoengineVer = DBOsuInfo!.customInfoEngineVer;
-                data.osuId = DBOsuInfo!.osu_uid;
-                if (Enum.IsDefined(typeof(Image.InfoV1.UserPanelData.CustomMode), DBOsuInfo.InfoPanelV2_Mode))
-                {
-                    data.customMode = (Image.InfoV1.UserPanelData.CustomMode)DBOsuInfo.InfoPanelV2_Mode;
-                    if (data.customMode == Image.InfoV1.UserPanelData.CustomMode.Custom)
-                        data.ColorConfigRaw = DBOsuInfo.InfoPanelV2_CustomMode!;
-                }
-                else
-                {
-                    throw new Exception("未知的自定义模式");
-                }
             }
 
             if (command.special_panel) custominfoengineVer = custominfoengineVer == 1 ? 2 : 1;
