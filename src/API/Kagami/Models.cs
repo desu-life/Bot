@@ -13,11 +13,7 @@ public class KanonBotProfile
 
 public class KanonBotSettings
 {
-    public string? InfoPanelV1ImageUrl { get; set; }
-    public string? InfoPanelV2ImageUrl { get; set; }
-    public string? InfoPanelV1CoverImageUrl { get; set; }
-    public string? InfoPanelV2CoverImageUrl { get; set; }
-    public string? InfoPanelV2CustomThemeJson { get; set; }
+    public string infoPanelDefaultVersion { get; set; } = "v2";
     public string InfoPanelV2ColorMode { get; set; } = "light";
     public string PreferredGameMode { get; set; } = "osu";
     public string PpySbPreferredGameMode { get; set; } = "osu";
@@ -45,10 +41,11 @@ public class KanonImages
     public string? InfoPanelV2ImageUrl { get; set; }
     public string? InfoPanelV1CoverImageUrl { get; set; }
     public string? InfoPanelV2CoverImageUrl { get; set; }
+    public string? infoPanelV2CustomThemeJson { get; set; }
+    public string? InfoPanelV2ColorMode { get; set; }
     public string? InfoPanelDefaultVersion { get; set; }
     public string? PreferredGameMode { get; set; }
     public string? PpySbPreferredGameMode { get; set; }
-    public string? InfoPanelV2ColorMode { get; set; }
     [JsonConverter(typeof(FlexibleDateTimeOffsetConverter))]
     public DateTimeOffset? UpdatedAt { get; set; }
 }

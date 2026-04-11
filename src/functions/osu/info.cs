@@ -135,24 +135,21 @@ namespace KanonBot.Functions.OSUBot
             if (data.daysBefore > 0)
                 isDataOfDayAvaiavle = true;
 
-            int custominfoengineVer = 1;
+            int custominfoengineVer = 2;
             
             if (resolved.IamUserId != null)
             {
                 // Try to fetch badges + settings + images from Kagami via IAM
-                API.Kagami.KanonBotProfile? kagamiProfile = null;
                 API.Kagami.KanonImages? kagamiImages = null;
                 List<API.Kagami.UserBadgeResponse>? kagamiBadges = null;
                 try
                 {
                     var iamUserId = resolved.IamUserId;
                     // Fetch profile (panel settings), images, and badges in parallel
-                    var profileTask = API.Kagami.Client.GetPublicKanonBotProfile(iamUserId);
                     var imagesTask = API.Kagami.Client.GetKanonImages(iamUserId);
                     var badgesTask = API.Kagami.Client.GetUserWearBadges(iamUserId);
-                    await Task.WhenAll(profileTask, imagesTask, badgesTask);
+                    await Task.WhenAll(imagesTask, badgesTask);
 
-                    kagamiProfile = profileTask.Result;
                     kagamiImages = imagesTask.Result;
                     kagamiBadges = badgesTask.Result;
 
@@ -187,14 +184,13 @@ namespace KanonBot.Functions.OSUBot
                 }
 
                 // Read panel config from Kagami settings
-                var kagamiSettings = kagamiProfile?.KanonBot;
                 var panelVersionStr = kagamiImages?.InfoPanelDefaultVersion;
                 if (!string.IsNullOrEmpty(panelVersionStr))
                 {
                     custominfoengineVer = panelVersionStr.ToLowerInvariant() == "v2" ? 2 : 1;
                 }
 
-                var colorModeStr = kagamiSettings?.InfoPanelV2ColorMode;
+                var colorModeStr = kagamiImages?.InfoPanelV2ColorMode;
                 if (!string.IsNullOrEmpty(colorModeStr))
                 {
                     var parsed = colorModeStr.ToLowerInvariant() switch
@@ -208,7 +204,7 @@ namespace KanonBot.Functions.OSUBot
                     {
                         data.customMode = parsed.Value;
                         if (data.customMode == Image.InfoV1.UserPanelData.CustomMode.Custom)
-                            data.ColorConfigRaw = kagamiSettings!.InfoPanelV2CustomThemeJson ?? "";
+                            data.ColorConfigRaw = kagamiImages!.infoPanelV2CustomThemeJson ?? "";
                     }
                 }
                 data.osuId = resolved.OsuId;
@@ -229,7 +225,7 @@ namespace KanonBot.Functions.OSUBot
                 case 1:
                     img = await Image.InfoV1.DrawInfo(
                         data,
-                        !is_ppysb,
+                        resolved.IsRegistered,
                         isDataOfDayAvaiavle
                     );
                     await img.SaveAsync(stream, new PngEncoder());
@@ -267,7 +263,7 @@ namespace KanonBot.Functions.OSUBot
                         data,
                         allBP!,
                         v2Options,
-                        !is_ppysb,
+                        resolved.IsRegistered,
                         false,
                         isDataOfDayAvaiavle,
                         false,

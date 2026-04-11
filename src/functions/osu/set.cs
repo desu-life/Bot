@@ -8,7 +8,7 @@ namespace KanonBot.Functions.OSUBot
 {
     public class Setter
     {
-        private const string SettingsUrl = "https://hub.kagamistudio.com";
+        private const string SettingsUrl = "https://hub.kagamistudio.com/settings/";
 
         public static async Task Execute(Target target, string cmd)
         {

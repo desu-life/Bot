@@ -1045,38 +1045,6 @@ public static class OsuInfoPanelV2
         );
         info.Mutate(x => x.DrawImage(acc_300, new Point(2358, 611), 1));
 
-        #region junkcodes
-        //acc
-        //var v1infos = await OSU.GetUserWithV1API(data.userInfo.Id, data.userInfo.PlayMode);
-        //var v1info = v1infos!.First();
-        //var v1n50 = v1info.Count50;
-        //var v1n100 = v1info.Count100;
-        //var v1n300 = v1info.Count300;
-        //var v1totalhits = v1n50 + v1n100 + v1n300;
-        //50&100
-        //Img acc_background = new Image<Rgba32>(1443, 68);
-        //acc_background.Mutate(x => x.Fill(Color.ParseHex("#c3e7cb")));
-        //acc_background.Mutate(x => x.RoundCorner_Parts(new Size(1443, 68), 10, 10, 20, 20));
-        //info.Mutate(x => x.DrawImage(acc_background, new Point(2358, 611), 1));
-        //only 300
-        //Img acc_100 = new Image<Rgba32>((int)(1443.00 * ((double)v1n300 / (double)v1totalhits)), 68);
-        //acc_100.Mutate(x => x.Fill(Color.ParseHex("#a4d8b1")));
-        //acc_100.Mutate(x => x.RoundCorner_Parts(new Size((int)(1443.0 * ((double)v1n300 / (double)v1totalhits)), 68), 10, 10, 20, 20));
-        //info.Mutate(x => x.DrawImage(acc_100, new Point(2358, 611), 1));
-        /*
-        //100
-        Img acc_100 = new Image<Rgba32>((int)(1443.0 - 1443.00 * ((double)v1n50 / (double)v1totalhits)), 68);
-        acc_100.Mutate(x => x.Fill(Color.ParseHex("#a4d8b1")));
-        acc_100.Mutate(x => x.RoundCorner_Parts(new Size((int)(1443.0 - 1443.0 * ((double)v1n50 / (double)v1totalhits)), 68), 10, 10, 20, 20));
-        info.Mutate(x => x.DrawImage(acc_100, new Point(2358, 611), 1));
-        //300
-        Img acc_300 = new Image<Rgba32>((int)(1443.0 - 1443.0 * (((double)v1n50 + (double)v1n100) / (double)v1totalhits)), 68);
-        acc_300.Mutate(x => x.Fill(Color.ParseHex("#92cca7")));
-        acc_300.Mutate(x => x.RoundCorner_Parts(new Size((int)(1443.0 - 1443.0 * (((double)v1n50 + (double)v1n100) / (double)v1totalhits)), 68), 10, 10, 20, 20));
-        info.Mutate(x => x.DrawImage(acc_300, new Point(2358, 611), 1));
-        */
-        #endregion
-
         //top score image 先绘制top bp图片再覆盖面板
         //download background image
         if (allBP!.Length > 0)
@@ -2267,12 +2235,12 @@ public static class OsuInfoPanelV2
         // Prefer badge image URLs from Kagami
         if (data.badgeImageUrls != null && data.badgeImageUrls.Count > 0)
         {
-            for (int i = 0; i < data.badgeImageUrls.Count; ++i)
+            foreach (var (i, badgeUrl) in data.badgeImageUrls.Rev().Index())
             {
-                if (string.IsNullOrEmpty(data.badgeImageUrls[i])) continue;
+                if (string.IsNullOrEmpty(badgeUrl)) continue;
                 try
                 {
-                    using var badgeStream = await data.badgeImageUrls[i].GetStreamAsync();
+                    using var badgeStream = await badgeUrl.GetStreamAsync();
                     using var badge = await Img.LoadAsync<Rgba32>(badgeStream);
 
                     //绘制
