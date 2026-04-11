@@ -1,0 +1,5 @@
+﻿<Solution>
+  <Project Path="src\KanonBot.csproj" />
+  <Project Path="Tests\Tests.csproj" />
+  <Project Path="cli\cli.csproj" />
+</Solution>

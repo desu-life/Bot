@@ -158,21 +158,30 @@ public static class InfoV1
             // Prefer badge image URLs from Kagami
             if (data.badgeImageUrls.Count > 0)
             {
-                foreach (var url in data.badgeImageUrls)
+                var candidateUrls = data
+                    .badgeImageUrls
+                    .Where(url => !string.IsNullOrEmpty(url))
+                    .Take(5)
+                    .ToArray();
+
+                var badgeTasks = candidateUrls.Select(Utils.LoadImageFromUrlAsync).ToArray();
+                var badges = await Task.WhenAll(badgeTasks);
+
+                foreach (var badge in badges)
                 {
-                    if (string.IsNullOrEmpty(url)) continue;
-                    try
+                    if (badge is null)
+                        continue;
+
+                    using (badge)
                     {
-                        using var badgeStream = await url.GetStreamAsync();
-                        using var badge = await Img.LoadAsync<Rgba32>(badgeStream);
                         badge.Mutate(x => x.Resize(86, 40).RoundCorner(6));
                         info.Mutate(x =>
                             x.DrawImage(badge, new Point(272 + (dbcountl * 100), 152), 1)
                         );
                         ++dbcountl;
-                        if (dbcountl > 4) break;
+                        if (dbcountl > 4)
+                            break;
                     }
-                    catch { }
                 }
             }
         }
@@ -180,11 +189,15 @@ public static class InfoV1
 
         // obj
 
-        using var flags = await Img.LoadAsync($"./work/flags/{data.userInfo.Country!.Code}.png");
-        info.Mutate(x => x.DrawImage(flags, new Point(272, 212), 1));
-        using var modeicon = await Img.LoadAsync(
+        var flagsTask = Img.LoadAsync($"./work/flags/{data.userInfo.Country!.Code}.png");
+        var modeiconTask = Img.LoadAsync(
             $"./work/legacy/mode_icon/{data.userInfo.Mode.ToStr()}.png"
         );
+        await Task.WhenAll(flagsTask, modeiconTask);
+
+        using var flags = await flagsTask;
+        info.Mutate(x => x.DrawImage(flags, new Point(272, 212), 1));
+        using var modeicon = await modeiconTask;
         modeicon.Mutate(x => x.Resize(64, 64));
         info.Mutate(x => x.DrawImage(modeicon, new Point(1125, 10), 1));
 

@@ -876,6 +876,14 @@ public static class OsuInfoPanelV2
         ) = v2Options;
 
         var info = new Image<Rgba32>(4000, 2640);
+        var avatarTask = Utils.LoadOrDownloadAvatar(data.userInfo);
+        var profileModeIconTask = Utils.ReadImageRgba(
+            $"./work/panelv2/icons/mode_icon/profile/{data.userInfo.Mode.ToStr()}.png"
+        );
+        Task<Image<Rgba32>>? supporterIconTask =
+            data.userInfo.IsSupporter && DisplaySupporterStatus
+                ? Utils.ReadImageRgba("./work/panelv2/icons/supporter.png")
+                : null;
         //获取全部bp
 
         var prevStatistics = data.prevUserInfo?.Statistics ?? data.userInfo.Statistics; // 没有就为当前数据
@@ -1922,30 +1930,38 @@ public static class OsuInfoPanelV2
                 if (bpmods.Length > 0)
                 {
                     var otherbp_mods_pos_x = 2580;
-                    foreach (var x in bpmods)
+                    var modIconTasks = bpmods
+                        .Where(mod => File.Exists($"./work/mods_v2/2x/{mod.Acronym}.png"))
+                        .Select(async mod =>
+                        {
+                            var icon = await Img.LoadAsync<Rgba32>($"./work/mods_v2/2x/{mod.Acronym}.png");
+                            return (Mod: mod, Icon: icon);
+                        })
+                        .ToArray();
+
+                    var modIcons = await Task.WhenAll(modIconTasks);
+                    foreach (var (_, modicon) in modIcons)
                     {
-                        if (!File.Exists($"./work/mods_v2/2x/{x.Acronym}.png"))
-                            continue;
-                        using var modicon = await Img.LoadAsync(
-                            $"./work/mods_v2/2x/{x.Acronym}.png"
-                        );
-                        modicon.Mutate(x => x.Resize(90, 90).Brightness(ModIconBrightness));
-                        modicon.Mutate(x =>
-                            x.ProcessPixelRowsAsVector4(row =>
-                            {
-                                for (int p = 0; p < row.Length; p++)
-                                    if (row[p].W > 0.2f)
-                                        row[p].W = ModIconAlpha;
-                            })
-                        );
-                        info.Mutate(x =>
-                            x.DrawImage(
-                                modicon,
-                                new Point(otherbp_mods_pos_x, otherbp_mods_pos_y),
-                                1
-                            )
-                        );
-                        otherbp_mods_pos_x += 105;
+                        using (modicon)
+                        {
+                            modicon.Mutate(x => x.Resize(90, 90).Brightness(ModIconBrightness));
+                            modicon.Mutate(x =>
+                                x.ProcessPixelRowsAsVector4(row =>
+                                {
+                                    for (int p = 0; p < row.Length; p++)
+                                        if (row[p].W > 0.2f)
+                                            row[p].W = ModIconAlpha;
+                                })
+                            );
+                            info.Mutate(x =>
+                                x.DrawImage(
+                                    modicon,
+                                    new Point(otherbp_mods_pos_x, otherbp_mods_pos_y),
+                                    1
+                                )
+                            );
+                            otherbp_mods_pos_x += 105;
+                        }
                     }
                 }
                 otherbp_mods_pos_y += 186;
@@ -2235,14 +2251,26 @@ public static class OsuInfoPanelV2
         // Prefer badge image URLs from Kagami
         if (data.badgeImageUrls != null && data.badgeImageUrls.Count > 0)
         {
-            foreach (var (i, badgeUrl) in data.badgeImageUrls.Rev().Index())
-            {
-                if (string.IsNullOrEmpty(badgeUrl)) continue;
-                try
-                {
-                    using var badgeStream = await badgeUrl.GetStreamAsync();
-                    using var badge = await Img.LoadAsync<Rgba32>(badgeStream);
+            var badgeSources = data
+                .badgeImageUrls
+                .Rev()
+                .Index()
+                .Where(x => !string.IsNullOrEmpty(x.Item2))
+                .Select(x => (Index: x.Item1, Url: x.Item2))
+                .ToArray();
 
+            var badgeTasks = badgeSources
+                .Select(async x => (x.Index, Badge: await Utils.LoadImageFromUrlAsync(x.Url)))
+                .ToArray();
+            var badges = await Task.WhenAll(badgeTasks);
+
+            foreach (var (i, badge) in badges)
+            {
+                if (badge is null)
+                    continue;
+
+                using (badge)
+                {
                     //绘制
                     if (i < 5)
                     {
@@ -2291,7 +2319,6 @@ public static class OsuInfoPanelV2
                             );
                     }
                 }
-                catch { }
             }
         }
   
@@ -2299,7 +2326,7 @@ public static class OsuInfoPanelV2
         //osu!supporter
         if (data.userInfo.IsSupporter && DisplaySupporterStatus)
         {
-            using var temp = await Utils.ReadImageRgba($"./work/panelv2/icons/supporter.png");
+            using var temp = await supporterIconTask!;
             temp.Mutate(x => x.Resize(110, 110).Brightness(OsuSupporterIconBrightness));
             temp.Mutate(x =>
                 x.ProcessPixelRowsAsVector4(row =>
@@ -2313,7 +2340,7 @@ public static class OsuInfoPanelV2
         }
 
         //avatar
-        using var avatar = await Utils.LoadOrDownloadAvatar(data.userInfo);
+        using var avatar = await avatarTask;
 
         // 亮度
         avatar.Mutate(x => x.Brightness(AvatarBrightness));
@@ -2338,9 +2365,7 @@ public static class OsuInfoPanelV2
         );
 
         //osu!mode
-        using var osuprofilemode_icon = await Utils.ReadImageRgba(
-            $"./work/panelv2/icons/mode_icon/profile/{data.userInfo.Mode.ToStr()}.png"
-        );
+        using var osuprofilemode_icon = await profileModeIconTask;
         var osuprofilemode_text = "";
         if (data.modeString is null)
         {
