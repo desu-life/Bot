@@ -49,10 +49,10 @@ public class IamErrorResponse
 
 public class OsuBindingsResponse
 {
-    public List<string> OsuUids { get; set; } = [];
+    public List<long> OsuUids { get; set; } = [];
 }
 
 public class PpySbBindingsResponse
 {
-    public List<string> PpySbUids { get; set; } = [];
+    public List<long> PpySbUids { get; set; } = [];
 }

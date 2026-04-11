@@ -52,9 +52,9 @@ namespace KanonBot.Functions.OSU
         async public static Task<(long, TimeSpan)> UpdateUsers()
         {
             var stopwatch = Stopwatch.StartNew();
-            var userList = await Database.Client.GetOsuUserList();
+            var userList = await API.IAM.Client.GetOsuBindings();
 
-            await Parallel.ForEachAsync(userList, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (userID, _) => {
+            await Parallel.ForEachAsync(userList!.OsuUids, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (userID, _) => {
                 try
                 {
                     await UpdateUser(userID, false);
@@ -76,7 +76,7 @@ namespace KanonBot.Functions.OSU
                 try { File.Delete(file); } catch { }
             });
             
-            return (userList.Count, stopwatch.Elapsed);
+            return (userList.OsuUids.Count, stopwatch.Elapsed);
         }
 
         static readonly IReadOnlyList<API.OSU.Mode> modes = [API.OSU.Mode.OSU, API.OSU.Mode.Taiko, API.OSU.Mode.Fruits, API.OSU.Mode.Mania];
