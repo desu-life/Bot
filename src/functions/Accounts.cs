@@ -27,7 +27,6 @@ namespace KanonBot.Functions
             public long? OsuUid { get; set; }
             public long? PpysbUid { get; set; }
             public string? DisplayName { get; set; }
-            public Database.Model.UserOSU? OsuSettings { get; set; }
         }
 
         /// <summary>
@@ -71,18 +70,12 @@ namespace KanonBot.Functions
             if (bindings == null) return new UserContext { IamUserId = iamUserId };
 
             var osuUid = API.IAM.Client.ExtractOsuUid(bindings);
-            Database.Model.UserOSU? osuSettings = null;
-            if (osuUid.HasValue)
-            {
-                osuSettings = await Database.Client.GetOsuUser(osuUid.Value);
-            }
 
             return new UserContext
             {
                 IamUserId = iamUserId,
                 OsuUid = osuUid,
                 DisplayName = bindings.DisplayName ?? bindings.UserName,
-                OsuSettings = osuSettings
             };
         }
 
@@ -95,18 +88,12 @@ namespace KanonBot.Functions
             if (bindings == null) return null;
 
             var osuUid = API.IAM.Client.ExtractOsuUid(bindings);
-            Database.Model.UserOSU? osuSettings = null;
-            if (osuUid.HasValue)
-            {
-                osuSettings = await Database.Client.GetOsuUser(osuUid.Value);
-            }
 
             return new UserContext
             {
                 IamUserId = iamUserId,
                 OsuUid = osuUid,
                 DisplayName = bindings.DisplayName ?? bindings.UserName,
-                OsuSettings = osuSettings
             };
         }
 

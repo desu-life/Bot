@@ -121,6 +121,30 @@ public static class Client
     }
 
     /// <summary>
+    /// Get a user's role/permission snapshot for KanonBot integration.
+    /// GET /api/integrations/kanonbot/users/{userId}/permissions
+    /// </summary>
+    public static async Task<UserPermissionsResponse?> GetUserPermissions(string userId)
+    {
+        try
+        {
+            var resp = await Http()
+                .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "permissions")
+                .GetAsync();
+
+            if (resp.StatusCode == 200)
+                return await resp.GetJsonAsync<UserPermissionsResponse>();
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Kagami GetUserPermissions failed for {UserId}", userId);
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Set a user's osu! preferred game mode via bot integration.
     /// PUT /api/integrations/kanonbot/users/{userId}/game-mode
     /// </summary>

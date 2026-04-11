@@ -2256,6 +2256,7 @@ public static class OsuInfoPanelV2
                                         row[p].W = BadgeAlpha;
                             })
                         );
+                        badge.Mutate(x => x.RoundCorner(16));
                         if (data.userInfo.IsSupporter && DisplaySupporterStatus)
                             info.Mutate(x =>
                                 x.DrawImage(badge, new Point(3420 - i * 276, 93), 1)
@@ -2279,6 +2280,7 @@ public static class OsuInfoPanelV2
                                         row[p].W = BadgeAlpha;
                             })
                         );
+                        badge.Mutate(x => x.RoundCorner(8));
                         if (data.userInfo.IsSupporter && DisplaySupporterStatus)
                             info.Mutate(x =>
                                 x.DrawImage(badge, new Point(3414 - (i - 6) * 132, 223), 1)
@@ -2292,76 +2294,7 @@ public static class OsuInfoPanelV2
                 catch { }
             }
         }
-        // Fallback to local badge files
-        else if (data.badgeId != null)
-            if (data.badgeId.Count > 0)
-                if (data.badgeId[0] != -1)
-                {
-                    for (int i = 0; i < data.badgeId.Count; ++i)
-                    {
-                        if (data.badgeId[i] == -9)
-                            continue;
-
-                        if (!File.Exists($"./work/badges/{data.badgeId[i]}.png") && KanonBot.Config.inner!.dev!)
-                        {
-                            continue;
-                        }
-                        
-                        var (_badge, format) = await Utils.ReadImageRgbaWithFormat(
-                            $"./work/badges/{data.badgeId[i]}.png"
-                        );
-                        using var badge = _badge;
-                        if (format.DefaultMimeType.Trim().ToLower()[..3] != "png")
-                        {
-                            File.Delete($"./work/badges/{data.badgeId[i]}.png");
-                            badge.Save($"./work/badges/{data.badgeId[i]}.png", new PngEncoder());
-                        }
-
-                        //绘制
-                        if (i < 5)
-                        {
-                            badge.Mutate(x => x.Resize(236, 110).Brightness(BadgeBrightness));
-                            badge.Mutate(x =>
-                                x.ProcessPixelRowsAsVector4(row =>
-                                {
-                                    for (int p = 0; p < row.Length; p++)
-                                        if (row[p].W > 0.2f)
-                                            row[p].W = BadgeAlpha;
-                                })
-                            );
-                            if (data.userInfo.IsSupporter && DisplaySupporterStatus)
-                                info.Mutate(x =>
-                                    x.DrawImage(badge, new Point(3420 - i * 276, 93), 1)
-                                );
-                            else
-                                info.Mutate(x =>
-                                    x.DrawImage(badge, new Point(3566 - i * 276, 93), 1)
-                                );
-                        }
-                        else
-                        {
-                            badge.Mutate(x =>
-                                x.Brightness(BadgeBrightness).Resize(108, 50)
-                            );
-                            badge.Mutate(x =>
-                                x.ProcessPixelRowsAsVector4(row =>
-                                {
-                                    for (int p = 0; p < row.Length; p++)
-                                        if (row[p].W > 0.2f)
-                                            row[p].W = BadgeAlpha;
-                                })
-                            );
-                            if (data.userInfo.IsSupporter && DisplaySupporterStatus)
-                                info.Mutate(x =>
-                                    x.DrawImage(badge, new Point(3414 - (i - 6) * 132, 223), 1)
-                                );
-                            else
-                                info.Mutate(x =>
-                                    x.DrawImage(badge, new Point(3560 - (i - 6) * 132, 223), 1)
-                                );
-                        }
-                    }
-                }
+  
 
         //osu!supporter
         if (data.userInfo.IsSupporter && DisplaySupporterStatus)

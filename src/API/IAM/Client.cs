@@ -22,7 +22,6 @@ public static class Client
         Platform.OneBot => "qq",
         Platform.Guild => "qq-guild",
         Platform.Discord => "discord",
-        Platform.KOOK => "kook",
         _ => throw new NotSupportedException($"Platform {platform} is not supported for IAM integration")
     };
 
@@ -94,6 +93,54 @@ public static class Client
         {
             Log.Error(ex, "IAM SubmitVerification failed for {Provider}/{ExternalId}", provider, externalId);
             return VerifyResult.Error;
+        }
+    }
+
+    /// <summary>
+    /// Get all bound osu UIDs.
+    /// GET /api/integrations/bot/users/osu-bindings
+    /// </summary>
+    public static async Task<OsuBindingsResponse?> GetOsuBindings()
+    {
+        try
+        {
+            var resp = await Http()
+                .AppendPathSegments("api", "integrations", "bot", "users", "osu-bindings")
+                .GetAsync();
+
+            if (resp.StatusCode == 200)
+                return await resp.GetJsonAsync<OsuBindingsResponse>();
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "IAM GetOsuBindings failed");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Get all bound ppy.sb UIDs.
+    /// GET /api/integrations/bot/users/ppy-sb-bindings
+    /// </summary>
+    public static async Task<PpySbBindingsResponse?> GetPpySbBindings()
+    {
+        try
+        {
+            var resp = await Http()
+                .AppendPathSegments("api", "integrations", "bot", "users", "ppy-sb-bindings")
+                .GetAsync();
+
+            if (resp.StatusCode == 200)
+                return await resp.GetJsonAsync<PpySbBindingsResponse>();
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "IAM GetPpySbBindings failed");
+            return null;
         }
     }
 

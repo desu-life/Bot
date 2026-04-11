@@ -28,7 +28,6 @@ public static class InfoV1
         public OSU.Models.PPlusData.UserPerformancesNext? pplusInfo;
         public required long osuId; // 官方服务器的id
         public int daysBefore = 0;
-        public List<int> badgeId = [];
         public List<string> badgeImageUrls = [];
         public CustomMode customMode = CustomMode.Dark; //0=custom 1=light 2=dark
         public string ColorConfigRaw;
@@ -166,7 +165,7 @@ public static class InfoV1
                     {
                         using var badgeStream = await url.GetStreamAsync();
                         using var badge = await Img.LoadAsync<Rgba32>(badgeStream);
-                        badge.Mutate(x => x.Resize(86, 40));
+                        badge.Mutate(x => x.Resize(86, 40).RoundCorner(6));
                         info.Mutate(x =>
                             x.DrawImage(badge, new Point(272 + (dbcountl * 100), 152), 1)
                         );
@@ -174,25 +173,6 @@ public static class InfoV1
                         if (dbcountl > 4) break;
                     }
                     catch { }
-                }
-            }
-            // Fallback to local badge files
-            else if (data.badgeId.Count > 0 && data.badgeId[0] != -1)
-            {
-                for (int i = 0; i < data.badgeId.Count; ++i)
-                {
-                    if (data.badgeId[i] > -1)
-                    {
-                        using var badge = await Img.LoadAsync<Rgba32>(
-                            $"./work/badges/{data.badgeId[i]}.png"
-                        );
-                        badge.Mutate(x => x.Resize(86, 40));
-                        info.Mutate(x =>
-                            x.DrawImage(badge, new Point(272 + (dbcountl * 100), 152), 1)
-                        );
-                        ++dbcountl;
-                        if (dbcountl > 4) break;
-                    }
                 }
             }
         }

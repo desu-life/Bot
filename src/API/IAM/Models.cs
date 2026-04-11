@@ -46,3 +46,13 @@ public class IamErrorResponse
     public string Error { get; set; } = "";
     public string? Message { get; set; }
 }
+
+public class OsuBindingsResponse
+{
+    public List<string> OsuUids { get; set; } = [];
+}
+
+public class PpySbBindingsResponse
+{
+    public List<string> PpySbUids { get; set; } = [];
+}

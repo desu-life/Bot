@@ -178,11 +178,6 @@ namespace KanonBot.Functions.OSUBot
                     Log.Warning(ex, "Failed to fetch data from Kagami, falling back to local DB");
                 }
 
-                if (data.badgeImageUrls.Count == 0)
-                {
-                    data.badgeId = [-1];
-                }
-
                 // Read panel config from Kagami settings
                 var panelVersionStr = kagamiImages?.InfoPanelDefaultVersion;
                 if (!string.IsNullOrEmpty(panelVersionStr))
@@ -209,10 +204,7 @@ namespace KanonBot.Functions.OSUBot
                 }
                 data.osuId = resolved.OsuId;
             }
-            else
-            {
-                data.badgeId = [-1];
-            }
+
 
             if (command.special_panel) custominfoengineVer = custominfoengineVer == 1 ? 2 : 1;
 

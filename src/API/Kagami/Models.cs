@@ -68,3 +68,10 @@ public class UserBadgeResponse
     public bool IsExpired { get; set; }
     public int? WearSortOrder { get; set; }
 }
+
+public class UserPermissionsResponse
+{
+    public string UserId { get; set; } = "";
+    public List<string> Roles { get; set; } = [];
+    public List<string> Permissions { get; set; } = [];
+}
