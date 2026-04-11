@@ -62,12 +62,16 @@ namespace KanonBot.Functions.OSUBot
 
             API.OSU.Mode? preferedMode = null;
 
+            // 通过IAM获取用户偏好模式（非阻塞，失败则不设置）
             var AccInfo = Accounts.GetAccInfo(target);
-            var DBUser = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
-            if (DBUser is not null) {
-                var DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
-                preferedMode = DBOsuInfo?.osu_mode?.ToMode();
-            }
+            try {
+                var provider = API.IAM.Client.PlatformToProvider(AccInfo.platform);
+                var iamUserId = await API.IAM.Client.GetIamUserIdByExternalId(provider, AccInfo.uid);
+                if (iamUserId != null) {
+                    var kagamiProfile = await API.Kagami.Client.GetPublicKanonBotProfile(iamUserId);
+                    preferedMode = Accounts.KagamiModeToOsu(kagamiProfile?.KanonBot?.PreferredGameMode);
+                }
+            } catch { }
 
             beatmaps = await API.OSU.Client.SearchBeatmap(command.search_arg, null);
             if (beatmaps != null) {

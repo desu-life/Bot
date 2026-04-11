@@ -18,154 +18,28 @@ namespace KanonBot.Functions.OSUBot
         async public static Task Execute(Target target, string cmd)
         {
             #region 验证
-            long? osuID = null;
-            API.OSU.Mode? mode;
-            API.PPYSB.Mode? sbmode;
-            Database.Model.User? DBUser = null;
-            Database.Model.UserOSU? DBOsuInfo = null;
-            bool is_ppysb = false;
-
             // 解析指令
             var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Info);
-            mode = command.osu_mode;
-            sbmode = command.sb_osu_mode;
-            bool is_query_sb = command.sb_server;
+            var resolved = await Accounts.ResolveCommandUser(target, command);
+            if (resolved == null) return;
 
-            // 解析指令
-            if (command.self_query)
-            {
-                // 验证账户
-                var AccInfo = Accounts.GetAccInfo(target);
-                DBUser = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
-                if (DBUser == null)
-                {
-                    await target.reply("你还没有绑定 desu.life 账户，先使用 !reg 你的邮箱 来进行绑定或注册哦。");
-                    return;
-                }
-                // 验证账号信息
-                DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
-                if (DBOsuInfo == null)
-                {
-                    await target.reply("你还没有绑定osu账户，请使用 !bind osu 你的osu用户名 来绑定你的osu账户喵。");
-                    return;
-                }
-                
-                if (is_query_sb) {
-                    var sbdbinfo = await Accounts.CheckPpysbAccount(DBUser.uid);
-                    if (sbdbinfo == null)
-                    {
-                        await target.reply("请先绑定sb服。");
-                        return;
-                    }
-                    sbmode ??= sbdbinfo.mode?.ToPpysbMode();
-                    osuID = sbdbinfo.osu_uid;
-                    is_ppysb = true;
-                } else {
-                    mode ??= DBOsuInfo.osu_mode?.ToMode(); // 从数据库解析，理论上不可能错
-                    osuID = DBOsuInfo.osu_uid;
-                }
-            }
-            else
-            {
-                // 查询用户是否绑定
-                // 这里先按照at方法查询，查询不到就是普通用户查询
-                var (atOSU, atDBUser) = await Accounts.ParseAtOsu(command.osu_username);
-                if (atOSU.IsNone && !atDBUser.IsNone)
-                {
-                    DBUser = atDBUser.ValueUnsafe();
-                    DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
-                    if (DBOsuInfo == null)
-                    {
-                        await target.reply("ta还没有绑定osu账户呢。");
-                    }
-                    else
-                    {
-                        await target.reply("被办了。");
-                    }
-                    return;
-                }
-                else if (!atOSU.IsNone && atDBUser.IsNone)
-                {
-                    var _osuinfo = atOSU.ValueUnsafe();
-                    mode ??= _osuinfo.Mode;
-                    osuID = _osuinfo.Id;
-                }
-                else if (!atOSU.IsNone && !atDBUser.IsNone)
-                {
-                    DBUser = atDBUser.ValueUnsafe();
-                    DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
-                    var _osuinfo = atOSU.ValueUnsafe();
-                    mode ??= DBOsuInfo!.osu_mode?.ToMode()!.Value;
-                    osuID = _osuinfo.Id;
-                }
-                else
-                {
-                    // 普通查询
-                    if (is_query_sb) {
-                        var OnlineOsuInfo = await API.PPYSB.Client.GetUser(
-                            command.osu_username
-                        );
-                        if (OnlineOsuInfo != null)
-                        {
-                            var sbdbinfo = await Database.Client.GetPpysbUser(OnlineOsuInfo.Info.Id);
-                            if (sbdbinfo != null)
-                            {
-                                DBUser = await Accounts.GetAccountByPpysbUid(OnlineOsuInfo.Info.Id);
-                                if (DBUser != null) {
-                                    DBOsuInfo = await Accounts.CheckOsuAccount(DBUser.uid);
-                                }
-                                sbmode ??= sbdbinfo.mode?.ToPpysbMode();
-                            }
-
-                            sbmode ??= OnlineOsuInfo.Info.PreferredMode;
-                            osuID = OnlineOsuInfo.Info.Id;
-                            is_ppysb = true;
-                        }
-                        else
-                        {
-                            // 直接取消查询，简化流程
-                            await target.reply("猫猫没有找到此用户。");
-                            return;
-                        }
-                    } else {
-                        var OnlineOsuInfo = await API.OSU.Client.GetUser(
-                            command.osu_username,
-                            command.osu_mode ?? API.OSU.Mode.OSU
-                        );
-                        if (OnlineOsuInfo != null)
-                        {
-                            DBOsuInfo = await Database.Client.GetOsuUser(OnlineOsuInfo.Id);
-                            if (DBOsuInfo != null)
-                            {
-                                DBUser = await Accounts.GetAccountByOsuUid(OnlineOsuInfo.Id);
-                                mode ??= DBOsuInfo.osu_mode?.ToMode()!.Value;
-                            }
-                            mode ??= OnlineOsuInfo.Mode;
-                            osuID = OnlineOsuInfo.Id;
-                        }
-                        else
-                        {
-                            // 直接取消查询，简化流程
-                            await target.reply("猫猫没有找到此用户。");
-                            return;
-                        }
-                    }
-                }
-            }
+            long osuID = resolved.OsuId;
+            API.OSU.Mode? mode = resolved.Mode;
+            API.PPYSB.Mode? sbmode = resolved.SbMode;
+            bool is_ppysb = resolved.IsPpysb;
 
             // 验证osu信息
             API.OSU.Models.UserExtended? tempOsuInfo = null;
             API.PPYSB.Models.User? sbinfo = null;
             if (is_ppysb) {
-                sbinfo = await API.PPYSB.Client.GetUser(osuID!.Value);
+                sbinfo = await API.PPYSB.Client.GetUser(osuID);
                 tempOsuInfo = sbinfo?.ToOsu(sbmode);
             } else {
-                tempOsuInfo = await API.OSU.Client.GetUser(osuID!.Value, mode!.Value);
+                tempOsuInfo = await API.OSU.Client.GetUser(osuID, mode!.Value);
             }
             if (tempOsuInfo == null)
             {
                 await target.reply("猫猫没有找到此用户。");
-                // 中断查询
                 return;
             }
 
@@ -174,7 +48,7 @@ namespace KanonBot.Functions.OSUBot
             #region 获取信息
             Image.InfoV1.UserPanelData data = new()
             {
-                osuId = osuID!.Value,
+                osuId = osuID,
                 userInfo = tempOsuInfo!
             };
             // 覆写
@@ -194,13 +68,13 @@ namespace KanonBot.Functions.OSUBot
             else
             {
                 data.userInfo.Mode = mode!.Value;
-                if (DBOsuInfo != null)
+                if (resolved.OsuId > 0)
                 {
                     if (command.order_number > 0)
                     {
                         // 从数据库取指定天数前的记录
                         (data.daysBefore, data.prevUserInfo) = await Database.Client.GetOsuUserData(
-                            DBOsuInfo!.osu_uid,
+                            resolved.OsuId,
                             data.userInfo.Mode,
                             command.order_number
                         );
@@ -213,7 +87,7 @@ namespace KanonBot.Functions.OSUBot
                         try
                         {
                             (data.daysBefore, data.prevUserInfo) = await Database.Client.GetOsuUserData(
-                                DBOsuInfo!.osu_uid,
+                                resolved.OsuId,
                                 data.userInfo.Mode,
                                 0
                             );
@@ -232,7 +106,7 @@ namespace KanonBot.Functions.OSUBot
                 
                 if (data.userInfo.Mode == Mode.OSU)
                 {
-                    var d = await Client.PPlus.GetUserPlusDataNext(osuID!.Value);
+                    var d = await Client.PPlus.GetUserPlusDataNext(osuID);
                     if (d is not null)
                     {
                         data.pplusInfo = d.Performances;
@@ -240,7 +114,7 @@ namespace KanonBot.Functions.OSUBot
                     }
                     else
                     {
-                        d = await Database.Client.GetOsuPPlusDataNext(osuID!.Value);
+                        d = await Database.Client.GetOsuPPlusDataNext(osuID);
                         if (d is not null)
                         {
                             data.pplusInfo = d.Performances;
@@ -263,41 +137,43 @@ namespace KanonBot.Functions.OSUBot
 
             int custominfoengineVer = 1;
             
-            if (DBUser != null)
+            if (resolved.IamUserId != null)
             {
                 // Try to fetch badges + settings + images from Kagami via IAM
                 API.Kagami.KanonBotProfile? kagamiProfile = null;
                 API.Kagami.KanonImages? kagamiImages = null;
+                List<API.Kagami.UserBadgeResponse>? kagamiBadges = null;
                 try
                 {
-                    var iamCtx = await Accounts.ResolveIamUser(target);
-                    if (iamCtx != null)
+                    var iamUserId = resolved.IamUserId;
+                    // Fetch profile (panel settings), images, and badges in parallel
+                    var profileTask = API.Kagami.Client.GetPublicKanonBotProfile(iamUserId);
+                    var imagesTask = API.Kagami.Client.GetKanonImages(iamUserId);
+                    var badgesTask = API.Kagami.Client.GetUserWearBadges(iamUserId);
+                    await Task.WhenAll(profileTask, imagesTask, badgesTask);
+
+                    kagamiProfile = profileTask.Result;
+                    kagamiImages = imagesTask.Result;
+                    kagamiBadges = badgesTask.Result;
+
+                    // Populate badges from Kagami
+                    if (kagamiBadges != null && kagamiBadges.Count > 0)
                     {
-                        // Fetch profile (badges + panel settings) and images in parallel
-                        var profileTask = API.Kagami.Client.GetPublicKanonBotProfile(iamCtx.IamUserId);
-                        var imagesTask = API.Kagami.Client.GetKanonImages(iamCtx.IamUserId);
-                        await Task.WhenAll(profileTask, imagesTask);
+                        data.badgeImageUrls = kagamiBadges
+                            .Where(b => !string.IsNullOrEmpty(b.ImageUrl))
+                            .Select(b => API.Kagami.Client.NormalizeAssetUrl(b.ImageUrl))
+                            .Where(url => !string.IsNullOrEmpty(url))
+                            .Select(url => url!)
+                            .ToList();
+                    }
 
-                        kagamiProfile = profileTask.Result;
-                        kagamiImages = imagesTask.Result;
-
-                        // Populate badges from Kagami
-                        if (kagamiProfile != null && kagamiProfile.InstalledBadges.Count > 0)
-                        {
-                            data.badgeImageUrls = kagamiProfile.InstalledBadges
-                                .Where(b => !string.IsNullOrEmpty(b.ImageUrl))
-                                .Select(b => b.ImageUrl!)
-                                .ToList();
-                        }
-
-                        // Populate image URLs from Kagami
-                        if (kagamiImages != null)
-                        {
-                            data.v1PanelUrl = kagamiImages.InfoPanelV1CoverImageUrl;
-                            data.v1CoverUrl = kagamiImages.InfoPanelV1ImageUrl;
-                            data.v2SideImageUrl = kagamiImages.InfoPanelV2ImageUrl;
-                            data.v2PanelUrl = kagamiImages.InfoPanelV2CoverImageUrl;
-                        }
+                    // Populate image URLs from Kagami
+                    if (kagamiImages != null)
+                    {
+                        data.v1PanelUrl = API.Kagami.Client.NormalizeAssetUrl(kagamiImages.InfoPanelV1ImageUrl);
+                        data.v1CoverUrl = API.Kagami.Client.NormalizeAssetUrl(kagamiImages.InfoPanelV1CoverImageUrl);
+                        data.v2SideImageUrl = API.Kagami.Client.NormalizeAssetUrl(kagamiImages.InfoPanelV2CoverImageUrl);
+                        data.v2PanelUrl = API.Kagami.Client.NormalizeAssetUrl(kagamiImages.InfoPanelV2ImageUrl);
                     }
                 }
                 catch (Exception ex)
@@ -305,46 +181,17 @@ namespace KanonBot.Functions.OSUBot
                     Log.Warning(ex, "Failed to fetch data from Kagami, falling back to local DB");
                 }
 
-                // Fallback to local DB badge IDs if Kagami didn't provide any
                 if (data.badgeImageUrls.Count == 0)
                 {
-                    var badgeID = DBUser.displayed_badge_ids;
-                    if (badgeID != null)
-                    {
-                        try
-                        {
-                            if (badgeID.Contains(','))
-                            {
-                                var y = badgeID.Split(",");
-                                foreach (var x in y)
-                                    data.badgeId.Add(int.Parse(x));
-                            }
-                            else
-                            {
-                                data.badgeId.Add(int.Parse(badgeID!));
-                            }
-                        }
-                        catch
-                        {
-                            data.badgeId = [-1];
-                        }
-                    }
-                    else
-                    {
-                        data.badgeId = [-1];
-                    }
+                    data.badgeId = [-1];
                 }
 
-                // Read panel config from Kagami settings, fallback to local DB
+                // Read panel config from Kagami settings
                 var kagamiSettings = kagamiProfile?.KanonBot;
                 var panelVersionStr = kagamiImages?.InfoPanelDefaultVersion;
                 if (!string.IsNullOrEmpty(panelVersionStr))
                 {
                     custominfoengineVer = panelVersionStr.ToLowerInvariant() == "v2" ? 2 : 1;
-                }
-                else if (DBOsuInfo != null)
-                {
-                    custominfoengineVer = DBOsuInfo.customInfoEngineVer;
                 }
 
                 var colorModeStr = kagamiSettings?.InfoPanelV2ColorMode;
@@ -364,18 +211,7 @@ namespace KanonBot.Functions.OSUBot
                             data.ColorConfigRaw = kagamiSettings!.InfoPanelV2CustomThemeJson ?? "";
                     }
                 }
-                else if (DBOsuInfo != null)
-                {
-                    if (Enum.IsDefined(typeof(Image.InfoV1.UserPanelData.CustomMode), DBOsuInfo.InfoPanelV2_Mode))
-                    {
-                        data.customMode = (Image.InfoV1.UserPanelData.CustomMode)DBOsuInfo.InfoPanelV2_Mode;
-                        if (data.customMode == Image.InfoV1.UserPanelData.CustomMode.Custom)
-                            data.ColorConfigRaw = DBOsuInfo.InfoPanelV2_CustomMode!;
-                    }
-                }
-
-                if (DBOsuInfo != null)
-                    data.osuId = DBOsuInfo.osu_uid;
+                data.osuId = resolved.OsuId;
             }
             else
             {
@@ -393,7 +229,7 @@ namespace KanonBot.Functions.OSUBot
                 case 1:
                     img = await Image.InfoV1.DrawInfo(
                         data,
-                        DBOsuInfo != null,
+                        !is_ppysb,
                         isDataOfDayAvaiavle
                     );
                     await img.SaveAsync(stream, new PngEncoder());
@@ -431,7 +267,7 @@ namespace KanonBot.Functions.OSUBot
                         data,
                         allBP!,
                         v2Options,
-                        DBOsuInfo != null,
+                        !is_ppysb,
                         false,
                         isDataOfDayAvaiavle,
                         false,

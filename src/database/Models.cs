@@ -35,7 +35,7 @@ public class Model
     public class ChatBot
     {
         [PrimaryKey]
-        public int uid { get; set; }
+        public string uid { get; set; } = "";
 
         [Column]
         public string? botdefine { get; set; }

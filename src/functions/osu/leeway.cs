@@ -14,7 +14,6 @@ namespace KanonBot.Functions.OSUBot
         async public static Task Execute(Target target, string cmd)
         {
             API.OSU.Models.User? OnlineOsuInfo;
-            Database.Model.UserOSU DBOsuInfo;
 
             // 解析指令
             var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Leeway);
@@ -23,21 +22,33 @@ namespace KanonBot.Functions.OSUBot
             command.osu_mode ??= API.OSU.Mode.OSU;
             if (command.osu_mode is not API.OSU.Mode.OSU) { await target.reply("Leeway仅支持osu!std模式。"); return; }
 
-            // 验证账户
+            // 验证账户 (via IAM)
             var AccInfo = Accounts.GetAccInfo(target);
-            Database.Model.User? DBUser;
-            DBUser = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
-            if (DBUser == null)
-            { await target.reply("你还没有绑定 desu.life 账户，先使用 !reg 你的邮箱 来进行绑定或注册哦。"); return; }
+            string provider;
+            try
+            {
+                provider = API.IAM.Client.PlatformToProvider(AccInfo.platform);
+            }
+            catch (NotSupportedException)
+            {
+                await target.reply("当前平台暂不支持此功能。");
+                return;
+            }
+
+            var iamUserId = await API.IAM.Client.GetIamUserIdByExternalId(provider, AccInfo.uid);
+            if (iamUserId == null)
+            { await target.reply("你还没有绑定 desu.life 账户，请先在 https://iam.neonprizma.com 注册并使用 !reg 验证码 进行绑定。"); return; }
+
+            var bindings = await API.IAM.Client.GetUserBindings(iamUserId);
+            if (bindings == null)
+            { await target.reply("获取账户信息失败，请稍后再试。"); return; }
+
+            var osuUid = API.IAM.Client.ExtractOsuUid(bindings);
+            if (!osuUid.HasValue)
+            { await target.reply("你还没有绑定osu! 账户，请前往 https://iam.neonprizma.com 绑定。"); return; }
 
             // 验证osu信息
-            var _u = await Database.Client.GetUsersByUID(AccInfo.uid, AccInfo.platform);
-            DBOsuInfo = (await Accounts.CheckOsuAccount(_u!.uid))!;
-            if (DBOsuInfo == null)
-            { await target.reply("你还没有绑定osu账户，请使用 !bind osu 你的osu用户名 来绑定你的osu账户喵。"); return; }
-
-            // 验证osu信息
-            OnlineOsuInfo = await API.OSU.Client.GetUser(DBOsuInfo.osu_uid);
+            OnlineOsuInfo = await API.OSU.Client.GetUser(osuUid.Value);
             //}
             //else
             //{

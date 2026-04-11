@@ -7,23 +7,33 @@ public static class Client
     private static string BaseUrl => config.kagami?.baseUrl ?? "https://hub.kagamistudio.com";
 
     private static IFlurlRequest Http() =>
-        BaseUrl.AllowHttpStatus("400,404");
-
-    private static IFlurlRequest HttpWithApiKey() =>
         BaseUrl
             .WithHeader("X-Api-Key", config.kagami?.apiKey ?? "")
             .AllowHttpStatus("400,401,404");
 
     /// <summary>
-    /// Get public KanonBot profile including worn badges and panel image URLs.
-    /// GET /api/users/{userId}/public-kanonbot
+    /// Convert a Kagami asset URL to absolute form.
+    /// API may return relative paths like /uploads/xxx.webp.
+    /// </summary>
+    public static string? NormalizeAssetUrl(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return null;
+        if (Uri.TryCreate(url, UriKind.Absolute, out _)) return url;
+
+        var baseUri = new Uri(BaseUrl.EndsWith("/") ? BaseUrl : BaseUrl + "/");
+        return new Uri(baseUri, url.TrimStart('/')).ToString();
+    }
+
+    /// <summary>
+    /// Get KanonBot profile including worn badges and panel settings.
+    /// GET /api/integrations/kanonbot/users/{userId}/profile
     /// </summary>
     public static async Task<KanonBotProfile?> GetPublicKanonBotProfile(string userId)
     {
         try
         {
             var resp = await Http()
-                .AppendPathSegments("api", "users", userId, "public-kanonbot")
+                .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "profile")
                 .GetAsync();
 
             if (resp.StatusCode == 200)
@@ -39,15 +49,15 @@ public static class Client
     }
 
     /// <summary>
-    /// Get all 4 kanon image slot URLs for a user.
-    /// GET /api/users/{userId}/kanon-images
+    /// Get all kanon image slot URLs for a user.
+    /// GET /api/integrations/kanonbot/users/{userId}/images
     /// </summary>
     public static async Task<KanonImages?> GetKanonImages(string userId)
     {
         try
         {
             var resp = await Http()
-                .AppendPathSegments("api", "users", userId, "kanon-images")
+                .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "images")
                 .GetAsync();
 
             if (resp.StatusCode == 200)
@@ -63,15 +73,39 @@ public static class Client
     }
 
     /// <summary>
-    /// Get user's worn badges via badge service.
-    /// GET /api/badges/users/{userId}/wears
+    /// Get all user's badges.
+    /// GET /api/integrations/kanonbot/users/{userId}/badges
+    /// </summary>
+    public static async Task<List<UserBadgeResponse>?> GetUserBadges(string userId)
+    {
+        try
+        {
+            var resp = await Http()
+                .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "badges")
+                .GetAsync();
+
+            if (resp.StatusCode == 200)
+                return await resp.GetJsonAsync<List<UserBadgeResponse>>();
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Kagami GetUserBadges failed for {UserId}", userId);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Get user's worn badges.
+    /// GET /api/integrations/kanonbot/users/{userId}/badges/wears
     /// </summary>
     public static async Task<List<UserBadgeResponse>?> GetUserWearBadges(string userId)
     {
         try
         {
             var resp = await Http()
-                .AppendPathSegments("api", "badges", "users", userId, "wears")
+                .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "badges", "wears")
                 .GetAsync();
 
             if (resp.StatusCode == 200)
@@ -94,7 +128,7 @@ public static class Client
     {
         try
         {
-            var resp = await HttpWithApiKey()
+            var resp = await Http()
                 .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "ppysb-game-mode")
                 .PutJsonAsync(new { gameMode });
 

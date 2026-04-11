@@ -20,18 +20,26 @@ namespace KanonBot.Functions.OSUBot
                 }
 
 
-                var AccInfo = Accounts.GetAccInfo(target);
-                var DBUser = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
-                if (DBUser == null)
-                { await target.reply("你还没有绑定 desu.life 账户，先使用 !reg 你的邮箱 来进行绑定或注册哦。"); return; }
+                // 通过IAM获取自身osu uid
+                var accInfo = Accounts.GetAccInfo(target);
+                string provider;
+                try { provider = API.IAM.Client.PlatformToProvider(accInfo.platform); }
+                catch (NotSupportedException) { await target.reply("当前平台暂不支持此功能。"); return; }
 
-                var _u = await Database.Client.GetUsersByUID(AccInfo.uid, AccInfo.platform);
-                var DBOsuInfo = (await Accounts.CheckOsuAccount(_u!.uid))!;
-                if (DBOsuInfo == null)
-                { await target.reply("你还没有绑定osu账户，请使用 !bind osu 你的osu用户名 来绑定你的osu账户喵。"); return; }
+                var iamUserId = await API.IAM.Client.GetIamUserIdByExternalId(provider, accInfo.uid);
+                if (iamUserId == null)
+                { await target.reply("你还没有绑定 desu.life 账户，请先在 https://iam.neonprizma.com 注册并使用 !reg 验证码 进行绑定。"); return; }
+
+                var bindings = await API.IAM.Client.GetUserBindings(iamUserId);
+                if (bindings == null)
+                { await target.reply("获取账户信息失败，请稍后再试。"); return; }
+
+                var osuUid = API.IAM.Client.ExtractOsuUid(bindings);
+                if (!osuUid.HasValue)
+                { await target.reply("你还没有绑定 osu! 账户，请前往 https://iam.neonprizma.com 绑定。"); return; }
 
                 // 分别获取两位的信息
-                var userSelf = await API.OSU.Client.GetUser(DBOsuInfo.osu_uid);
+                var userSelf = await API.OSU.Client.GetUser(osuUid.Value);
                 if (userSelf == null)
                 {
                     await target.reply("被办了。");

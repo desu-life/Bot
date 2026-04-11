@@ -10,11 +10,11 @@ namespace KanonBot.API
     public partial class OpenAI
     {
         private static Config.Base config = Config.inner!;
-        private static ConcurrentDictionary<long, List<string>> ChatHistoryDict = new();
+        private static ConcurrentDictionary<string, List<string>> ChatHistoryDict = new();
 
         private static readonly int ChatBotMemorySpan = 20;
 
-        public static async Task<string> Chat(string chatmsg, string name, long uid)
+        public static async Task<string> Chat(string chatmsg, string name, string uid)
         {
             OpenAIAPI? api;
             Conversation? chat;

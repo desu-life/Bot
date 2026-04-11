@@ -54,6 +54,36 @@ public class Misc
         Output.WriteLine(Utils.ForStarDifficulty(3.5).ToString());
     }
 
+        [Fact]
+        public void IamBindingsTimestampDeserialize()
+        {
+                var json = """
+                {
+                    "userId": "d505966d-54c3-40ed-bd90-e93b99b07398",
+                    "userName": "Zh_Jk",
+                    "displayName": "水瓶",
+                    "avatarUrl": "/avatars/d505966d-54c3-40ed-bd90-e93b99b07398?v=0",
+                    "createAt": 1775382990862,
+                    "lastLoginAt": null,
+                    "bindings": {
+                        "qq": "1071814607",
+                        "discord": "972128335851294782",
+                        "qqGuild": "11174521116880165171",
+                        "osu": "9037287",
+                        "ppySb": null
+                    }
+                }
+                """;
+
+                var result = Json.Deserialize<KanonBot.API.IAM.UserBindingsResponse>(json);
+
+                Assert.NotNull(result);
+                Assert.Equal("Zh_Jk", result!.UserName);
+                Assert.Equal(DateTimeOffset.FromUnixTimeMilliseconds(1775382990862), result.CreateAt);
+                Assert.Null(result.LastLoginAt);
+                Assert.Equal("9037287", result.Bindings.Osu);
+        }
+
     [Fact]
     public void MsgChain()
     {

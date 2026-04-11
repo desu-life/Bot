@@ -802,7 +802,7 @@ public class Client
     }
 
     public static async Task<bool> UpdateChatBotInfo(
-        long uid,
+        string uid,
         string botdefine,
         string openaikey,
         string organization
@@ -813,7 +813,7 @@ public class Client
         var result = await db.InsertOrReplaceAsync(
             new Model.ChatBot()
             {
-                uid = (int)uid,
+                uid = uid,
                 botdefine = botdefine,
                 openaikey = openaikey,
                 organization = organization
@@ -822,7 +822,7 @@ public class Client
         return result > 0;
     }
 
-    public static async Task<Model.ChatBot?> GetChatBotInfo(long uid)
+    public static async Task<Model.ChatBot?> GetChatBotInfo(string uid)
     {
         using var db = GetInstance();
         return await db.ChatBot.Where(it => it.uid == uid).FirstOrDefaultAsync();

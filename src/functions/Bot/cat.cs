@@ -12,52 +12,25 @@ namespace KanonBot.Functions.OSUBot
         {
             if (target.platform != Platform.OneBot) return;
 
-            // 验证账户
-            Database.Model.User? DBUser = null;
-            var AccInfo = Accounts.GetAccInfo(target);
-            DBUser = await Accounts.GetAccount(AccInfo.uid, AccInfo.platform);
-            if (DBUser == null)
+            // 通过IAM验证账户
+            var accInfo = Accounts.GetAccInfo(target);
+            string provider;
+            try { provider = API.IAM.Client.PlatformToProvider(accInfo.platform); }
+            catch (NotSupportedException) { await target.reply("当前平台暂不支持此功能。"); return; }
+
+            var iamUserId = await API.IAM.Client.GetIamUserIdByExternalId(provider, accInfo.uid);
+            if (iamUserId == null)
             {
-                await target.reply("你还没有绑定 desu.life 账户，先使用 !reg 你的邮箱 来进行绑定或注册哦。");
+                await target.reply("你还没有绑定 desu.life 账户，请先在 https://iam.neonprizma.com 注册并使用 !reg 验证码 进行绑定。");
                 return;
             }
 
             bool chatbot_premission = false, custom_chatbot_premission = false;
 
-            List<string> permissions = new();
-            if (DBUser!.permissions!.IndexOf(";") < 1) //一般不会出错，默认就是user
-            {
-                permissions.Add(DBUser.permissions);
-            }
-            else
-            {
-                var t1 = DBUser.permissions.Split(";");
-                foreach (var x in t1)
-                {
-                    permissions.Add(x);
-                }
-            }
-            //判断权限
-            foreach (var x in permissions)
-            {
-                switch (x)
-                {
-                    case "chatbot":
-                        chatbot_premission = true;
-                        custom_chatbot_premission = true;
-                        break;
-                    case "mod":
-                        chatbot_premission = true;
-                        custom_chatbot_premission = true;
-                        break;
-                    case "admin":
-                        chatbot_premission = true;
-                        custom_chatbot_premission = true;
-                        break;
-                    default:
-                        break;
-                }
-            }
+            // TODO: 权限检查暂时移除，待IAM添加角色查询接口后恢复
+            // 目前所有绑定用户均可使用chatbot
+            chatbot_premission = true;
+            custom_chatbot_premission = true;
 
             switch (target.raw)
             {
@@ -125,7 +98,7 @@ namespace KanonBot.Functions.OSUBot
                                 return;
                             }
 
-                            if (await Database.Client.UpdateChatBotInfo(DBUser.uid, botdefine, openaikey, organization))
+                            if (await Database.Client.UpdateChatBotInfo(iamUserId, botdefine, openaikey, organization))
                                 await target.reply("成功了喵！");
                             else
                                 await target.reply("失败了喵...");
@@ -147,7 +120,7 @@ namespace KanonBot.Functions.OSUBot
             try
             {
                 if (chatbot_premission)
-                    await target.reply(await OpenAI.Chat(cmd, target.sender!, DBUser.uid));
+                    await target.reply(await OpenAI.Chat(cmd, target.sender!, iamUserId));
                 else
                     await target.reply("你没有使用chatbot的权限呢T^T");
             }

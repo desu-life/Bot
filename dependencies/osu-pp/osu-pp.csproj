@@ -7,6 +7,8 @@
     <Nullable>enable</Nullable>
     <Optimize>true</Optimize>
     <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
 
   <ItemGroup>

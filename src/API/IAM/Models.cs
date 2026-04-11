@@ -1,3 +1,6 @@
+using KanonBot.Serializer;
+using Newtonsoft.Json;
+
 namespace KanonBot.API.IAM;
 
 public class SubmitVerificationRequest
@@ -11,20 +14,31 @@ public class BoundUserLookupResponse
     public string UserId { get; set; } = "";
 }
 
-public class IamUserProfile
+public class PpysbBoundUsersLookupResponse
+{
+    public List<string> UserIds { get; set; } = [];
+}
+
+public class UserBindingsResponse
 {
     public string UserId { get; set; } = "";
     public string UserName { get; set; } = "";
     public string? DisplayName { get; set; }
     public string? AvatarUrl { get; set; }
-    public List<ExternalUidInfo> ExternalUids { get; set; } = [];
+    [JsonConverter(typeof(FlexibleDateTimeOffsetConverter))]
+    public DateTimeOffset? CreateAt { get; set; }
+    [JsonConverter(typeof(FlexibleDateTimeOffsetConverter))]
+    public DateTimeOffset? LastLoginAt { get; set; }
+    public UserBindings Bindings { get; set; } = new();
 }
 
-public class ExternalUidInfo
+public class UserBindings
 {
-    public string Provider { get; set; } = "";
-    public string Uid { get; set; } = "";
-    public string? DisplayName { get; set; }
+    public string? Qq { get; set; }
+    public string? Discord { get; set; }
+    public string? QqGuild { get; set; }
+    public string? Osu { get; set; }
+    public string? PpySb { get; set; }
 }
 
 public class IamErrorResponse

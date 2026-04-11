@@ -120,14 +120,8 @@ public class Config
         [TomlProperty("base_url")]
         public string baseUrl { get; set; } = "https://iam.neonprizma.com";
 
-        [TomlProperty("discord_api_key")]
-        public string? discordApiKey { get; set; }
-
-        [TomlProperty("qq_api_key")]
-        public string? qqApiKey { get; set; }
-
-        [TomlProperty("qq_guild_api_key")]
-        public string? qqGuildApiKey { get; set; }
+        [TomlProperty("api_key")]
+        public string? apiKey { get; set; }
     }
 
     public class Kagami
@@ -363,9 +357,7 @@ public class Config
                 iam = new()
                 {
                     baseUrl = "https://iam.neonprizma.com",
-                    discordApiKey = "",
-                    qqApiKey = "",
-                    qqGuildApiKey = ""
+                    apiKey = ""
                 },
                 kagami = new()
                 {

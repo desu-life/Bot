@@ -1,3 +1,6 @@
+using KanonBot.Serializer;
+using Newtonsoft.Json;
+
 namespace KanonBot.API.Kagami;
 
 public class KanonBotProfile
@@ -29,8 +32,10 @@ public class InstalledBadge
     public string? ImageUrl { get; set; }
     public string Summary { get; set; } = "";
     public int WearSortOrder { get; set; }
-    public DateTime GrantedAt { get; set; }
-    public DateTime? ExpiresAt { get; set; }
+    [JsonConverter(typeof(FlexibleDateTimeOffsetConverter))]
+    public DateTimeOffset GrantedAt { get; set; }
+    [JsonConverter(typeof(FlexibleDateTimeOffsetConverter))]
+    public DateTimeOffset? ExpiresAt { get; set; }
 }
 
 public class KanonImages
@@ -44,7 +49,8 @@ public class KanonImages
     public string? PreferredGameMode { get; set; }
     public string? PpySbPreferredGameMode { get; set; }
     public string? InfoPanelV2ColorMode { get; set; }
-    public DateTime? UpdatedAt { get; set; }
+    [JsonConverter(typeof(FlexibleDateTimeOffsetConverter))]
+    public DateTimeOffset? UpdatedAt { get; set; }
 }
 
 public class UserBadgeResponse
@@ -56,9 +62,12 @@ public class UserBadgeResponse
     public string NameZh { get; set; } = "";
     public string Summary { get; set; } = "";
     public string? ImageUrl { get; set; }
-    public DateTime GrantedAt { get; set; }
-    public DateTime? ExpiresAt { get; set; }
-    public DateTime? RevokedAt { get; set; }
+    [JsonConverter(typeof(FlexibleDateTimeOffsetConverter))]
+    public DateTimeOffset GrantedAt { get; set; }
+    [JsonConverter(typeof(FlexibleDateTimeOffsetConverter))]
+    public DateTimeOffset? ExpiresAt { get; set; }
+    [JsonConverter(typeof(FlexibleDateTimeOffsetConverter))]
+    public DateTimeOffset? RevokedAt { get; set; }
     public bool IsExpired { get; set; }
     public int? WearSortOrder { get; set; }
 }
