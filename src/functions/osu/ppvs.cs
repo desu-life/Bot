@@ -105,10 +105,8 @@ namespace KanonBot.Functions.OSUBot
                 data.u1Name = user2.Username;
                 data.u1 = d2.Performances;
 
-                using var stream = new MemoryStream();
                 using var img = await Image.PPVS.DrawPPVS(data);
-                await img.SaveAsync(stream, new JpegEncoder());
-                await target.reply(new Chain().image(Convert.ToBase64String(stream.ToArray(), 0, (int)stream.Length), ImageSegment.Type.Base64));
+                await target.reply(img, new JpegEncoder());
             } else if (cmds.Length == 2) {
                 if (cmds[0].Length == 0 || cmds[1].Length == 0)
                 {
@@ -154,10 +152,8 @@ namespace KanonBot.Functions.OSUBot
                 data.u1 = d2.Performances;
 
 
-                using var stream = new MemoryStream();
                 using var img = await Image.PPVS.DrawPPVS(data);
-                await img.SaveAsync(stream, new JpegEncoder());
-                await target.reply(new Chain().image(Convert.ToBase64String(stream.ToArray(), 0, (int)stream.Length), ImageSegment.Type.Base64));
+                await target.reply(img, new JpegEncoder());
             } else {
                 await target.reply("!ppvs 用户1#用户2/!ppvs 要对比的用户");
             }

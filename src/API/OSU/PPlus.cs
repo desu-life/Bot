@@ -78,7 +78,10 @@ namespace KanonBot.API.OSU
             }
 
             // 执行带token的请求，自动处理401重试
-            private static async Task<IFlurlResponse> ExecuteRequestWithToken(Func<IFlurlRequest> requestBuilder)
+            private static async Task<IFlurlResponse> ExecuteRequestWithToken(
+                Func<IFlurlRequest> requestBuilder,
+                bool isPost = false
+            )
             {
                 // 确保有有效token
                 if (!await EnsureValidToken())
@@ -92,7 +95,7 @@ namespace KanonBot.API.OSU
                     request = request.WithHeader("Authorization", $"Bearer {Token}");
                 }
 
-                var response = await request.GetAsync();
+                var response = isPost ? await request.PostAsync() : await request.GetAsync();
 
                 // 如果收到401，尝试刷新token并重试一次
                 if (response.StatusCode == 401)
@@ -106,47 +109,9 @@ namespace KanonBot.API.OSU
                         {
                             retryRequest = retryRequest.WithHeader("Authorization", $"Bearer {Token}");
                         }
-                        response = await retryRequest.GetAsync();
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException("token刷新失败，无法完成请求");
-                    }
-                }
-
-                return response;
-            }
-
-            // 执行带token的POST请求，自动处理401重试
-            private static async Task<IFlurlResponse> ExecutePostRequestWithToken(Func<IFlurlRequest> requestBuilder)
-            {
-                // 确保有有效token
-                if (!await EnsureValidToken())
-                {
-                    throw new InvalidOperationException("无法获取有效的访问token");
-                }
-
-                var request = requestBuilder();
-                if (!string.IsNullOrEmpty(Token))
-                {
-                    request = request.WithHeader("Authorization", $"Bearer {Token}");
-                }
-
-                var response = await request.PostAsync();
-
-                // 如果收到401，尝试刷新token并重试一次
-                if (response.StatusCode == 401)
-                {
-                    Log.Warning("收到401响应，尝试刷新token并重试");
-                    
-                    if (await RefreshToken())
-                    {
-                        var retryRequest = requestBuilder();
-                        if (!string.IsNullOrEmpty(Token))
-                        {
-                            retryRequest = retryRequest.WithHeader("Authorization", $"Bearer {Token}");
-                        }
-                        response = await retryRequest.PostAsync();
+                        response = isPost
+                            ? await retryRequest.PostAsync()
+                            : await retryRequest.GetAsync();
                     }
                     else
                     {
@@ -187,10 +152,11 @@ namespace KanonBot.API.OSU
             {
                 try
                 {
-                    var response = await ExecutePostRequestWithToken(() => 
+                    var response = await ExecuteRequestWithToken(() => 
                         pplus()
                             .AppendPathSegments("player", "update")
-                            .SetQueryParam("id", uid)
+                            .SetQueryParam("id", uid),
+                        isPost: true
                     );
 
                     if (response.StatusCode == 404)

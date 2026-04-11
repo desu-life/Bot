@@ -213,16 +213,8 @@ namespace KanonBot.Functions.OSUBot
             data.scoreInfo.StartedAt = DateTime.UtcNow;
             data.scoreInfo.Score = 1000000;
 
-            using var stream = new MemoryStream();
             using var img = await Image.ScoreV2.DrawScore(data);
-            await img.SaveAsync(stream, new JpegEncoder());
-            await target.reply(
-                new Chain()
-                    .image(
-                        Convert.ToBase64String(stream.ToArray(), 0, (int)stream.Length),
-                        ImageSegment.Type.Base64
-                    )
-            );
+            await target.reply(img, new JpegEncoder());
         }
     }
 }

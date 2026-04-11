@@ -27,14 +27,7 @@ namespace KanonBot.Functions.OSUBot
             bool is_ppysb = resolved.IsPpysb;
 
             // 验证osu信息
-            API.OSU.Models.UserExtended? tempOsuInfo = null;
-            API.PPYSB.Models.User? sbinfo = null;
-            if (is_ppysb) {
-                sbinfo = await API.PPYSB.Client.GetUser(osuID);
-                tempOsuInfo = sbinfo?.ToOsu(sbmode);
-            } else {
-                tempOsuInfo = await API.OSU.Client.GetUser(osuID, mode!.Value);
-            }
+            var (tempOsuInfo, sbinfo) = await Utils.ResolveOsuUser(resolved);
             if (tempOsuInfo == null)
             {
                 await target.reply("猫猫没有找到此用户。");
@@ -145,15 +138,8 @@ namespace KanonBot.Functions.OSUBot
             Image.ScoreV2.ScorePanelData data;
             data = await UniversalCalculator.CalculatePanelData(scoreData, command.special_version_pp ? (is_ppysb ? CalculatorKind.Sb : CalculatorKind.Old) : CalculatorKind.Unset);
 
-            using var stream = new MemoryStream();
             using var img = await Image.ScoreV2.DrawScore(data);
-            await img.SaveAsync(stream, new JpegEncoder());
-            await target.reply(
-                new Chain().image(
-                    Convert.ToBase64String(stream.ToArray(), 0, (int)stream.Length),
-                    ImageSegment.Type.Base64
-                )
-            );
+            await target.reply(img, new JpegEncoder());
         }
     }
 }

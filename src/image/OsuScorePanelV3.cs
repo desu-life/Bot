@@ -110,17 +110,7 @@ namespace KanonBot.Image
             };
 
             //Beatmap infos
-            var temp_string = "";
-            foreach (char c in data.scoreInfo.Beatmapset!.Title)
-            {
-                temp_string += c;
-                var m = TextMeasurer.MeasureSize(temp_string, textOptions);
-                if (m.Width > 1130)
-                {
-                    temp_string += "...";
-                    break;
-                }
-            }
+            var temp_string = Utils.TruncateTextByWidth(data.scoreInfo.Beatmapset!.Title, textOptions, 1130);
             textOptions.Font = TorusSemiBold.Get(100);
             textOptions.Origin = new PointF(769, 160);
             scoreimg.Mutate(
@@ -132,17 +122,7 @@ namespace KanonBot.Image
             );
 
             //creator
-            temp_string = "";
-            foreach (char c in data.scoreInfo.Beatmapset.Creator)
-            {
-                temp_string += c;
-                var m = TextMeasurer.MeasureSize(temp_string, textOptions);
-                if (m.Width > 810)
-                {
-                    temp_string += "...";
-                    break;
-                }
-            }
+            temp_string = Utils.TruncateTextByWidth(data.scoreInfo.Beatmapset.Creator, textOptions, 810);
             textOptions.Font = TorusRegular.Get(60);
             textOptions.Origin = new PointF(1070, 234);
             scoreimg.Mutate(
@@ -151,17 +131,7 @@ namespace KanonBot.Image
             );
 
             // artist
-            temp_string = "";
-            foreach (char c in data.scoreInfo.Beatmapset.Artist)
-            {
-                temp_string += c;
-                var m = TextMeasurer.MeasureSize(temp_string, textOptions);
-                if (m.Width > 450)
-                {
-                    temp_string += "...";
-                    break;
-                }
-            }
+            temp_string = Utils.TruncateTextByWidth(data.scoreInfo.Beatmapset.Artist, textOptions, 450);
             textOptions.Origin = new PointF(1005, 322);
             scoreimg.Mutate(
                 x => x.DrawText(textOptions,  temp_string, Color.ParseHex("#6cac9c"))
@@ -225,17 +195,7 @@ namespace KanonBot.Image
             //version
             textOptions.Font = TorusRegular.Get(40);
 
-            temp_string = "";
-            foreach (char c in data.scoreInfo.Beatmap.Version)
-            {
-                temp_string += c;
-                var m = TextMeasurer.MeasureSize(temp_string, textOptions);
-                if (m.Width > 740)
-                {
-                    temp_string += "...";
-                    break;
-                }
-            }
+            temp_string = Utils.TruncateTextByWidth(data.scoreInfo.Beatmap.Version, textOptions, 740);
 
             textOptions.Origin = new PointF(924, 480);
             scoreimg.Mutate(

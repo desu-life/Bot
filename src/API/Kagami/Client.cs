@@ -30,22 +30,9 @@ public static class Client
     /// </summary>
     public static async Task<KanonBotProfile?> GetPublicKanonBotProfile(string userId)
     {
-        try
-        {
-            var resp = await Http()
-                .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "profile")
-                .GetAsync();
-
-            if (resp.StatusCode == 200)
-                return await resp.GetJsonAsync<KanonBotProfile>();
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Kagami GetPublicKanonBotProfile failed for {UserId}", userId);
-            return null;
-        }
+        return await Http()
+            .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "profile")
+            .TryGetJsonAsync<KanonBotProfile>();
     }
 
     /// <summary>
@@ -54,22 +41,9 @@ public static class Client
     /// </summary>
     public static async Task<KanonImages?> GetKanonImages(string userId)
     {
-        try
-        {
-            var resp = await Http()
-                .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "images")
-                .GetAsync();
-
-            if (resp.StatusCode == 200)
-                return await resp.GetJsonAsync<KanonImages>();
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Kagami GetKanonImages failed for {UserId}", userId);
-            return null;
-        }
+        return await Http()
+            .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "images")
+            .TryGetJsonAsync<KanonImages>();
     }
 
     /// <summary>
@@ -78,22 +52,9 @@ public static class Client
     /// </summary>
     public static async Task<List<UserBadgeResponse>?> GetUserBadges(string userId)
     {
-        try
-        {
-            var resp = await Http()
-                .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "badges")
-                .GetAsync();
-
-            if (resp.StatusCode == 200)
-                return await resp.GetJsonAsync<List<UserBadgeResponse>>();
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Kagami GetUserBadges failed for {UserId}", userId);
-            return null;
-        }
+        return await Http()
+            .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "badges")
+            .TryGetJsonAsync<List<UserBadgeResponse>>();
     }
 
     /// <summary>
@@ -102,22 +63,9 @@ public static class Client
     /// </summary>
     public static async Task<List<UserBadgeResponse>?> GetUserWearBadges(string userId)
     {
-        try
-        {
-            var resp = await Http()
-                .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "badges", "wears")
-                .GetAsync();
-
-            if (resp.StatusCode == 200)
-                return await resp.GetJsonAsync<List<UserBadgeResponse>>();
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Kagami GetUserWearBadges failed for {UserId}", userId);
-            return null;
-        }
+        return await Http()
+            .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "badges", "wears")
+            .TryGetJsonAsync<List<UserBadgeResponse>>();
     }
 
     /// <summary>
@@ -126,22 +74,9 @@ public static class Client
     /// </summary>
     public static async Task<UserPermissionsResponse?> GetUserPermissions(string userId)
     {
-        try
-        {
-            var resp = await Http()
-                .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "permissions")
-                .GetAsync();
-
-            if (resp.StatusCode == 200)
-                return await resp.GetJsonAsync<UserPermissionsResponse>();
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Kagami GetUserPermissions failed for {UserId}", userId);
-            return null;
-        }
+        return await Http()
+            .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "permissions")
+            .TryGetJsonAsync<UserPermissionsResponse>();
     }
 
     /// <summary>
@@ -150,19 +85,11 @@ public static class Client
     /// </summary>
     public static async Task<bool> SetGameMode(string userId, string gameMode)
     {
-        try
-        {
-            var resp = await Http()
-                .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "game-mode")
-                .PutJsonAsync(new { gameMode });
+        var status = await Http()
+            .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "game-mode")
+            .TryPutJsonGetStatusAsync(new { gameMode });
 
-            return resp.StatusCode == 200;
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Kagami SetGameMode failed for {UserId} mode={Mode}", userId, gameMode);
-            return false;
-        }
+        return status == 200;
     }
 
     /// <summary>
@@ -171,18 +98,10 @@ public static class Client
     /// </summary>
     public static async Task<bool> SetPpySbGameMode(string userId, string gameMode)
     {
-        try
-        {
-            var resp = await Http()
-                .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "ppysb-game-mode")
-                .PutJsonAsync(new { gameMode });
+        var status = await Http()
+            .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "ppysb-game-mode")
+            .TryPutJsonGetStatusAsync(new { gameMode });
 
-            return resp.StatusCode == 200;
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Kagami SetPpySbGameMode failed for {UserId} mode={Mode}", userId, gameMode);
-            return false;
-        }
+        return status == 200;
     }
 }

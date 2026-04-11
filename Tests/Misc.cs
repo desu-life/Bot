@@ -32,18 +32,6 @@ public class Misc
     }
 
     [Fact]
-    public void Kaiheila()
-    {
-        var req = new KanonBot.Drivers.Kook.Models.MessageCreate
-        {
-            MessageType = KanonBot.Drivers.Kook.Enums.MessageType.Text,
-            TargetId = "123",
-            Content = "hi"
-        };
-        Output.WriteLine(Json.Serialize(req));
-    }
-
-    [Fact]
     public void UtilsTest()
     {
         Assert.Equal("osu", Utils.GetObjectDescription(API.OSU.Mode.OSU));
@@ -97,7 +85,7 @@ public class Misc
         var c1 = OneBot.Message.Build(c);
         Assert.Equal("[{\"type\":\"at\",\"data\":{\"qq\":\"zhjk\"}}]", Json.Serialize(c1));
         var c2 = OneBot.Message.Parse(c1);
-        Assert.Equal("<at;OneBot=zhjk>", c2.ToString());
+        Assert.Equal("qq=zhjk", c2.ToString());
     }
 
     // [Fact]

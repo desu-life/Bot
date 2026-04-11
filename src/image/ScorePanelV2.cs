@@ -170,17 +170,7 @@ public static class ScoreV2
             FallbackFontFamilies = [HarmonySans, HarmonySansArabic]
         };
         // beatmap_info
-        var title = "";
-        foreach (char c in data.scoreInfo.Beatmapset!.Title)
-        {
-            title += c;
-            var m = TextMeasurer.MeasureSize(title, textOptions);
-            if (m.Width > 725)
-            {
-                title += "...";
-                break;
-            }
-        }
+        var title = Utils.TruncateTextByWidth(data.scoreInfo.Beatmapset!.Title, textOptions, 725);
         textOptions.Origin = new PointF(499, 110);
         score.Mutate(x =>
             x.DrawText(textOptions,  title, Color.Black)
@@ -191,17 +181,7 @@ public static class ScoreV2
         );
         // artist
         textOptions.Font = TorusRegular.Get(40);
-        var artist = "";
-        foreach (char c in data.scoreInfo.Beatmapset.Artist)
-        {
-            artist += c;
-            var m = TextMeasurer.MeasureSize(artist, textOptions);
-            if (m.Width > 205)
-            {
-                artist += "...";
-                break;
-            }
-        }
+        var artist = Utils.TruncateTextByWidth(data.scoreInfo.Beatmapset.Artist, textOptions, 205);
         textOptions.Origin = new PointF(519, 178);
         score.Mutate(x =>
             x.DrawText(textOptions,  artist, Color.Black)
@@ -211,17 +191,7 @@ public static class ScoreV2
             x.DrawText(textOptions,  artist, Color.White)
         );
         // creator
-        var creator = "";
-        foreach (char c in data.scoreInfo.Beatmapset.Creator)
-        {
-            creator += c;
-            var m = TextMeasurer.MeasureSize(creator, textOptions);
-            if (m.Width > 145)
-            {
-                creator += "...";
-                break;
-            }
-        }
+        var creator = Utils.TruncateTextByWidth(data.scoreInfo.Beatmapset.Creator, textOptions, 145);
         textOptions.Origin = new PointF(795, 178);
         score.Mutate(x =>
             x.DrawText(textOptions,  creator, Color.Black)

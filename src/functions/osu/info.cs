@@ -29,14 +29,7 @@ namespace KanonBot.Functions.OSUBot
             bool is_ppysb = resolved.IsPpysb;
 
             // 验证osu信息
-            API.OSU.Models.UserExtended? tempOsuInfo = null;
-            API.PPYSB.Models.User? sbinfo = null;
-            if (is_ppysb) {
-                sbinfo = await API.PPYSB.Client.GetUser(osuID);
-                tempOsuInfo = sbinfo?.ToOsu(sbmode);
-            } else {
-                tempOsuInfo = await API.OSU.Client.GetUser(osuID, mode!.Value);
-            }
+            var (tempOsuInfo, sbinfo) = await Utils.ResolveOsuUser(resolved);
             if (tempOsuInfo == null)
             {
                 await target.reply("猫猫没有找到此用户。");
@@ -208,7 +201,6 @@ namespace KanonBot.Functions.OSUBot
 
             if (command.special_panel) custominfoengineVer = custominfoengineVer == 1 ? 2 : 1;
 
-            using var stream = new MemoryStream();
             //info默认输出高质量图片？
             SixLabors.ImageSharp.Image img;
             API.OSU.Models.ScoreLazer[]? allBP = [];
@@ -220,7 +212,6 @@ namespace KanonBot.Functions.OSUBot
                         resolved.IsRegistered,
                         isDataOfDayAvaiavle
                     );
-                    await img.SaveAsync(stream, new PngEncoder());
                     break;
                 case 2:
                     var v2Options = data.customMode switch
@@ -262,21 +253,12 @@ namespace KanonBot.Functions.OSUBot
                         kind: command.special_version_pp ? (is_ppysb ? CalculatorKind.Sb : CalculatorKind.Old) : CalculatorKind.Unset
                     );
                     
-                    await img.SaveAsync(stream, new PngEncoder());
                     break;
                 default:
                     return;
             }
             // 关闭流
-            img.Dispose();
-
-
-            await target.reply(
-                new Chain().image(
-                    Convert.ToBase64String(stream.ToArray(), 0, (int)stream.Length),
-                    ImageSegment.Type.Base64
-                )
-            );
+            using (img) await target.reply(img, new PngEncoder());
 
             if (Config.inner!.dev) return;
             _ = Task.Run(async () => {

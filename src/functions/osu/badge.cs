@@ -3,6 +3,7 @@ using Flurl.Http;
 using KanonBot.Drivers;
 using KanonBot.Message;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using static KanonBot.Functions.Accounts;
@@ -86,9 +87,7 @@ namespace KanonBot.Functions.OSUBot
                 {
                     using var imgStream = await badge.ImageUrl.GetStreamAsync();
                     using var badgeImg = await Img.LoadAsync<Rgba32>(imgStream);
-                    using var outStream = new MemoryStream();
-                    await badgeImg.SaveAsync(outStream, new PngEncoder());
-                    rtmsg.image(Convert.ToBase64String(outStream.ToArray(), 0, (int)outStream.Length), ImageSegment.Type.Base64);
+                    await target.reply(badgeImg, new JpegEncoder());
                 }
                 catch (Exception ex)
                 {

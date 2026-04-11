@@ -43,25 +43,11 @@ public static class Client
             _ => throw new NotSupportedException($"Unknown provider: {provider}")
         };
 
-        try
-        {
-            var resp = await Http()
-                .AppendPathSegments("api", "integrations", "bot", "users", segment, externalId)
-                .GetAsync();
+        var result = await Http()
+            .AppendPathSegments("api", "integrations", "bot", "users", segment, externalId)
+            .TryGetJsonAsync<BoundUserLookupResponse>();
 
-            if (resp.StatusCode == 200)
-            {
-                var result = await resp.GetJsonAsync<BoundUserLookupResponse>();
-                return result?.UserId;
-            }
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "IAM GetIamUserIdByExternalId failed for {Provider}/{ExternalId}", provider, externalId);
-            return null;
-        }
+        return result?.UserId;
     }
 
     /// <summary>
@@ -70,30 +56,22 @@ public static class Client
     /// </summary>
     public static async Task<VerifyResult> SubmitVerification(string provider, string code, string externalId)
     {
-        try
-        {
-            var resp = await Http()
-                .AppendPathSegments("api", "integrations", "bot", "verify")
-                .PostJsonAsync(new SubmitVerificationRequest
-                {
-                    Code = code,
-                    ExternalId = externalId
-                });
-
-            return resp.StatusCode switch
+        var status = await Http()
+            .AppendPathSegments("api", "integrations", "bot", "verify")
+            .TryPostJsonGetStatusAsync(new SubmitVerificationRequest
             {
-                200 => VerifyResult.Success,
-                404 => VerifyResult.InvalidCode,
-                401 => VerifyResult.InvalidApiKey,
-                500 => VerifyResult.Misconfigured,
-                _ => VerifyResult.Error
-            };
-        }
-        catch (Exception ex)
+                Code = code,
+                ExternalId = externalId
+            });
+
+        return status switch
         {
-            Log.Error(ex, "IAM SubmitVerification failed for {Provider}/{ExternalId}", provider, externalId);
-            return VerifyResult.Error;
-        }
+            200 => VerifyResult.Success,
+            404 => VerifyResult.InvalidCode,
+            401 => VerifyResult.InvalidApiKey,
+            500 => VerifyResult.Misconfigured,
+            _ => VerifyResult.Error
+        };
     }
 
     /// <summary>
@@ -102,22 +80,9 @@ public static class Client
     /// </summary>
     public static async Task<OsuBindingsResponse?> GetOsuBindings()
     {
-        try
-        {
-            var resp = await Http()
-                .AppendPathSegments("api", "integrations", "bot", "users", "osu-bindings")
-                .GetAsync();
-
-            if (resp.StatusCode == 200)
-                return await resp.GetJsonAsync<OsuBindingsResponse>();
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "IAM GetOsuBindings failed");
-            return null;
-        }
+        return await Http()
+            .AppendPathSegments("api", "integrations", "bot", "users", "osu-bindings")
+            .TryGetJsonAsync<OsuBindingsResponse>();
     }
 
     /// <summary>
@@ -126,22 +91,9 @@ public static class Client
     /// </summary>
     public static async Task<PpySbBindingsResponse?> GetPpySbBindings()
     {
-        try
-        {
-            var resp = await Http()
-                .AppendPathSegments("api", "integrations", "bot", "users", "ppy-sb-bindings")
-                .GetAsync();
-
-            if (resp.StatusCode == 200)
-                return await resp.GetJsonAsync<PpySbBindingsResponse>();
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "IAM GetPpySbBindings failed");
-            return null;
-        }
+        return await Http()
+            .AppendPathSegments("api", "integrations", "bot", "users", "ppy-sb-bindings")
+            .TryGetJsonAsync<PpySbBindingsResponse>();
     }
 
     /// <summary>
@@ -150,22 +102,9 @@ public static class Client
     /// </summary>
     public static async Task<UserBindingsResponse?> GetUserBindings(string userId)
     {
-        try
-        {
-            var resp = await Http()
-                .AppendPathSegments("api", "integrations", "bot", "users", userId, "bindings")
-                .GetAsync();
-
-            if (resp.StatusCode == 200)
-                return await resp.GetJsonAsync<UserBindingsResponse>();
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "IAM GetUserBindings failed for {UserId}", userId);
-            return null;
-        }
+        return await Http()
+            .AppendPathSegments("api", "integrations", "bot", "users", userId, "bindings")
+            .TryGetJsonAsync<UserBindingsResponse>();
     }
 
     /// <summary>
@@ -194,25 +133,11 @@ public static class Client
     /// </summary>
     public static async Task<string?> GetIamUserIdByOsuUid(long osuUid)
     {
-        try
-        {
-            var resp = await Http()
-                .AppendPathSegments("api", "integrations", "bot", "users", "by-osu", osuUid.ToString())
-                .GetAsync();
+        var result = await Http()
+            .AppendPathSegments("api", "integrations", "bot", "users", "by-osu", osuUid.ToString())
+            .TryGetJsonAsync<BoundUserLookupResponse>();
 
-            if (resp.StatusCode == 200)
-            {
-                var result = await resp.GetJsonAsync<BoundUserLookupResponse>();
-                return result?.UserId;
-            }
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "IAM GetIamUserIdByOsuUid failed for {OsuUid}", osuUid);
-            return null;
-        }
+        return result?.UserId;
     }
 
     /// <summary>
@@ -222,24 +147,10 @@ public static class Client
     /// </summary>
     public static async Task<List<string>?> GetIamUserIdsByPpysbUid(long ppysbUid)
     {
-        try
-        {
-            var resp = await Http()
-                .AppendPathSegments("api", "integrations", "bot", "users", "by-ppy-sb", ppysbUid.ToString())
-                .GetAsync();
+        var result = await Http()
+            .AppendPathSegments("api", "integrations", "bot", "users", "by-ppy-sb", ppysbUid.ToString())
+            .TryGetJsonAsync<PpysbBoundUsersLookupResponse>();
 
-            if (resp.StatusCode == 200)
-            {
-                var result = await resp.GetJsonAsync<PpysbBoundUsersLookupResponse>();
-                return result?.UserIds;
-            }
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "IAM GetIamUserIdsByPpysbUid failed for {PpysbUid}", ppysbUid);
-            return null;
-        }
+        return result?.UserIds;
     }
 }

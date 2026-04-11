@@ -17,7 +17,8 @@ namespace KanonBot.Functions.OSUBot
             // 解析指令
             var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Info);
             var resolved = await Accounts.ResolveCommandUser(target, command);
-            if (resolved == null) return;
+            if (resolved == null)
+                return;
 
             long osuID = resolved.OsuId;
             API.OSU.Mode? mode = resolved.Mode;
@@ -25,14 +26,7 @@ namespace KanonBot.Functions.OSUBot
             bool is_ppysb = resolved.IsPpysb;
 
             // 验证osu信息
-            API.OSU.Models.UserExtended? tempOsuInfo = null;
-            API.PPYSB.Models.User? sbinfo = null;
-            if (is_ppysb) {
-                sbinfo = await API.PPYSB.Client.GetUser(osuID);
-                tempOsuInfo = sbinfo?.ToOsu(sbmode);
-            } else {
-                tempOsuInfo = await API.OSU.Client.GetUser(osuID, mode!.Value);
-            }
+            var (tempOsuInfo, sbinfo) = await Utils.ResolveOsuUser(resolved);
             if (tempOsuInfo == null)
             {
                 await target.reply("猫猫没有找到此用户。");
@@ -41,7 +35,8 @@ namespace KanonBot.Functions.OSUBot
 
             API.OSU.Models.ScoreLazer[]? scoreInfos = null;
 
-            if (is_ppysb) {
+            if (is_ppysb)
+            {
                 var ss = await API.PPYSB.Client.GetUserScores(
                     osuID,
                     API.PPYSB.UserScoreType.Best,
@@ -51,7 +46,9 @@ namespace KanonBot.Functions.OSUBot
                     includeFails
                 );
                 scoreInfos = ss?.Map(s => s.ToOsu(sbinfo!, sbmode!.Value)).ToArray();
-            } else {
+            }
+            else
+            {
                 scoreInfos = await API.OSU.Client.GetUserScores(
                     osuID,
                     API.OSU.UserScoreType.Best,
@@ -83,17 +80,18 @@ namespace KanonBot.Functions.OSUBot
 
                     if (bp_time >= t)
                     {
-                        scores.Add(new Image.ScoreList.ScoreRank {
-                            Score = item,
-                            Rank = i + 1
-                        });
+                        scores.Add(new Image.ScoreList.ScoreRank { Score = item, Rank = i + 1 });
                     }
                 }
 
-                if (scores.Count == 0) {
-                    if (command.self_query) {
+                if (scores.Count == 0)
+                {
+                    if (command.self_query)
+                    {
                         await target.reply($"你今天在 {tempOsuInfo.Mode.ToStr()} 模式上还没有新bp呢。。");
-                    } else {
+                    }
+                    else
+                    {
                         await target.reply(
                             $"{tempOsuInfo.Username} 今天在 {tempOsuInfo.Mode.ToStr()} 模式上还没有新bp呢。。"
                         );
@@ -101,11 +99,21 @@ namespace KanonBot.Functions.OSUBot
                     return;
                 }
 
-                await Parallel.ForEachAsync(scores, async (s, _) => {
-                    var b = await Utils.LoadOrDownloadBeatmap(s.Score.Beatmap!);
-                    s.PPInfo = UniversalCalculator.CalculateData(b, s.Score, command.special_version_pp ? (is_ppysb ? CalculatorKind.Sb : CalculatorKind.Old) : CalculatorKind.Unset);
-                });
-                
+                await Parallel.ForEachAsync(
+                    scores,
+                    async (s, _) =>
+                    {
+                        var b = await Utils.LoadOrDownloadBeatmap(s.Score.Beatmap!);
+                        s.PPInfo = UniversalCalculator.CalculateData(
+                            b,
+                            s.Score,
+                            command.special_version_pp
+                                ? (is_ppysb ? CalculatorKind.Sb : CalculatorKind.Old)
+                                : CalculatorKind.Unset
+                        );
+                    }
+                );
+
                 scores.Sort((a, b) => b.PPInfo!.ppStat.total > a.PPInfo!.ppStat.total ? 1 : -1);
 
                 using var img = await KanonBot.Image.ScoreList.Draw(
@@ -114,20 +122,16 @@ namespace KanonBot.Functions.OSUBot
                     tempOsuInfo
                 );
 
-                using var stream = new MemoryStream();
-                await img.SaveAsync(stream, new PngEncoder());
-                await target.reply(
-                    new Chain().image(
-                        Convert.ToBase64String(stream.ToArray(), 0, (int)stream.Length),
-                        ImageSegment.Type.Base64
-                    )
-                );
+                await target.reply(img, new PngEncoder());
             }
             else
             {
-                if (command.self_query) {
+                if (command.self_query)
+                {
                     await target.reply($"你在 {tempOsuInfo.Mode.ToStr()} 模式上还没有bp呢。。");
-                } else {
+                }
+                else
+                {
                     await target.reply(
                         $"{tempOsuInfo.Username} 在 {tempOsuInfo.Mode.ToStr()} 模式上还没有bp呢。。"
                     );
@@ -135,7 +139,5 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
         }
-
     }
 }
-    
