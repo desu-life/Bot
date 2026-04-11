@@ -155,4 +155,26 @@ public static class PPYSBExtensions
         };
     }
 
+    
+    public static string ToPpysbModeApiValue(API.PPYSB.Mode mode)
+    {
+        return mode switch
+        {
+            API.PPYSB.Mode.OSU => "osu",
+            API.PPYSB.Mode.Taiko => "taiko",
+            API.PPYSB.Mode.Mania => "mania",
+            API.PPYSB.Mode.Fruits => "ctb",
+            API.PPYSB.Mode.RelaxOsu => "rx_osu",
+            API.PPYSB.Mode.RelaxTaiko => "rx_taiko",
+            API.PPYSB.Mode.RelaxMania => "rx_mania",
+            API.PPYSB.Mode.RelaxFruits => "rx_ctb",
+            API.PPYSB.Mode.AutoPilotOsu => "ap_osu",
+            API.PPYSB.Mode.AutoPilotTaiko => "ap_taiko",
+            API.PPYSB.Mode.AutoPilotMania => "ap_mania",
+            API.PPYSB.Mode.AutoPilotFruits => "ap_ctb",
+            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+        };
+    }
+
+
 }

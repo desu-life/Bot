@@ -87,4 +87,16 @@ public static class OSUExtensions
         };
     }
 
+    public static string ToOsuModeApiValue(API.OSU.Mode mode)
+    {
+        return mode switch
+        {
+            API.OSU.Mode.OSU => "osu",
+            API.OSU.Mode.Taiko => "taiko",
+            API.OSU.Mode.Mania => "mania",
+            API.OSU.Mode.Fruits => "ctb",
+            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+        };
+    }
+
 }

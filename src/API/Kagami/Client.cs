@@ -121,6 +121,27 @@ public static class Client
     }
 
     /// <summary>
+    /// Set a user's osu! preferred game mode via bot integration.
+    /// PUT /api/integrations/kanonbot/users/{userId}/game-mode
+    /// </summary>
+    public static async Task<bool> SetGameMode(string userId, string gameMode)
+    {
+        try
+        {
+            var resp = await Http()
+                .AppendPathSegments("api", "integrations", "kanonbot", "users", userId, "game-mode")
+                .PutJsonAsync(new { gameMode });
+
+            return resp.StatusCode == 200;
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Kagami SetGameMode failed for {UserId} mode={Mode}", userId, gameMode);
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Set a user's ppy.sb preferred game mode via bot integration.
     /// PUT /api/integrations/kanonbot/users/{userId}/ppysb-game-mode
     /// </summary>
