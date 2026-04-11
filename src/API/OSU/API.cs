@@ -54,6 +54,7 @@ namespace KanonBot.API.OSU
 
             var result = await "https://osu.ppy.sh/oauth/token".PostJsonAsync(j);
             var body = await result.GetJsonAsync<JObject>();
+            await tokenRefreshLock.WaitAsync();
             try
             {
                 Token = ((string?)body["access_token"]) ?? "";
@@ -64,6 +65,10 @@ namespace KanonBot.API.OSU
             {
                 Log.Error("获取token失败, 返回Body: \n({})", body.ToString());
                 return false;
+            }
+            finally
+            {
+                tokenRefreshLock.Release();
             }
         }
 
@@ -76,41 +81,27 @@ namespace KanonBot.API.OSU
 
         async public static Task CheckToken()
         {
-            // 第一次检查：无锁快速路径（解决并发阻塞问题）
             if (IsTokenValid())
                 return;
 
-            // 进入受保护区域：防止多个并发任务同时刷新 token
-            await tokenRefreshLock.WaitAsync();
-            try
+            // 执行 token 刷新
+            if (TokenExpireTime == 0)
             {
-                // 第二次检查：在锁内重新验证，防止重复刷新
-                if (IsTokenValid())
-                    return;
-
-                // 执行 token 刷新
-                if (TokenExpireTime == 0)
+                Log.Information("正在获取OSUApiV2_Token");
+                if (await GetToken())
                 {
-                    Log.Information("正在获取OSUApiV2_Token");
-                    if (await GetToken())
-                    {
-                        Log.Information(string.Concat("获取成功, Token: ", Token.AsSpan(Utils.TryGetConsoleWidth() - 38), "..."));
-                        Log.Information($"Token过期时间: {DateTimeOffset.FromUnixTimeSeconds(TokenExpireTime).DateTime.ToLocalTime()}");
-                    }
-                }
-                else
-                {
-                    Log.Information("OSUApiV2_Token已过期, 正在重新获取");
-                    if (await GetToken())
-                    {
-                        Log.Information(string.Concat("获取成功, Token: ", Token.AsSpan(Utils.TryGetConsoleWidth() - 38), "..."));
-                        Log.Information($"Token过期时间: {DateTimeOffset.FromUnixTimeSeconds(TokenExpireTime).DateTime.ToLocalTime()}");
-                    }
+                    Log.Information(string.Concat("获取成功, Token: ", Token.AsSpan(Utils.TryGetConsoleWidth() - 38), "..."));
+                    Log.Information($"Token过期时间: {DateTimeOffset.FromUnixTimeSeconds(TokenExpireTime).DateTime.ToLocalTime()}");
                 }
             }
-            finally
+            else
             {
-                tokenRefreshLock.Release();
+                Log.Information("OSUApiV2_Token已过期, 正在重新获取");
+                if (await GetToken())
+                {
+                    Log.Information(string.Concat("获取成功, Token: ", Token.AsSpan(Utils.TryGetConsoleWidth() - 38), "..."));
+                    Log.Information($"Token过期时间: {DateTimeOffset.FromUnixTimeSeconds(TokenExpireTime).DateTime.ToLocalTime()}");
+                }
             }
         }
 

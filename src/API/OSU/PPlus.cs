@@ -14,7 +14,6 @@ namespace KanonBot.API.OSU
             private static string Token = "";
             private static long TokenExpireTime = 0;
             private static readonly string pppEndPoint = "http://localhost:9001/";
-            // 异步友好的信号量锁，初始计数为1（二元信号量）
             private static readonly SemaphoreSlim tokenLock = new SemaphoreSlim(1, 1);
 
             static IFlurlRequest pplus()
@@ -33,24 +32,10 @@ namespace KanonBot.API.OSU
             // 确保有有效的token（double-check 模式降低锁竞争）
             private static async Task<bool> EnsureValidToken()
             {
-                // 第一次检查：无锁快速路径
                 if (IsTokenValid())
                     return true;
 
-                // 进入受保护区域
-                await tokenLock.WaitAsync();
-                try
-                {
-                    // 第二次检查：在锁内重新验证（防止并发刷新重复）
-                    if (IsTokenValid())
-                        return true;
-
-                    return await RefreshToken();
-                }
-                finally
-                {
-                    tokenLock.Release();
-                }
+                return await RefreshToken();
             }
 
             // 刷新token
@@ -190,34 +175,6 @@ namespace KanonBot.API.OSU
                 {
                     Log.Error("更新用户数据失败: {}", ex.Message);
                     return null;
-                }
-            }
-
-            // 保留原有的GetToken方法作为RefreshToken的别名，保持向后兼容
-            [Obsolete("请使用RefreshToken方法")]
-            private static async Task<bool> GetToken()
-            {
-                return await RefreshToken();
-            }
-
-            // 手动刷新token的公共方法
-            public static async Task<bool> ForceRefreshToken()
-            {
-                return await RefreshToken();
-            }
-
-            // 清除token（用于登出或重置）
-            public static void ClearToken()
-            {
-                tokenLock.Wait();
-                try
-                {
-                    Token = "";
-                    TokenExpireTime = 0;
-                }
-                finally
-                {
-                    tokenLock.Release();
                 }
             }
         }
