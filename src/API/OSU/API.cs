@@ -24,9 +24,10 @@ namespace KanonBot.API.OSU
         private static long TokenExpireTime = 0;
         private static readonly string EndPointV1 = "https://osu.ppy.sh/api/";
         private static readonly string EndPointV2 = "https://osu.ppy.sh/api/v2/";
+        // 异步友好的信号量锁：OSU API token 管理
+        private static readonly SemaphoreSlim tokenRefreshLock = new SemaphoreSlim(1, 1);
         static IFlurlRequest http()
         {
-            CheckToken().Wait();
             var ep = config.osu?.v2EndPoint ?? EndPointV2;
             return ep.WithHeader("Authorization", $"Bearer {Token}").AllowHttpStatus("404");
         }
@@ -66,25 +67,50 @@ namespace KanonBot.API.OSU
             }
         }
 
+        // 检查 token 是否有效（无锁快速路径）
+        private static bool IsTokenValid()
+        {
+            return TokenExpireTime > 0 && 
+                   DateTimeOffset.Now.ToUnixTimeSeconds() < TokenExpireTime;
+        }
+
         async public static Task CheckToken()
         {
-            if (TokenExpireTime == 0)
+            // 第一次检查：无锁快速路径（解决并发阻塞问题）
+            if (IsTokenValid())
+                return;
+
+            // 进入受保护区域：防止多个并发任务同时刷新 token
+            await tokenRefreshLock.WaitAsync();
+            try
             {
-                Log.Information("正在获取OSUApiV2_Token");
-                if (await GetToken())
+                // 第二次检查：在锁内重新验证，防止重复刷新
+                if (IsTokenValid())
+                    return;
+
+                // 执行 token 刷新
+                if (TokenExpireTime == 0)
                 {
-                    Log.Information(string.Concat("获取成功, Token: ", Token.AsSpan(Utils.TryGetConsoleWidth() - 38), "..."));
-                    Log.Information($"Token过期时间: {DateTimeOffset.FromUnixTimeSeconds(TokenExpireTime).DateTime.ToLocalTime()}");
+                    Log.Information("正在获取OSUApiV2_Token");
+                    if (await GetToken())
+                    {
+                        Log.Information(string.Concat("获取成功, Token: ", Token.AsSpan(Utils.TryGetConsoleWidth() - 38), "..."));
+                        Log.Information($"Token过期时间: {DateTimeOffset.FromUnixTimeSeconds(TokenExpireTime).DateTime.ToLocalTime()}");
+                    }
+                }
+                else
+                {
+                    Log.Information("OSUApiV2_Token已过期, 正在重新获取");
+                    if (await GetToken())
+                    {
+                        Log.Information(string.Concat("获取成功, Token: ", Token.AsSpan(Utils.TryGetConsoleWidth() - 38), "..."));
+                        Log.Information($"Token过期时间: {DateTimeOffset.FromUnixTimeSeconds(TokenExpireTime).DateTime.ToLocalTime()}");
+                    }
                 }
             }
-            else if (TokenExpireTime <= DateTimeOffset.Now.ToUnixTimeSeconds())
+            finally
             {
-                Log.Information("OSUApiV2_Token已过期, 正在重新获取");
-                if (await GetToken())
-                {
-                    Log.Information(string.Concat("获取成功, Token: ", Token.AsSpan(Utils.TryGetConsoleWidth() - 38), "..."));
-                    Log.Information($"Token过期时间: {DateTimeOffset.FromUnixTimeSeconds(TokenExpireTime).DateTime.ToLocalTime()}");
-                }
+                tokenRefreshLock.Release();
             }
         }
 
@@ -92,6 +118,7 @@ namespace KanonBot.API.OSU
         // 获取特定谱面信息
         async public static Task<Models.BeatmapSearchResult?> SearchBeatmap(string filters, Mode? mode = null, bool has_leaderboard = true)
         {
+            await CheckToken();
             var q = http()
                 .AppendPathSegments(["beatmapsets", "search"])
                 .SetQueryParams(new
@@ -124,6 +151,7 @@ namespace KanonBot.API.OSU
         // 获取特定谱面信息
         async public static Task<Models.Beatmap?> GetBeatmap(long bid)
         {
+            await CheckToken();
             var res = await http()
                 .AppendPathSegments(["beatmaps", bid])
                 .GetAsync();
@@ -137,6 +165,7 @@ namespace KanonBot.API.OSU
         // 获取特定谱面信息
         async public static Task<Models.Beatmap[]?> GetBeatmaps(IEnumerable<long> bids)
         {
+            await CheckToken();
             IEnumerable<Models.Beatmap> beatmaps = [];
 
             foreach (var b in bids.Chunk(50)) {
@@ -211,6 +240,7 @@ namespace KanonBot.API.OSU
         // 默认 best
         async public static Task<Models.ScoreLazer[]?> GetUserScores(long userId, UserScoreType scoreType = UserScoreType.Best, Mode mode = Mode.OSU, int limit = 1, int offset = 0, bool includeFails = true, bool LegacyOnly = false)
         {
+            await CheckToken();
             var res = await withLazerScore(http())
                 .AppendPathSegments(["users", userId, "scores", scoreType.ToStr()])
                 .SetQueryParams(new
@@ -234,6 +264,7 @@ namespace KanonBot.API.OSU
         // 默认 best
         async public static Task<Models.Score[]?> GetUserScoresLeagcy(long userId, UserScoreType scoreType = UserScoreType.Best, Mode mode = Mode.OSU, int limit = 1, int offset = 0, bool includeFails = true)
         {
+            await CheckToken();
             var res = await http()
                 .AppendPathSegments(["users", userId, "scores", scoreType.ToStr()])
                 .SetQueryParams(new
@@ -255,6 +286,7 @@ namespace KanonBot.API.OSU
         // 获取用户在特定谱面上的成绩
         async public static Task<Models.BeatmapScoreLazer?> GetUserBeatmapScore(long UserId, long bid, IEnumerable<string> mods, Mode mode = Mode.OSU, bool LegacyOnly = false)
         {
+            await CheckToken();
             var res = await withLazerScore(http())
                 .AppendPathSegments(["beatmaps", bid, "scores", "users", UserId])
                 .SetQueryParam("mode", mode.ToStr())
@@ -272,6 +304,7 @@ namespace KanonBot.API.OSU
         // 获取用户在特定谱面上的成绩
         async public static Task<Models.BeatmapScore?> GetUserBeatmapScoreLeagcy(long UserId, long bid, string[] mods, Mode mode = Mode.OSU)
         {
+            await CheckToken();
             var req = http()
                 .AppendPathSegments(new object[] { "beatmaps", bid, "scores", "users", UserId })
                 .SetQueryParam("mode", mode.ToStr())
@@ -291,6 +324,7 @@ namespace KanonBot.API.OSU
         // 返回[]则用户无在此谱面的成绩
         async public static Task<Models.ScoreLazer[]?> GetUserBeatmapScores(long UserId, long bid, Mode mode = Mode.OSU)
         {
+            await CheckToken();
             var res = await withLazerScore(http())
                 .AppendPathSegments(["beatmaps", bid, "scores", "users", UserId, "all"])
                 .SetQueryParam("mode", mode.ToStr())
@@ -320,6 +354,7 @@ namespace KanonBot.API.OSU
         // 通过osu uid获取用户信息
         async public static Task<Models.UserExtended?> GetUser(long userId, Mode mode = Mode.OSU)
         {
+            await CheckToken();
             var res = await http()
                 .AppendPathSegments(["users", userId, mode.ToStr()])
                 .GetAsync();
@@ -334,6 +369,7 @@ namespace KanonBot.API.OSU
         // 通过osu username获取用户信息
         async public static Task<Models.UserExtended?> GetUser(string userName, Mode mode = Mode.OSU)
         {
+            await CheckToken();
             var res = await http()
                 .AppendPathSegments(["users", userName, mode.ToStr()])
                 .SetQueryParam("key", "username")
@@ -349,6 +385,7 @@ namespace KanonBot.API.OSU
         // 获取谱面参数
         async public static Task<Models.BeatmapAttributes?> GetBeatmapAttributes(long bid, string[] mods, Mode mode = Mode.OSU)
         {
+            await CheckToken();
             JObject j = new()
             {
                 { "mods", new JArray(mods) },

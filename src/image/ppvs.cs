@@ -79,62 +79,61 @@ public static class PPVS
         // 打印用户名
         var font = Fonts.avenirLTStdMedium.Get(36);
         var color = Color.ParseHex("#999999");
-        ppvsImg.Mutate(x => x.DrawText(data.u1Name, font, color, 808, 888));
-        ppvsImg.Mutate(x => x.DrawText(data.u2Name, font, color, 264, 888));
+        // 批处理用户名绘制
+        ppvsImg.Mutate(x => x
+            .DrawText(data.u1Name, font, color, 808, 888)
+            .DrawText(data.u2Name, font, color, 264, 888)
+        );
 
         // 打印每个用户数据
         var y_offset = new int[6] { 1485, 1150, 1066, 1234, 1318, 1403 }; // pp+数据的y轴坐标
         font = Fonts.avenirLTStdMedium.Get(32);
-        for (var i = 0; i < u1d.Length; i++)
-        {
-            ppvsImg.Mutate(x =>
-                x.DrawText(Math.Round(u1d[i]).ToString(), font, color, 664, y_offset[i])
-            );
-        }
+        
+        // 批处理用户1的所有数据绘制（包含总分）
         ppvsImg.Mutate(x =>
-            x.DrawText(data.u1.PerformanceTotal.ToString("0.##"), font, color, 664, 980)
-        );
-        for (var i = 0; i < u2d.Length; i++)
         {
-            ppvsImg.Mutate(x =>
-                x.DrawText(Math.Round(u2d[i]).ToString(), font, color, 424, y_offset[i])
-            );
-        }
+            // 用户1的每项数据
+            for (var i = 0; i < u1d.Length; i++)
+            {
+                x.DrawText(Math.Round(u1d[i]).ToString(), font, color, 664, y_offset[i]);
+            }
+            // 用户1的总分
+            x.DrawText(data.u1.PerformanceTotal.ToString("0.##"), font, color, 664, 980);
+        });
+        
+        // 批处理用户2的所有数据绘制（包含总分）
         ppvsImg.Mutate(x =>
-            x.DrawText(data.u2.PerformanceTotal.ToString("0.##"), font, color, 424, 980)
-        );
+        {
+            // 用户2的每项数据
+            for (var i = 0; i < u2d.Length; i++)
+            {
+                x.DrawText(Math.Round(u2d[i]).ToString(), font, color, 424, y_offset[i]);
+            }
+            // 用户2的总分
+            x.DrawText(data.u2.PerformanceTotal.ToString("0.##"), font, color, 424, 980);
+        });
 
-        // 打印数据差异
+        // 打印数据差异（批处理所有差异文本）
         var diffPoint = 960;
         color = Color.ParseHex("#ffcd22");
         ppvsImg.Mutate(x =>
+        {
+            // 总分差异
             x.DrawText(
                 Math.Round(data.u2.PerformanceTotal - data.u1.PerformanceTotal).ToString(),
                 font,
                 color,
                 diffPoint,
                 980
-            )
-        );
-
-        ppvsImg.Mutate(x =>
-            x.DrawText(Math.Round(u2d[2] - u1d[2]).ToString(), font, color, diffPoint, 1066)
-        );
-        ppvsImg.Mutate(x =>
-            x.DrawText(Math.Round(u2d[1] - u1d[1]).ToString(), font, color, diffPoint, 1150)
-        );
-        ppvsImg.Mutate(x =>
-            x.DrawText(Math.Round(u2d[3] - u1d[3]).ToString(), font, color, diffPoint, 1234)
-        );
-        ppvsImg.Mutate(x =>
-            x.DrawText(Math.Round(u2d[4] - u1d[4]).ToString(), font, color, diffPoint, 1318)
-        );
-        ppvsImg.Mutate(x =>
-            x.DrawText(Math.Round(u2d[5] - u1d[5]).ToString(), font, color, diffPoint, 1403)
-        );
-        ppvsImg.Mutate(x =>
-            x.DrawText(Math.Round(u2d[0] - u1d[0]).ToString(), font, color, diffPoint, 1485)
-        );
+            );
+            // 各项数据差异
+            x.DrawText(Math.Round(u2d[2] - u1d[2]).ToString(), font, color, diffPoint, 1066);
+            x.DrawText(Math.Round(u2d[1] - u1d[1]).ToString(), font, color, diffPoint, 1150);
+            x.DrawText(Math.Round(u2d[3] - u1d[3]).ToString(), font, color, diffPoint, 1234);
+            x.DrawText(Math.Round(u2d[4] - u1d[4]).ToString(), font, color, diffPoint, 1318);
+            x.DrawText(Math.Round(u2d[5] - u1d[5]).ToString(), font, color, diffPoint, 1403);
+            x.DrawText(Math.Round(u2d[0] - u1d[0]).ToString(), font, color, diffPoint, 1485);
+        });
 
         using var title = await Img.LoadAsync($"work/legacy/ppvs_title.png");
         ppvsImg.Mutate(x => x.DrawImage(title, new Point(0, 0), 1));

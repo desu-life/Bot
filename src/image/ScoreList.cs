@@ -119,8 +119,10 @@ namespace KanonBot.Image
 
                 using var bgtemp = new Image<Rgba32>(365, 210);
                 bgtemp.Mutate(x => x.DrawImage(scorebg, new Point(0, 0), 1));
-                image.Mutate(x => x.DrawImage(bgtemp, new Point(92, 433), 1));
-                image.Mutate(x => x.DrawImage(MainPic, new Point(0, 0), 1));
+                // 批处理 bgtemp 和 MainPic 绘制
+                image.Mutate(x => x
+                    .DrawImage(bgtemp, new Point(92, 433), 1)
+                    .DrawImage(MainPic, new Point(0, 0), 1));
 
                 scorebg.Dispose(); // 手动释放资源
 

@@ -99,8 +99,11 @@ namespace KanonBot.Image
 
             // avatar
             avatar.Mutate(x => x.Resize(100, 100).RoundCorner(new Size(100, 100), 50));
-            scoreimg.Mutate(x => x.Fill(Color.White, new EllipsePolygon(140, 618, 105, 105)));
-            scoreimg.Mutate(x => x.DrawImage(avatar, new Point(90, 568), 1));
+            // 批处理 avatar 相关的操作：填充+绘制
+            scoreimg.Mutate(x => x
+                .Fill(Color.White, new EllipsePolygon(140, 618, 105, 105))
+                .DrawImage(avatar, new Point(90, 568), 1));
+
 
             //设定textOption/drawOption
             var textOptions = new RichTextOptions(TorusSemiBold.Get(120))
@@ -113,37 +116,30 @@ namespace KanonBot.Image
             var temp_string = Utils.TruncateTextByWidth(data.scoreInfo.Beatmapset!.Title, textOptions, 1130);
             textOptions.Font = TorusSemiBold.Get(100);
             textOptions.Origin = new PointF(769, 160);
-            scoreimg.Mutate(
-                x => x.DrawText(textOptions,  temp_string, Color.ParseHex("#404040"))
+            // 批处理标题的两层绘制（阴影+主文本）
+            scoreimg.Mutate(x => x
+                .DrawText(textOptions, temp_string, Color.ParseHex("#404040"))
             );
             textOptions.Origin = new PointF(769, 158);
-            scoreimg.Mutate(
-                x => x.DrawText(textOptions,  temp_string, Color.ParseHex("#4d4d4d"))
+            scoreimg.Mutate(x => x
+                .DrawText(textOptions, temp_string, Color.ParseHex("#4d4d4d"))
             );
 
             //creator
             temp_string = Utils.TruncateTextByWidth(data.scoreInfo.Beatmapset.Creator, textOptions, 810);
             textOptions.Font = TorusRegular.Get(60);
             textOptions.Origin = new PointF(1070, 234);
-            scoreimg.Mutate(
-                x =>
-                    x.DrawText(textOptions,  temp_string, Color.ParseHex("#e36a79"))
-            );
+            scoreimg.Mutate(x => x.DrawText(textOptions, temp_string, Color.ParseHex("#e36a79")));
 
             // artist
             temp_string = Utils.TruncateTextByWidth(data.scoreInfo.Beatmapset.Artist, textOptions, 450);
             textOptions.Origin = new PointF(1005, 322);
-            scoreimg.Mutate(
-                x => x.DrawText(textOptions,  temp_string, Color.ParseHex("#6cac9c"))
-            );
+            scoreimg.Mutate(x => x.DrawText(textOptions, temp_string, Color.ParseHex("#6cac9c")));
             // beatmap_id
             textOptions.HorizontalAlignment = HorizontalAlignment.Right;
             textOptions.Font = TorusRegular.Get(50);
             textOptions.Origin = new PointF(1770, 322);
-            scoreimg.Mutate(
-                x =>
-                    x.DrawText(textOptions, data.scoreInfo.Beatmap.BeatmapId.ToString(), Color.ParseHex("#5872df"))
-            );
+            scoreimg.Mutate(x => x.DrawText(textOptions, data.scoreInfo.Beatmap.BeatmapId.ToString(), Color.ParseHex("#5872df")));
 
             //stars 
             textOptions.HorizontalAlignment = HorizontalAlignment.Left;
@@ -152,16 +148,12 @@ namespace KanonBot.Image
             var stars = $"Stars: {data.ppInfo.star:0.##}";
             var stars_measure = TextMeasurer.MeasureSize(stars, textOptions);
 
+            // 批处理 stars 的两层绘制（阴影+主文本）
             textOptions.Origin = new PointF(924, 442);
-            scoreimg.Mutate(
-                x =>
-                    x.DrawText(textOptions, stars, Color.ParseHex("#3a3b3c"))
-            );
+            scoreimg.Mutate(x => x.DrawText(textOptions, stars, Color.ParseHex("#3a3b3c")));
+            
             textOptions.Origin = new PointF(924, 441);
-            scoreimg.Mutate(
-                x =>
-                    x.DrawText(textOptions, stars, Color.ParseHex("#f1c959"))
-            );
+            scoreimg.Mutate(x => x.DrawText(textOptions, stars, Color.ParseHex("#f1c959")));
 
             //star icons
 
@@ -197,25 +189,17 @@ namespace KanonBot.Image
 
             temp_string = Utils.TruncateTextByWidth(data.scoreInfo.Beatmap.Version, textOptions, 740);
 
+            // 批处理版本号的两层绘制（阴影+主文本）
             textOptions.Origin = new PointF(924, 480);
-            scoreimg.Mutate(
-                x =>
-                    x.DrawText(textOptions, $"Version: {temp_string}", Color.ParseHex("#3a3b3c"))
-            );
+            scoreimg.Mutate(x => x.DrawText(textOptions, $"Version: {temp_string}", Color.ParseHex("#3a3b3c")));
 
             textOptions.Origin = new PointF(924, 478);
-            scoreimg.Mutate(
-                x =>
-                    x.DrawText(textOptions, $"Version: {temp_string}", Color.ParseHex("#333333"))
-            );
+            scoreimg.Mutate(x => x.DrawText(textOptions, $"Version: {temp_string}", Color.ParseHex("#333333")));
 
             //username 
             textOptions.Font = TorusSemiBold.Get(50);
             textOptions.Origin = new PointF(235, 630);
-            scoreimg.Mutate(
-                x =>
-                    x.DrawText(textOptions, data.scoreInfo.User!.Username, Color.ParseHex("#333333"))
-            );
+            scoreimg.Mutate(x => x.DrawText(textOptions, data.scoreInfo.User!.Username, Color.ParseHex("#333333")));
 
             //archived at
             textOptions.Font = TorusRegular.Get(36);

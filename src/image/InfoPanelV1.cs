@@ -141,8 +141,10 @@ public static class InfoV1
         };
         cover.Mutate(x => x.Resize(resizeOptions));
         // cover.Mutate(x => x.RoundCorner(new Size(1200, 350), 20));
-        info.Mutate(x => x.DrawImage(cover, 1));
-        info.Mutate(x => x.DrawImage(panel, 1));
+        // 批处理 cover 和 panel 绘制
+        info.Mutate(x => x
+            .DrawImage(cover, 1)
+            .DrawImage(panel, 1));
         cover.Dispose();
         panel.Dispose();
 
@@ -196,10 +198,12 @@ public static class InfoV1
         await Task.WhenAll(flagsTask, modeiconTask);
 
         using var flags = await flagsTask;
-        info.Mutate(x => x.DrawImage(flags, new Point(272, 212), 1));
         using var modeicon = await modeiconTask;
         modeicon.Mutate(x => x.Resize(64, 64));
-        info.Mutate(x => x.DrawImage(modeicon, new Point(1125, 10), 1));
+        // 批处理 flags 和 modeicon 绘制
+        info.Mutate(x => x
+            .DrawImage(flags, new Point(272, 212), 1)
+            .DrawImage(modeicon, new Point(1125, 10), 1));
 
         // pp+
         if (data.userInfo.Mode is OSU.Mode.OSU && data.pplusInfo is not null)

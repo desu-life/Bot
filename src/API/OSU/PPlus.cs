@@ -14,7 +14,8 @@ namespace KanonBot.API.OSU
             private static string Token = "";
             private static long TokenExpireTime = 0;
             private static readonly string pppEndPoint = "http://localhost:9001/";
-            private static readonly object tokenLock = new object();
+            // 异步友好的信号量锁，初始计数为1（二元信号量）
+            private static readonly SemaphoreSlim tokenLock = new SemaphoreSlim(1, 1);
 
             static IFlurlRequest pplus()
             {
@@ -29,16 +30,27 @@ namespace KanonBot.API.OSU
                        DateTimeOffset.UtcNow.ToUnixTimeSeconds() < TokenExpireTime;
             }
 
-            // 确保有有效的token
+            // 确保有有效的token（double-check 模式降低锁竞争）
             private static async Task<bool> EnsureValidToken()
             {
-                lock (tokenLock)
+                // 第一次检查：无锁快速路径
+                if (IsTokenValid())
+                    return true;
+
+                // 进入受保护区域
+                await tokenLock.WaitAsync();
+                try
                 {
+                    // 第二次检查：在锁内重新验证（防止并发刷新重复）
                     if (IsTokenValid())
                         return true;
-                }
 
-                return await RefreshToken();
+                    return await RefreshToken();
+                }
+                finally
+                {
+                    tokenLock.Release();
+                }
             }
 
             // 刷新token
@@ -56,11 +68,17 @@ namespace KanonBot.API.OSU
                     
                     if (body["data"] != null)
                     {
-                        lock (tokenLock)
+                        // 在异步锁内更新共享状态
+                        await tokenLock.WaitAsync();
+                        try
                         {
                             Token = body["data"]?.ToString() ?? "";
                             // 设置token过期时间（假设token有效期1小时，提前5分钟刷新）
                             TokenExpireTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds() + 3300; // 55分钟
+                        }
+                        finally
+                        {
+                            tokenLock.Release();
                         }
                         return true;
                     }
@@ -191,10 +209,15 @@ namespace KanonBot.API.OSU
             // 清除token（用于登出或重置）
             public static void ClearToken()
             {
-                lock (tokenLock)
+                tokenLock.Wait();
+                try
                 {
                     Token = "";
                     TokenExpireTime = 0;
+                }
+                finally
+                {
+                    tokenLock.Release();
                 }
             }
         }

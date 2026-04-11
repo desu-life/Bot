@@ -51,8 +51,10 @@ public static class ScoreV2
             x.BackgroundColor(Color.Black).RoundCorner(new Size(1950 - 2, 1088), 20)
         );
         bg.Mutate(x => x.GaussianBlur(5).RoundCorner(new Size(1950 - 2, 1088), 20));
-        score.Mutate(x => x.DrawImage(bg, 1));
-        score.Mutate(x => x.DrawImage(backBlack, 0.33f));
+        // 批处理背景图和黑色遮挡层
+        score.Mutate(x => x
+            .DrawImage(bg, 1)
+            .DrawImage(backBlack, 0.33f));
 
         if (data.scoreInfo.IsLazer)
         {
@@ -60,8 +62,10 @@ public static class ScoreV2
             score.Mutate(x => x.DrawImage(blurpanel, 0.3f));
         }
 
-        score.Mutate(x => x.DrawImage(panel, 1));
-        score.Mutate(x => x.DrawImage(smallBg, new Point(27, 34), 1));
+        // 批处理 panel 和 smallBg 绘制
+        score.Mutate(x => x
+            .DrawImage(panel, 1)
+            .DrawImage(smallBg, new Point(27, 34), 1));
 
         if (!string.IsNullOrWhiteSpace(data.server))
         {
