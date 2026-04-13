@@ -16,11 +16,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../osu/osu.Game.Rulesets.Catch/osu.Game.Rulesets.Catch.csproj" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
+    <ProjectReference Include="../osu/osu.Game.Rulesets.Mania/osu.Game.Rulesets.Mania.csproj" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
+    <ProjectReference Include="../osu/osu.Game.Rulesets.Osu/osu.Game.Rulesets.Osu.csproj" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
+    <ProjectReference Include="../osu/osu.Game.Rulesets.Taiko/osu.Game.Rulesets.Taiko.csproj" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="ppy.osu.Game.Rulesets.Catch" Version="2026.408.0" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
-    <PackageReference Include="ppy.osu.Game.Rulesets.Mania" Version="2026.408.0" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
-    <PackageReference Include="ppy.osu.Game.Rulesets.Osu" Version="2026.408.0" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
-    <PackageReference Include="ppy.osu.Game.Rulesets.Taiko" Version="2026.408.0" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
     <PackageReference Include="ppy.osu.Game.Resources" Version="2026.411.0" ExcludeAssets="all" PrivateAssets="all" />
     <PackageReference Include="ppy.osu.Framework" Version="2026.406.0" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
   </ItemGroup>
