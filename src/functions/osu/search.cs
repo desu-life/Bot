@@ -191,7 +191,8 @@ namespace KanonBot.Functions.OSUBot
 
             ScoreV2.ScorePanelData data;
             API.OSU.Models.User? user = await API.OSU.Client.GetUser(3);
-            if (mods_lazer.Any(x => x.Acronym is "RX" or "AP"))
+            var is_sb = mods_lazer.Any(x => x.Acronym is "RX" or "AP");
+            if (is_sb)
             {
                 data = SBRosuCalculator.CalculatePanelSSData(b, beatmap, mods_lazer);
                 user!.Id = 1;
@@ -201,7 +202,11 @@ namespace KanonBot.Functions.OSUBot
             }
             else
             {
-                data = OsuCalculator.CalculatePanelSSData(b, beatmap, mods_lazer);
+                if (command.special_version_pp) {
+                    data = OsuCalculator.CalculatePanelSSData(b, beatmap, mods_lazer);
+                } else {
+                    data = RosuCalculator.CalculatePanelSSData(b, beatmap, mods_lazer);
+                }
             }
             
             data.scoreInfo.UserId = user!.Id;

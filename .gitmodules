@@ -7,3 +7,7 @@
 [submodule "OppaiSharp"]
 	path = dependencies/OppaiSharp
 	url = https://github.com/fantasyzhjk/OppaiSharp
+[submodule "osu"]
+	path = dependencies/osu
+	url = https://github.com/ppy/osu
+	branch = pp-dev
