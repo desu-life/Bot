@@ -1,6 +1,7 @@
 using System.IO;
 using DotNext.Collections.Generic;
 using KanonBot.API;
+using KanonBot.API.OSU;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
 using KanonBot.Image;
@@ -69,7 +70,7 @@ namespace KanonBot.Functions.OSUBot
                 var iamUserId = await API.IAM.Client.GetIamUserIdByExternalId(provider, AccInfo.uid);
                 if (iamUserId != null) {
                     var kagamiProfile = await API.Kagami.Client.GetPublicKanonBotProfile(iamUserId);
-                    preferedMode = Accounts.KagamiModeToOsu(kagamiProfile?.KanonBot?.PreferredGameMode);
+                    preferedMode = KagamiExtensions.ParseKagamiMode(kagamiProfile?.KanonBot?.PreferredGameMode);
                 }
             } catch { }
 

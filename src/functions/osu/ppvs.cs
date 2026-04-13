@@ -36,7 +36,7 @@ namespace KanonBot.Functions.OSUBot
 
                 var osuUid = API.IAM.Client.ExtractOsuUid(bindings);
                 if (!osuUid.HasValue)
-                { await target.reply("你还没有绑定 osu! 账户，请使用 !bind 进行绑定。"); return; }
+                { await target.reply("你还没有绑定 osu! 账户，请前往 https://iam.neonprizma.com/profile 绑定。"); return; }
 
                 // 分别获取两位的信息
                 var userSelf = await API.OSU.Client.GetUser(osuUid.Value);

@@ -99,7 +99,7 @@ namespace KanonBot.Functions.OSUBot
 
                 try
                 {
-                    var sbModeRaw = ToPpysbModeApiValue(sbMode.Value);
+                    var sbModeRaw = KagamiExtensions.ToPpysbModeApiValue(sbMode.Value);
                     var sbOk = await API.Kagami.Client.SetPpySbGameMode(resolved.IamUserId, sbModeRaw);
                     if (!sbOk)
                     {
