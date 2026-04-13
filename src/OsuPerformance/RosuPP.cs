@@ -152,6 +152,7 @@ public static class RosuCalculator
         p.Mode(rmode);
         p.Mods(mods);
         p.Combo(data.scoreInfo.MaxCombo);
+        p.LegacyTotalScore(data.scoreInfo.LegacyTotalScore);
         p.N50(statistics.CountMeh);
         p.N100(statistics.CountOk);
         p.N300(statistics.CountGreat);
@@ -218,6 +219,7 @@ public static class RosuCalculator
         p.Mode(rmode);
         p.Mods(mods);
         p.Combo(score.MaxCombo);
+        p.LegacyTotalScore(score.LegacyTotalScore);
         p.N50(statistics.CountMeh);
         p.N100(statistics.CountOk);
         p.N300(statistics.CountGreat);
