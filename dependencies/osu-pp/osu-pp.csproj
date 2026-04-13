@@ -16,13 +16,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="ppy.osu.Game.Rulesets.Catch" Version="2025.1013.0" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
-    <PackageReference Include="ppy.osu.Game.Rulesets.Mania" Version="2025.1013.0" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
-    <PackageReference Include="ppy.osu.Game.Rulesets.Osu" Version="2025.1013.0" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
-    <PackageReference Include="ppy.osu.Game.Rulesets.Taiko" Version="2025.1013.0" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
-    <PackageReference Include="ppy.osu.Game.Resources" Version="2025.1025.0" ExcludeAssets="all" PrivateAssets="all" />
-    <PackageReference Include="ppy.osu.Framework" Version="2025.1017.0" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="ppy.osu.Game.Rulesets.Catch" Version="2026.408.0" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
+    <PackageReference Include="ppy.osu.Game.Rulesets.Mania" Version="2026.408.0" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
+    <PackageReference Include="ppy.osu.Game.Rulesets.Osu" Version="2026.408.0" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
+    <PackageReference Include="ppy.osu.Game.Rulesets.Taiko" Version="2026.408.0" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
+    <PackageReference Include="ppy.osu.Game.Resources" Version="2026.411.0" ExcludeAssets="all" PrivateAssets="all" />
+    <PackageReference Include="ppy.osu.Framework" Version="2026.406.0" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
   </ItemGroup>
 
 </Project>
