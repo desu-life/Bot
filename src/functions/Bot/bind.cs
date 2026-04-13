@@ -51,7 +51,7 @@ namespace KanonBot.Functions.OSUBot
                 switch (verifyResult)
                 {
                     case API.IAM.VerifyResult.Success:
-                        await target.reply("绑定成功！您的 QQ 账户已与 desu.life 账户关联。");
+                        await target.reply("验证码已提交，请回到网页检查你的绑定状态哦。");
                         return;
                     case API.IAM.VerifyResult.InvalidCode:
                         await target.reply("验证码无效或已过期，请重新使用 !bind 生成新的绑定链接并完成网页流程。");
@@ -85,7 +85,7 @@ namespace KanonBot.Functions.OSUBot
 
                  
                     await target.reply(
-                        $"请点击一次性链接完成绑定：\n{sessionResult.Session.Url}\n该链接会在几分钟后过期，请尽快完成网页授权。"
+                        $"请点击一次性链接完成绑定：\n{sessionResult.Session.Url}\n进入页面后直接使用 osu! 登录，完成绑定流程\n绑定的验证码可以通过 !bind 验证码 提交。"
                     );
                     return;
                 case API.IAM.BindSessionResultType.AlreadyBound:

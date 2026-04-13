@@ -74,7 +74,7 @@ namespace KanonBot.Functions
                 var ppysbUid = API.IAM.Client.ExtractPpysbUid(bindings);
                 if (!ppysbUid.HasValue)
                 {
-                    await target.reply("你还没有绑定 ppy.sb 账户，请前往 https://iam.neonprizma.com/profile 绑定。");
+                    await target.reply("你还没有绑定 ppy.sb 账户，请前往 https://iam.neonprizma.com/ 绑定。");
                     return null;
                 }
 
@@ -102,7 +102,7 @@ namespace KanonBot.Functions
                 var osuUid = API.IAM.Client.ExtractOsuUid(bindings);
                 if (!osuUid.HasValue)
                 {
-                    await target.reply("你还没有绑定 osu! 账户，请前往 https://iam.neonprizma.com/profile 绑定。");
+                    await target.reply("你还没有绑定 osu! 账户，请前往 https://iam.neonprizma.com/ 绑定。");
                     return null;
                 }
 
