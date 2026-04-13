@@ -64,7 +64,7 @@ namespace KanonBot.Functions.OSUBot
             if (scoreInfos.Length > 0)
             {
                 Image.ScoreV2.ScorePanelData data;
-                data = await UniversalCalculator.CalculatePanelData(scoreInfos[0], command.special_version_pp ? (is_ppysb ? CalculatorKind.Sb : CalculatorKind.Old) : CalculatorKind.Unset);
+                data = await UniversalCalculator.CalculatePanelData(scoreInfos[0], UniversalCalculator.GetCalculatorKind(is_ppysb, command.special_version_pp));
                 
                 
                 using var img =

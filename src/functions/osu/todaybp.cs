@@ -107,9 +107,10 @@ namespace KanonBot.Functions.OSUBot
                         s.PPInfo = UniversalCalculator.CalculateData(
                             b,
                             s.Score,
-                            command.special_version_pp
-                                ? (is_ppysb ? CalculatorKind.Sb : CalculatorKind.Old)
-                                : CalculatorKind.Unset
+                            UniversalCalculator.GetCalculatorKind(
+                                is_ppysb,
+                                command.special_version_pp
+                            )
                         );
                     }
                 );

@@ -5,7 +5,7 @@ namespace KanonBot.OsuPerformance
     public enum CalculatorKind
     {
         Unset,
-        Old,
+        Special,
         Osu,
         Rosu,
         Oppai,
@@ -49,8 +49,8 @@ namespace KanonBot.OsuPerformance
                 CalculatorKind.Rosu => RosuCalculator.CalculatePanelData(b, score),
                 CalculatorKind.Oppai => OppaiCalculator.CalculatePanelData(b, score),
                 CalculatorKind.Sb => SBRosuCalculator.CalculatePanelData(b, score),
-                CalculatorKind.Old => OsuCalculator.CalculatePanelData(b, score),
-                _ => OsuCalculator.CalculatePanelData(b, score),
+                CalculatorKind.Special => OsuCalculator.CalculatePanelData(b, score),
+                _ => RosuCalculator.CalculatePanelData(b, score),
             };
         }
 
@@ -79,9 +79,21 @@ namespace KanonBot.OsuPerformance
                 CalculatorKind.Rosu => RosuCalculator.CalculateData(b, score),
                 CalculatorKind.Oppai => OppaiCalculator.CalculateData(b,score),
                 CalculatorKind.Sb => SBRosuCalculator.CalculateData(b,score),
-                CalculatorKind.Old => OsuCalculator.CalculateData(b, score),
-                _ => OsuCalculator.CalculateData(b,score),
+                CalculatorKind.Special => OsuCalculator.CalculateData(b, score),
+                _ => RosuCalculator.CalculateData(b,score),
             };
+        }
+
+        public static CalculatorKind GetCalculatorKind(bool isPpysb, bool specialVersionPp) {
+            if (isPpysb) {
+                return CalculatorKind.Sb;
+            }
+            
+            if (specialVersionPp) {
+                return CalculatorKind.Special;
+            } else {
+                return CalculatorKind.Unset;
+            }
         }
     }
 }

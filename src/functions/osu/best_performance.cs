@@ -83,7 +83,7 @@ namespace KanonBot.Functions.OSUBot
                 score.User ??= tempOsuInfo;
 
                 Image.ScoreV2.ScorePanelData data;
-                data = await UniversalCalculator.CalculatePanelData(score, command.special_version_pp ? (is_ppysb ? CalculatorKind.Sb : CalculatorKind.Old) : CalculatorKind.Unset);
+                data = await UniversalCalculator.CalculatePanelData(score, UniversalCalculator.GetCalculatorKind(is_ppysb, command.special_version_pp));
 
                 using var img =
                     command.dev_panel

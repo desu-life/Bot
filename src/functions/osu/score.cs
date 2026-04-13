@@ -136,7 +136,7 @@ namespace KanonBot.Functions.OSUBot
             }
 
             Image.ScoreV2.ScorePanelData data;
-            data = await UniversalCalculator.CalculatePanelData(scoreData, command.special_version_pp ? (is_ppysb ? CalculatorKind.Sb : CalculatorKind.Old) : CalculatorKind.Unset);
+            data = await UniversalCalculator.CalculatePanelData(scoreData, UniversalCalculator.GetCalculatorKind(is_ppysb, command.special_version_pp));
 
             using var img = await Image.ScoreV2.DrawScore(data);
             await target.reply(img, new JpegEncoder());

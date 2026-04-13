@@ -250,7 +250,7 @@ namespace KanonBot.Functions.OSUBot
                         false,
                         isDataOfDayAvaiavle,
                         false,
-                        kind: command.special_version_pp ? (is_ppysb ? CalculatorKind.Sb : CalculatorKind.Old) : CalculatorKind.Unset
+                        kind: UniversalCalculator.GetCalculatorKind(is_ppysb, command.special_version_pp)
                     );
                     
                     break;
