@@ -138,7 +138,6 @@ public class Config
         OneBotServer,
         OneBotClient,
         Guild,
-        Kook,
     }
 
     public class DriverConfig {
@@ -156,11 +155,6 @@ public class Config
         [TomlProperty("guild")]
         [NotLoggedIfDefault]
         public Guild? Guild { get; set; }
-
-        [TomlDoNotInlineObject]
-        [TomlProperty("kook")]
-        [NotLoggedIfDefault]
-        public KOOK? KOOK { get; set; }
         
         [TomlDoNotInlineObject]
         [TomlProperty("discord")]
@@ -169,7 +163,7 @@ public class Config
 
         [TomlNonSerialized]
         [NotLogged]
-        public IDriverConfig Config => OneBotServer ?? OneBotClient ?? Guild ?? Discord ?? (IDriverConfig)KOOK!;
+        public IDriverConfig Config => OneBotServer ?? OneBotClient ?? Guild ?? (IDriverConfig)Discord!;
 
         public DriverConfig(IDriverConfig config) { 
             switch (config)
@@ -177,7 +171,6 @@ public class Config
                 case OneBotServer c: OneBotServer = c; break;
                 case OneBotClient c: OneBotClient = c; break;
                 case Guild c: Guild = c; break;
-                case KOOK c: KOOK = c; break;
                 case Discord c: Discord = c; break;
             }
         }
@@ -218,15 +211,6 @@ public class Config
 
         [TomlProperty("secret")]
         public string? secret { get; set; }
-
-        [TomlProperty("token")]
-        public string? token { get; set; }
-    }
-
-    public class KOOK : IDriverConfig
-    {
-        [TomlProperty("bot_id")]
-        public string? botID { get; set; }
 
         [TomlProperty("token")]
         public string? token { get; set; }
@@ -319,7 +303,6 @@ public class Config
                         token = "",
                         sandbox = true
                     }),
-                    new(new KOOK() { botID = "", token = "" }),
                     new(new Discord() { botID = "", token = "" }),
                 ],
                 oss = new()

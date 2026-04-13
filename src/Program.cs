@@ -237,28 +237,6 @@ foreach (var driverConfig in config.drivers)
                             }
                         ),
 
-                Config.KOOK c
-                    => new KanonBot.Drivers.Kook(c.token!, c.botID!)
-                        .onMessage(
-                            async (target) =>
-                            {
-                                Log.Information("← 收到Kook消息 {0}", target.msg);
-                                target.isFromAdmin = true;
-                                await Universal.Parser(target);
-                            }
-                        )
-                        .onEvent(
-                            (client, e) =>
-                            {
-                                switch (e)
-                                {
-                                    case Ready l:
-                                        Log.Debug("收到KOOK生命周期事件 {h}", l);
-                                        break;
-                                }
-                                return Task.CompletedTask;
-                            }
-                        ),
                 Config.Discord c
                     => new KanonBot.Drivers.Discord(c.token!, c.botID!)
                         .onMessage(

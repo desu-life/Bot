@@ -152,7 +152,6 @@ namespace KanonBot.Functions
                 "qq" => Platform.OneBot,
                 "guild" => Platform.Guild,
                 "discord" => Platform.Discord,
-                "kook" => Platform.KOOK,
                 _ => Platform.Unknown
             };
             if (platform == Platform.Unknown)
@@ -191,16 +190,6 @@ namespace KanonBot.Functions
                         {
                             platform = Platform.OneBot,
                             uid = o.UserId.ToString()
-                        };
-                    }
-                    break;
-                case Platform.KOOK:
-                    if (target.raw is Kook.WebSocket.SocketMessage k)
-                    {
-                        return new AccInfo()
-                        {
-                            platform = Platform.KOOK,
-                            uid = k.Author.Id.ToString()
                         };
                     }
                     break;

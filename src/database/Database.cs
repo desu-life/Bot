@@ -98,8 +98,6 @@ public class Client
                     return null;
             case Platform.Guild:
                 return await db.User.Where(it => it.qq_guild_uid == UID).FirstOrDefaultAsync();
-            case Platform.KOOK:
-                return await db.User.Where(it => it.kook_uid == UID).FirstOrDefaultAsync();
             case Platform.Discord:
                 return await db.User.Where(it => it.discord_uid == UID).FirstOrDefaultAsync();
             default:

@@ -1,5 +1,4 @@
 using System.Threading.Channels;
-using libKook = Kook;
 using libDiscord = Discord;
 using Msg = KanonBot.Message;
 
@@ -70,22 +69,6 @@ public class Target
                 catch (Exception ex)
                 {
                     Log.Warning("发送Discord消息失败 ↓\n{ex}", ex);
-                    return false;
-                }
-                break;
-            case Kook s:
-                var KookRawMessage = this.raw as libKook.WebSocket.SocketMessage;
-                try
-                {
-                    await s.api.SendChannelMessage(
-                        KookRawMessage!.Channel.Id.ToString(),
-                        msgChain,
-                        KookRawMessage.Id
-                    );
-                }
-                catch (Exception ex)
-                {
-                    Log.Warning("发送Kook消息失败 ↓\n{ex}", ex);
                     return false;
                 }
                 break;

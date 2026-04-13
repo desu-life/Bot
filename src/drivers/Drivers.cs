@@ -9,7 +9,6 @@ public enum Platform
     Unknown,
     OneBot,
     Guild,
-    KOOK,
     Discord,
     OSU
 }

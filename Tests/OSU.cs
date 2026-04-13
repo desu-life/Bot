@@ -7,7 +7,6 @@ using KanonBot.Serializer;
 using RosuPP;
 using SixLabors.ImageSharp.Formats.Png;
 using API = KanonBot.API;
-using Kook;
 using KanonBot.API.OSU;
 
 namespace Tests;

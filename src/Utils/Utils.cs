@@ -86,7 +86,7 @@ public static partial class Utils
         return string.Join(Environment.NewLine, lines);
     }
 
-    public static string KOOKUnEscape(string str)
+    public static string DiscordUnEscape(string str)
     {
         str = str.Replace("\\\\n", "\\n");
         str = str.Replace("\\(", "(");
@@ -94,7 +94,7 @@ public static partial class Utils
         return str;
     }
 
-    public static string KOOKEscape(string str)
+    public static string DiscordEscape(string str)
     {
         str = str.Replace("\\n", "\\\\n");
         str = str.Replace("(", "\\(");

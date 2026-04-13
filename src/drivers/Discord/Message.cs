@@ -67,7 +67,7 @@ public partial class Discord
                     }
                 }
                 if (text.Length != 0)
-                    chain.Add(new TextSegment(Utils.KOOKUnEscape(text)));
+                    chain.Add(new TextSegment(Utils.DiscordUnEscape(text)));
             }
 
             var pos = 0;

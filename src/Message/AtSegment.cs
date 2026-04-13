@@ -22,7 +22,6 @@ public class AtSegment : IMsgSegment, IEquatable<AtSegment>
             Platform.OneBot => "qq",
             Platform.Guild => "gulid",
             Platform.Discord => "discord",
-            Platform.KOOK => "kook",
             _ => "unknown",
         };
         return $"{platform}={value}";

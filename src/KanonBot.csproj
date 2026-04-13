@@ -10,6 +10,8 @@
 		<IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
 		<DebugType>portable</DebugType>
 		<SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
+		<InvariantGlobalization>true</InvariantGlobalization>
+		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -38,7 +40,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Discord.Net" Version="3.14.1" />
-		<PackageReference Include="Kook.Net" Version="0.6.0" />
 		<PackageReference Include="WatsonWebsocket" Version="4.1.2" />
 	</ItemGroup>
 
@@ -54,7 +55,7 @@
 		<PackageReference Include="SixLabors.Fonts" Version="2.0.2" />
 		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
 		<PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.2" />
-		<PackageReference Include="Svg.Skia" Version="3.0.4" />
+		<!-- <PackageReference Include="Svg.Skia" Version="3.0.4" /> -->
 	</ItemGroup>
 
 	<!-- RosuPP -->
