@@ -66,7 +66,7 @@ Log.Information("初始化成功 {@config}", config);
 
 if (config.dev)
 {
-    var sender = parseInt(Environment.GetEnvironmentVariable("KANONBOT_TEST_QQ_ID"));
+    var sender = parseLong(Environment.GetEnvironmentVariable("KANONBOT_TEST_QQ_ID"));
     sender.IfNone(() =>
     {
         Log.Error("未设置测试环境变量 KANONBOT_TEST_QQ_ID");

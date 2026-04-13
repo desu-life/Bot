@@ -73,13 +73,6 @@ namespace KanonBot.Functions.OSUBot
                 }
             }
 
-            var existingIamId = await API.IAM.Client.GetIamUserIdByExternalId(provider, accInfo.uid);
-            if (existingIamId != null)
-            {
-                await target.reply("你的平台账户已经绑定过 desu.life 账户了。若需更换绑定，请联系管理员。");
-                return;
-            }
-
             var sessionResult = await API.IAM.Client.StartBindSession(provider, accInfo.uid);
             switch (sessionResult.Type)
             {
