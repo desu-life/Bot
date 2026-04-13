@@ -13,7 +13,7 @@ namespace KanonBot.Functions.OSUBot
                 用户查询：
                 !info/recent/bp/get
                 绑定/用户设置：
-                !reg/set
+                !bind/reg/set
                 更多细节请移步 https://support.desu.life/posts/2022-kanonbot-usage-doc/ 查阅
                 """
             );

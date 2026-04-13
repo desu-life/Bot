@@ -80,11 +80,8 @@ namespace KanonBot.command_parser
             {
                 switch (rootCmd.ToLower()) // 不区分大小写
                 {
-                    case "reg":
-                        await Accounts.RegAccount(target, childCmd);
-                        return;
                     case "bind":
-                        await Accounts.BindService(target, childCmd);
+                        await Bind.Execute(target, childCmd);
                         return;
                     case "info":
                         await Info.Execute(target, childCmd);

@@ -19,7 +19,7 @@ namespace KanonBot.Functions.OSUBot
             var userCtx = await Accounts.ResolveIamUser(target);
             if (userCtx == null)
             {
-                await target.reply("你还没有绑定 desu.life 账户，先使用 !reg 验证码 来进行绑定哦。");
+                await target.reply("你还没有绑定 desu.life 账户，先使用 !bind 来进行绑定哦。");
                 return;
             }
 

@@ -6,9 +6,25 @@ public enum VerifyResult
 {
     Success,
     InvalidCode,
+    AlreadyBound,
     InvalidApiKey,
     Misconfigured,
     Error
+}
+
+public enum BindSessionResultType
+{
+    Success,
+    AlreadyBound,
+    InvalidApiKey,
+    Misconfigured,
+    Error
+}
+
+public class BindSessionResult
+{
+    public BindSessionResultType Type { get; set; }
+    public BindSessionResponse? Session { get; set; }
 }
 
 public static class Client
@@ -26,7 +42,7 @@ public static class Client
     };
 
     private static IFlurlRequest Http() =>
-        BaseUrl.WithHeader("X-Api-Key", config.iam?.apiKey ?? "").AllowHttpStatus("400,401,404,500");
+        BaseUrl.WithHeader("X-Api-Key", config.iam?.apiKey ?? "").AllowHttpStatus("400,401,404,409,500");
 
     /// <summary>
     /// Reverse lookup: get IAM user UUID from platform external ID.
@@ -51,13 +67,40 @@ public static class Client
     }
 
     /// <summary>
-    /// Submit verification code from bot user.
-    /// POST /api/integrations/bot/verify
+    /// Start a bind session for QQ/Discord user.
+    /// POST /api/integrations/bot/{provider}/bind-session
     /// </summary>
-    public static async Task<VerifyResult> SubmitVerification(string provider, string code, string externalId)
+    public static async Task<BindSessionResult> StartBindSession(string provider, string externalId)
+    {
+        if (provider != "qq" && provider != "discord")
+            throw new NotSupportedException($"Bind session is not supported for provider: {provider}");
+
+        var (status, data) = await Http()
+            .AppendPathSegments("api", "integrations", "bot", provider, "bind-session")
+            .TryPostJsonAsync<BindSessionResponse>(new BindSessionRequest { ExternalId = externalId });
+
+        var result = new BindSessionResult { Session = data };
+
+        result.Type = status switch
+        {
+            200 => BindSessionResultType.Success,
+            400 or 409 => BindSessionResultType.AlreadyBound,
+            401 => BindSessionResultType.InvalidApiKey,
+            500 => BindSessionResultType.Misconfigured,
+            _ => BindSessionResultType.Error
+        };
+
+        return result;
+    }
+
+    /// <summary>
+    /// Submit QQ verification code from bot user.
+    /// POST /api/integrations/bot/qq/submit-code
+    /// </summary>
+    public static async Task<VerifyResult> SubmitQqCode(string code, string externalId)
     {
         var status = await Http()
-            .AppendPathSegments("api", "integrations", "bot", "verify")
+            .AppendPathSegments("api", "integrations", "bot", "qq", "submit-code")
             .TryPostJsonGetStatusAsync(new SubmitVerificationRequest
             {
                 Code = code,
@@ -67,10 +110,20 @@ public static class Client
         return status switch
         {
             200 => VerifyResult.Success,
+            400 or 409 => VerifyResult.AlreadyBound,
             404 => VerifyResult.InvalidCode,
             401 => VerifyResult.InvalidApiKey,
             500 => VerifyResult.Misconfigured,
             _ => VerifyResult.Error
+        };
+    }
+
+    public static Task<VerifyResult> SubmitVerification(string provider, string code, string externalId)
+    {
+        return provider switch
+        {
+            "qq" => SubmitQqCode(code, externalId),
+            _ => Task.FromResult(VerifyResult.Error)
         };
     }
 

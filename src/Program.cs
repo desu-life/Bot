@@ -73,6 +73,7 @@ if (config.dev)
         Thread.Sleep(500);
         Environment.Exit(1);
     });
+    Log.Warning("进入测试模式，测试用户ID: {0}", sender.Value());
 
     while (true)
     {

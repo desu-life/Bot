@@ -2,8 +2,9 @@
   "profiles": {
     "KanonBot": {
       "commandName": "Project",
+      "workingDirectory": "G:\\Code\\desu.life\\KanonBot",
       "environmentVariables": {
-        "KANONBOT_TEST_USER_ID": "1071814607"
+        "KANONBOT_TEST_QQ_ID": "1071814607"
       }
     }
   }

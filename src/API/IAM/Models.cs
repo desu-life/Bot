@@ -9,6 +9,26 @@ public class SubmitVerificationRequest
     public required string ExternalId { get; set; }
 }
 
+public class BindSessionRequest
+{
+    public required string ExternalId { get; set; }
+}
+
+public class BindSessionResponse
+{
+    public string Ticket { get; set; } = "";
+    public string Url { get; set; } = "";
+    public string? Code { get; set; }
+    [JsonConverter(typeof(FlexibleDateTimeOffsetConverter))]
+    public DateTimeOffset? ExpiresAt { get; set; }
+}
+
+public class SubmitCodeResponse
+{
+    public string? Message { get; set; }
+    public string? Error { get; set; }
+}
+
 public class BoundUserLookupResponse
 {
     public string UserId { get; set; } = "";
