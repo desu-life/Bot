@@ -639,6 +639,7 @@ public static class ScoreV2
         );
         acchue.Mutate(x => x.Hue(((float)hue)));
         score.Mutate(x => x.DrawImage(acchue, 1));
+
         // combo
         var combo = data.scoreInfo.MaxCombo;
         if (ppInfo.maxCombo != null)
