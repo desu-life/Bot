@@ -20,7 +20,7 @@ public partial class FakeSocket : ISocket, IReply
         return Task.CompletedTask;
     }
 
-    public async Task Reply(Target target, Message.Chain msg)
+    public async Task<bool> Reply(Target target, Message.Chain msg)
     {
         foreach (var s in msg.Iter())
         {
@@ -45,5 +45,6 @@ public partial class FakeSocket : ISocket, IReply
                     break;
             }
         }
+        return true;
     }
 }

@@ -58,89 +58,11 @@ public class Target
 
     public async Task<bool> reply(Msg.Chain msgChain)
     {
-        switch (this.socket!)
-        {
-            case Discord d:
-                var discordRawMessage = this.raw as libDiscord.IMessage;
-                try
-                {
-                    await d.api.SendMessage(discordRawMessage!.Channel, msgChain, discordRawMessage);
-                }
-                catch (Exception ex)
-                {
-                    Log.Warning("发送Discord消息失败 ↓\n{ex}", ex);
-                    return false;
-                }
-                break;
-            case QQGuild s:
-                var GuildMessageData = (this.raw as QQGuild.Models.MessageData)!;
-                try
-                {
-                    await s.api.SendMessage(
-                        GuildMessageData.ChannelID,
-                        new QQGuild.Models.SendMessageData()
-                        {
-                            MessageId = GuildMessageData.ID,
-                            MessageReference = new() { MessageId = GuildMessageData.ID }
-                        }.Build(msgChain)
-                    );
-                }
-                catch (Exception ex)
-                {
-                    Log.Warning("发送QQ频道消息失败 ↓\n{ex}", ex);
-                    return false;
-                }
-                break;
-            case OneBot.Client s:
-                switch (this.raw)
-                {
-                    case OneBot.Models.GroupMessage g: 
-                    {
-                        if ((await s.api.SendGroupMessage(g.GroupId, msgChain)).HasValue)
-                        {
-                            Log.Warning("发送QQ消息失败");
-                            return false;
-                        }
-                        break;
-                    }
-                    case OneBot.Models.PrivateMessage p:
-                        if ((await s.api.SendPrivateMessage(p.UserId, msgChain)).HasValue)
-                        {
-                            Log.Warning("发送QQ消息失败");
-                            return false;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            case OneBot.Server.Socket s:
-                switch (this.raw)
-                {
-                    case OneBot.Models.GroupMessage g:
-                        if ((await s.api.SendGroupMessage(g.GroupId, msgChain)).HasValue)
-                        {
-                            return false;
-                        }
-                        break;
-                    case OneBot.Models.PrivateMessage p:
-                        if ((await s.api.SendPrivateMessage(p.UserId, msgChain)).HasValue)
-                        {
-                            return false;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            default:
-                if (this.socket is IReply r) {
-                    await r.Reply(this, msgChain);
-                } else {
-                    await socket.SendAsync(msgChain.ToString());
-                }
-                break;
+        if (this.socket is IReply r) {
+            return await r.Reply(this, msgChain);
+        } else {
+            await socket.SendAsync(msgChain.ToString());
+            return true;
         }
-        return true;
     }
 }

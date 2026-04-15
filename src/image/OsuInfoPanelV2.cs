@@ -1,9 +1,11 @@
 using System.IO;
 using System.Numerics;
+using KanonBot.API.Kagami;
 using KanonBot.Functions.OSU;
 using KanonBot.Image;
 using KanonBot.Image.Components;
 using KanonBot.OsuPerformance;
+using Newtonsoft.Json;
 using RosuPP;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -15,6 +17,7 @@ using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using Newtonsoft.Json.Linq;
 using static KanonBot.API.OSU.OSUExtensions;
 using static KanonBot.Image.Fonts;
 using static KanonBot.Image.InfoV1;
@@ -743,6 +746,181 @@ public static class OsuInfoPanelV2
                 });
             return options;
         }
+
+        public static InfoCustom FromCustomTheme(InfoPanelV2CustomTheme? theme, Option<InfoCustom> opOption)
+        {
+            if (theme == null)
+                return opOption.IfNone(InfoCustom.LightDefault);
+
+            try
+            {
+                var options = opOption.IfNone(InfoCustom.LightDefault);
+
+                // Color fields
+                if (theme.UsernameColor != null) options.UsernameColor = Color.ParseHex(theme.UsernameColor);
+                if (theme.ModeIconColor != null)
+                {
+                    options.ModeIconColor = Color.ParseHex(theme.ModeIconColor);
+                    if (theme.ModeIconColor.Length > 7) options.ModeIconAlpha = true;
+                }
+                if (theme.RankColor != null) options.RankColor = Color.ParseHex(theme.RankColor);
+                if (theme.CountryRankColor != null) options.CountryRankColor = Color.ParseHex(theme.CountryRankColor);
+                if (theme.CountryRankDiffColor != null) options.CountryRankDiffColor = Color.ParseHex(theme.CountryRankDiffColor);
+                if (theme.CountryRankDiffIconColor != null)
+                {
+                    options.CountryRankDiffIconColor = Color.ParseHex(theme.CountryRankDiffIconColor);
+                    if (theme.CountryRankDiffIconColor.Length > 7) options.CountryRankDiffIconColorAlpha = true;
+                }
+                if (theme.RankLineChartColor != null) options.RankLineChartColor = Color.ParseHex(theme.RankLineChartColor);
+                if (theme.RankLineChartTextColor != null) options.RankLineChartTextColor = Color.ParseHex(theme.RankLineChartTextColor);
+                if (theme.RankLineChartDotColor != null) options.RankLineChartDotColor = Color.ParseHex(theme.RankLineChartDotColor);
+                if (theme.RankLineChartDotStrokeColor != null) options.RankLineChartDotStrokeColor = Color.ParseHex(theme.RankLineChartDotStrokeColor);
+                if (theme.RankLineChartDashColor != null) options.RankLineChartDashColor = Color.ParseHex(theme.RankLineChartDashColor);
+                if (theme.RankLineChartDateTextColor != null) options.RankLineChartDateTextColor = Color.ParseHex(theme.RankLineChartDateTextColor);
+                if (theme.ppMainColor != null) options.ppMainColor = Color.ParseHex(theme.ppMainColor);
+                if (theme.ppDiffColor != null) options.ppDiffColor = Color.ParseHex(theme.ppDiffColor);
+                if (theme.ppDiffIconColor != null)
+                {
+                    options.ppDiffIconColor = Color.ParseHex(theme.ppDiffIconColor);
+                    if (theme.ppDiffIconColor.Length > 7) options.ppDiffIconColorAlpha = true;
+                }
+                if (theme.ppProgressBarColorTextColor != null) options.ppProgressBarColorTextColor = Color.ParseHex(theme.ppProgressBarColorTextColor);
+                if (theme.ppProgressBarColor != null) options.ppProgressBarColor = Color.ParseHex(theme.ppProgressBarColor);
+                if (theme.ppProgressBarBackgroundColor != null) options.ppProgressBarBackgroundColor = Color.ParseHex(theme.ppProgressBarBackgroundColor);
+                if (theme.accMainColor != null) options.accMainColor = Color.ParseHex(theme.accMainColor);
+                if (theme.accDiffColor != null) options.accDiffColor = Color.ParseHex(theme.accDiffColor);
+                if (theme.accDiffIconColor != null)
+                {
+                    options.accDiffIconColor = Color.ParseHex(theme.accDiffIconColor);
+                    if (theme.accDiffIconColor.Length > 7) options.accDiffIconColorAlpha = true;
+                }
+                if (theme.accProgressBarColorTextColor != null) options.accProgressBarColorTextColor = Color.ParseHex(theme.accProgressBarColorTextColor);
+                if (theme.accProgressBarColor != null) options.accProgressBarColor = Color.ParseHex(theme.accProgressBarColor);
+                if (theme.accProgressBarBackgroundColor != null) options.accProgressBarBackgroundColor = Color.ParseHex(theme.accProgressBarBackgroundColor);
+                if (theme.GradeStatisticsColor_XH != null) options.GradeStatisticsColor_XH = Color.ParseHex(theme.GradeStatisticsColor_XH);
+                if (theme.GradeStatisticsColor_X != null) options.GradeStatisticsColor_X = Color.ParseHex(theme.GradeStatisticsColor_X);
+                if (theme.GradeStatisticsColor_SH != null) options.GradeStatisticsColor_SH = Color.ParseHex(theme.GradeStatisticsColor_SH);
+                if (theme.GradeStatisticsColor_S != null) options.GradeStatisticsColor_S = Color.ParseHex(theme.GradeStatisticsColor_S);
+                if (theme.GradeStatisticsColor_A != null) options.GradeStatisticsColor_A = Color.ParseHex(theme.GradeStatisticsColor_A);
+                if (theme.Details_PlayTimeColor != null) options.Details_PlayTimeColor = Color.ParseHex(theme.Details_PlayTimeColor);
+                if (theme.Details_TotalHitsColor != null) options.Details_TotalHitsColor = Color.ParseHex(theme.Details_TotalHitsColor);
+                if (theme.Details_PlayCountColor != null) options.Details_PlayCountColor = Color.ParseHex(theme.Details_PlayCountColor);
+                if (theme.Details_RankedScoreColor != null) options.Details_RankedScoreColor = Color.ParseHex(theme.Details_RankedScoreColor);
+                if (theme.DetailsDiff_PlayTimeColor != null) options.DetailsDiff_PlayTimeColor = Color.ParseHex(theme.DetailsDiff_PlayTimeColor);
+                if (theme.DetailsDiff_TotalHitsColor != null) options.DetailsDiff_TotalHitsColor = Color.ParseHex(theme.DetailsDiff_TotalHitsColor);
+                if (theme.DetailsDiff_PlayCountColor != null) options.DetailsDiff_PlayCountColor = Color.ParseHex(theme.DetailsDiff_PlayCountColor);
+                if (theme.DetailsDiff_RankedScoreColor != null) options.DetailsDiff_RankedScoreColor = Color.ParseHex(theme.DetailsDiff_RankedScoreColor);
+                if (theme.DetailsDiff_PlayTimeIconColor != null)
+                {
+                    options.DetailsDiff_PlayTimeIconColor = Color.ParseHex(theme.DetailsDiff_PlayTimeIconColor);
+                    if (theme.DetailsDiff_PlayTimeIconColor.Length > 7) options.DetailsPlaytimeIconAlpha = true;
+                }
+                if (theme.DetailsDiff_TotalHitsIconColor != null)
+                {
+                    options.DetailsDiff_TotalHitsIconColor = Color.ParseHex(theme.DetailsDiff_TotalHitsIconColor);
+                    if (theme.DetailsDiff_TotalHitsIconColor.Length > 7) options.DetailsTotalHitIconAlpha = true;
+                }
+                if (theme.DetailsDiff_PlayCountIconColor != null)
+                {
+                    options.DetailsDiff_PlayCountIconColor = Color.ParseHex(theme.DetailsDiff_PlayCountIconColor);
+                    if (theme.DetailsDiff_PlayCountIconColor.Length > 7) options.DetailsPlayCountIconAlpha = true;
+                }
+                if (theme.DetailsDiff_RankedScoreIconColor != null)
+                {
+                    options.DetailsDiff_RankedScoreIconColor = Color.ParseHex(theme.DetailsDiff_RankedScoreIconColor);
+                    if (theme.DetailsDiff_RankedScoreIconColor.Length > 7) options.DetailsRankedScoreIconAlpha = true;
+                }
+                if (theme.LevelTitleColor != null) options.LevelTitleColor = Color.ParseHex(theme.LevelTitleColor);
+                if (theme.LevelProgressBarColor != null) options.LevelProgressBarColor = Color.ParseHex(theme.LevelProgressBarColor);
+                if (theme.LevelProgressBarBackgroundColor != null) options.LevelProgressBarBackgroundColor = Color.ParseHex(theme.LevelProgressBarBackgroundColor);
+                if (theme.MainBPTitleColor != null) options.MainBPTitleColor = Color.ParseHex(theme.MainBPTitleColor);
+                if (theme.MainBPArtistColor != null) options.MainBPArtistColor = Color.ParseHex(theme.MainBPArtistColor);
+                if (theme.MainBPMapperColor != null) options.MainBPMapperColor = Color.ParseHex(theme.MainBPMapperColor);
+                if (theme.MainBPBIDColor != null) options.MainBPBIDColor = Color.ParseHex(theme.MainBPBIDColor);
+                if (theme.MainBPStarsColor != null) options.MainBPStarsColor = Color.ParseHex(theme.MainBPStarsColor);
+                if (theme.MainBPAccColor != null) options.MainBPAccColor = Color.ParseHex(theme.MainBPAccColor);
+                if (theme.MainBPRankColor != null) options.MainBPRankColor = Color.ParseHex(theme.MainBPRankColor);
+                if (theme.MainBPppMainColor != null) options.MainBPppMainColor = Color.ParseHex(theme.MainBPppMainColor);
+                if (theme.MainBPppTitleColor != null) options.MainBPppTitleColor = Color.ParseHex(theme.MainBPppTitleColor);
+                if (theme.SubBp2ndModeColor != null)
+                {
+                    options.SubBp2ndModeColor = Color.ParseHex(theme.SubBp2ndModeColor);
+                    if (theme.SubBp2ndModeColor.Length > 7) options.Score1ModeIconAlpha = true;
+                }
+                if (theme.SubBp2ndBPTitleColor != null) options.SubBp2ndBPTitleColor = Color.ParseHex(theme.SubBp2ndBPTitleColor);
+                if (theme.SubBp2ndBPVersionColor != null) options.SubBp2ndBPVersionColor = Color.ParseHex(theme.SubBp2ndBPVersionColor);
+                if (theme.SubBp2ndBPBIDColor != null) options.SubBp2ndBPBIDColor = Color.ParseHex(theme.SubBp2ndBPBIDColor);
+                if (theme.SubBp2ndBPStarsColor != null) options.SubBp2ndBPStarsColor = Color.ParseHex(theme.SubBp2ndBPStarsColor);
+                if (theme.SubBp2ndBPAccColor != null) options.SubBp2ndBPAccColor = Color.ParseHex(theme.SubBp2ndBPAccColor);
+                if (theme.SubBp2ndBPRankColor != null) options.SubBp2ndBPRankColor = Color.ParseHex(theme.SubBp2ndBPRankColor);
+                if (theme.SubBp2ndBPppMainColor != null) options.SubBp2ndBPppMainColor = Color.ParseHex(theme.SubBp2ndBPppMainColor);
+                if (theme.SubBp3rdModeColor != null)
+                {
+                    options.SubBp3rdModeColor = Color.ParseHex(theme.SubBp3rdModeColor);
+                    if (theme.SubBp3rdModeColor.Length > 7) options.Score2ModeIconAlpha = true;
+                }
+                if (theme.SubBp3rdBPTitleColor != null) options.SubBp3rdBPTitleColor = Color.ParseHex(theme.SubBp3rdBPTitleColor);
+                if (theme.SubBp3rdBPVersionColor != null) options.SubBp3rdBPVersionColor = Color.ParseHex(theme.SubBp3rdBPVersionColor);
+                if (theme.SubBp3rdBPBIDColor != null) options.SubBp3rdBPBIDColor = Color.ParseHex(theme.SubBp3rdBPBIDColor);
+                if (theme.SubBp3rdBPStarsColor != null) options.SubBp3rdBPStarsColor = Color.ParseHex(theme.SubBp3rdBPStarsColor);
+                if (theme.SubBp3rdBPAccColor != null) options.SubBp3rdBPAccColor = Color.ParseHex(theme.SubBp3rdBPAccColor);
+                if (theme.SubBp3rdBPRankColor != null) options.SubBp3rdBPRankColor = Color.ParseHex(theme.SubBp3rdBPRankColor);
+                if (theme.SubBp3rdBPppMainColor != null) options.SubBp3rdBPppMainColor = Color.ParseHex(theme.SubBp3rdBPppMainColor);
+                if (theme.SubBp4thModeColor != null)
+                {
+                    options.SubBp4thModeColor = Color.ParseHex(theme.SubBp4thModeColor);
+                    if (theme.SubBp4thModeColor.Length > 7) options.Score3ModeIconAlpha = true;
+                }
+                if (theme.SubBp4thBPTitleColor != null) options.SubBp4thBPTitleColor = Color.ParseHex(theme.SubBp4thBPTitleColor);
+                if (theme.SubBp4thBPVersionColor != null) options.SubBp4thBPVersionColor = Color.ParseHex(theme.SubBp4thBPVersionColor);
+                if (theme.SubBp4thBPBIDColor != null) options.SubBp4thBPBIDColor = Color.ParseHex(theme.SubBp4thBPBIDColor);
+                if (theme.SubBp4thBPStarsColor != null) options.SubBp4thBPStarsColor = Color.ParseHex(theme.SubBp4thBPStarsColor);
+                if (theme.SubBp4thBPAccColor != null) options.SubBp4thBPAccColor = Color.ParseHex(theme.SubBp4thBPAccColor);
+                if (theme.SubBp4thBPRankColor != null) options.SubBp4thBPRankColor = Color.ParseHex(theme.SubBp4thBPRankColor);
+                if (theme.SubBp4thBPppMainColor != null) options.SubBp4thBPppMainColor = Color.ParseHex(theme.SubBp4thBPppMainColor);
+                if (theme.SubBp5thModeColor != null)
+                {
+                    options.SubBp5thModeColor = Color.ParseHex(theme.SubBp5thModeColor);
+                    if (theme.SubBp5thModeColor.Length > 7) options.Score4ModeIconAlpha = true;
+                }
+                if (theme.SubBp5thBPTitleColor != null) options.SubBp5thBPTitleColor = Color.ParseHex(theme.SubBp5thBPTitleColor);
+                if (theme.SubBp5thBPVersionColor != null) options.SubBp5thBPVersionColor = Color.ParseHex(theme.SubBp5thBPVersionColor);
+                if (theme.SubBp5thBPBIDColor != null) options.SubBp5thBPBIDColor = Color.ParseHex(theme.SubBp5thBPBIDColor);
+                if (theme.SubBp5thBPStarsColor != null) options.SubBp5thBPStarsColor = Color.ParseHex(theme.SubBp5thBPStarsColor);
+                if (theme.SubBp5thBPAccColor != null) options.SubBp5thBPAccColor = Color.ParseHex(theme.SubBp5thBPAccColor);
+                if (theme.SubBp5thBPRankColor != null) options.SubBp5thBPRankColor = Color.ParseHex(theme.SubBp5thBPRankColor);
+                if (theme.SubBp5thBPppMainColor != null) options.SubBp5thBPppMainColor = Color.ParseHex(theme.SubBp5thBPppMainColor);
+                if (theme.SubBpInfoSplitColor != null) options.SubBpInfoSplitColor = Color.ParseHex(theme.SubBpInfoSplitColor);
+                if (theme.footerColor != null) options.footerColor = Color.ParseHex(theme.footerColor);
+
+                // Float fields
+                if (theme.SideImgBrightness != null) options.SideImgBrightness = float.Parse(theme.SideImgBrightness);
+                if (theme.AvatarBrightness != null) options.AvatarBrightness = float.Parse(theme.AvatarBrightness);
+                if (theme.BadgeBrightness != null) options.BadgeBrightness = float.Parse(theme.BadgeBrightness);
+                if (theme.MainBPImgBrightness != null) options.MainBPImgBrightness = float.Parse(theme.MainBPImgBrightness);
+                if (theme.CountryFlagBrightness != null) options.CountryFlagBrightness = float.Parse(theme.CountryFlagBrightness);
+                if (theme.ModeCaptionBrightness != null) options.ModeCaptionBrightness = float.Parse(theme.ModeCaptionBrightness);
+                if (theme.ModIconBrightness != null) options.ModIconBrightness = float.Parse(theme.ModIconBrightness);
+                if (theme.ScoreModeIconBrightness != null) options.ScoreModeIconBrightness = float.Parse(theme.ScoreModeIconBrightness);
+                if (theme.OsuSupporterIconBrightness != null) options.OsuSupporterIconBrightness = float.Parse(theme.OsuSupporterIconBrightness);
+                if (theme.CountryFlagAlpha != null) options.CountryFlagAlpha = float.Parse(theme.CountryFlagAlpha);
+                if (theme.OsuSupporterIconAlpha != null) options.OsuSupporterIconAlpha = float.Parse(theme.OsuSupporterIconAlpha);
+                if (theme.BadgeAlpha != null) options.BadgeAlpha = float.Parse(theme.BadgeAlpha);
+                if (theme.AvatarAlpha != null) options.AvatarAlpha = float.Parse(theme.AvatarAlpha);
+                if (theme.ModIconAlpha != null) options.ModIconAlpha = float.Parse(theme.ModIconAlpha);
+
+                // Bool fields
+                if (theme.FixedScoreModeIconColor != null) options.FixedScoreModeIconColor = bool.Parse(theme.FixedScoreModeIconColor);
+                if (theme.DisplaySupporterStatus != null) options.DisplaySupporterStatus = bool.Parse(theme.DisplaySupporterStatus);
+
+                return options;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Failed to convert custom theme, falling back to defaults");
+                return opOption.IfNone(InfoCustom.LightDefault);
+            }
+        }
     }
 
     public static async Task<Img> Draw(
@@ -914,22 +1092,14 @@ public static class OsuInfoPanelV2
         }
         if (sidePic == null)
         {
-            if (File.Exists($"./work/panelv2/user_customimg/{data.osuId}.png"))
+            var sidePicPath = ColorMode switch
             {
-                sidePic = await Utils.ReadImageRgba($"./work/panelv2/user_customimg/{data.osuId}.png");
-                hasSidePic = true;
-            }
-            else
-            {
-                var sidePicPath = ColorMode switch
-                {
-                    UserPanelData.CustomMode.Custom => "./work/panelv2/infov2-dark-customimg.png",
-                    UserPanelData.CustomMode.Light => "./work/panelv2/infov2-light-customimg.png",
-                    UserPanelData.CustomMode.Dark => "./work/panelv2/infov2-dark-customimg.png",
-                    _ => throw new ArgumentOutOfRangeException("未知的自定义模式")
-                };
-                sidePic = await Utils.ReadImageRgba(sidePicPath);
-            }
+                UserPanelData.CustomMode.Custom => "./work/panelv2/infov2-dark-customimg.png",
+                UserPanelData.CustomMode.Light => "./work/panelv2/infov2-light-customimg.png",
+                UserPanelData.CustomMode.Dark => "./work/panelv2/infov2-dark-customimg.png",
+                _ => throw new ArgumentOutOfRangeException("未知的自定义模式")
+            };
+            sidePic = await Utils.ReadImageRgba(sidePicPath);
         }
 
         sidePic.Mutate(x => x.Brightness(SideImgBrightness));
@@ -1122,17 +1292,13 @@ public static class OsuInfoPanelV2
         }
         if (panel == null)
         {
-            string panelPath;
-            if (File.Exists($"./work/panelv2/user_infopanel/{data.osuId}.png"))
-                panelPath = $"./work/panelv2/user_infopanel/{data.osuId}.png";
-            else
-                panelPath = ColorMode switch
-                {
-                    UserPanelData.CustomMode.Custom => "./work/panelv2/infov2-dark.png",
-                    UserPanelData.CustomMode.Light => "./work/panelv2/infov2-light.png",
-                    UserPanelData.CustomMode.Dark => "./work/panelv2/infov2-dark.png",
-                    _ => throw new ArgumentOutOfRangeException("未知的颜色模式"),
-                };
+            string panelPath = ColorMode switch
+            {
+                UserPanelData.CustomMode.Custom => "./work/panelv2/infov2-dark.png",
+                UserPanelData.CustomMode.Light => "./work/panelv2/infov2-light.png",
+                UserPanelData.CustomMode.Dark => "./work/panelv2/infov2-dark.png",
+                _ => throw new ArgumentOutOfRangeException("未知的颜色模式"),
+            };
             panel = await Utils.ReadImageRgba(panelPath);
         }
         info.Mutate(x => x.DrawImage(panel, new Point(0, 0), 1));

@@ -1,10 +1,13 @@
 using System.Net.WebSockets;
-using WatsonWebsocket;
-using KanonBot.Serializer;
 using KanonBot.Event;
+using KanonBot.Message;
+using KanonBot.Serializer;
 using Newtonsoft.Json.Linq;
+using WatsonWebsocket;
+
 namespace KanonBot.Drivers;
-public partial class QQGuild : ISocket, IDriver
+
+public partial class QQGuild : ISocket, IDriver, IReply
 {
     public static readonly Platform platform = Platform.Guild;
     public string? selfID { get; private set; }
@@ -17,6 +20,7 @@ public partial class QQGuild : ISocket, IDriver
     Enums.Intent intents;
     System.Timers.Timer heartbeatTimer = new();
     int lastSeq = 0;
+
     public QQGuild(long appID, string token, Enums.Intent intents, bool sandbox = false)
     {
         // 初始化变量
@@ -32,19 +36,24 @@ public partial class QQGuild : ISocket, IDriver
 
         // 初始化ws
         var client = new WatsonWsClient(new Uri(url));
-        client.ConfigureOptions(options => {
+        client.ConfigureOptions(options =>
+        {
             options.KeepAliveInterval = TimeSpan.FromSeconds(5);
             options.SetRequestHeader("Authorization", this.AuthToken);
         });
 
-        client.Logger = (message) => { 
+        client.Logger = (message) =>
+        {
             Log.Information($"[{OneBot.platform} Client] {message}");
         };
 
-
         // 拿Tasks异步执行
-        client.MessageReceived += (sender, e) => {
-            if (e.MessageType is not WebSocketMessageType.Text) { return; }
+        client.MessageReceived += (sender, e) =>
+        {
+            if (e.MessageType is not WebSocketMessageType.Text)
+            {
+                return;
+            }
             string message = System.Text.Encoding.UTF8.GetString(e.Data);
             Task.Run(async () =>
             {
@@ -59,7 +68,8 @@ public partial class QQGuild : ISocket, IDriver
             });
         };
 
-        client.ServerDisconnected += (sender, e) => {
+        client.ServerDisconnected += (sender, e) =>
+        {
             // reconnect timeout
             Thread.Sleep(5000);
             Console.WriteLine("与服务器断开连接，开始重连...");
@@ -82,14 +92,17 @@ public partial class QQGuild : ISocket, IDriver
                 break;
             case Enums.EventType.AtMessageCreate:
                 var MessageData = (obj.Data as JObject)?.ToObject<Models.MessageData>();
-                this.msgAction?.Invoke(new Target() {
-                    platform = Platform.Guild,
-                    sender = MessageData!.Author.ID,
-                    selfAccount = this.selfID,
-                    msg = Message.Parse(MessageData!),
-                    raw = MessageData,
-                    socket = this
-                });
+                this.msgAction?.Invoke(
+                    new Target()
+                    {
+                        platform = Platform.Guild,
+                        sender = MessageData!.Author.ID,
+                        selfAccount = this.selfID,
+                        msg = Message.Parse(MessageData!),
+                        raw = MessageData,
+                        socket = this
+                    }
+                );
                 break;
             case Enums.EventType.Resumed:
                 // 恢复连接成功
@@ -107,7 +120,7 @@ public partial class QQGuild : ISocket, IDriver
         // Log.Debug("收到消息: {@0} 数据: {1}", obj, obj.Data?.ToString(Formatting.None) ?? null);
 
         if (obj.Seq != null)
-            this.lastSeq = obj.Seq.Value;   // 存储最后一次seq
+            this.lastSeq = obj.Seq.Value; // 存储最后一次seq
 
         switch (obj.Operation)
         {
@@ -117,33 +130,46 @@ public partial class QQGuild : ISocket, IDriver
             case Enums.OperationCode.Hello:
                 var heartbeatInterval = (obj.Data as JObject)!["heartbeat_interval"]!.Value<int>();
 
-                SetHeartBeatTicker(heartbeatInterval);  // 设置心跳定时器
+                SetHeartBeatTicker(heartbeatInterval); // 设置心跳定时器
 
-                this.Send(this.SessionId switch {
-                    null => Json.Serialize(new Models.PayloadBase<Models.IdentityData> {    // 鉴权
-                    Operation = Enums.OperationCode.Identify,
-                    Data = new Models.IdentityData{
-                        Token = this.AuthToken,
-                        Intents = this.intents,
-                        Shard = [0, 1],
+                this.Send(
+                    this.SessionId switch
+                    {
+                        null
+                            => Json.Serialize(
+                                new Models.PayloadBase<Models.IdentityData>
+                                { // 鉴权
+                                    Operation = Enums.OperationCode.Identify,
+                                    Data = new Models.IdentityData
+                                    {
+                                        Token = this.AuthToken,
+                                        Intents = this.intents,
+                                        Shard = [0, 1],
+                                    }
+                                }
+                            ),
+                        not null
+                            => Json.Serialize(
+                                new Models.PayloadBase<Models.ResumeData>
+                                { // 鉴权
+                                    Operation = Enums.OperationCode.Resume,
+                                    Data = new Models.ResumeData
+                                    {
+                                        Token = this.AuthToken,
+                                        SessionId = this.SessionId.Value,
+                                        Seq = this.lastSeq,
+                                    }
+                                }
+                            )
                     }
-                    }),
-                    not null => Json.Serialize(new Models.PayloadBase<Models.ResumeData> {    // 鉴权
-                    Operation = Enums.OperationCode.Resume,
-                    Data = new Models.ResumeData{
-                        Token = this.AuthToken,
-                        SessionId = this.SessionId.Value,
-                        Seq = this.lastSeq,
-                    }
-                    })
-                });
+                );
                 break;
             case Enums.OperationCode.Reconnect:
-                await this.instance.StartAsync();    // 重连
+                await this.instance.StartAsync(); // 重连
                 break;
             case Enums.OperationCode.InvalidSession:
                 await this.instance.StopAsync();
-                this.Dispose();      // 销毁客户端
+                this.Dispose(); // 销毁客户端
                 throw new KanonError("无效的session，需要重新鉴权");
             case Enums.OperationCode.HeartbeatACK:
                 // 无需处理
@@ -151,38 +177,39 @@ public partial class QQGuild : ISocket, IDriver
             default:
                 break;
         }
-
     }
 
     void SetHeartBeatTicker(int interval)
     {
-        this.heartbeatTimer = new System.Timers.Timer(interval);    // 初始化定时器
+        this.heartbeatTimer = new System.Timers.Timer(interval); // 初始化定时器
         this.heartbeatTimer.Elapsed += (s, e) =>
         {
             HeartBeatTicker();
         };
-        this.heartbeatTimer.AutoReset = true;   // 设置定时器是否重复触发
-        this.heartbeatTimer.Enabled = true;  // 启动定时器
+        this.heartbeatTimer.AutoReset = true; // 设置定时器是否重复触发
+        this.heartbeatTimer.Enabled = true; // 启动定时器
     }
 
     void HeartBeatTicker()
     {
         // Log.Debug("Sending heartbeat..");   // log（仅测试）
-        var j = Json.Serialize(new Models.PayloadBase<Models.IdentityData> {
-            Operation = Enums.OperationCode.Heartbeat,
-            Seq = this.lastSeq
-        });
+        var j = Json.Serialize(
+            new Models.PayloadBase<Models.IdentityData>
+            {
+                Operation = Enums.OperationCode.Heartbeat,
+                Seq = this.lastSeq
+            }
+        );
 
         this.Send(j);
     }
-
-
 
     public IDriver onMessage(IDriver.MessageDelegate action)
     {
         this.msgAction += action;
         return this;
     }
+
     public IDriver onEvent(IDriver.EventDelegate action)
     {
         this.eventAction += action;
@@ -197,6 +224,28 @@ public partial class QQGuild : ISocket, IDriver
     public async Task SendAsync(string message)
     {
         await this.instance.SendAsync(message);
+    }
+
+    public async Task<bool> Reply(Target target, Chain msg)
+    {
+        var GuildMessageData = (target.raw as QQGuild.Models.MessageData)!;
+        try
+        {
+            await api.SendMessage(
+                GuildMessageData.ChannelID,
+                new QQGuild.Models.SendMessageData()
+                {
+                    MessageId = GuildMessageData.ID,
+                    MessageReference = new() { MessageId = GuildMessageData.ID }
+                }.Build(msg)
+            );
+        }
+        catch (Exception ex)
+        {
+            Log.Warning("发送QQ频道消息失败 ↓\n{ex}", ex);
+            return false;
+        }
+        return true;
     }
 
     public Task Start()

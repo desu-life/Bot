@@ -1,6 +1,7 @@
 #pragma warning disable CS8618 // 非null 字段未初始化
 using System.IO;
 using System.Numerics;
+using KanonBot.API.Kagami;
 using KanonBot.Functions.OSU;
 using KanonBot.Image;
 using KanonBot.Image.Components;
@@ -30,7 +31,7 @@ public static class InfoV1
         public int daysBefore = 0;
         public List<string> badgeImageUrls = [];
         public CustomMode customMode = CustomMode.Dark; //0=custom 1=light 2=dark
-        public string ColorConfigRaw;
+        public API.Kagami.InfoPanelV2CustomTheme? CustomTheme;
         public string? modeString;
 
         // Kagami image URLs (loaded from kanon-images API)
@@ -55,7 +56,6 @@ public static class InfoV1
     )
     {
         var info = new Image<Rgba32>(1200, 857);
-        // custom panel - try URL from Kagami first, then local file
         Img? panel = null;
         if (!string.IsNullOrEmpty(data.v1PanelUrl))
         {
@@ -72,12 +72,9 @@ public static class InfoV1
         if (panel == null)
         {
             var panelPath = "./work/legacy/default-info-v1.png";
-            if (File.Exists($"./work/legacy/v1_infopanel/{data.osuId}.png"))
-                panelPath = $"./work/legacy/v1_infopanel/{data.osuId}.png";
             panel = await Img.LoadAsync(panelPath);
         }
 
-        // cover - try URL from Kagami first, then local files
         Img? cover = null;
         if (!string.IsNullOrEmpty(data.v1CoverUrl))
         {
@@ -93,33 +90,29 @@ public static class InfoV1
         }
         if (cover == null)
         {
-            var coverPath = $"./work/legacy/v1_cover/custom/{data.osuId}.png";
+            var coverPath = $"./work/legacy/v1_cover/osu!web/{data.osuId}.png";
             if (!File.Exists(coverPath))
             {
-                coverPath = $"./work/legacy/v1_cover/osu!web/{data.osuId}.png";
-                if (!File.Exists(coverPath))
+                coverPath = null;
+                if (data.userInfo.Cover is not null)
                 {
-                    coverPath = null;
-                    if (data.userInfo.Cover is not null)
+                    if (data.userInfo.Cover.CustomUrl is not null)
                     {
-                        if (data.userInfo.Cover.CustomUrl is not null)
+                        coverPath = await data.userInfo.Cover.CustomUrl.DownloadFileAsync(
+                            "./work/legacy/v1_cover/osu!web/",
+                            $"{data.osuId}.png"
+                        );
+                    }
+                    else
+                    {
+                        var cover_id = data.userInfo.Cover.Id ?? "0";
+                        coverPath = $"./work/legacy/v1_cover/osu!web/default_{cover_id}.png";
+                        if (!File.Exists(coverPath))
                         {
-                            coverPath = await data.userInfo.Cover.CustomUrl.DownloadFileAsync(
+                            coverPath = await data.userInfo.Cover.Url.DownloadFileAsync(
                                 "./work/legacy/v1_cover/osu!web/",
-                                $"{data.osuId}.png"
+                                $"default_{cover_id}.png"
                             );
-                        }
-                        else
-                        {
-                            var cover_id = data.userInfo.Cover.Id ?? "0";
-                            coverPath = $"./work/legacy/v1_cover/osu!web/default_{cover_id}.png";
-                            if (!File.Exists(coverPath))
-                            {
-                                coverPath = await data.userInfo.Cover.Url.DownloadFileAsync(
-                                    "./work/legacy/v1_cover/osu!web/",
-                                    $"default_{cover_id}.png"
-                                );
-                            }
                         }
                     }
                 }

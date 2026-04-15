@@ -15,7 +15,7 @@ namespace KanonBot.Drivers;
 
 public partial class OneBot
 {
-    public class Client : OneBot, IDriver, ISocket
+    public class Client : OneBot, IDriver, ISocket, IReply
     {
         WatsonWsClient instance;
         public API api;
@@ -28,17 +28,23 @@ public partial class OneBot
 
             // 初始化ws
             var client = new WatsonWsClient(new Uri(url));
-            client.ConfigureOptions(options => {
+            client.ConfigureOptions(options =>
+            {
                 options.KeepAliveInterval = TimeSpan.FromSeconds(5);
             });
 
-            client.Logger = (message) => { 
+            client.Logger = (message) =>
+            {
                 Log.Information($"[{OneBot.platform} Client] {message}");
             };
 
             // 拿Tasks异步执行
-            client.MessageReceived += (sender, e) => {
-                if (e.MessageType is not WebSocketMessageType.Text) { return; }
+            client.MessageReceived += (sender, e) =>
+            {
+                if (e.MessageType is not WebSocketMessageType.Text)
+                {
+                    return;
+                }
                 string message = System.Text.Encoding.UTF8.GetString(e.Data);
                 Task.Run(async () =>
                 {
@@ -53,7 +59,8 @@ public partial class OneBot
                 });
             };
 
-            client.ServerDisconnected += (sender, e) => {
+            client.ServerDisconnected += (sender, e) =>
+            {
                 // reconnect timeout
                 Thread.Sleep(5000);
                 Console.WriteLine("与服务器断开连接，开始重连...");
@@ -186,6 +193,32 @@ public partial class OneBot
         public void Dispose()
         {
             this.instance.Dispose();
+        }
+
+        public async Task<bool> Reply(Target target, Chain msg)
+        {
+            switch (target.raw)
+            {
+                case OneBot.Models.GroupMessage g:
+                {
+                    if ((await api.SendGroupMessage(g.GroupId, msg)).HasValue)
+                    {
+                        Log.Error("发送 QQ 消息失败");
+                        return false;
+                    }
+                    break;
+                }
+                case OneBot.Models.PrivateMessage p:
+                    if ((await api.SendPrivateMessage(p.UserId, msg)).HasValue)
+                    {
+                        Log.Error("发送 QQ 消息失败");
+                        return false;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            return true;
         }
     }
 }

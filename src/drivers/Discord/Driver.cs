@@ -4,10 +4,11 @@ using Discord.Net.Rest;
 using Discord.Net.WebSockets;
 using Discord.WebSocket;
 using KanonBot.Event;
+using KanonBot.Message;
 using Serilog.Events;
 
 namespace KanonBot.Drivers;
-public partial class Discord : ISocket, IDriver
+public partial class Discord : ISocket, IDriver, IReply
 {
     public static readonly Platform platform = Platform.Discord;
     public string? selfID { get; private set; }
@@ -121,6 +122,21 @@ public partial class Discord : ISocket, IDriver
     public Task SendAsync(string message)
     {
         throw new NotSupportedException("不支持");
+    }
+
+    public async Task<bool> Reply(Target target, Chain msg)
+    {
+        var discordRawMessage = target.raw as IMessage;
+        try
+        {
+            await api.SendMessage(discordRawMessage!.Channel, msg, discordRawMessage);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning("发送Discord消息失败 ↓\n{ex}", ex);
+            return false;
+        }
+        return true;
     }
 
     public async Task Start()

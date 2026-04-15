@@ -192,7 +192,7 @@ namespace KanonBot.Functions.OSUBot
                     {
                         data.customMode = parsed.Value;
                         if (data.customMode == Image.InfoV1.UserPanelData.CustomMode.Custom)
-                            data.ColorConfigRaw = kagamiImages!.infoPanelV2CustomThemeJson ?? "";
+                            data.CustomTheme = kagamiImages!.infoPanelV2CustomThemeJson;
                     }
                 }
                 data.osuId = resolved.OsuId;
@@ -216,7 +216,7 @@ namespace KanonBot.Functions.OSUBot
                 case 2:
                     var v2Options = data.customMode switch
                     {
-                        Image.InfoV1.UserPanelData.CustomMode.Custom => Image.OsuInfoPanelV2.InfoCustom.ParseColors(data.ColorConfigRaw, None),
+                        Image.InfoV1.UserPanelData.CustomMode.Custom => Image.OsuInfoPanelV2.InfoCustom.FromCustomTheme(data.CustomTheme, None),
                         Image.InfoV1.UserPanelData.CustomMode.Light => Image.OsuInfoPanelV2.InfoCustom.LightDefault,
                         Image.InfoV1.UserPanelData.CustomMode.Dark => Image.OsuInfoPanelV2.InfoCustom.DarkDefault,
                         _ => throw new ArgumentOutOfRangeException("未知的自定义模式")
@@ -257,6 +257,7 @@ namespace KanonBot.Functions.OSUBot
                 default:
                     return;
             }
+
             // 关闭流
             using (img) await target.reply(img, new PngEncoder());
 

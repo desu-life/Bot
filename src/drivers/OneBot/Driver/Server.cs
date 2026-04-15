@@ -21,7 +21,7 @@ public partial class OneBot
 {
     public class Server : OneBot, IDriver
     {
-        public class Socket : ISocket
+        public class Socket : ISocket, IReply
         {
             public API api;
             WatsonWsServer server;
@@ -48,6 +48,32 @@ public partial class OneBot
             {
                 if (!isClose) await this.server.SendAsync(client.Guid, message);
             }
+
+            public async Task<bool> Reply(Target target, Chain msg)
+            {
+                switch (target.raw)
+                {
+                    case OneBot.Models.GroupMessage g:
+                    {
+                        if ((await api.SendGroupMessage(g.GroupId, msg)).HasValue)
+                        {
+                            Log.Error("发送 QQ 消息失败");
+                            return false;
+                        }
+                        break;
+                    }
+                    case OneBot.Models.PrivateMessage p:
+                        if ((await api.SendPrivateMessage(p.UserId, msg)).HasValue)
+                        {
+                            Log.Error("发送 QQ 消息失败");
+                            return false;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                return true;
+        }
 
             public ClientMetadata ConnectionInfo => this.client;
 

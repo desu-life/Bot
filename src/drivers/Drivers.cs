@@ -33,7 +33,7 @@ public interface ISocket
 
 public interface IReply
 {
-    Task Reply(Target target, Message.Chain msg);
+    Task<bool> Reply(Target target, Message.Chain msg);
 }
 
 public class Drivers
