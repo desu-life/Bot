@@ -41,7 +41,7 @@ namespace KanonBot.Functions.OSUBot
             {
                 rootCmd = cmd;
             }
-            
+
             switch (rootCmd.ToLower())
             {
                 case "bonuspp":
@@ -98,7 +98,8 @@ namespace KanonBot.Functions.OSUBot
             // 解析指令
             var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Info);
             var resolved = await Accounts.ResolveCommandUser(target, command);
-            if (resolved == null) return;
+            if (resolved == null)
+                return;
 
             long osuID = resolved.OsuId;
             API.OSU.Mode? mode = resolved.Mode;
@@ -126,7 +127,8 @@ namespace KanonBot.Functions.OSUBot
             // 解析指令
             var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Info);
             var resolved = await Accounts.ResolveCommandUser(target, command);
-            if (resolved == null) return;
+            if (resolved == null)
+                return;
 
             long osuID = resolved.OsuId;
             API.OSU.Mode? mode = resolved.Mode;
@@ -378,7 +380,8 @@ namespace KanonBot.Functions.OSUBot
             // 解析指令
             var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Info);
             var resolved = await Accounts.ResolveCommandUser(target, command);
-            if (resolved == null) return;
+            if (resolved == null)
+                return;
 
             long osuID = resolved.OsuId;
             API.OSU.Mode? mode = resolved.Mode;
@@ -400,13 +403,31 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
             // 因为上面确定过模式，这里就直接用userdata里的mode了
-            var allBP = await API.OSU.Client.GetUserScores(
-                OnlineOsuInfo.Id,
-                API.OSU.UserScoreType.Best,
-                mode!.Value,
-                100,
-                0,
-                LegacyOnly: command.special_version_pp
+            var allBPList = await Task.WhenAll(
+                [
+                    API.OSU.Client.GetUserScores(
+                        OnlineOsuInfo.Id,
+                        API.OSU.UserScoreType.Best,
+                        mode!.Value,
+                        100,
+                        0,
+                        LegacyOnly: command.special_version_pp
+                    ),
+                    API.OSU.Client.GetUserScores(
+                        OnlineOsuInfo.Id,
+                        API.OSU.UserScoreType.Best,
+                        mode!.Value,
+                        100,
+                        100,
+                        LegacyOnly: command.special_version_pp
+                    )
+                ]
+            );
+            var allBP = allBPList.Flatten();
+            Log.Information(
+                "Got {0} scores for user {1}",
+                allBP?.Length ?? 0,
+                OnlineOsuInfo.Username
             );
             if (allBP == null)
             {
@@ -418,76 +439,13 @@ namespace KanonBot.Functions.OSUBot
                 await target.reply("这个模式你还没有成绩呢..");
                 return;
             }
-            double scorePP = 0.0,
-                bounsPP = 0.0,
-                pp = 0.0,
-                sumOxy = 0.0,
-                sumOx2 = 0.0,
-                avgX = 0.0,
-                avgY = 0.0,
-                sumX = 0.0;
-            List<double> ys = new();
-            for (int i = 0; i < allBP.Length; ++i)
-            {
-                var tmp = (allBP[i].pp ?? 0.0) * Math.Pow(0.95, i);
-                scorePP += tmp;
-                ys.Add(Math.Log10(tmp) / Math.Log10(100));
-            }
-            // calculateLinearRegression
-            for (int i = 1; i <= ys.Count; ++i)
-            {
-                double weight = Utils.log1p(i + 1.0);
-                sumX += weight;
-                avgX += i * weight;
-                avgY += ys[i - 1] * weight;
-            }
-            avgX /= sumX;
-            avgY /= sumX;
-            for (int i = 1; i <= ys.Count; ++i)
-            {
-                sumOxy += (i - avgX) * (ys[i - 1] - avgY) * Utils.log1p(i + 1.0);
-                sumOx2 += Math.Pow(i - avgX, 2.0) * Utils.log1p(i + 1.0);
-            }
-            double Oxy = sumOxy / sumX;
-            double Ox2 = sumOx2 / sumX;
-            // end
-            var b = new double[] { avgY - (Oxy / Ox2) * avgX, Oxy / Ox2 };
-            for (double i = 100; i <= OnlineOsuInfo.Statistics.PlayCount; ++i)
-            {
-                double val = Math.Pow(100.0, b[0] + b[1] * i);
-                if (val <= 0.0)
-                {
-                    break;
-                }
-                pp += val;
-            }
-            scorePP += pp;
-            bounsPP = OnlineOsuInfo.Statistics.PP - scorePP;
-            int totalscores =
-                OnlineOsuInfo.Statistics.GradeCounts.A
-                + OnlineOsuInfo.Statistics.GradeCounts.S
-                + OnlineOsuInfo.Statistics.GradeCounts.SH
-                + OnlineOsuInfo.Statistics.GradeCounts.SS
-                + OnlineOsuInfo.Statistics.GradeCounts.SSH;
-            bool max;
-            if (totalscores >= 25397 || bounsPP >= 416.6667)
-                max = true;
-            else
-                max = false;
-            int rankedScores = max
-                ? Math.Max(totalscores, 25397)
-                : (int)Math.Round(Math.Log10(-(bounsPP / 416.6667) + 1.0) / Math.Log10(0.9994));
-            if (double.IsNaN(scorePP) || double.IsNaN(bounsPP))
-            {
-                scorePP = 0.0;
-                bounsPP = 0.0;
-                rankedScores = 0;
-            }
+
+            var (scorePP, finalBonusPP, rankedScores) = Utils.CalculateBonusPP(allBP, OnlineOsuInfo);
             var str =
                 $"{OnlineOsuInfo.Username} ({OnlineOsuInfo.Mode.ToStr()})\n"
                 + $"总PP：{OnlineOsuInfo.Statistics.PP:0.##}pp\n"
                 + $"原始PP：{scorePP:0.##}pp\n"
-                + $"Bonus PP：{bounsPP:0.##}pp\n"
+                + $"Bonus PP：{finalBonusPP:0.##}pp\n"
                 + $"共计算出 {rankedScores} 个被记录的ranked谱面成绩。";
             await target.reply(str);
         }
@@ -586,7 +544,8 @@ namespace KanonBot.Functions.OSUBot
             // 解析指令
             var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.RoleCost);
             var resolved = await Accounts.ResolveCommandUser(target, command);
-            if (resolved == null) return;
+            if (resolved == null)
+                return;
 
             long osuID = resolved.OsuId;
             API.OSU.Mode? mode = resolved.Mode;
@@ -661,7 +620,8 @@ namespace KanonBot.Functions.OSUBot
             // 解析指令
             var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Info);
             var resolved = await Accounts.ResolveCommandUser(target, command);
-            if (resolved == null) return;
+            if (resolved == null)
+                return;
 
             long osuID = resolved.OsuId;
             API.OSU.Mode? mode = resolved.Mode;
@@ -722,7 +682,8 @@ namespace KanonBot.Functions.OSUBot
             // 解析指令
             var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Info);
             var resolved = await Accounts.ResolveCommandUser(target, command);
-            if (resolved == null) return;
+            if (resolved == null)
+                return;
 
             long osuID = resolved.OsuId;
             API.OSU.Mode? mode = resolved.Mode;
@@ -822,6 +783,5 @@ namespace KanonBot.Functions.OSUBot
             //$"\n共击打了{seasonalpassinfo.tth - seasonalpassinfo.inittth}次\n距离升级还需要{Math.Abs(temptth)}tth";
             //await target.reply(str);
         }
-
     }
 }

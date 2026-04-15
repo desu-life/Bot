@@ -201,7 +201,7 @@ public partial class OneBot
             {
                 case OneBot.Models.GroupMessage g:
                 {
-                    if ((await api.SendGroupMessage(g.GroupId, msg)).HasValue)
+                    if (!(await api.SendGroupMessage(g.GroupId, msg)).HasValue)
                     {
                         Log.Error("发送 QQ 消息失败");
                         return false;
@@ -209,7 +209,7 @@ public partial class OneBot
                     break;
                 }
                 case OneBot.Models.PrivateMessage p:
-                    if ((await api.SendPrivateMessage(p.UserId, msg)).HasValue)
+                    if (!(await api.SendPrivateMessage(p.UserId, msg)).HasValue)
                     {
                         Log.Error("发送 QQ 消息失败");
                         return false;

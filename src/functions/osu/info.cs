@@ -228,18 +228,44 @@ namespace KanonBot.Functions.OSUBot
                             data.userInfo.Id,
                             API.PPYSB.UserScoreType.Best,
                             sbmode!.Value,
-                            20,
+                            100,
                             0
                         );
                         allBP = ss?.Map(s => s.ToOsu(sbinfo!, sbmode!.Value)).ToArray();
                     } else {
-                        allBP = await API.OSU.Client.GetUserScores(
-                            data.userInfo.Id,
-                            API.OSU.UserScoreType.Best,
-                            data.userInfo.Mode,
-                            20,
-                            0
+                        var allBPList = await Task.WhenAll(
+                            [
+                                API.OSU.Client.GetUserScores(
+                                    data.userInfo.Id,
+                                    API.OSU.UserScoreType.Best,
+                                    mode!.Value,
+                                    100,
+                                    0,
+                                    LegacyOnly: command.special_version_pp
+                                ),
+                                API.OSU.Client.GetUserScores(
+                                    data.userInfo.Id,
+                                    API.OSU.UserScoreType.Best,
+                                    mode!.Value,
+                                    100,
+                                    100,
+                                    LegacyOnly: command.special_version_pp
+                                )
+                            ]
                         );
+                        allBP = allBPList.Flatten();
+                        if (command.special_version_pp)
+                        {
+                            var ppInfo = Utils.CalculateBonusPP(allBP, data.userInfo);
+                            await Parallel.ForEachAsync(allBP, async (s, _) => {
+                                var b = await Utils.LoadOrDownloadBeatmap(s.Beatmap!);
+                                s.pp = UniversalCalculator.CalculateData(b, s, UniversalCalculator.GetCalculatorKind(false, true)).ppStat.total;
+                            });
+                            allBP.Sort((a, b) => b.pp > a.pp ? 1 : -1);
+                            var ppInfoRecalculated = Utils.CalculateBonusPP(allBP, data.userInfo);
+                            var nextPP = ppInfo.bonusPP + ppInfoRecalculated.scorePP;
+                            data.userInfo.Statistics.PP = nextPP;
+                        }
                     }
 
                     img = await Image.OsuInfoPanelV2.Draw(

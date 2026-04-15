@@ -1116,78 +1116,18 @@ public static class OsuInfoPanelV2
         double bounsPP = 0.00;
         double scorePP = 0.00;
         #region bnspp
-        if (allBP == null || allBP.Length < 100)
-        {
-            scorePP = data.userInfo.Statistics.PP;
-        }
-        else if (allBP!.Length == 0)
+        if (allBP == null || allBP.Length < 100 || allBP.Length == 0)
         {
             scorePP = data.userInfo.Statistics.PP;
         }
         else
         {
-            double pp = 0.0,
-                sumOxy = 0.0,
-                sumOx2 = 0.0,
-                avgX = 0.0,
-                avgY = 0.0,
-                sumX = 0.0;
-            List<double> ys = new();
-            for (int i = 0; i < allBP.Length; ++i)
+            (scorePP, bounsPP, var rankedScores) = Utils.CalculateBonusPP(allBP, data.userInfo);
+            if (rankedScores == 1000)
             {
-                var tmp = (allBP[i].pp ?? 0.0) * Math.Pow(0.95, i);
-                scorePP += tmp;
-                ys.Add(Math.Log10(tmp) / Math.Log10(100.0));
-            }
-            // calculateLinearRegression
-            for (int i = 1; i <= ys.Count; ++i)
-            {
-                double weight = Utils.log1p(i + 1.0);
-                sumX += weight;
-                avgX += i * weight;
-                avgY += ys[i - 1] * weight;
-            }
-            avgX /= sumX;
-            avgY /= sumX;
-            for (int i = 1; i <= ys.Count; ++i)
-            {
-                sumOxy += (i - avgX) * (ys[i - 1] - avgY) * Utils.log1p(i + 1.0);
-                sumOx2 += Math.Pow(i - avgX, 2.0) * Utils.log1p(i + 1.0);
-            }
-            double Oxy = sumOxy / sumX;
-            double Ox2 = sumOx2 / sumX;
-            // end
-            var b = new double[] { avgY - (Oxy / Ox2) * avgX, Oxy / Ox2 };
-            for (double i = 100; i <= data.userInfo.Statistics.PlayCount; ++i)
-            {
-                double val = Math.Pow(100.0, b[0] + b[1] * i);
-                if (val <= 0.0)
-                {
-                    break;
-                }
-                pp += val;
-            }
-            scorePP += pp;
-            bounsPP = data.userInfo.Statistics.PP - scorePP;
-            int totalscores =
-                data.userInfo.Statistics.GradeCounts.A
-                + data.userInfo.Statistics.GradeCounts.S
-                + data.userInfo.Statistics.GradeCounts.SH
-                + data.userInfo.Statistics.GradeCounts.SS
-                + data.userInfo.Statistics.GradeCounts.SSH;
-            bool max;
-            if (totalscores >= 25397 || bounsPP >= 416.6667)
-                max = true;
-            else
-                max = false;
-            int rankedScores = max
-                ? Math.Max(totalscores, 25397)
-                : (int)Math.Round(Math.Log10(-(bounsPP / 416.6667) + 1.0) / Math.Log10(0.9994));
-            if (double.IsNaN(scorePP) || double.IsNaN(bounsPP))
-            {
-                scorePP = 0.0;
+                // 满了不显示
+                scorePP = data.userInfo.Statistics.PP;
                 bounsPP = 0.0;
-                rankedScores = 0;
             }
         }
         #endregion
