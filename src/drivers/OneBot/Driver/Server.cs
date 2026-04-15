@@ -312,9 +312,9 @@ public partial class OneBot
             return instance.StartAsync();
         }
 
-        public void Dispose()
+        public async Task Stop()
         {
-            this.instance.Dispose();
+            this.instance.Stop();
         }
     }
 }

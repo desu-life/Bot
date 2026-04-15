@@ -165,11 +165,10 @@ public partial class QQGuild : ISocket, IDriver, IReply
                 );
                 break;
             case Enums.OperationCode.Reconnect:
-                await this.instance.StartAsync(); // 重连
+                await this.Stop(); // 重连
                 break;
             case Enums.OperationCode.InvalidSession:
-                await this.instance.StopAsync();
-                this.Dispose(); // 销毁客户端
+                await this.Stop(); // 销毁客户端
                 throw new KanonError("无效的session，需要重新鉴权");
             case Enums.OperationCode.HeartbeatACK:
                 // 无需处理
@@ -253,8 +252,8 @@ public partial class QQGuild : ISocket, IDriver, IReply
         return this.instance.StartAsync();
     }
 
-    public void Dispose()
+    public async Task Stop()
     {
-        this.instance.Dispose();
+        await this.instance.StopAsync();
     }
 }

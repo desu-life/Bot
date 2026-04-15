@@ -145,8 +145,8 @@ public partial class Discord : ISocket, IDriver, IReply
         await this.instance.StartAsync();
     }
 
-    public void Dispose()
+    public async Task Stop()
     {
-        this.instance.Dispose();
+        await this.instance.StopAsync();
     }
 }

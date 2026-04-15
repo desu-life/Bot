@@ -103,7 +103,7 @@ public partial class OneBot
                                 catch (JsonSerializationException)
                                 {
                                     Log.Error("不支持的消息格式，请使用数组消息格式，连接断开");
-                                    this.Dispose();
+                                    await this.Stop();
                                     return;
                                 }
                                 var target = new Target
@@ -190,9 +190,9 @@ public partial class OneBot
             return this.instance.StartAsync();
         }
 
-        public void Dispose()
+        public async Task Stop()
         {
-            this.instance.Dispose();
+            await this.instance.StopAsync();
         }
 
         public async Task<bool> Reply(Target target, Chain msg)

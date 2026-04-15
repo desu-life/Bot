@@ -20,7 +20,7 @@ public interface IDriver
     IDriver onMessage(MessageDelegate action);
     IDriver onEvent(EventDelegate action);
     Task Start();
-    void Dispose();
+    Task Stop();
 }
 public interface ISocket
 {
@@ -50,17 +50,17 @@ public class Drivers
         return this;
     }
 
-    public void StartAll()
+    public async Task StartAll()
     {
         var tasks = driverList.Map(x => x.Start()).ToArray();
-        Task.WaitAll(tasks);
+        await Task.WhenAll(tasks);
         exitEvent.WaitOne();
     }
 
-    public void StopAll()
+    public async Task StopAll()
     {
         foreach (var driver in this.driverList) {
-            driver.Dispose();
+            await driver.Stop();
         }
         exitEvent.Set();
     }
