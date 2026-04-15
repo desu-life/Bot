@@ -207,6 +207,40 @@ namespace KanonBot.Functions.OSUBot
             switch (custominfoengineVer) //0=null 1=v1 2=v2
             {
                 case 1:
+                    if (command.special_version_pp && !is_ppysb)
+                    {
+                        var allBPList = await Task.WhenAll(
+                            [
+                                API.OSU.Client.GetUserScores(
+                                    data.userInfo.Id,
+                                    API.OSU.UserScoreType.Best,
+                                    mode!.Value,
+                                    100,
+                                    0,
+                                    LegacyOnly: command.special_version_pp
+                                ),
+                                API.OSU.Client.GetUserScores(
+                                    data.userInfo.Id,
+                                    API.OSU.UserScoreType.Best,
+                                    mode!.Value,
+                                    100,
+                                    100,
+                                    LegacyOnly: command.special_version_pp
+                                )
+                            ]
+                        );
+                        allBP = allBPList.Flatten();
+                        var ppInfo = Utils.CalculateBonusPP(allBP, data.userInfo);
+                        await Parallel.ForEachAsync(allBP, async (s, _) => {
+                            var b = await Utils.LoadOrDownloadBeatmap(s.Beatmap!);
+                            s.pp = UniversalCalculator.CalculateData(b, s, UniversalCalculator.GetCalculatorKind(false, true)).ppStat.total;
+                        });
+                        allBP.Sort((a, b) => b.pp > a.pp ? 1 : -1);
+                        var ppInfoRecalculated = Utils.CalculateBonusPP(allBP, data.userInfo);
+                        var nextPP = ppInfo.bonusPP + ppInfoRecalculated.scorePP;
+                        data.userInfo.Statistics.PP = nextPP;
+                    }
+
                     img = await Image.InfoV1.DrawInfo(
                         data,
                         resolved.IsRegistered,
