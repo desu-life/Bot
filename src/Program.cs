@@ -270,5 +270,5 @@ foreach (var driverConfig in config.drivers)
     }
 }
 
-drivers.StartAll();
+await drivers.StartAll();
 Log.CloseAndFlush();
