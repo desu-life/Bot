@@ -13,7 +13,7 @@ namespace KanonBot.Functions.OSUBot
 {
     public class Score
     {
-        async public static Task Execute(Target target, string cmd, bool ppFirst = false)
+        async public static Task Execute(Target target, string cmd, bool ppFirst = false, bool fetch_source = false)
         {
             #region 验证
             // 解析指令
@@ -50,8 +50,17 @@ namespace KanonBot.Functions.OSUBot
             // 判断是否给定了bid
             if (command.order_number == -1)
             {
-                await target.reply("请提供谱面bid。");
-                return;
+                if (!fetch_source)
+                {
+                    await target.reply("请提供谱面bid。");
+                    return;
+                }
+
+                var lastBeatmapId = HistoryBeatmapMapper.Get(target.source);
+                if (lastBeatmapId != null)
+                {
+                    command.order_number = (int)lastBeatmapId;
+                }
             }
 
             API.OSU.Models.ScoreLazer? scoreData = null;
@@ -137,9 +146,12 @@ namespace KanonBot.Functions.OSUBot
 
             Image.ScoreV2.ScorePanelData data;
             data = await UniversalCalculator.CalculatePanelData(scoreData, UniversalCalculator.GetCalculatorKind(is_ppysb, command.special_version_pp));
-
+            
             using var img = await Image.ScoreV2.DrawScore(data);
             await target.reply(img, new JpegEncoder());
+
+            // 缓存本来源查询
+            HistoryBeatmapMapper.Map(target.source, scoreData.BeatmapId);
         }
     }
 }

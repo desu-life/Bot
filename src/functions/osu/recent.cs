@@ -74,6 +74,9 @@ namespace KanonBot.Functions.OSUBot
 
                 await target.reply(img, new JpegEncoder());
 
+                // 缓存本来源查询
+                HistoryBeatmapMapper.Map(target.source, scoreInfos[0].BeatmapId);
+
                 if (is_ppysb) return;
                 _ = Task.Run(() => BeatmapTechDataProcess(scoreInfos, osuID));
             }

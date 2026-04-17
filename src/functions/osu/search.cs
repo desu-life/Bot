@@ -30,7 +30,7 @@ namespace KanonBot.Functions.OSUBot
             );
             // 判断是否给定了bid
             API.OSU.Models.Mod[]? mods_lazer = null;
-            var index = Math.Max(0, command.order_number - 1);
+            var index = (int)Math.Max(0, command.order_number - 1);
             var isBid = int.TryParse(command.search_arg, out var bid);
 
             bool beatmapFound = true;
@@ -221,6 +221,9 @@ namespace KanonBot.Functions.OSUBot
 
             using var img = await Image.ScoreV2.DrawScore(data);
             await target.reply(img, new JpegEncoder());
+
+            // 缓存本来源查询
+            HistoryBeatmapMapper.Map(target.source, beatmap.BeatmapId);
         }
     }
 }

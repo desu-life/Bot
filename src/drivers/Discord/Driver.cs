@@ -82,6 +82,7 @@ public partial class Discord : ISocket, IDriver, IReply
             if (this.msgAction is null) return;
             
             var ms = await m.Channel.GetMessageAsync(m.Id);
+            var source = MessageSource.FromDiscord(m);
             await this.msgAction.Invoke(new Target()
             {
                 platform = Platform.Discord,
@@ -89,6 +90,7 @@ public partial class Discord : ISocket, IDriver, IReply
                 selfAccount = this.selfID,
                 msg = Message.Parse(ms),
                 raw = ms,
+                source = source,
                 socket = this
             });
         }

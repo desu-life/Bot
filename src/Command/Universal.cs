@@ -106,6 +106,9 @@ namespace KanonBot.command_parser
                     case "bp":
                         await BestPerformance.Execute(target, childCmd);
                         return;
+                    case "c":
+                        await Score.Execute(target, childCmd, fetch_source: true);
+                        return;
                     case "score":
                         await Score.Execute(target, childCmd);
                         return;

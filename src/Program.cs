@@ -82,6 +82,7 @@ if (config.dev)
         if (string.IsNullOrEmpty(input))
             return;
         Log.Warning("解析消息: {0}", input);
+        var msg = new OneBot.Models.CQMessageEventBase() { UserId = sender.Value(), };
         var target = new Target()
         {
             msg = new Msg.Chain().msg(input.Trim()),
@@ -95,7 +96,8 @@ if (config.dev)
                     Log.Information("本地测试消息 {0}", msg);
                 }
             },
-            raw = new OneBot.Models.CQMessageEventBase() { UserId = sender.Value(), },
+            source = MessageSource.FromOneBot(msg),
+            raw = msg,
             isFromAdmin = true
         };
         await Universal.Parser(target);

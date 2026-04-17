@@ -92,6 +92,7 @@ public partial class QQGuild : ISocket, IDriver, IReply
                 break;
             case Enums.EventType.AtMessageCreate:
                 var MessageData = (obj.Data as JObject)?.ToObject<Models.MessageData>();
+                var source = MessageSource.FromGuild(MessageData!.ChannelID);
                 this.msgAction?.Invoke(
                     new Target()
                     {
@@ -100,6 +101,7 @@ public partial class QQGuild : ISocket, IDriver, IReply
                         selfAccount = this.selfID,
                         msg = Message.Parse(MessageData!),
                         raw = MessageData,
+                        source = source,
                         socket = this
                     }
                 );

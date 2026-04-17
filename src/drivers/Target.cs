@@ -32,6 +32,7 @@ public class Target
 
     // account和sender为用户ID字符串，可以是qq号，khl号，等等
     public required string? selfAccount { get; init; }
+    public required MessageSource source { get; init; }
     public required string? sender { get; init; }
     public required Platform platform { get; init; }
     public bool isFromAdmin { get; set; } = false;

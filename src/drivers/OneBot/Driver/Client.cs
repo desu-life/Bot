@@ -106,6 +106,7 @@ public partial class OneBot
                                     await this.Stop();
                                     return;
                                 }
+                                var source = MessageSource.FromOneBot(obj);
                                 var target = new Target
                                 {
                                     time = DateTimeOffset.FromUnixTimeSeconds(obj.Time),
@@ -114,6 +115,7 @@ public partial class OneBot
                                     selfAccount = this.selfID,
                                     msg = Message.Parse(obj.MessageList),
                                     raw = obj,
+                                    source = source,
                                     socket = this
                                 };
                                 await msgAction.Invoke(target);

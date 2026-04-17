@@ -231,6 +231,7 @@ public partial class OneBot
                                 this.Disconnect(socket.ConnectionInfo.Guid);
                                 return;
                             }
+                            var source = MessageSource.FromOneBot(obj);
                             var target = new Target
                             {
                                 time = DateTimeOffset.FromUnixTimeSeconds(obj.Time),
@@ -239,6 +240,7 @@ public partial class OneBot
                                 selfAccount = socket.selfID,
                                 msg = Message.Parse(obj.MessageList),
                                 raw = obj,
+                                source = source,
                                 socket = socket
                             };
 
