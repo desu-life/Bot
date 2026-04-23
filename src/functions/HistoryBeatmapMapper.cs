@@ -25,8 +25,8 @@ public class HistoryBeatmapMapper
     {
         if (_beatmapCache.TryGetValue(source, out var item))
         {
-            // 如果缓存时间超过10分钟，认为过期
-            if ((DateTime.Now - item.CachedAt).TotalMinutes < 10)
+            // 如果缓存时间超过5分钟，认为过期
+            if ((DateTime.Now - item.CachedAt).TotalMinutes < 5)
             {
                 return item.BeatmapID;
             }
