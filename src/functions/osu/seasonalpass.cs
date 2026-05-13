@@ -1,9 +1,9 @@
-using KanonBot.API;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using KanonBot.API;
 using static KanonBot.API.OSU.OSUExtensions;
 
 namespace KanonBot.Functions.OSU
@@ -14,10 +14,20 @@ namespace KanonBot.Functions.OSU
         public static async Task Update(long oid, Image.ScoreV2.ScorePanelData score)
         {
             //只记录ranked谱面
-            if (score.scoreInfo.Beatmap!.Status == API.OSU.Models.Status.Ranked || score.scoreInfo.Beatmap!.Status == API.OSU.Models.Status.Approved)
+            if (
+                score.scoreInfo.Beatmap!.Status == API.OSU.Models.Status.Ranked
+                || score.scoreInfo.Beatmap!.Status == API.OSU.Models.Status.Approved
+            )
             {
                 //检查成绩是否已被记录
-                if (await Database.Client.SeasonalPass_Query_Score_Status(score.scoreInfo.Mode.ToStr(), score.scoreInfo.Id))
+                if (
+                    await Database
+                        .Client
+                        .SeasonalPass_Query_Score_Status(
+                            score.scoreInfo.Mode.ToStr(),
+                            score.scoreInfo.Id
+                        )
+                )
                 {
                     double multiply = 0.0;
                     //pt基准值
@@ -43,7 +53,8 @@ namespace KanonBot.Functions.OSU
                         multiply += 1.8;
                     else if (score.ppInfo.star < 10)
                         multiply += 1.9;
-                    else multiply += 2.0;
+                    else
+                        multiply += 2.0;
                     //acc加成
                     if (score.scoreInfo.Accuracy < 0.8)
                         multiply += 0.1;
@@ -131,7 +142,8 @@ namespace KanonBot.Functions.OSU
                         multiply += 1.9;
                     else if (score.scoreInfo.MaxCombo < 4000)
                         multiply += 2.0;
-                    else multiply += 2.1;
+                    else
+                        multiply += 2.1;
                     //mod加成
                     foreach (var x in score.scoreInfo.Mods)
                     {
@@ -166,10 +178,15 @@ namespace KanonBot.Functions.OSU
                         }
                     }
                     //计算pt
-                    await Database.Client.UpdateSeasonalPass(oid, score.scoreInfo.Mode.ToStr(), (int)(multiply * pt));
+                    await Database
+                        .Client
+                        .UpdateSeasonalPass(
+                            oid,
+                            score.scoreInfo.Mode.ToStr(),
+                            (int)(multiply * pt)
+                        );
                 }
             }
-
         }
     }
 }

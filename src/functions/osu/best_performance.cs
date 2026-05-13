@@ -19,31 +19,33 @@ namespace KanonBot.Functions.OSUBot
 {
     public class BpCommand : ICommand
     {
-        public CommandDef Definition => new()
-        {
-            Name = "bp",
-            LegacyStartsWithMatch = true,
-            ExcludePrefixes = ["bpa", "bpme", "bplist"],
-            Args =
-            [
-                new() { Name = "username",     Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
-                new() { Name = "order_number", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseInt(s) },
-                new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
-                new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
-            ],
-            Flags =
-            [
-                new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
-                new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
-                new() { Name = "dev_panel",  Value = "dev", SlashName = "is_dev" },
-            ]
-        };
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "bp",
+                LegacyStartsWithMatch = true,
+                ExcludePrefixes =  [ "bpa", "bpme", "bplist" ],
+                Args =
+                [
+                    new() { Name = "username",     Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
+                    new() { Name = "order_number", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseInt(s) },
+                    new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                    new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
+                ],
+                Flags =
+                [
+                    new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
+                    new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
+                    new() { Name = "dev_panel",  Value = "dev", SlashName = "is_dev" },
+                ]
+            };
 
         public async Task Execute(Target target, ParsedCommand cmd)
         {
             #region 验证
             var resolved = await Accounts.ResolveCommandUser(target, cmd);
-            if (resolved == null) return;
+            if (resolved == null)
+                return;
 
             long osuID = resolved.OsuId;
             API.OSU.Mode? mode = resolved.Mode;
@@ -62,31 +64,37 @@ namespace KanonBot.Functions.OSUBot
 
             // 输入检查
             var orderNumber = cmd.Get<int>("order_number");
-            if (orderNumber < 1) orderNumber = 1;
+            if (orderNumber < 1)
+                orderNumber = 1;
             bool special_version_pp = cmd.Flag("special_pp");
             bool dev_panel = cmd.Flag("dev_panel");
 
             API.OSU.Models.ScoreLazer[]? scores = null;
 
-            
             if (special_version_pp && is_ppysb)
             {
-                var ss = await API.PPYSB.Client.GetUserScores(
-                    osuID,
-                API.PPYSB.UserScoreType.Best,
-                    sbmode!.Value,
-                    1,
-                    orderNumber - 1
-                );
+                var ss = await API.PPYSB
+                    .Client
+                    .GetUserScores(
+                        osuID,
+                        API.PPYSB.UserScoreType.Best,
+                        sbmode!.Value,
+                        1,
+                        orderNumber - 1
+                    );
                 scores = ss?.Map(s => s.ToOsu(sbinfo!, sbmode!.Value)).ToArray();
-            } else {
-                scores = await API.OSU.Client.GetUserScores(
-                    osuID,
-                    API.OSU.UserScoreType.Best,
-                    mode!.Value,
-                    1,
-                    orderNumber - 1
-                );
+            }
+            else
+            {
+                scores = await API.OSU
+                    .Client
+                    .GetUserScores(
+                        osuID,
+                        API.OSU.UserScoreType.Best,
+                        mode!.Value,
+                        1,
+                        orderNumber - 1
+                    );
             }
 
             if (scores == null)
@@ -97,7 +105,8 @@ namespace KanonBot.Functions.OSUBot
             if (scores!.Length > 0)
             {
                 var score = scores[0];
-                if (score.Beatmap is null) {
+                if (score.Beatmap is null)
+                {
                     score.Beatmap = await Client.GetBeatmap(score.BeatmapId);
                     score.Beatmapset = score.Beatmap?.Beatmapset;
                 }
@@ -105,19 +114,22 @@ namespace KanonBot.Functions.OSUBot
                 score.User ??= tempOsuInfo;
 
                 Image.ScoreV2.ScorePanelData data;
-                data = await UniversalCalculator.CalculatePanelData(score, UniversalCalculator.GetCalculatorKind(is_ppysb, special_version_pp));
+                data = await UniversalCalculator.CalculatePanelData(
+                    score,
+                    UniversalCalculator.GetCalculatorKind(is_ppysb, special_version_pp)
+                );
 
-                using var img =
-                    dev_panel
-                        ? await Image.OsuScorePanelV3.Draw(data)
-                        : await Image.ScoreV2.DrawScore(data);
+                using var img = dev_panel
+                    ? await Image.OsuScorePanelV3.Draw(data)
+                    : await Image.ScoreV2.DrawScore(data);
 
                 await target.reply(img, new JpegEncoder());
 
                 // 缓存本来源查询
                 HistoryBeatmapMapper.Map(target.source, score.BeatmapId);
 
-                if (is_ppysb) return;
+                if (is_ppysb)
+                    return;
                 _ = Task.Run(() => BeatmapTechDataProcess(score, data));
             }
             else
@@ -132,7 +144,8 @@ namespace KanonBot.Functions.OSUBot
             Image.ScoreV2.ScorePanelData data
         )
         {
-            if (Config.inner!.dev) return;
+            if (Config.inner!.dev)
+                return;
             if (score.Mode == API.OSU.Mode.OSU)
             {
                 if (
@@ -140,19 +153,21 @@ namespace KanonBot.Functions.OSUBot
                     || score.Beatmap!.Status == API.OSU.Models.Status.Approved
                 )
                 {
-                    await Database.Client.InsertOsuStandardBeatmapTechData(
-                        score.Beatmap!.BeatmapId,
-                        data.ppInfo.star,
-                        (int)data.ppInfo.ppStats![0].total,
-                        (int)data.ppInfo.ppStats![0].acc!,
-                        (int)data.ppInfo.ppStats![0].speed!,
-                        (int)data.ppInfo.ppStats![0].aim!,
-                        (int)data.ppInfo.ppStats![1].total,
-                        (int)data.ppInfo.ppStats![2].total,
-                        (int)data.ppInfo.ppStats![3].total,
-                        (int)data.ppInfo.ppStats![4].total,
-                        score.Mods.Map(m => m.Acronym).ToArray()
-                    );
+                    await Database
+                        .Client
+                        .InsertOsuStandardBeatmapTechData(
+                            score.Beatmap!.BeatmapId,
+                            data.ppInfo.star,
+                            (int)data.ppInfo.ppStats![0].total,
+                            (int)data.ppInfo.ppStats![0].acc!,
+                            (int)data.ppInfo.ppStats![0].speed!,
+                            (int)data.ppInfo.ppStats![0].aim!,
+                            (int)data.ppInfo.ppStats![1].total,
+                            (int)data.ppInfo.ppStats![2].total,
+                            (int)data.ppInfo.ppStats![3].total,
+                            (int)data.ppInfo.ppStats![4].total,
+                            score.Mods.Map(m => m.Acronym).ToArray()
+                        );
                 }
             }
         }

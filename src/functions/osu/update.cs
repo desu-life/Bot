@@ -1,38 +1,37 @@
+using System.IO;
 using CommandSystem;
 using CommandSystem.Definition;
 using CommandSystem.Execution;
 using CommandSystem.Parsing;
-using KanonBot.Drivers;
-using KanonBot.Message;
 using KanonBot.API;
-using KanonBot.Functions.OSU;
-using System.IO;
-using LanguageExt.UnsafeValueAccess;
 using KanonBot.API.OSU;
+using KanonBot.Drivers;
+using KanonBot.Functions.OSU;
+using KanonBot.Message;
+using LanguageExt.UnsafeValueAccess;
 
 namespace KanonBot.Functions.OSUBot
 {
     public class UpdateCommand : ICommand
     {
-        public CommandDef Definition => new()
-        {
-            Name = "update",
-            Args =
-            [
-                new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
-                new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
-            ],
-            Flags =
-            [
-                new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" },
-            ]
-        };
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "update",
+                Args =
+                [
+                    new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                    new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
+                ],
+                Flags =  [ new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" }, ]
+            };
 
         public async Task Execute(Target target, ParsedCommand cmd)
         {
             #region 验证
             var resolved = await Accounts.ResolveCommandUser(target, cmd);
-            if (resolved == null) return;
+            if (resolved == null)
+                return;
 
             long osuID = resolved.OsuId;
             API.OSU.Mode? mode = resolved.Mode;
@@ -49,29 +48,44 @@ namespace KanonBot.Functions.OSUBot
 
             await target.reply("少女祈祷中...");
 
-            if (resolved.IamUserId is not null) {
+            if (resolved.IamUserId is not null)
+            {
                 var bindings = await API.IAM.Client.GetUserBindings(resolved.IamUserId);
-                if (bindings is not null) {
+                if (bindings is not null)
+                {
                     var ppysbUid = API.IAM.Client.ExtractPpysbUid(bindings);
-                    if (ppysbUid.HasValue) {
-                        try { File.Delete($"./work/avatar/sb-{ppysbUid.Value}.png"); } catch { }
+                    if (ppysbUid.HasValue)
+                    {
+                        try
+                        {
+                            File.Delete($"./work/avatar/sb-{ppysbUid.Value}.png");
+                        }
+                        catch { }
                     }
                 }
             }
 
             //try { File.Delete($"./work/v1_cover/{OnlineOsuInfo!.Id}.png"); } catch { }
-            try { File.Delete($"./work/avatar/{OnlineOsuInfo!.Id}.png"); } catch { }
-            try { File.Delete($"./work/legacy/v1_cover/osu!web/{OnlineOsuInfo!.Id}.png"); } catch { }
+            try
+            {
+                File.Delete($"./work/avatar/{OnlineOsuInfo!.Id}.png");
+            }
+            catch { }
+            try
+            {
+                File.Delete($"./work/legacy/v1_cover/osu!web/{OnlineOsuInfo!.Id}.png");
+            }
+            catch { }
             await target.reply("主要数据已更新完毕，pp+数据正在后台更新，请稍后使用info功能查看结果。");
 
-            _ = Task.Run(async () => {
+            _ = Task.Run(async () =>
+            {
                 try
                 {
                     await Client.PPlus.UpdateUserPlusDataNext(OnlineOsuInfo!.Id);
                 }
-                catch { }//更新pp+失败，不返回信息
+                catch { } //更新pp+失败，不返回信息
             });
-
         }
     }
 }

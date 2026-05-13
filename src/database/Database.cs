@@ -151,10 +151,7 @@ public class Client
         return await db.UserOSU.Where(it => it.uid == kanon_uid).FirstOrDefaultAsync();
     }
 
-    public static async Task<bool> InsertPpysbUser(
-        long kanon_uid,
-        long osu_uid
-    )
+    public static async Task<bool> InsertPpysbUser(long kanon_uid, long osu_uid)
     {
         using var db = GetInstance();
         var d = new Model.UserPPYSB()
@@ -167,10 +164,7 @@ public class Client
         return result > 0;
     }
 
-    public static async Task<bool> InsertOsuUser(
-        long kanon_uid,
-        long osu_uid
-    )
+    public static async Task<bool> InsertOsuUser(long kanon_uid, long osu_uid)
     {
         using var db = GetInstance();
         var d = new Model.UserOSU()
@@ -209,8 +203,10 @@ public class Client
             return null;
         }
     }
-    
-    public static async Task<API.OSU.Models.PPlusData.UserDataNext?> GetOsuPPlusDataNext(long osu_uid)
+
+    public static async Task<API.OSU.Models.PPlusData.UserDataNext?> GetOsuPPlusDataNext(
+        long osu_uid
+    )
     {
         using var db = GetInstance();
         var data = await db.OsuPPlus.FirstOrDefaultAsync(it => it.uid == osu_uid && it.pp != 0);
@@ -238,7 +234,7 @@ public class Client
         }
     }
 
-     public static async Task<bool> UpdateOsuPPlusDataNext(
+    public static async Task<bool> UpdateOsuPPlusDataNext(
         API.OSU.Models.PPlusData.UserDataNext ppdata
     )
     {
@@ -383,7 +379,7 @@ public class Client
                 where p.uid == oid && p.gamemode == mode.ToStr()
                 orderby p.lastupdate descending
                 select p;
-            
+
             data = await q.FirstOrDefaultAsync();
         }
         else
@@ -399,10 +395,7 @@ public class Client
             }
             var q =
                 from p in db.OsuArchivedRec
-                where
-                    p.uid == oid
-                    && p.gamemode == mode.ToStr()
-                    && p.lastupdate <= date
+                where p.uid == oid && p.gamemode == mode.ToStr() && p.lastupdate <= date
                 orderby p.lastupdate descending
                 select p;
             data = await q.FirstOrDefaultAsync();

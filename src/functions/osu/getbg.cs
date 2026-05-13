@@ -1,20 +1,19 @@
-using KanonBot.Drivers;
-using KanonBot.Message;
-using KanonBot.API;
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.Formats.Jpeg;
 using System.IO;
-using LanguageExt.UnsafeValueAccess;
-using KanonBot.Functions.OSU;
-using KanonBot.OsuPerformance;
 using CommandSystem.Parsing;
-
+using KanonBot.API;
+using KanonBot.Drivers;
+using KanonBot.Functions.OSU;
+using KanonBot.Message;
+using KanonBot.OsuPerformance;
+using LanguageExt.UnsafeValueAccess;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats.Png;
 
 namespace KanonBot.Functions.OSUBot
 {
     public class GetBackground
     {
-        async public static Task Execute(Target target, ParsedCommand cmd)
+        public static async Task Execute(Target target, ParsedCommand cmd)
         {
             var searchArg = cmd.GetString("username") ?? "";
             var index = Math.Max(0, cmd.Get<int>("order_number") - 1);
@@ -25,8 +24,12 @@ namespace KanonBot.Functions.OSUBot
             API.OSU.Models.Beatmapset? beatmapset = null;
 
             beatmaps = await API.OSU.Client.SearchBeatmap(searchArg, null);
-            if (beatmaps != null && isBid) {
-                beatmaps.Beatmapsets = beatmaps.Beatmapsets.OrderByDescending(x => x.Beatmaps.Find(y => y.BeatmapId == bid) != null).ToList();
+            if (beatmaps != null && isBid)
+            {
+                beatmaps.Beatmapsets = beatmaps
+                    .Beatmapsets
+                    .OrderByDescending(x => x.Beatmaps.Find(y => y.BeatmapId == bid) != null)
+                    .ToList();
             }
             beatmapset = beatmaps?.Beatmapsets.Skip(index).FirstOrDefault();
 
@@ -49,8 +52,12 @@ namespace KanonBot.Functions.OSUBot
                 beatmapFound = true;
             }
 
-            if (beatmaps != null && isBid) {
-                beatmaps.Beatmapsets = beatmaps.Beatmapsets.OrderByDescending(x => x.Beatmaps.Find(y => y.BeatmapId == bid) != null).ToList();
+            if (beatmaps != null && isBid)
+            {
+                beatmaps.Beatmapsets = beatmaps
+                    .Beatmapsets
+                    .OrderByDescending(x => x.Beatmaps.Find(y => y.BeatmapId == bid) != null)
+                    .ToList();
             }
             beatmapset = beatmaps?.Beatmapsets.Skip(index).FirstOrDefault();
 
@@ -92,7 +99,9 @@ namespace KanonBot.Functions.OSUBot
 
             // beatmap.Beatmapset = beatmaps!.Beatmapsets[0];
 
-            await target.reply($"https://assets.ppy.sh/beatmaps/{beatmapset!.Id}/covers/raw.jpg");
+            await target.reply(
+                $"https://assets.ppy.sh/beatmaps/{beatmapset!.Id}/covers/fullsize.jpg"
+            );
         }
     }
 }

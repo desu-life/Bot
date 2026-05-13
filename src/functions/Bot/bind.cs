@@ -7,15 +7,16 @@ namespace KanonBot.Functions.OSUBot
 {
     public class BindCommand : ICommand
     {
-        public CommandDef Definition => new()
-        {
-            Name = "bind",
-            Args =
-            [
-                new() { Name = "code", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
-            ],
-            Flags = []
-        };
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "bind",
+                Args =
+                [
+                    new() { Name = "code", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                ],
+                Flags =  [ ]
+            };
 
         public async Task Execute(Target target, ParsedCommand cmd)
         {
@@ -88,13 +89,15 @@ namespace KanonBot.Functions.OSUBot
             switch (sessionResult.Type)
             {
                 case API.IAM.BindSessionResultType.Success:
-                    if (sessionResult.Session == null || string.IsNullOrWhiteSpace(sessionResult.Session.Url))
+                    if (
+                        sessionResult.Session == null
+                        || string.IsNullOrWhiteSpace(sessionResult.Session.Url)
+                    )
                     {
                         await target.reply("生成绑定链接失败，请稍后再试。");
                         return;
                     }
 
-                 
                     await target.reply(
                         $"请点击一次性链接完成绑定：\n{sessionResult.Session.Url}\n进入页面后直接使用 osu! 登录，完成绑定流程\n绑定的验证码可以通过 !bind 验证码 提交。"
                     );
@@ -103,11 +106,17 @@ namespace KanonBot.Functions.OSUBot
                     await target.reply("你的平台账户已经绑定过 desu.life 账户了。若需更换绑定，请联系管理员。");
                     return;
                 case API.IAM.BindSessionResultType.InvalidApiKey:
-                    Log.Error("IAM API Key is invalid for provider {Provider} bind-session", provider);
+                    Log.Error(
+                        "IAM API Key is invalid for provider {Provider} bind-session",
+                        provider
+                    );
                     await target.reply("服务配置错误，请联系管理员。");
                     return;
                 case API.IAM.BindSessionResultType.Misconfigured:
-                    Log.Error("IAM integration is misconfigured for provider {Provider} bind-session", provider);
+                    Log.Error(
+                        "IAM integration is misconfigured for provider {Provider} bind-session",
+                        provider
+                    );
                     await target.reply("服务配置错误，请联系管理员。");
                     return;
                 default:

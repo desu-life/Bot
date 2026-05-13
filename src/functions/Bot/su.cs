@@ -12,13 +12,27 @@ namespace KanonBot.Functions.OSU
 
     public class SuHelpCommand : ICommand
     {
-        public CommandDef Definition => new() { Name = "su", Args = [], Flags = [] };
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "su",
+                Args =  [ ],
+                Flags =  [ ]
+            };
+
         public Task Execute(Target target, ParsedCommand cmd) => Task.CompletedTask;
     }
 
     public class SuUpdateAllCommand : ICommand
     {
-        public CommandDef Definition => new() { Name = "su updateall", Args = [], Flags = [] };
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "su updateall",
+                Args =  [ ],
+                Flags =  [ ]
+            };
+
         public Task Execute(Target target, ParsedCommand cmd) => Su.Execute(target, "updateall");
     }
 
@@ -28,25 +42,34 @@ namespace KanonBot.Functions.OSU
     {
         public static async Task Execute(Target target, string cmd)
         {
-            if (target.isFromAdmin == false) return;
+            if (target.isFromAdmin == false)
+                return;
             try
             {
                 var user = await Accounts.ResolveIamUser(target);
-                if (user is null) return;
+                if (user is null)
+                    return;
                 var perm = await API.Kagami.Client.GetUserPermissions(user.IamUserId);
-                if (perm == null) return;
+                if (perm == null)
+                    return;
 
-                if (!perm.Roles.Any(x => x == "kagami.admin")) return;
-                
+                if (!perm.Roles.Any(x => x == "kagami.admin"))
+                    return;
+
                 //execute
-                string rootCmd, childCmd = "";
+                string rootCmd,
+                    childCmd = "";
                 try
                 {
-                    var tmp = cmd.Split(' ', 2, StringSplitOptions.TrimEntries);;
+                    var tmp = cmd.Split(' ', 2, StringSplitOptions.TrimEntries);
+                    ;
                     rootCmd = tmp[0];
                     childCmd = tmp[1];
                 }
-                catch { rootCmd = cmd; }
+                catch
+                {
+                    rootCmd = cmd;
+                }
 
                 switch (rootCmd.ToLower())
                 {
@@ -57,17 +80,20 @@ namespace KanonBot.Functions.OSU
                         return;
                 }
             }
-            catch { }//直接忽略
+            catch { } //直接忽略
         }
 
         public static async Task SuDailyUpdateAsync(Target target)
         {
             await target.reply("已手动开始数据更新，稍后会发送结果。");
-            var _ = Task.Run(async () => {
+            var _ = Task.Run(async () =>
+            {
                 var (count, span) = await GeneralUpdate.UpdateUsers();
                 var Text = "共用时";
-                if (span.Hours > 0) Text += $" {span.Hours} 小时";
-                if (span.Minutes > 0) Text += $" {span.Minutes} 分钟";
+                if (span.Hours > 0)
+                    Text += $" {span.Hours} 小时";
+                if (span.Minutes > 0)
+                    Text += $" {span.Minutes} 分钟";
                 Text += $" {span.Seconds} 秒";
                 try
                 {

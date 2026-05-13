@@ -7,28 +7,23 @@ public partial class LeewayCalculator
 {
     private const double DT = 1.5f;
 
-
     private const double HT = 0.75f;
-
 
     private const int HR = 16;
 
-
     private const int EZ = 2;
-
 
     private const int CIRCLE = 0;
 
-
     private const int SLIDER = 1;
-
 
     private const int SPINNER = 3;
 
     public double CalcRotations(int length, double adjustTime)
     {
         var rotations = 0d;
-        var maxAccel = (double)(8E-05 + Math.Max(0f, 5000f - length) / 1000.0 / 2000.0) / adjustTime;
+        var maxAccel =
+            (double)(8E-05 + Math.Max(0f, 5000f - length) / 1000.0 / 2000.0) / adjustTime;
         var velocityCurrent = 0d;
         var temp = (int)(length - Math.Floor(16.666666666666668 * adjustTime));
         for (var i = 0; i < temp; i++)
@@ -39,7 +34,6 @@ public partial class LeewayCalculator
 
         return rotations;
     }
-
 
     public double CalcLeeway(int length, double adjustTime, double od, int difficultyModifier)
     {
@@ -71,7 +65,8 @@ public partial class LeewayCalculator
     {
         double bonus = Math.Max(0, rotations - (rotReq + 3));
 
-        if (rotReq % 2 != 0) return Math.Floor(bonus / 2.0) + "k (F)";
+        if (rotReq % 2 != 0)
+            return Math.Floor(bonus / 2.0) + "k (F)";
 
         if (bonus % 2.0 == 0.0)
             return bonus / 2.0 + "k (T)";
@@ -96,11 +91,13 @@ public partial class LeewayCalculator
         var hitObjects = new List<string>();
         for (var i = 0; i < line.Length; i++)
         {
-            if (!line[i].Contains("HitObjects")) continue;
+            if (!line[i].Contains("HitObjects"))
+                continue;
 
             for (var j = i + 1; j < line.Length; j++)
             {
-                if (line[j].Length <= 1) break;
+                if (line[j].Length <= 1)
+                    break;
 
                 hitObjects.Add(line[j]);
             }
@@ -123,21 +120,23 @@ public partial class LeewayCalculator
 
     public double GetOD(string beatmap)
     {
-        return double.Parse(ODRegex().Match(beatmap).Groups[1].Value,
-            CultureInfo.InvariantCulture);
+        return double.Parse(ODRegex().Match(beatmap).Groups[1].Value, CultureInfo.InvariantCulture);
     }
-
 
     public double GetSliderMult(string beatmap)
     {
-        return double.Parse(SliderMRegex().Match(beatmap).Groups[1].Value,
-            CultureInfo.InvariantCulture);
+        return double.Parse(
+            SliderMRegex().Match(beatmap).Groups[1].Value,
+            CultureInfo.InvariantCulture
+        );
     }
 
     public double GetSliderTRate(string beatmap)
     {
-        return double.Parse(SliderTRRegex().Match(beatmap).Groups[1].Value,
-            CultureInfo.InvariantCulture);
+        return double.Parse(
+            SliderTRRegex().Match(beatmap).Groups[1].Value,
+            CultureInfo.InvariantCulture
+        );
     }
 
     public string GetTitle(string beatmap)
@@ -203,10 +202,7 @@ public partial class LeewayCalculator
         var combo = 0;
         foreach (var hitObject in hitObjects)
         {
-            var objData = hitObject.Split(new[]
-            {
-                ','
-            });
+            var objData = hitObject.Split(new[] { ',' });
             var objType = GetObjectType(int.Parse(objData[3]));
             switch (objType)
             {
@@ -217,21 +213,26 @@ public partial class LeewayCalculator
                     switch (objType)
                     {
                         case 1:
-                            {
-                                var length = double.Parse(objData[7], CultureInfo.InvariantCulture);
-                                var slides = int.Parse(objData[6]);
-                                var beatLength = GetBeatLengthAt(int.Parse(objData[2]), timingPoints);
-                                var tics = CalculateTickCount(length, slides, sliderMult, sliderTRate, beatLength[0], beatLength[1],
-                                    beatmapVersion);
-                                combo += tics + slides + 1;
-                                break;
-                            }
+                        {
+                            var length = double.Parse(objData[7], CultureInfo.InvariantCulture);
+                            var slides = int.Parse(objData[6]);
+                            var beatLength = GetBeatLengthAt(int.Parse(objData[2]), timingPoints);
+                            var tics = CalculateTickCount(
+                                length,
+                                slides,
+                                sliderMult,
+                                sliderTRate,
+                                beatLength[0],
+                                beatLength[1],
+                                beatmapVersion
+                            );
+                            combo += tics + slides + 1;
+                            break;
+                        }
                         case 3:
-                            spinners.Add(new[]
-                            {
-                                combo,
-                                int.Parse(objData[5]) - int.Parse(objData[2])
-                            });
+                            spinners.Add(
+                                new[] { combo, int.Parse(objData[5]) - int.Parse(objData[2]) }
+                            );
                             combo++;
                             break;
                     }
@@ -266,8 +267,12 @@ public partial class LeewayCalculator
         var currentCombo = 0;
         var bonusScore = 0;
         var drainLength = CalculateDrainTime(beatmap, startTime, endTime) / 1000;
-        var difficulty = (int)Math.Round((hp + od + cs + Clamp(hitObjects.Count / (double)drainLength * 8f, 0f, 16f)) /
-            38.0 * 5.0);
+        var difficulty = (int)
+            Math.Round(
+                (hp + od + cs + Clamp(hitObjects.Count / (double)drainLength * 8f, 0f, 16f))
+                    / 38.0
+                    * 5.0
+            );
         var scoreMultipler = difficulty * CalculateModMultiplier(mods);
         foreach (var obj in hitObjects)
         {
@@ -275,47 +280,70 @@ public partial class LeewayCalculator
             var objType = GetObjectType(int.Parse(objData[3]));
             if (objType == 0)
             {
-                currentScore += 300 + (int)(Math.Max(0, currentCombo - 1) * (12.0 * scoreMultipler));
+                currentScore +=
+                    300 + (int)(Math.Max(0, currentCombo - 1) * (12.0 * scoreMultipler));
                 currentCombo++;
             }
 
             switch (objType)
             {
                 case 1:
-                    {
-                        var length = double.Parse(objData[7], CultureInfo.InvariantCulture);
-                        var slides = int.Parse(objData[6]);
-                        var beatLength = GetBeatLengthAt(int.Parse(objData[2]), timingPoints);
-                        var tics = CalculateTickCount(length, slides, sliderMult, sliderTRate, beatLength[0], beatLength[1],
-                            beatmapVersion);
-                        bonusScore += tics * 10 + (slides + 1) * 30;
-                        currentCombo += tics + slides + 1;
-                        currentScore += 300 + (int)(Math.Max(0, currentCombo - 1) * (12.0 * scoreMultipler));
-                        break;
-                    }
+                {
+                    var length = double.Parse(objData[7], CultureInfo.InvariantCulture);
+                    var slides = int.Parse(objData[6]);
+                    var beatLength = GetBeatLengthAt(int.Parse(objData[2]), timingPoints);
+                    var tics = CalculateTickCount(
+                        length,
+                        slides,
+                        sliderMult,
+                        sliderTRate,
+                        beatLength[0],
+                        beatLength[1],
+                        beatmapVersion
+                    );
+                    bonusScore += tics * 10 + (slides + 1) * 30;
+                    currentCombo += tics + slides + 1;
+                    currentScore +=
+                        300 + (int)(Math.Max(0, currentCombo - 1) * (12.0 * scoreMultipler));
+                    break;
+                }
                 default:
-                    {
-                        if (objType != 3) continue;
+                {
+                    if (objType != 3)
+                        continue;
 
-                        currentScore += 300 + (int)(Math.Max(0, currentCombo - 1) * (12.0 * scoreMultipler));
-                        var length2 = int.Parse(objData[5]) - int.Parse(objData[2]);
-                        bonusScore += CalcSpinBonus(length2, od, adjustTime, difficultyModifier);
-                        currentCombo++;
-                        break;
-                    }
+                    currentScore +=
+                        300 + (int)(Math.Max(0, currentCombo - 1) * (12.0 * scoreMultipler));
+                    var length2 = int.Parse(objData[5]) - int.Parse(objData[2]);
+                    bonusScore += CalcSpinBonus(length2, od, adjustTime, difficultyModifier);
+                    currentCombo++;
+                    break;
+                }
             }
         }
 
         return currentScore + bonusScore;
     }
 
-    public int CalculateTickCount(double length, int slides, double sliderMult, double sliderTRate, double beatLength,
-        double sliderVMult, int beatmapVersion)
+    public int CalculateTickCount(
+        double length,
+        int slides,
+        double sliderMult,
+        double sliderTRate,
+        double beatLength,
+        double sliderVMult,
+        int beatmapVersion
+    )
     {
-        var sliderLength = Clamp(Math.Abs(sliderVMult), 10.0, 1000.0) * length * beatLength / (sliderMult * 10000.0);
+        var sliderLength =
+            Clamp(Math.Abs(sliderVMult), 10.0, 1000.0)
+            * length
+            * beatLength
+            / (sliderMult * 10000.0);
         var tickLength = beatLength / sliderTRate;
         var flag = beatmapVersion < 8;
-        if (flag) tickLength *= Clamp(Math.Abs(sliderVMult), 10.0, 1000.0) / 100.0;
+        if (flag)
+            tickLength *= Clamp(Math.Abs(sliderVMult), 10.0, 1000.0) / 100.0;
         var tickTime = sliderLength - tickLength;
         var tics = 0;
         while (tickTime >= 10.0)
@@ -333,12 +361,14 @@ public partial class LeewayCalculator
         var breakPeriods = new List<int>();
         for (var i = 0; i < line.Length; i++)
         {
-            if (!line[i].Contains("Break Periods")) continue;
+            if (!line[i].Contains("Break Periods"))
+                continue;
 
             for (var j = i + 1; j < line.Length; j++)
             {
                 var b = line[j].Split(',');
-                if (b.Length != 3) break;
+                if (b.Length != 3)
+                    break;
                 breakPeriods.Add(int.Parse(b[2]) - int.Parse(b[1]));
             }
 
@@ -355,20 +385,18 @@ public partial class LeewayCalculator
         var timingPoints = new List<double[]>();
         for (var i = 0; i < line.Length; i++)
         {
-            if (!line[i].Contains("TimingPoints")) continue;
+            if (!line[i].Contains("TimingPoints"))
+                continue;
 
             for (var j = i + 1; j < line.Length; j++)
             {
                 var tp = line[j].Split(',');
-                if (tp.Length <= 1) break;
+                if (tp.Length <= 1)
+                    break;
 
                 var time = double.Parse(tp[0], CultureInfo.InvariantCulture);
                 var beatLength = double.Parse(tp[1], CultureInfo.InvariantCulture);
-                timingPoints.Add(new[]
-                {
-                    time,
-                    beatLength
-                });
+                timingPoints.Add(new[] { time, beatLength });
             }
 
             break;
@@ -378,13 +406,10 @@ public partial class LeewayCalculator
         {
             var tp2 = timingPoints[index];
 
-            if (!(tp2[1] > 0.0)) continue;
+            if (!(tp2[1] > 0.0))
+                continue;
 
-            timingPoints.Insert(0, new[]
-            {
-                0.0,
-                tp2[1]
-            });
+            timingPoints.Insert(0, new[] { 0.0, tp2[1] });
             break;
         }
 
@@ -406,23 +431,24 @@ public partial class LeewayCalculator
                 sliderVMult = t[1];
             }
 
-        return new[]
-        {
-            beatLength,
-            sliderVMult
-        };
+        return new[] { beatLength, sliderVMult };
     }
 
     public double Clamp(double value, double min, double max)
     {
-        return value > max ? max : value < min ? min : value;
+        return value > max
+            ? max
+            : value < min
+                ? min
+                : value;
     }
 
     public int GetObjectType(int id)
     {
         var binary = "00000000" + Convert.ToString(id, 2);
         binary = binary.Substring(binary.Length - 8, 8);
-        if (binary[4].Equals('1')) return 3;
+        if (binary[4].Equals('1'))
+            return 3;
 
         return binary[6].Equals('1') ? 1 : 0;
     }
@@ -430,52 +456,60 @@ public partial class LeewayCalculator
     public string[] GetMods(string mods)
     {
         if (mods == null || mods.Length < 2 || mods.Length % 2 != 0)
-            return new[]
-            {
-                "HD",
-                "NC",
-                "HR",
-                "FL"
-            };
+            return new[] { "HD", "NC", "HR", "FL" };
 
         var mod = new string[mods.Length / 2];
-        for (var i = 0; i < mod.Length; i++) mod[i] = mods.Substring(i * 2, 2);
+        for (var i = 0; i < mod.Length; i++)
+            mod[i] = mods.Substring(i * 2, 2);
         return mod;
     }
 
     public double CalculateModMultiplier(string[] mods)
     {
-        return mods.Aggregate(1.0, (current, mod) => current * mod switch
-        {
-            "NF" => 0.5,
-            "EZ" => 0.5,
-            "HT" => 0.3,
-            "HD" => 1.06,
-            "HR" => 1.06,
-            "DT" => 1.12,
-            "NC" => 1.12,
-            "FL" => 1.12,
-            "SO" => 0.9,
-            _ => 0.0
-        });
+        return mods.Aggregate(
+            1.0,
+            (current, mod) =>
+                current
+                * mod switch
+                {
+                    "NF" => 0.5,
+                    "EZ" => 0.5,
+                    "HT" => 0.3,
+                    "HD" => 1.06,
+                    "HR" => 1.06,
+                    "DT" => 1.12,
+                    "NC" => 1.12,
+                    "FL" => 1.12,
+                    "SO" => 0.9,
+                    _ => 0.0
+                }
+        );
     }
 
     [GeneratedRegex("OverallDifficulty:(.*?)\n")]
     private static partial Regex ODRegex();
+
     [GeneratedRegex("CircleSize:(.*?)\n")]
     private static partial Regex CSRegex();
+
     [GeneratedRegex("HPDrainRate:(.*?)\n")]
     private static partial Regex HPRegex();
+
     [GeneratedRegex("SliderMultiplier:(.*?)\n")]
     private static partial Regex SliderMRegex();
+
     [GeneratedRegex("SliderTickRate:(.*?)\n")]
     private static partial Regex SliderTRRegex();
+
     [GeneratedRegex("Title:(.*?)\n")]
     private static partial Regex TitleRegex();
+
     [GeneratedRegex("Artist:(.*?)\n")]
     private static partial Regex ArtistRegex();
+
     [GeneratedRegex("Version:(.*?)\n")]
     private static partial Regex VersionRegex();
+
     [GeneratedRegex("osu file format v([0-9]+)")]
     private static partial Regex FileVersionRegex();
 }

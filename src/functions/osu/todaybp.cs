@@ -16,28 +16,29 @@ namespace KanonBot.Functions.OSUBot
 {
     public class TodayBpCommand : ICommand
     {
-        public CommandDef Definition => new()
-        {
-            Name = "todaybp",
-            Args =
-            [
-                new() { Name = "username",     Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
-                new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
-                new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
-            ],
-            Flags =
-            [
-                new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" },
-            ]
-        };
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "todaybp",
+                Args =
+                [
+                    new() { Name = "username",     Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                    new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
+                    new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                ],
+                Flags =  [ new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" }, ]
+            };
 
-        public Task Execute(Target target, ParsedCommand cmd)
-            => TodayBP.Execute(target, cmd);
+        public Task Execute(Target target, ParsedCommand cmd) => TodayBP.Execute(target, cmd);
     }
 
     public class TodayBP
     {
-        public static async Task Execute(Target target, ParsedCommand cmd, bool includeFails = false)
+        public static async Task Execute(
+            Target target,
+            ParsedCommand cmd,
+            bool includeFails = false
+        )
         {
             var resolved = await Accounts.ResolveCommandUser(target, cmd);
             if (resolved == null)
@@ -60,26 +61,30 @@ namespace KanonBot.Functions.OSUBot
 
             if (is_ppysb)
             {
-                var ss = await API.PPYSB.Client.GetUserScores(
-                    osuID,
-                    API.PPYSB.UserScoreType.Best,
-                    sbmode!.Value,
-                    100,
-                    0,
-                    includeFails
-                );
+                var ss = await API.PPYSB
+                    .Client
+                    .GetUserScores(
+                        osuID,
+                        API.PPYSB.UserScoreType.Best,
+                        sbmode!.Value,
+                        100,
+                        0,
+                        includeFails
+                    );
                 scoreInfos = ss?.Map(s => s.ToOsu(sbinfo!, sbmode!.Value)).ToArray();
             }
             else
             {
-                scoreInfos = await API.OSU.Client.GetUserScores(
-                    osuID,
-                    API.OSU.UserScoreType.Best,
-                    mode!.Value,
-                    100,
-                    0,
-                    includeFails
-                );
+                scoreInfos = await API.OSU
+                    .Client
+                    .GetUserScores(
+                        osuID,
+                        API.OSU.UserScoreType.Best,
+                        mode!.Value,
+                        100,
+                        0,
+                        includeFails
+                    );
             }
 
             if (scoreInfos == null)
@@ -90,7 +95,7 @@ namespace KanonBot.Functions.OSUBot
             // 正常是找不到玩家，但是上面有验证，这里做保险
             if (scoreInfos.Length > 0)
             {
-                List<Image.ScoreList.ScoreRank> scores = [];
+                List<Image.ScoreList.ScoreRank> scores =  [ ];
                 var now = DateTime.Now;
                 var t = now.Hour < 4 ? now.Date.AddDays(-1).AddHours(4) : now.Date.AddHours(4);
 
@@ -130,21 +135,17 @@ namespace KanonBot.Functions.OSUBot
                         s.PPInfo = UniversalCalculator.CalculateData(
                             b,
                             s.Score,
-                            UniversalCalculator.GetCalculatorKind(
-                                is_ppysb,
-                                false
-                            )
+                            UniversalCalculator.GetCalculatorKind(is_ppysb, false)
                         );
                     }
                 );
 
                 scores.Sort((a, b) => b.PPInfo!.ppStat.total > a.PPInfo!.ppStat.total ? 1 : -1);
 
-                using var img = await KanonBot.Image.ScoreList.Draw(
-                    KanonBot.Image.ScoreList.Type.TODAYBP,
-                    scores,
-                    tempOsuInfo
-                );
+                using var img = await KanonBot
+                    .Image
+                    .ScoreList
+                    .Draw(KanonBot.Image.ScoreList.Type.TODAYBP, scores, tempOsuInfo);
 
                 await target.reply(img, new PngEncoder());
             }

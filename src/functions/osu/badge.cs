@@ -17,41 +17,61 @@ namespace KanonBot.Functions.OSUBot
 {
     public class BadgeHelpCommand : ICommand
     {
-        public CommandDef Definition => new() { Name = "badge", Args = [], Flags = [] };
-        public Task Execute(Target target, ParsedCommand cmd)
-            => target.reply("!badge info/list\n徽章设置/兑换等操作请前往 https://hub.kagamistudio.com");
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "badge",
+                Args =  [ ],
+                Flags =  [ ]
+            };
+
+        public Task Execute(Target target, ParsedCommand cmd) =>
+            target.reply("!badge info/list\n徽章设置/兑换等操作请前往 https://hub.kagamistudio.com");
     }
 
     public class BadgeInfoCommand : ICommand
     {
-        public CommandDef Definition => new()
-        {
-            Name = "badge info",
-            Args = [new() { Name = "badge_number", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple, Parse = s => CommandDefs.ParseInt(s) }],
-            Flags = []
-        };
-        public Task Execute(Target target, ParsedCommand cmd)
-            => Badge.ExecuteInfo(target, cmd.RawArgs);
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "badge info",
+                Args =
+                [
+                    new() { Name = "badge_number", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple, Parse = s => CommandDefs.ParseInt(s) }
+                ],
+                Flags =  [ ]
+            };
+
+        public Task Execute(Target target, ParsedCommand cmd) =>
+            Badge.ExecuteInfo(target, cmd.RawArgs);
     }
 
     public class BadgeListCommand : ICommand
     {
-        public CommandDef Definition => new() { Name = "badge list", Args = [], Flags = [] };
-        public Task Execute(Target target, ParsedCommand cmd)
-            => Badge.ExecuteList(target);
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "badge list",
+                Args =  [ ],
+                Flags =  [ ]
+            };
+
+        public Task Execute(Target target, ParsedCommand cmd) => Badge.ExecuteList(target);
     }
 
     public class BadgeDeprecatedCommand : ICommand
     {
-        public CommandDef Definition => new()
-        {
-            Name = "badge set",
-            Aliases = ["badge redeem", "badge sudo"],
-            Args = [],
-            Flags = []
-        };
-        public Task Execute(Target target, ParsedCommand cmd)
-            => target.reply("徽章管理已迁移至网页端，请前往 https://hub.kagamistudio.com 进行操作。");
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "badge set",
+                Aliases =  [ "badge redeem", "badge sudo" ],
+                Args =  [ ],
+                Flags =  [ ]
+            };
+
+        public Task Execute(Target target, ParsedCommand cmd) =>
+            target.reply("徽章管理已迁移至网页端，请前往 https://hub.kagamistudio.com 进行操作。");
     }
 
     public class Badge
@@ -78,7 +98,11 @@ namespace KanonBot.Functions.OSUBot
             await List(target, userCtx);
         }
 
-        private static async Task Info(Drivers.Target target, string cmd, Accounts.UserContext userCtx)
+        private static async Task Info(
+            Drivers.Target target,
+            string cmd,
+            Accounts.UserContext userCtx
+        )
         {
             if (!int.TryParse(cmd, out int badgeNum) || badgeNum < 1)
             {
@@ -95,7 +119,9 @@ namespace KanonBot.Functions.OSUBot
 
             if (badgeNum > profile.InstalledBadges.Count)
             {
-                await target.reply($"你当前佩戴了 {profile.InstalledBadges.Count} 个徽章，没有编号为 {badgeNum} 的。");
+                await target.reply(
+                    $"你当前佩戴了 {profile.InstalledBadges.Count} 个徽章，没有编号为 {badgeNum} 的。"
+                );
                 return;
             }
 
@@ -118,10 +144,11 @@ namespace KanonBot.Functions.OSUBot
                 }
             }
 
-            var infoText = $"徽章信息如下：\n" +
-                $"名称：{badge.NameEn}\n" +
-                $"中文名称: {badge.NameZh}\n" +
-                $"描述: {badge.Summary}";
+            var infoText =
+                $"徽章信息如下：\n"
+                + $"名称：{badge.NameEn}\n"
+                + $"中文名称: {badge.NameZh}\n"
+                + $"描述: {badge.Summary}";
 
             if (badge.ExpiresAt.HasValue)
                 infoText += $"\n过期时间: {badge.ExpiresAt.Value:yyyy-MM-dd}";

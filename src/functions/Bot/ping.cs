@@ -7,14 +7,14 @@ namespace KanonBot.Functions.OSUBot
 {
     public class PingCommand : ICommand
     {
-        public CommandDef Definition => new()
-        {
-            Name = "ping",
-            Args = [],
-            Flags = []
-        };
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "ping",
+                Args =  [ ],
+                Flags =  [ ]
+            };
 
-        public Task Execute(Target target, ParsedCommand cmd)
-            => target.reply("meow~");
+        public Task Execute(Target target, ParsedCommand cmd) => target.reply("meow~");
     }
 }

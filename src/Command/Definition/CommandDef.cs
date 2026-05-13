@@ -8,11 +8,11 @@ namespace CommandSystem.Definition;
 public class CommandDef
 {
     public string Name { get; init; } = "";
-    public List<string> Aliases { get; init; } = [];
+    public List<string> Aliases { get; init; } = [ ];
     public bool LegacyStartsWithMatch { get; init; } = false;
-    public List<string> ExcludePrefixes { get; init; } = [];
-    public List<ArgDef> Args { get; init; } = [];
-    public List<FlagDef> Flags { get; init; } = [];
+    public List<string> ExcludePrefixes { get; init; } = [ ];
+    public List<ArgDef> Args { get; init; } = [ ];
+    public List<FlagDef> Flags { get; init; } = [ ];
 }
 
 /// <summary>
@@ -30,7 +30,8 @@ public class CommandRegistry
             _commands[alias] = command;
     }
 
-    public bool TryGet(string name, out ICommand? command) => _commands.TryGetValue(name, out command);
+    public bool TryGet(string name, out ICommand? command) =>
+        _commands.TryGetValue(name, out command);
 
     public (ICommand? command, string rawArgs) MatchCommand(string body)
     {
@@ -44,7 +45,11 @@ public class CommandRegistry
                 var def = cmd.Definition;
 
                 // 检查排除前缀
-                if (def.ExcludePrefixes.Any(ex => body.StartsWith(ex, StringComparison.OrdinalIgnoreCase)))
+                if (
+                    def.ExcludePrefixes.Any(
+                        ex => body.StartsWith(ex, StringComparison.OrdinalIgnoreCase)
+                    )
+                )
                     return false;
 
                 // StartsWith 匹配或精确匹配（name 后必须是结尾或空白）

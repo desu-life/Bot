@@ -16,52 +16,53 @@ namespace KanonBot.Functions.OSUBot
 {
     public class RecentListCommand : ICommand
     {
-        public CommandDef Definition => new()
-        {
-            Name = "res",
-            Args =
-            [
-                new() { Name = "username",     Prefix = ArgPrefix.None,  Strategy = ParseStrategy.Simple },
-                new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
-                new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
-            ],
-            Flags =
-            [
-                new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
-            ]
-        };
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "res",
+                Args =
+                [
+                    new() { Name = "username",     Prefix = ArgPrefix.None,  Strategy = ParseStrategy.Simple },
+                    new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                    new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
+                ],
+                Flags =  [ new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" }, ]
+            };
 
-        public Task Execute(Target target, ParsedCommand cmd)
-            => RecentList.Execute(target, cmd, includeFails: true);
+        public Task Execute(Target target, ParsedCommand cmd) =>
+            RecentList.Execute(target, cmd, includeFails: true);
     }
 
     public class PassRecentListCommand : ICommand
     {
-        public CommandDef Definition => new()
-        {
-            Name = "prs",
-            Args =
-            [
-                new() { Name = "username",     Prefix = ArgPrefix.None,  Strategy = ParseStrategy.Simple },
-                new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
-                new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
-            ],
-            Flags =
-            [
-                new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
-            ]
-        };
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "prs",
+                Args =
+                [
+                    new() { Name = "username",     Prefix = ArgPrefix.None,  Strategy = ParseStrategy.Simple },
+                    new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                    new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
+                ],
+                Flags =  [ new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" }, ]
+            };
 
-        public Task Execute(Target target, ParsedCommand cmd)
-            => RecentList.Execute(target, cmd, includeFails: false);
+        public Task Execute(Target target, ParsedCommand cmd) =>
+            RecentList.Execute(target, cmd, includeFails: false);
     }
 
     public class RecentList
     {
-        public static async Task Execute(Target target, ParsedCommand cmd, bool includeFails = false)
+        public static async Task Execute(
+            Target target,
+            ParsedCommand cmd,
+            bool includeFails = false
+        )
         {
             var resolved = await Accounts.ResolveCommandUser(target, cmd);
-            if (resolved == null) return;
+            if (resolved == null)
+                return;
 
             long osuID = resolved.OsuId;
             API.OSU.Mode? mode = resolved.Mode;
@@ -78,25 +79,32 @@ namespace KanonBot.Functions.OSUBot
 
             API.OSU.Models.ScoreLazer[]? scoreInfos = null;
 
-            if (is_ppysb) {
-                var ss = await API.PPYSB.Client.GetUserScores(
-                    osuID,
-                API.PPYSB.UserScoreType.Recent,
-                    sbmode!.Value,
-                    20,
-                    0,
-                    includeFails
-                );
+            if (is_ppysb)
+            {
+                var ss = await API.PPYSB
+                    .Client
+                    .GetUserScores(
+                        osuID,
+                        API.PPYSB.UserScoreType.Recent,
+                        sbmode!.Value,
+                        20,
+                        0,
+                        includeFails
+                    );
                 scoreInfos = ss?.Map(s => s.ToOsu(sbinfo!, sbmode!.Value)).ToArray();
-            } else {
-                scoreInfos = await API.OSU.Client.GetUserScores(
-                    osuID,
-                    API.OSU.UserScoreType.Recent,
-                    mode!.Value,
-                    20, //default was 1, due to seasonalpass set it to 20
-                    0,
-                    includeFails
-                );
+            }
+            else
+            {
+                scoreInfos = await API.OSU
+                    .Client
+                    .GetUserScores(
+                        osuID,
+                        API.OSU.UserScoreType.Recent,
+                        mode!.Value,
+                        20, //default was 1, due to seasonalpass set it to 20
+                        0,
+                        includeFails
+                    );
             }
 
             if (scoreInfos == null)
@@ -108,24 +116,31 @@ namespace KanonBot.Functions.OSUBot
             if (scoreInfos.Length > 0)
             {
                 bool special_version_pp = cmd.Flag("special_pp");
-                List<Image.ScoreList.ScoreRank> scores = [];
-                for (int i = 0; i < scoreInfos.Length; ++i) {
-                    scores.Add(new Image.ScoreList.ScoreRank {
-                        Score = scoreInfos[i],
-                        Rank = i + 1,
-                    });
+                List<Image.ScoreList.ScoreRank> scores =  [ ];
+                for (int i = 0; i < scoreInfos.Length; ++i)
+                {
+                    scores.Add(
+                        new Image.ScoreList.ScoreRank { Score = scoreInfos[i], Rank = i + 1, }
+                    );
                 }
 
-                await Parallel.ForEachAsync(scores, async (s, _) => {
-                    var b = await Utils.LoadOrDownloadBeatmap(s.Score.Beatmap!);
-                    s.PPInfo = UniversalCalculator.CalculateData(b, s.Score, UniversalCalculator.GetCalculatorKind(is_ppysb, special_version_pp));
-                });
-
-                using var img = await KanonBot.Image.ScoreList.Draw(
-                    KanonBot.Image.ScoreList.Type.RECENTLIST,
+                await Parallel.ForEachAsync(
                     scores,
-                    tempOsuInfo
+                    async (s, _) =>
+                    {
+                        var b = await Utils.LoadOrDownloadBeatmap(s.Score.Beatmap!);
+                        s.PPInfo = UniversalCalculator.CalculateData(
+                            b,
+                            s.Score,
+                            UniversalCalculator.GetCalculatorKind(is_ppysb, special_version_pp)
+                        );
+                    }
                 );
+
+                using var img = await KanonBot
+                    .Image
+                    .ScoreList
+                    .Draw(KanonBot.Image.ScoreList.Type.RECENTLIST, scores, tempOsuInfo);
 
                 await target.reply(img, new PngEncoder());
             }
@@ -135,6 +150,5 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
         }
-
     }
 }

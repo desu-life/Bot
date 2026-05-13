@@ -17,7 +17,7 @@ public static class CommandDefs
         if (ParseInt(s) is int single)
             return new Range(0, single);
 
-        var parts = s.Split(["..", "-"], StringSplitOptions.RemoveEmptyEntries);
+        var parts = s.Split([ "..", "-" ], StringSplitOptions.RemoveEmptyEntries);
         if (
             parts.Length == 2
             && int.TryParse(parts[0], out var start)

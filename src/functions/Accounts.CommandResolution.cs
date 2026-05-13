@@ -54,9 +54,7 @@ namespace KanonBot.Functions
             var iamUserId = await API.IAM.Client.GetIamUserIdByExternalId(provider, accInfo.uid);
             if (iamUserId == null)
             {
-                await target.reply(
-                    "你还没有绑定 desu.life 账户，请使用 !bind 进行绑定。"
-                );
+                await target.reply("你还没有绑定 desu.life 账户，请使用 !bind 进行绑定。");
                 return null;
             }
 
@@ -84,7 +82,9 @@ namespace KanonBot.Functions
                 if (!sbmode.HasValue)
                 {
                     var kagamiProfile = await API.Kagami.Client.GetPublicKanonBotProfile(iamUserId);
-                    sbmode = KagamiExtensions.ParseKagamiPpysbMode(kagamiProfile?.KanonBot?.PpySbPreferredGameMode);
+                    sbmode = KagamiExtensions.ParseKagamiPpysbMode(
+                        kagamiProfile?.KanonBot?.PpySbPreferredGameMode
+                    );
                 }
                 sbmode ??= API.PPYSB.Mode.OSU;
 
@@ -112,7 +112,9 @@ namespace KanonBot.Functions
                 if (!mode.HasValue)
                 {
                     var kagamiProfile = await API.Kagami.Client.GetPublicKanonBotProfile(iamUserId);
-                    mode = KagamiExtensions.ParseKagamiMode(kagamiProfile?.KanonBot?.PreferredGameMode);
+                    mode = KagamiExtensions.ParseKagamiMode(
+                        kagamiProfile?.KanonBot?.PreferredGameMode
+                    );
                 }
                 mode ??= API.OSU.Mode.OSU;
 
@@ -149,7 +151,7 @@ namespace KanonBot.Functions
             ParsedCommand command
         )
         {
-            var username = command.GetString("username");
+            var username = command.GetString("username") ?? "";
             var osuMode = command.GetString("osu_mode")?.ParseMode();
 
             // Try at-query first
@@ -180,7 +182,9 @@ namespace KanonBot.Functions
                 // Both found - get mode preference from Kagami
                 var osuInfo = atOSU.ValueUnsafe();
                 var kagamiProfile = await API.Kagami.Client.GetPublicKanonBotProfile(iamUserId);
-                var kagamiMode = KagamiExtensions.ParseKagamiMode(kagamiProfile?.KanonBot?.PreferredGameMode);
+                var kagamiMode = KagamiExtensions.ParseKagamiMode(
+                    kagamiProfile?.KanonBot?.PreferredGameMode
+                );
                 return new CommandUserResult
                 {
                     OsuId = osuInfo.Id,
@@ -192,10 +196,9 @@ namespace KanonBot.Functions
             else
             {
                 // Not an at-query, try name query
-                var onlineUser = await API.OSU.Client.GetUser(
-                    username,
-                    osuMode ?? API.OSU.Mode.OSU
-                );
+                var onlineUser = await API.OSU
+                    .Client
+                    .GetUser(username, osuMode ?? API.OSU.Mode.OSU);
                 if (onlineUser == null)
                 {
                     await target.reply("猫猫没有找到此用户。");
@@ -208,7 +211,9 @@ namespace KanonBot.Functions
                 if (iamId != null)
                 {
                     var kagamiProfile = await API.Kagami.Client.GetPublicKanonBotProfile(iamId);
-                    var kagamiMode = KagamiExtensions.ParseKagamiMode(kagamiProfile?.KanonBot?.PreferredGameMode);
+                    var kagamiMode = KagamiExtensions.ParseKagamiMode(
+                        kagamiProfile?.KanonBot?.PreferredGameMode
+                    );
                     mode = osuMode ?? kagamiMode ?? onlineUser.Mode;
                 }
 
@@ -229,7 +234,7 @@ namespace KanonBot.Functions
             ParsedCommand command
         )
         {
-            var username = command.GetString("username");
+            var username = command.GetString("username") ?? "";
             var sbMode = command.GetString("osu_mode")?.ParsePpysbMode();
 
             // Try at-query first
@@ -259,7 +264,9 @@ namespace KanonBot.Functions
                 // Both found - get mode preference from Kagami
                 var osuInfo = atOSU.ValueUnsafe();
                 var kagamiProfile = await API.Kagami.Client.GetPublicKanonBotProfile(iamUserId);
-                var kagamiMode = KagamiExtensions.ParseKagamiPpysbMode(kagamiProfile?.KanonBot?.PpySbPreferredGameMode);
+                var kagamiMode = KagamiExtensions.ParseKagamiPpysbMode(
+                    kagamiProfile?.KanonBot?.PpySbPreferredGameMode
+                );
                 return new CommandUserResult
                 {
                     OsuId = osuInfo.Id,
@@ -286,7 +293,9 @@ namespace KanonBot.Functions
                 if (iamId != null)
                 {
                     var kagamiProfile = await API.Kagami.Client.GetPublicKanonBotProfile(iamId);
-                    resolvedSbMode ??= KagamiExtensions.ParseKagamiPpysbMode(kagamiProfile?.KanonBot?.PpySbPreferredGameMode);
+                    resolvedSbMode ??= KagamiExtensions.ParseKagamiPpysbMode(
+                        kagamiProfile?.KanonBot?.PpySbPreferredGameMode
+                    );
                 }
                 resolvedSbMode ??= onlineUser.Info.PreferredMode;
 

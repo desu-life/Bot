@@ -16,55 +16,62 @@ namespace KanonBot.Functions.OSUBot
 {
     public class RecentCommand : ICommand
     {
-        public CommandDef Definition => new()
-        {
-            Name = "recent",
-            Aliases = ["re"],
-            Args =
-            [
-                new() { Name = "username",     Prefix = ArgPrefix.None,  Strategy = ParseStrategy.Simple },
-                new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
-                new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
-            ],
-            Flags =
-            [
-                new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
-                new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
-            ]
-        };
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "recent",
+                Aliases =  [ "re" ],
+                Args =
+                [
+                    new() { Name = "username",     Prefix = ArgPrefix.None,  Strategy = ParseStrategy.Simple },
+                    new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                    new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
+                ],
+                Flags =
+                [
+                    new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
+                    new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
+                ]
+            };
 
-        public Task Execute(Target target, ParsedCommand cmd)
-            => Recent.Execute(target, cmd, includeFails: true);
+        public Task Execute(Target target, ParsedCommand cmd) =>
+            Recent.Execute(target, cmd, includeFails: true);
     }
 
     public class PassRecentCommand : ICommand
     {
-        public CommandDef Definition => new()
-        {
-            Name = "pr",
-            Args =
-            [
-                new() { Name = "username",     Prefix = ArgPrefix.None,  Strategy = ParseStrategy.Simple },
-                new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
-                new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
-            ],
-            Flags =
-            [
-                new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
-                new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
-            ]
-        };
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "pr",
+                Args =
+                [
+                    new() { Name = "username",     Prefix = ArgPrefix.None,  Strategy = ParseStrategy.Simple },
+                    new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                    new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
+                ],
+                Flags =
+                [
+                    new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
+                    new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
+                ]
+            };
 
-        public Task Execute(Target target, ParsedCommand cmd)
-            => Recent.Execute(target, cmd, includeFails: false);
+        public Task Execute(Target target, ParsedCommand cmd) =>
+            Recent.Execute(target, cmd, includeFails: false);
     }
 
     public class Recent
     {
-        public static async Task Execute(Target target, ParsedCommand cmd, bool includeFails = false)
+        public static async Task Execute(
+            Target target,
+            ParsedCommand cmd,
+            bool includeFails = false
+        )
         {
             var resolved = await Accounts.ResolveCommandUser(target, cmd);
-            if (resolved == null) return;
+            if (resolved == null)
+                return;
 
             long osuID = resolved.OsuId;
             API.OSU.Mode? mode = resolved.Mode;
@@ -81,29 +88,37 @@ namespace KanonBot.Functions.OSUBot
 
             API.OSU.Models.ScoreLazer[]? scoreInfos = null;
             var orderNumber = cmd.Get<int>("order_number");
-            if (orderNumber < 1) orderNumber = 1;
+            if (orderNumber < 1)
+                orderNumber = 1;
             bool special_version_pp = cmd.Flag("special_pp");
             bool dev_panel = cmd.Flag("dev_panel");
 
-            if (is_ppysb) {
-                var ss = await API.PPYSB.Client.GetUserScores(
-                    osuID,
-                API.PPYSB.UserScoreType.Recent,
-                    sbmode!.Value,
-                    20,
-                    orderNumber - 1,
-                    includeFails
-                );
+            if (is_ppysb)
+            {
+                var ss = await API.PPYSB
+                    .Client
+                    .GetUserScores(
+                        osuID,
+                        API.PPYSB.UserScoreType.Recent,
+                        sbmode!.Value,
+                        20,
+                        orderNumber - 1,
+                        includeFails
+                    );
                 scoreInfos = ss?.Map(s => s.ToOsu(sbinfo!, sbmode!.Value)).ToArray();
-            } else {
-                scoreInfos = await API.OSU.Client.GetUserScores(
-                    osuID,
-                    API.OSU.UserScoreType.Recent,
-                    mode!.Value,
-                    20, //default was 1, due to seasonalpass set it to 20
-                    orderNumber - 1,
-                    includeFails
-                );
+            }
+            else
+            {
+                scoreInfos = await API.OSU
+                    .Client
+                    .GetUserScores(
+                        osuID,
+                        API.OSU.UserScoreType.Recent,
+                        mode!.Value,
+                        20, //default was 1, due to seasonalpass set it to 20
+                        orderNumber - 1,
+                        includeFails
+                    );
             }
 
             if (scoreInfos == null)
@@ -115,20 +130,22 @@ namespace KanonBot.Functions.OSUBot
             if (scoreInfos.Length > 0)
             {
                 Image.ScoreV2.ScorePanelData data;
-                data = await UniversalCalculator.CalculatePanelData(scoreInfos[0], UniversalCalculator.GetCalculatorKind(is_ppysb, special_version_pp));
-                
-                
-                using var img =
-                    dev_panel
-                        ? await Image.OsuScorePanelV3.Draw(data)
-                        : await Image.ScoreV2.DrawScore(data);
+                data = await UniversalCalculator.CalculatePanelData(
+                    scoreInfos[0],
+                    UniversalCalculator.GetCalculatorKind(is_ppysb, special_version_pp)
+                );
+
+                using var img = dev_panel
+                    ? await Image.OsuScorePanelV3.Draw(data)
+                    : await Image.ScoreV2.DrawScore(data);
 
                 await target.reply(img, new JpegEncoder());
 
                 // 缓存本来源查询
                 HistoryBeatmapMapper.Map(target.source, scoreInfos[0].BeatmapId);
 
-                if (is_ppysb) return;
+                if (is_ppysb)
+                    return;
                 _ = Task.Run(() => BeatmapTechDataProcess(scoreInfos, osuID));
             }
             else
@@ -140,7 +157,8 @@ namespace KanonBot.Functions.OSUBot
 
         private static async Task BeatmapTechDataProcess(Models.ScoreLazer[] scoreInfos, long? oid)
         {
-            if (Config.inner!.dev) return;
+            if (Config.inner!.dev)
+                return;
             foreach (var x in scoreInfos)
             {
                 //处理谱面数据
@@ -178,19 +196,21 @@ namespace KanonBot.Functions.OSUBot
                                 || x.Rank.ToUpper() == "A"
                             )
                             {
-                                await Database.Client.InsertOsuStandardBeatmapTechData(
-                                    x.Beatmap!.BeatmapId,
-                                    data.ppInfo.star,
-                                    (int)data.ppInfo.ppStats![0].total,
-                                    (int)data.ppInfo.ppStats![0].acc!,
-                                    (int)data.ppInfo.ppStats![0].speed!,
-                                    (int)data.ppInfo.ppStats![0].aim!,
-                                    (int)data.ppInfo.ppStats![1].total,
-                                    (int)data.ppInfo.ppStats![2].total,
-                                    (int)data.ppInfo.ppStats![3].total,
-                                    (int)data.ppInfo.ppStats![4].total,
-                                    x.Mods.Map(c => c.Acronym).ToArray()
-                                );
+                                await Database
+                                    .Client
+                                    .InsertOsuStandardBeatmapTechData(
+                                        x.Beatmap!.BeatmapId,
+                                        data.ppInfo.star,
+                                        (int)data.ppInfo.ppStats![0].total,
+                                        (int)data.ppInfo.ppStats![0].acc!,
+                                        (int)data.ppInfo.ppStats![0].speed!,
+                                        (int)data.ppInfo.ppStats![0].aim!,
+                                        (int)data.ppInfo.ppStats![1].total,
+                                        (int)data.ppInfo.ppStats![2].total,
+                                        (int)data.ppInfo.ppStats![3].total,
+                                        (int)data.ppInfo.ppStats![4].total,
+                                        x.Mods.Map(c => c.Acronym).ToArray()
+                                    );
                             }
                     }
                 }

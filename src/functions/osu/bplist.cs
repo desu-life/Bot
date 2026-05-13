@@ -16,26 +16,30 @@ namespace KanonBot.Functions.OSUBot
 {
     public class BpListCommand : ICommand
     {
-        public CommandDef Definition => new()
-        {
-            Name = "bplist",
-            Args =
-            [
-                new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
-                new() { Name = "range", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseRange(s) },
-                new() { Name = "range",    Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseRange(s) },
-                new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
-            ],
-            Flags = [new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" }]
-        };
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "bplist",
+                Args =
+                [
+                    new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
+                    new() { Name = "range", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseRange(s) },
+                    new() { Name = "range",    Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseRange(s) },
+                    new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
+                ],
+                Flags =  [ new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" } ]
+            };
 
-        public Task Execute(Target target, ParsedCommand cmd)
-            => BPList.Execute(target, cmd);
+        public Task Execute(Target target, ParsedCommand cmd) => BPList.Execute(target, cmd);
     }
 
     public class BPList
     {
-        public static async Task Execute(Target target, ParsedCommand cmd, bool includeFails = false)
+        public static async Task Execute(
+            Target target,
+            ParsedCommand cmd,
+            bool includeFails = false
+        )
         {
             if (!cmd.Has("range"))
             {
@@ -43,10 +47,12 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
             var range = cmd.Get<Range>("range");
-            int StartAt, EndAt;
+            int StartAt,
+                EndAt;
             StartAt = range.Start.Value;
             EndAt = range.End.Value;
-            if (StartAt == 0) StartAt = 1; // ParseRange returns Range(0, single) for single value
+            if (StartAt == 0)
+                StartAt = 1; // ParseRange returns Range(0, single) for single value
 
             if (StartAt < 1 || StartAt > 199)
             {
@@ -65,7 +71,8 @@ namespace KanonBot.Functions.OSUBot
             }
 
             var resolved = await Accounts.ResolveCommandUser(target, cmd);
-            if (resolved == null) return;
+            if (resolved == null)
+                return;
 
             long osuID = resolved.OsuId;
             API.OSU.Mode? mode = resolved.Mode;
@@ -82,26 +89,32 @@ namespace KanonBot.Functions.OSUBot
 
             API.OSU.Models.ScoreLazer[]? scoreInfos = null;
 
-            if (is_ppysb) {
-                var ss = await API.PPYSB.Client.GetUserScores(
-                    osuID,
-                    API.PPYSB.UserScoreType.Best,
-                    sbmode!.Value,
-                    100,
-                    0,
-                    includeFails
-                );
+            if (is_ppysb)
+            {
+                var ss = await API.PPYSB
+                    .Client
+                    .GetUserScores(
+                        osuID,
+                        API.PPYSB.UserScoreType.Best,
+                        sbmode!.Value,
+                        100,
+                        0,
+                        includeFails
+                    );
                 scoreInfos = ss?.Map(s => s.ToOsu(sbinfo!, sbmode!.Value)).ToArray();
-            } else {
-                scoreInfos = await API.OSU.Client.GetUserScoresPage(
-                    osuID,
-                    API.OSU.UserScoreType.Best,
-                    mode!.Value,
-                    200,
-                    0,
-                    includeFails
-                );
-                
+            }
+            else
+            {
+                scoreInfos = await API.OSU
+                    .Client
+                    .GetUserScoresPage(
+                        osuID,
+                        API.OSU.UserScoreType.Best,
+                        mode!.Value,
+                        200,
+                        0,
+                        includeFails
+                    );
             }
 
             if (scoreInfos == null)
@@ -112,39 +125,54 @@ namespace KanonBot.Functions.OSUBot
             // 正常是找不到玩家，但是上面有验证，这里做保险
             if (scoreInfos.Length > 0)
             {
-                List<Image.ScoreList.ScoreRank> scores = [];
-                for (int i = StartAt - 1; i < (scoreInfos.Length > EndAt ? EndAt : scoreInfos.Length); ++i) {
-                    scores.Add(new Image.ScoreList.ScoreRank {
-                        Score = scoreInfos[i],
-                        Rank = i + 1,
-                    });
+                List<Image.ScoreList.ScoreRank> scores =  [ ];
+                for (
+                    int i = StartAt - 1;
+                    i < (scoreInfos.Length > EndAt ? EndAt : scoreInfos.Length);
+                    ++i
+                )
+                {
+                    scores.Add(
+                        new Image.ScoreList.ScoreRank { Score = scoreInfos[i], Rank = i + 1, }
+                    );
                 }
 
-                if (scores.Count == 0) {
+                if (scores.Count == 0)
+                {
                     await target.reply($"找不到对应的成绩。。");
                     return;
                 }
 
-                await Parallel.ForEachAsync(scores, async (s, _) => {
-                    var b = await Utils.LoadOrDownloadBeatmap(s.Score.Beatmap!);
-                    s.PPInfo = UniversalCalculator.CalculateData(b, s.Score, UniversalCalculator.GetCalculatorKind(is_ppysb, false));
-                });
+                await Parallel.ForEachAsync(
+                    scores,
+                    async (s, _) =>
+                    {
+                        var b = await Utils.LoadOrDownloadBeatmap(s.Score.Beatmap!);
+                        s.PPInfo = UniversalCalculator.CalculateData(
+                            b,
+                            s.Score,
+                            UniversalCalculator.GetCalculatorKind(is_ppysb, false)
+                        );
+                    }
+                );
 
                 scores.Sort((a, b) => b.PPInfo!.ppStat.total > a.PPInfo!.ppStat.total ? 1 : -1);
 
-                using var img = await KanonBot.Image.ScoreList.Draw(
-                    KanonBot.Image.ScoreList.Type.BPLIST,
-                    scores,
-                    tempOsuInfo
-                );
+                using var img = await KanonBot
+                    .Image
+                    .ScoreList
+                    .Draw(KanonBot.Image.ScoreList.Type.BPLIST, scores, tempOsuInfo);
 
                 await target.reply(img, new PngEncoder());
             }
             else
             {
-                if (cmd.SelfQuery) {
+                if (cmd.SelfQuery)
+                {
                     await target.reply($"你在 {tempOsuInfo.Mode.ToStr()} 模式上还没有bp呢。。");
-                } else {
+                }
+                else
+                {
                     await target.reply(
                         $"{tempOsuInfo.Username} 在 {tempOsuInfo.Mode.ToStr()} 模式上还没有bp呢。。"
                     );
@@ -152,6 +180,5 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
         }
-
     }
 }

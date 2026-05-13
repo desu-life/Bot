@@ -1,56 +1,75 @@
+using System.IO;
 using CommandSystem;
 using CommandSystem.Definition;
 using CommandSystem.Parsing;
+using KanonBot.API;
 using KanonBot.Drivers;
 using KanonBot.Message;
-using KanonBot.API;
 using KanonBot.Serializer;
 using SixLabors.ImageSharp.Formats.Jpeg;
-using System.IO;
 
 namespace KanonBot.Functions.OSUBot
 {
     public class PpvsCommand : ICommand
     {
-        public CommandDef Definition => new()
-        {
-            Name = "ppvs",
-            Args =
-            [
-                new() { Name = "users_raw", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
-            ],
-            Flags = []
-        };
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "ppvs",
+                Args =
+                [
+                    new() { Name = "users_raw", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                ],
+                Flags =  [ ]
+            };
 
         public async Task Execute(Target target, ParsedCommand cmd)
         {
             var rawInput = cmd.RawArgs;
             var cmds = rawInput.Split('#');
-            if (cmds.Length == 1) {
+            if (cmds.Length == 1)
+            {
                 if (cmds[0].Length == 0)
                 {
                     await target.reply("!ppvs 要对比的用户");
                     return;
                 }
 
-
                 // 通过IAM获取自身osu uid
                 var accInfo = Accounts.GetAccInfo(target);
                 string provider;
-                try { provider = API.IAM.Client.PlatformToProvider(accInfo.platform); }
-                catch (NotSupportedException) { await target.reply("当前平台暂不支持此功能。"); return; }
+                try
+                {
+                    provider = API.IAM.Client.PlatformToProvider(accInfo.platform);
+                }
+                catch (NotSupportedException)
+                {
+                    await target.reply("当前平台暂不支持此功能。");
+                    return;
+                }
 
-                var iamUserId = await API.IAM.Client.GetIamUserIdByExternalId(provider, accInfo.uid);
+                var iamUserId = await API.IAM
+                    .Client
+                    .GetIamUserIdByExternalId(provider, accInfo.uid);
                 if (iamUserId == null)
-                { await target.reply("你还没有绑定 desu.life 账户，请使用 !bind 进行绑定。"); return; }
+                {
+                    await target.reply("你还没有绑定 desu.life 账户，请使用 !bind 进行绑定。");
+                    return;
+                }
 
                 var bindings = await API.IAM.Client.GetUserBindings(iamUserId);
                 if (bindings == null)
-                { await target.reply("获取账户信息失败，请稍后再试。"); return; }
+                {
+                    await target.reply("获取账户信息失败，请稍后再试。");
+                    return;
+                }
 
                 var osuUid = API.IAM.Client.ExtractOsuUid(bindings);
                 if (!osuUid.HasValue)
-                { await target.reply("你还没有绑定 osu! 账户，请前往 https://iam.neonprizma.com/ 绑定。"); return; }
+                {
+                    await target.reply("你还没有绑定 osu! 账户，请前往 https://iam.neonprizma.com/ 绑定。");
+                    return;
+                }
 
                 // 分别获取两位的信息
                 var userSelf = await API.OSU.Client.GetUser(osuUid.Value);
@@ -121,7 +140,9 @@ namespace KanonBot.Functions.OSUBot
 
                 using var img = await Image.PPVS.DrawPPVS(data);
                 await target.reply(img, new JpegEncoder());
-            } else if (cmds.Length == 2) {
+            }
+            else if (cmds.Length == 2)
+            {
                 if (cmds[0].Length == 0 || cmds[1].Length == 0)
                 {
                     await target.reply("!ppvs 用户1#用户2");
@@ -165,10 +186,11 @@ namespace KanonBot.Functions.OSUBot
                 data.u1Name = user2.Username;
                 data.u1 = d2.Performances;
 
-
                 using var img = await Image.PPVS.DrawPPVS(data);
                 await target.reply(img, new JpegEncoder());
-            } else {
+            }
+            else
+            {
                 await target.reply("!ppvs 用户1#用户2/!ppvs 要对比的用户");
             }
         }

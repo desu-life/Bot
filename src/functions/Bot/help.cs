@@ -7,15 +7,16 @@ namespace KanonBot.Functions.OSUBot
 {
     public class HelpCommand : ICommand
     {
-        public CommandDef Definition => new()
-        {
-            Name = "help",
-            Args = [],
-            Flags = []
-        };
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "help",
+                Args =  [ ],
+                Flags =  [ ]
+            };
 
-        public Task Execute(Target target, ParsedCommand cmd)
-            => target.reply(
+        public Task Execute(Target target, ParsedCommand cmd) =>
+            target.reply(
                 """
                 用户查询：
                 !info/recent/bp/get

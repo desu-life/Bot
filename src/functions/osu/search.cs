@@ -19,23 +19,30 @@ namespace KanonBot.Functions.OSUBot
 {
     public class SearchCommand : ICommand
     {
-        public CommandDef Definition => new()
-        {
-            Name = "search",
-            Aliases = ["sc"],
-            Args =
-            [
-                new() { Name = "search_arg", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
-                new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
-                new() { Name = "osu_mods", Prefix = ArgPrefix.Plus },
-            ],
-            Flags = []
-        };
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "search",
+                Aliases =  [ "sc" ],
+                Args =
+                [
+                    new() { Name = "search_arg", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                    new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                    new() { Name = "osu_mods", Prefix = ArgPrefix.Plus },
+                ],
+                Flags =
+                [
+                    new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
+                ]
+            };
 
         public async Task Execute(Target target, ParsedCommand cmd)
         {
             var searchArg = cmd.GetString("search_arg") ?? "";
-            if (string.IsNullOrWhiteSpace(searchArg)) { return; }
+            if (string.IsNullOrWhiteSpace(searchArg))
+            {
+                return;
+            }
 
             // 判断是否给定了bid
             API.OSU.Models.Mod[]? mods_lazer = null;
@@ -49,7 +56,7 @@ namespace KanonBot.Functions.OSUBot
 
             string? search_arg = null;
             string? diff_arg = null;
-            
+
             // 找到方括号的位置
             int startIndex = searchArg.LastIndexOf('[');
             int endIndex = searchArg.LastIndexOf(']');
@@ -60,8 +67,11 @@ namespace KanonBot.Functions.OSUBot
                 string name = searchArg[..startIndex].Trim();
 
                 // 提取subname
-                string subname = searchArg.Substring(startIndex + 1, endIndex - startIndex - 1).Trim();
-                if (!string.IsNullOrEmpty(name)) {
+                string subname = searchArg
+                    .Substring(startIndex + 1, endIndex - startIndex - 1)
+                    .Trim();
+                if (!string.IsNullOrEmpty(name))
+                {
                     search_arg = name;
                     diff_arg = subname;
                 }
@@ -75,18 +85,28 @@ namespace KanonBot.Functions.OSUBot
 
             // 通过IAM获取用户偏好模式（非阻塞，失败则不设置）
             var AccInfo = Accounts.GetAccInfo(target);
-            try {
+            try
+            {
                 var provider = API.IAM.Client.PlatformToProvider(AccInfo.platform);
-                var iamUserId = await API.IAM.Client.GetIamUserIdByExternalId(provider, AccInfo.uid);
-                if (iamUserId != null) {
+                var iamUserId = await API.IAM
+                    .Client
+                    .GetIamUserIdByExternalId(provider, AccInfo.uid);
+                if (iamUserId != null)
+                {
                     var kagamiProfile = await API.Kagami.Client.GetPublicKanonBotProfile(iamUserId);
-                    preferedMode = KagamiExtensions.ParseKagamiMode(kagamiProfile?.KanonBot?.PreferredGameMode);
+                    preferedMode = KagamiExtensions.ParseKagamiMode(
+                        kagamiProfile?.KanonBot?.PreferredGameMode
+                    );
                 }
-            } catch { }
+            }
+            catch { }
 
             beatmaps = await API.OSU.Client.SearchBeatmap(searchArg, null);
-            if (beatmaps != null) {
-                beatmaps.Beatmapsets = [.. beatmaps.Beatmapsets.OrderByDescending(x => {
+            if (beatmaps != null)
+            {
+                beatmaps.Beatmapsets =
+                [
+                    .. beatmaps.Beatmapsets.OrderByDescending(x => {
                     var beatmaps = x.Beatmaps ?? [];
                     // 优先检查是否匹配 BeatmapId
                     if (isBid && beatmaps.Any(y => y.BeatmapId == bid))
@@ -98,7 +118,8 @@ namespace KanonBot.Functions.OSUBot
 
                     // 不匹配则返回最低优先级
                     return 0;
-                })];
+                })
+                ];
             }
             beatmapset = beatmaps?.Beatmapsets.Skip(index).FirstOrDefault();
 
@@ -121,8 +142,11 @@ namespace KanonBot.Functions.OSUBot
                 beatmapFound = true;
             }
 
-            if (beatmaps != null) {
-                beatmaps.Beatmapsets = [.. beatmaps.Beatmapsets.OrderByDescending(x => {
+            if (beatmaps != null)
+            {
+                beatmaps.Beatmapsets =
+                [
+                    .. beatmaps.Beatmapsets.OrderByDescending(x => {
                     var beatmaps = x.Beatmaps ?? [];
                     // 优先检查是否匹配 BeatmapId
                     if (isBid && beatmaps.Any(y => y.BeatmapId == bid))
@@ -134,7 +158,8 @@ namespace KanonBot.Functions.OSUBot
 
                     // 不匹配则返回最低优先级
                     return 0;
-                })];
+                })
+                ];
             }
             beatmapset = beatmaps?.Beatmapsets.Skip(index).FirstOrDefault();
 
@@ -158,7 +183,8 @@ namespace KanonBot.Functions.OSUBot
             }
 
             beatmapset!.Beatmaps = beatmapset
-                .Beatmaps!.OrderByDescending(x => x.DifficultyRating)
+                .Beatmaps!
+                .OrderByDescending(x => x.DifficultyRating)
                 .ToArray();
 
             API.OSU.Models.Beatmap? beatmap = null;
@@ -166,15 +192,20 @@ namespace KanonBot.Functions.OSUBot
             if (isBid)
             {
                 beatmap = beatmapset
-                    .Beatmaps.Find(x => x.BeatmapId == bid)
+                    .Beatmaps
+                    .Find(x => x.BeatmapId == bid)
                     .IfNone(() => beatmapset.Beatmaps.First());
             }
             else
             {
-                if (!string.IsNullOrEmpty(diff_arg)) {
-                    if (diff_arg == "*") {
+                if (!string.IsNullOrEmpty(diff_arg))
+                {
+                    if (diff_arg == "*")
+                    {
                         beatmap = beatmapset.Beatmaps.First();
-                    } else {
+                    }
+                    else
+                    {
                         int closestIndex = Utils.FindClosestMatchIndex(
                             diff_arg,
                             beatmapset.Beatmaps,
@@ -182,7 +213,9 @@ namespace KanonBot.Functions.OSUBot
                         );
                         beatmap = beatmapset.Beatmaps[closestIndex];
                     }
-                } else {
+                }
+                else
+                {
                     beatmap = beatmapset.Beatmaps.First();
                 }
             }
@@ -212,13 +245,16 @@ namespace KanonBot.Functions.OSUBot
             }
             else
             {
-                if (false) {
+                if (cmd.Flag("special_pp"))
+                {
                     data = OsuCalculator.CalculatePanelSSData(b, beatmap, mods_lazer);
-                } else {
+                }
+                else
+                {
                     data = RosuCalculator.CalculatePanelSSData(b, beatmap, mods_lazer);
                 }
             }
-            
+
             data.scoreInfo.UserId = user!.Id;
             data.scoreInfo.User = user;
             data.scoreInfo.Beatmapset = beatmapset;

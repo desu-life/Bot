@@ -8,7 +8,7 @@ public class ParsedCommand
     public string CommandName { get; init; } = "";
 
     /// <summary>
-    /// 原始参数字符串（Legacy 模式下保留，便于渐进迁移）
+    /// 原始参数字符串
     /// </summary>
     public string RawArgs { get; init; } = "";
 
@@ -27,7 +27,7 @@ public class ParsedCommand
     /// </summary>
     public bool SelfQuery { get; set; } = false;
 
-    public Dictionary<string, Func<string, object?>> Parse { private get; init; } = [];
+    public Dictionary<string, Func<string, object?>> Parse { private get; init; } = [ ];
 
     // ── 快捷取值 ──────────────────────────────────
 

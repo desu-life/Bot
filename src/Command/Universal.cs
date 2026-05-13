@@ -22,7 +22,7 @@ namespace KanonBot.Command
         public class ReduplicateTargetChecker
         {
             private AsyncReaderWriterLock rwlock = new();
-            private Dictionary<string, Target> CommandList = [];
+            private Dictionary<string, Target> CommandList =  [ ];
 
             public async Task<bool> Lock(Target target)
             {
