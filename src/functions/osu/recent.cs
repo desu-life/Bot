@@ -30,6 +30,7 @@ namespace KanonBot.Functions.OSUBot
                 Flags =
                 [
                     new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
+                    new() { Name = "dev_panel",  Value = "dev", SlashName = "is_dev" },
                     new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
                 ]
             };
@@ -53,6 +54,7 @@ namespace KanonBot.Functions.OSUBot
                 Flags =
                 [
                     new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
+                    new() { Name = "dev_panel",  Value = "dev", SlashName = "is_dev" },
                     new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
                 ]
             };

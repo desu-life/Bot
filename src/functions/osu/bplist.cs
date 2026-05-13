@@ -27,7 +27,11 @@ namespace KanonBot.Functions.OSUBot
                     new() { Name = "range",    Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseRange(s) },
                     new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
                 ],
-                Flags =  [ new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" } ]
+                Flags =
+                [
+                    new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
+                    new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" }
+                ]
             };
 
         public Task Execute(Target target, ParsedCommand cmd) => BPList.Execute(target, cmd);
@@ -151,7 +155,7 @@ namespace KanonBot.Functions.OSUBot
                         s.PPInfo = UniversalCalculator.CalculateData(
                             b,
                             s.Score,
-                            UniversalCalculator.GetCalculatorKind(is_ppysb, false)
+                            UniversalCalculator.GetCalculatorKind(is_ppysb, cmd.Flag("special_pp"))
                         );
                     }
                 );

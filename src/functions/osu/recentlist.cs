@@ -26,7 +26,11 @@ namespace KanonBot.Functions.OSUBot
                     new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
                     new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
                 ],
-                Flags =  [ new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" }, ]
+                Flags =
+                [
+                    new() { Name = "special_pp", Value = "",   SlashName = "is_special_pp" },
+                    new() { Name = "sb_server",  Value = "sb", SlashName = "is_sb" },
+                ]
             };
 
         public Task Execute(Target target, ParsedCommand cmd) =>
@@ -45,7 +49,11 @@ namespace KanonBot.Functions.OSUBot
                     new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
                     new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
                 ],
-                Flags =  [ new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" }, ]
+                Flags =
+                [
+                    new() { Name = "special_pp", Value = "",   SlashName = "is_special_pp" },
+                    new() { Name = "sb_server",  Value = "sb", SlashName = "is_sb" },
+                ]
             };
 
         public Task Execute(Target target, ParsedCommand cmd) =>
