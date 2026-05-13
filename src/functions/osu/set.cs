@@ -3,6 +3,7 @@ using KanonBot.Message;
 using KanonBot.API.OSU;
 using KanonBot.API.PPYSB;
 using KanonBot.Functions;
+using KanonBot.Command;
 
 namespace KanonBot.Functions.OSUBot
 {

@@ -2,6 +2,7 @@ using System.IO;
 using DotNext.Collections.Generic;
 using KanonBot.API;
 using KanonBot.API.OSU;
+using KanonBot.Command;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
 using KanonBot.Image;

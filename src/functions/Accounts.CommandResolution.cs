@@ -1,4 +1,5 @@
 using KanonBot.API.OSU;
+using KanonBot.Command;
 using KanonBot.Drivers;
 using LanguageExt.UnsafeValueAccess;
 

@@ -12,6 +12,9 @@
 		<SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
 		<InvariantGlobalization>false</InvariantGlobalization>
 		<EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+	
 	</PropertyGroup>
 
 	<ItemGroup>

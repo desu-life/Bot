@@ -2,6 +2,7 @@ using System.IO;
 using System.Security.Cryptography;
 using KanonBot.API;
 using KanonBot.API.OSU;
+using KanonBot.Command;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
 using KanonBot.Message;

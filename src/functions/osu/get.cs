@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Flurl.Util;
 using KanonBot.API;
+using KanonBot.Command;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
 using KanonBot.Image;

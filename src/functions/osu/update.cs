@@ -5,6 +5,7 @@ using KanonBot.Functions.OSU;
 using System.IO;
 using LanguageExt.UnsafeValueAccess;
 using KanonBot.API.OSU;
+using KanonBot.Command;
 
 namespace KanonBot.Functions.OSUBot
 {

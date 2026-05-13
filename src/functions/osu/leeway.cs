@@ -6,6 +6,7 @@ using Flurl;
 using Flurl.Http;
 using RosuPP;
 using System.IO;
+using KanonBot.Command;
 
 namespace KanonBot.Functions.OSUBot
 {

@@ -14,7 +14,7 @@ using LanguageExt;
 using LanguageExt.ClassInstances;
 using Serilog;
 
-namespace KanonBot.command_parser
+namespace KanonBot.Command
 {
     public static class Universal
     {

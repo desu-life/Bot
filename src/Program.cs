@@ -1,7 +1,7 @@
 using System.IO;
 using Destructurama;
 using Flurl.Http.Newtonsoft;
-using KanonBot.command_parser;
+using KanonBot.Command;
 using KanonBot.Drivers;
 using KanonBot.Event;
 using KanonBot.Functions.OSU;

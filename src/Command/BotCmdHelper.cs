@@ -9,7 +9,7 @@ using LanguageExt.UnsafeValueAccess;
 using static KanonBot.API.OSU.OSUExtensions;
 using OSU = KanonBot.API.OSU;
 
-namespace KanonBot
+namespace KanonBot.Command
 {
     public static class BotCmdHelper
     {

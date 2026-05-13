@@ -8,6 +8,7 @@ using System.IO;
 using LanguageExt.UnsafeValueAccess;
 using KanonBot.API.OSU;
 using KanonBot.OsuPerformance;
+using KanonBot.Command;
 
 namespace KanonBot.Functions.OSUBot
 {
