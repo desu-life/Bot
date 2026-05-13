@@ -8,6 +8,7 @@ using KanonBot.Message;
 using Serilog.Events;
 
 namespace KanonBot.Drivers;
+
 public partial class Discord : ISocket, IDriver, IReply
 {
     public static readonly Platform platform = Platform.Discord;
@@ -17,7 +18,13 @@ public partial class Discord : ISocket, IDriver, IReply
     event IDriver.EventDelegate? eventAction;
     string token;
     public API api;
-    public Discord(string token, string botID)
+
+    public Discord(
+        string token,
+        string botID,
+        string? gatewayHost = null,
+        string? apiBaseUrl = null
+    )
     {
         // 初始化变量
         this.token = token;
@@ -25,26 +32,42 @@ public partial class Discord : ISocket, IDriver, IReply
 
         this.api = new(token);
 
-        var client = new DiscordSocketClient(
-            new() {
-                WebSocketProvider = DefaultWebSocketProvider.Create(WebRequest.DefaultWebProxy),
-                RestClientProvider = DefaultRestClientProvider.Create(true),
-            }
-        );
+        var restClientProvider = DefaultRestClientProvider.Create(true);
+
+        var config = new DiscordSocketConfig
+        {
+            WebSocketProvider = DefaultWebSocketProvider.Create(WebRequest.DefaultWebProxy),
+            RestClientProvider = baseUrl =>
+                restClientProvider(string.IsNullOrWhiteSpace(apiBaseUrl) ? baseUrl : apiBaseUrl),
+        };
+
+        // 如果配置了 gateway host，则使用自定义的 gateway 地址
+        if (!string.IsNullOrEmpty(gatewayHost))
+        {
+            config.GatewayHost = gatewayHost;
+            config.GatewayIntents = GatewayIntents.AllUnprivileged;
+        }
+
+        var client = new DiscordSocketClient(config);
         client.Log += LogAsync;
 
         // client.MessageUpdated += this.Parse;
-        client.MessageReceived += msg => {
-            Task.Run(async () => {
+        client.MessageReceived += msg =>
+        {
+            Task.Run(async () =>
+            {
                 try
                 {
                     await this.Parse(msg);
                 }
-                catch (Exception ex) { Log.Error("未捕获的异常 ↓\n{ex}", ex); }
+                catch (Exception ex)
+                {
+                    Log.Error("未捕获的异常 ↓\n{ex}", ex);
+                }
             });
             return Task.CompletedTask;
         };
-        
+
         client.Ready += () =>
         {
             // 连接成功
@@ -53,6 +76,7 @@ public partial class Discord : ISocket, IDriver, IReply
 
         this.instance = client;
     }
+
     private static async Task LogAsync(LogMessage message)
     {
         var severity = message.Severity switch
@@ -65,10 +89,15 @@ public partial class Discord : ISocket, IDriver, IReply
             LogSeverity.Debug => LogEventLevel.Debug,
             _ => LogEventLevel.Information
         };
-        Log.Write(severity, message.Exception, "[Discord] [{Source}] {Message}", message.Source, message.Message);
+        Log.Write(
+            severity,
+            message.Exception,
+            "[Discord] [{Source}] {Message}",
+            message.Source,
+            message.Message
+        );
         await Task.CompletedTask;
     }
-
 
     private async Task Parse(SocketMessage message)
     {
@@ -78,38 +107,40 @@ public partial class Discord : ISocket, IDriver, IReply
         // 过滤掉bot消息和系统消息
         if (message is SocketUserMessage m)
         {
-            if (message.Author.IsBot) return;
-            if (this.msgAction is null) return;
-            
+            if (message.Author.IsBot)
+                return;
+            if (this.msgAction is null)
+                return;
+
             var ms = await m.Channel.GetMessageAsync(m.Id);
             var source = MessageSource.FromDiscord(m);
-            await this.msgAction.Invoke(new Target()
-            {
-                platform = Platform.Discord,
-                sender = m.Author.Id.ToString(),
-                selfAccount = this.selfID,
-                msg = Message.Parse(ms),
-                raw = ms,
-                source = source,
-                socket = this
-            });
+            await this.msgAction.Invoke(
+                new Target()
+                {
+                    platform = Platform.Discord,
+                    sender = m.Author.Id.ToString(),
+                    selfAccount = this.selfID,
+                    msg = Message.Parse(ms),
+                    raw = ms,
+                    source = source,
+                    socket = this
+                }
+            );
         }
         else
         {
-            if (this.eventAction is null) return;
-            await this.eventAction.Invoke(
-                this,
-                new RawEvent(message)
-            );
+            if (this.eventAction is null)
+                return;
+            await this.eventAction.Invoke(this, new RawEvent(message));
         }
     }
-
 
     public IDriver onMessage(IDriver.MessageDelegate action)
     {
         this.msgAction += action;
         return this;
     }
+
     public IDriver onEvent(IDriver.EventDelegate action)
     {
         this.eventAction += action;
@@ -120,7 +151,7 @@ public partial class Discord : ISocket, IDriver, IReply
     {
         throw new NotSupportedException("不支持");
     }
-    
+
     public Task SendAsync(string message)
     {
         throw new NotSupportedException("不支持");

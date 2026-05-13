@@ -223,6 +223,12 @@ public class Config
 
         [TomlProperty("token")]
         public string? token { get; set; }
+
+        [TomlProperty("api_base_url")]
+        public string? apiBaseUrl { get; set; }
+
+        [TomlProperty("gateway_host")]
+        public string? gatewayHost { get; set; }
     }
 
     public class Base
@@ -303,7 +309,8 @@ public class Config
                         token = "",
                         sandbox = true
                     }),
-                    new(new Discord() { botID = "", token = "" }),
+                    new(new Discord() { botID = "", token = "", apiBaseUrl = null, gatewayHost = null }),
+
                 ],
                 oss = new()
                 {

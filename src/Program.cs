@@ -240,7 +240,7 @@ foreach (var driverConfig in config.drivers)
                         ),
 
                 Config.Discord c
-                    => new KanonBot.Drivers.Discord(c.token!, c.botID!)
+                    => new KanonBot.Drivers.Discord(c.token!, c.botID!, c.gatewayHost, c.apiBaseUrl)
                         .onMessage(
                             async (target) =>
                             {
