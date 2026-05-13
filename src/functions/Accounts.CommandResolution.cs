@@ -1,5 +1,5 @@
+using CommandSystem.Parsing;
 using KanonBot.API.OSU;
-using KanonBot.Command;
 using KanonBot.Drivers;
 using LanguageExt.UnsafeValueAccess;
 
@@ -14,10 +14,10 @@ namespace KanonBot.Functions
         /// </summary>
         public static async Task<CommandUserResult?> ResolveCommandUser(
             Target target,
-            BotCmdHelper.BotParameter command
+            ParsedCommand command
         )
         {
-            if (command.self_query)
+            if (command.SelfQuery)
             {
                 return await ResolveSelfQuery(target, command);
             }
@@ -29,7 +29,7 @@ namespace KanonBot.Functions
 
         private static async Task<CommandUserResult?> ResolveSelfQuery(
             Target target,
-            BotCmdHelper.BotParameter command
+            ParsedCommand command
         )
         {
             var accInfo = GetAccInfo(target);
@@ -67,7 +67,7 @@ namespace KanonBot.Functions
                 return null;
             }
 
-            bool isQuerySb = command.sb_server;
+            bool isQuerySb = command.Flag("sb_server");
 
             if (isQuerySb)
             {
@@ -80,7 +80,7 @@ namespace KanonBot.Functions
                 }
 
                 // Resolve ppysb mode: command > Kagami preference > default
-                API.PPYSB.Mode? sbmode = command.sb_osu_mode;
+                API.PPYSB.Mode? sbmode = command.GetString("osu_mode")?.ParsePpysbMode();
                 if (!sbmode.HasValue)
                 {
                     var kagamiProfile = await API.Kagami.Client.GetPublicKanonBotProfile(iamUserId);
@@ -108,7 +108,7 @@ namespace KanonBot.Functions
                 }
 
                 // Resolve osu mode: command > Kagami preference > default
-                API.OSU.Mode? mode = command.osu_mode;
+                API.OSU.Mode? mode = command.GetString("osu_mode")?.ParseMode();
                 if (!mode.HasValue)
                 {
                     var kagamiProfile = await API.Kagami.Client.GetPublicKanonBotProfile(iamUserId);
@@ -129,10 +129,10 @@ namespace KanonBot.Functions
 
         private static async Task<CommandUserResult?> ResolveOtherQuery(
             Target target,
-            BotCmdHelper.BotParameter command
+            ParsedCommand command
         )
         {
-            bool isQuerySb = command.sb_server;
+            bool isQuerySb = command.Flag("sb_server");
 
             if (isQuerySb)
             {
@@ -146,11 +146,14 @@ namespace KanonBot.Functions
 
         private static async Task<CommandUserResult?> ResolveOtherQueryOsu(
             Target target,
-            BotCmdHelper.BotParameter command
+            ParsedCommand command
         )
         {
+            var username = command.GetString("username");
+            var osuMode = command.GetString("osu_mode")?.ParseMode();
+
             // Try at-query first
-            var (atOSU, iamUserId, hasOsuBinding) = await ParseAtOsu(command.osu_username);
+            var (atOSU, iamUserId, hasOsuBinding) = await ParseAtOsu(username);
 
             if (atOSU.IsNone && iamUserId != null)
             {
@@ -168,7 +171,7 @@ namespace KanonBot.Functions
                 return new CommandUserResult
                 {
                     OsuId = osuInfo.Id,
-                    Mode = command.osu_mode ?? osuInfo.Mode,
+                    Mode = osuMode ?? osuInfo.Mode,
                     IsPpysb = false,
                 };
             }
@@ -181,7 +184,7 @@ namespace KanonBot.Functions
                 return new CommandUserResult
                 {
                     OsuId = osuInfo.Id,
-                    Mode = command.osu_mode ?? kagamiMode ?? osuInfo.Mode,
+                    Mode = osuMode ?? kagamiMode ?? osuInfo.Mode,
                     IsPpysb = false,
                     IamUserId = iamUserId,
                 };
@@ -190,8 +193,8 @@ namespace KanonBot.Functions
             {
                 // Not an at-query, try name query
                 var onlineUser = await API.OSU.Client.GetUser(
-                    command.osu_username,
-                    command.osu_mode ?? API.OSU.Mode.OSU
+                    username,
+                    osuMode ?? API.OSU.Mode.OSU
                 );
                 if (onlineUser == null)
                 {
@@ -200,13 +203,13 @@ namespace KanonBot.Functions
                 }
 
                 var iamId = await API.IAM.Client.GetIamUserIdByOsuUid(onlineUser.Id);
-                API.OSU.Mode mode = command.osu_mode ?? onlineUser.Mode;
+                API.OSU.Mode mode = osuMode ?? onlineUser.Mode;
 
                 if (iamId != null)
                 {
                     var kagamiProfile = await API.Kagami.Client.GetPublicKanonBotProfile(iamId);
                     var kagamiMode = KagamiExtensions.ParseKagamiMode(kagamiProfile?.KanonBot?.PreferredGameMode);
-                    mode = command.osu_mode ?? kagamiMode ?? onlineUser.Mode;
+                    mode = osuMode ?? kagamiMode ?? onlineUser.Mode;
                 }
 
                 _ = await Database.Client.GetOsuUser(onlineUser.Id);
@@ -223,11 +226,14 @@ namespace KanonBot.Functions
 
         private static async Task<CommandUserResult?> ResolveOtherQueryPpysb(
             Target target,
-            BotCmdHelper.BotParameter command
+            ParsedCommand command
         )
         {
+            var username = command.GetString("username");
+            var sbMode = command.GetString("osu_mode")?.ParsePpysbMode();
+
             // Try at-query first
-            var (atOSU, iamUserId, hasPpysbBinding) = await ParseAtPpysb(command.osu_username);
+            var (atOSU, iamUserId, hasPpysbBinding) = await ParseAtPpysb(username);
 
             if (atOSU.IsNone && iamUserId != null)
             {
@@ -244,7 +250,7 @@ namespace KanonBot.Functions
                 {
                     OsuId = osuInfo.Id,
                     Mode = null,
-                    SbMode = command.sb_osu_mode ?? ((int)osuInfo.Mode).ToPpysbMode(),
+                    SbMode = sbMode ?? ((int)osuInfo.Mode).ToPpysbMode(),
                     IsPpysb = true,
                 };
             }
@@ -258,7 +264,7 @@ namespace KanonBot.Functions
                 {
                     OsuId = osuInfo.Id,
                     Mode = null,
-                    SbMode = command.sb_osu_mode ?? kagamiMode ?? ((int)osuInfo.Mode).ToPpysbMode(),
+                    SbMode = sbMode ?? kagamiMode ?? ((int)osuInfo.Mode).ToPpysbMode(),
                     IsPpysb = true,
                     IamUserId = iamUserId,
                 };
@@ -266,7 +272,7 @@ namespace KanonBot.Functions
             else
             {
                 // Name query
-                var onlineUser = await API.PPYSB.Client.GetUser(command.osu_username);
+                var onlineUser = await API.PPYSB.Client.GetUser(username);
                 if (onlineUser == null)
                 {
                     await target.reply("猫猫没有找到此用户。");
@@ -275,20 +281,20 @@ namespace KanonBot.Functions
 
                 var iamUserIds = await API.IAM.Client.GetIamUserIdsByPpysbUid(onlineUser.Info.Id);
                 var iamId = iamUserIds?.FirstOrDefault();
-                API.PPYSB.Mode? sbmode = command.sb_osu_mode;
+                API.PPYSB.Mode? resolvedSbMode = sbMode;
 
                 if (iamId != null)
                 {
                     var kagamiProfile = await API.Kagami.Client.GetPublicKanonBotProfile(iamId);
-                    sbmode ??= KagamiExtensions.ParseKagamiPpysbMode(kagamiProfile?.KanonBot?.PpySbPreferredGameMode);
+                    resolvedSbMode ??= KagamiExtensions.ParseKagamiPpysbMode(kagamiProfile?.KanonBot?.PpySbPreferredGameMode);
                 }
-                sbmode ??= onlineUser.Info.PreferredMode;
+                resolvedSbMode ??= onlineUser.Info.PreferredMode;
 
                 return new CommandUserResult
                 {
                     OsuId = onlineUser.Info.Id,
                     Mode = null,
-                    SbMode = sbmode,
+                    SbMode = resolvedSbMode,
                     IsPpysb = true,
                     IamUserId = iamId,
                 };

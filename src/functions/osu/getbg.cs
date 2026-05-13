@@ -7,33 +7,24 @@ using System.IO;
 using LanguageExt.UnsafeValueAccess;
 using KanonBot.Functions.OSU;
 using KanonBot.OsuPerformance;
-using KanonBot.Command;
+using CommandSystem.Parsing;
 
 
 namespace KanonBot.Functions.OSUBot
 {
     public class GetBackground
     {
-        async public static Task Execute(Target target, string cmd)
+        async public static Task Execute(Target target, ParsedCommand cmd)
         {
-            var command = BotCmdHelper.CmdParser(
-                cmd,
-                BotCmdHelper.FuncType.Search,
-                false,
-                true,
-                true,
-                false,
-                false
-            );
-
-            var index = Math.Max(0, command.order_number - 1);
-            var isBid = int.TryParse(command.search_arg, out var bid);
+            var searchArg = cmd.GetString("username") ?? "";
+            var index = Math.Max(0, cmd.Get<int>("order_number") - 1);
+            var isBid = int.TryParse(searchArg, out var bid);
 
             bool beatmapFound = true;
             API.OSU.Models.BeatmapSearchResult? beatmaps = null;
             API.OSU.Models.Beatmapset? beatmapset = null;
 
-            beatmaps = await API.OSU.Client.SearchBeatmap(command.search_arg, null);
+            beatmaps = await API.OSU.Client.SearchBeatmap(searchArg, null);
             if (beatmaps != null && isBid) {
                 beatmaps.Beatmapsets = beatmaps.Beatmapsets.OrderByDescending(x => x.Beatmaps.Find(y => y.BeatmapId == bid) != null).ToList();
             }
@@ -54,7 +45,7 @@ namespace KanonBot.Functions.OSUBot
 
             if (!beatmapFound)
             {
-                beatmaps = await API.OSU.Client.SearchBeatmap(command.search_arg, null, false);
+                beatmaps = await API.OSU.Client.SearchBeatmap(searchArg, null, false);
                 beatmapFound = true;
             }
 

@@ -7,9 +7,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using CommandSystem;
+using CommandSystem.Definition;
+using CommandSystem.Execution;
+using CommandSystem.Parsing;
 using Flurl.Util;
 using KanonBot.API;
-using KanonBot.Command;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
 using KanonBot.Image;
@@ -25,80 +28,176 @@ using static KanonBot.API.OSU.OSUExtensions;
 
 namespace KanonBot.Functions.OSUBot
 {
+    // ── Get ICommand classes ──────────────────────────────
+
+    public class GetHelpCommand : ICommand
+    {
+        public CommandDef Definition => new() { Name = "get", Args = [], Flags = [] };
+        public Task Execute(Target target, ParsedCommand cmd) => target.reply(
+            """
+            !get bonuspp
+                 rolecost
+                 bpht
+                 bplist
+                 todaybp
+                 seasonalpass
+                 recommend
+                 mu/profile
+                 bg
+            """);
+    }
+
+    public class GetBonusPpCommand : ICommand
+    {
+        public CommandDef Definition => new()
+        {
+            Name = "get bonuspp",
+            Args =
+            [
+                new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
+            ],
+            Flags =
+            [
+                new() { Name = "special_pp", Value = "", SlashName = "is_special_pp" },
+                new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" },
+            ]
+        };
+        public Task Execute(Target target, ParsedCommand cmd) => Get.Bonuspp(target, cmd);
+    }
+
+    public class GetBpListCommand : ICommand
+    {
+        public CommandDef Definition => new()
+        {
+            Name = "get bplist",
+            Args =
+            [
+                new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
+                new() { Name = "range", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseRange(s) },
+                new() { Name = "range", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseRange(s) },
+                new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
+            ],
+            Flags = [new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" }]
+        };
+        public Task Execute(Target target, ParsedCommand cmd) => BPList.Execute(target, cmd);
+    }
+
+    public class GetRoleCostCommand : ICommand
+    {
+        public CommandDef Definition => new()
+        {
+            Name = "get rolecost",
+            Args =
+            [
+                new() { Name = "match_name", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                new() { Name = "username", Prefix = ArgPrefix.Hash },
+            ],
+            Flags = []
+        };
+        public Task Execute(Target target, ParsedCommand cmd) => Get.Rolecost(target, cmd);
+    }
+
+    public class GetBphtCommand : ICommand
+    {
+        public CommandDef Definition => new()
+        {
+            Name = "get bpht",
+            Args =
+            [
+                new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
+            ],
+            Flags = [new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" }]
+        };
+        public Task Execute(Target target, ParsedCommand cmd) => Get.Bpht(target, cmd);
+    }
+
+    public class GetTodayBpCommand : ICommand
+    {
+        public CommandDef Definition => new()
+        {
+            Name = "get todaybp",
+            Args =
+            [
+                new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
+            ],
+            Flags = [new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" }]
+        };
+        public Task Execute(Target target, ParsedCommand cmd) => TodayBP.Execute(target, cmd);
+    }
+
+    public class GetSeasonalPassCommand : ICommand
+    {
+        public CommandDef Definition => new()
+        {
+            Name = "get seasonalpass",
+            Args =
+            [
+                new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
+            ],
+            Flags = [new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" }]
+        };
+        public Task Execute(Target target, ParsedCommand cmd) => Get.SeasonalPass(target, cmd);
+    }
+
+    public class GetRecommendCommand : ICommand
+    {
+        public CommandDef Definition => new()
+        {
+            Name = "get recommend",
+            Args =
+            [
+                new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
+                new() { Name = "osu_mods", Prefix = ArgPrefix.Plus },
+            ],
+            Flags = []
+        };
+        public Task Execute(Target target, ParsedCommand cmd) => Get.BeatmapRecommend(target, cmd);
+    }
+
+    public class GetProfileCommand : ICommand
+    {
+        public CommandDef Definition => new()
+        {
+            Name = "get mu",
+            Aliases = ["get profile"],
+            Args =
+            [
+                new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
+            ],
+            Flags = []
+        };
+        public Task Execute(Target target, ParsedCommand cmd) => Get.SendProfileLink(target, cmd);
+    }
+
+    public class GetBgCommand : ICommand
+    {
+        public CommandDef Definition => new()
+        {
+            Name = "get bg",
+            Args =
+            [
+                new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+            ],
+            Flags = []
+        };
+        public Task Execute(Target target, ParsedCommand cmd) => GetBackground.Execute(target, cmd);
+    }
+
+    // ── Get internal methods ──────────────────────────────
+
     public class Get
     {
-        public static async Task Execute(Target target, string cmd)
-        {
-            string rootCmd;
-            string childCmd = "";
-
-            try
-            {
-                var tmp = cmd.Split(' ', 2, StringSplitOptions.TrimEntries);
-                rootCmd = tmp[0];
-                childCmd = tmp[1];
-            }
-            catch
-            {
-                rootCmd = cmd;
-            }
-
-            switch (rootCmd.ToLower())
-            {
-                case "bonuspp":
-                    await Bonuspp(target, childCmd);
-                    break;
-                case "bplist":
-                    await OSUBot.BPList.Execute(target, childCmd);
-                    break;
-                case "rolecost":
-                    await Rolecost(target, childCmd);
-                    break;
-                case "bpht":
-                    await Bpht(target, childCmd);
-                    break;
-                case "todaybp":
-                    await OSUBot.TodayBP.Execute(target, childCmd);
-                    break;
-                case "seasonalpass":
-                    await SeasonalPass(target, childCmd);
-                    break;
-                case "recommend":
-                    await BeatmapRecommend(target, childCmd);
-                    break;
-                case "mu":
-                    await SendProfileLink(target, childCmd);
-                    break;
-                case "profile":
-                    await SendProfileLink(target, childCmd);
-                    break;
-                case "bg":
-                    await GetBackground.Execute(target, childCmd);
-                    break;
-                default:
-                    await target.reply(
-                        """
-                        !get bonuspp
-                             rolecost
-                             bpht
-                             bplist
-                             todaybp
-                             seasonalpass
-                             recommend
-                             mu/profile
-                             bg
-                        """
-                    );
-                    return;
-            }
-        }
-
-        private static async Task SendProfileLink(Target target, string cmd)
+        public static async Task SendProfileLink(Target target, ParsedCommand cmd)
         {
             #region 验证
-            // 解析指令
-            var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Info);
-            var resolved = await Accounts.ResolveCommandUser(target, command);
+            var resolved = await Accounts.ResolveCommandUser(target, cmd);
             if (resolved == null)
                 return;
 
@@ -119,15 +218,13 @@ namespace KanonBot.Functions.OSUBot
             );
         }
 
-        private static async Task BeatmapRecommend(Target target, string cmd)
+        public static async Task BeatmapRecommend(Target target, ParsedCommand cmd)
         {
             int normal_range = 20;
             int NFEZHT_range = 60;
             //only osu!standard
             #region 验证
-            // 解析指令
-            var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Info);
-            var resolved = await Accounts.ResolveCommandUser(target, command);
+            var resolved = await Accounts.ResolveCommandUser(target, cmd);
             if (resolved == null)
                 return;
 
@@ -143,7 +240,6 @@ namespace KanonBot.Functions.OSUBot
             }
             OnlineOsuInfo.Mode = mode!.Value;
             #endregion
-
 
             //获取前20bp
             var allBP = await API.OSU.Client.GetUserScoresLeagcy(
@@ -173,12 +269,13 @@ namespace KanonBot.Functions.OSUBot
 
             //解析mod
             List<string> mods = new();
+            var osu_mods = cmd.GetString("osu_mods") ?? "";
             try
             {
-                cmd = cmd.ToLower().Trim();
+                osu_mods = osu_mods.ToLower().Trim();
                 mods = Enumerable
-                    .Range(0, cmd.Length / 2)
-                    .Select(p => new string(cmd.AsSpan().Slice(p * 2, 2)).ToUpper())
+                    .Range(0, osu_mods.Length / 2)
+                    .Select(p => new string(osu_mods.AsSpan().Slice(p * 2, 2)).ToUpper())
                     .ToList<string>();
             }
             catch { }
@@ -375,17 +472,16 @@ namespace KanonBot.Functions.OSUBot
             await target.reply(msg);
         }
 
-        private static async Task Bonuspp(Target target, string cmd)
+        public static async Task Bonuspp(Target target, ParsedCommand cmd)
         {
             #region 验证
-            // 解析指令
-            var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Info);
-            var resolved = await Accounts.ResolveCommandUser(target, command);
+            var resolved = await Accounts.ResolveCommandUser(target, cmd);
             if (resolved == null)
                 return;
 
             long osuID = resolved.OsuId;
             API.OSU.Mode? mode = resolved.Mode;
+            bool special_version_pp = cmd.Flag("special_pp");
 
             // 验证osu信息
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID, mode!.Value);
@@ -412,7 +508,7 @@ namespace KanonBot.Functions.OSUBot
                         mode!.Value,
                         100,
                         0,
-                        LegacyOnly: command.special_version_pp
+                        LegacyOnly: special_version_pp
                     ),
                     API.OSU.Client.GetUserScores(
                         OnlineOsuInfo.Id,
@@ -420,7 +516,7 @@ namespace KanonBot.Functions.OSUBot
                         mode!.Value,
                         100,
                         100,
-                        LegacyOnly: command.special_version_pp
+                        LegacyOnly: special_version_pp
                     )
                 ]
             );
@@ -451,9 +547,9 @@ namespace KanonBot.Functions.OSUBot
             await target.reply(str);
         }
 
-        private static async Task Rolecost(Target target, string cmd)
+        public static async Task Rolecost(Target target, ParsedCommand cmd)
         {
-            cmd = cmd.ToLower().Trim();
+            var matchName = (cmd.GetString("match_name") ?? "").ToLower().Trim();
             static double occost(User userInfo, UserData pppData)
             {
                 double a,
@@ -542,9 +638,7 @@ namespace KanonBot.Functions.OSUBot
                     + t;
             }
             #region 验证
-            // 解析指令
-            var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.RoleCost);
-            var resolved = await Accounts.ResolveCommandUser(target, command);
+            var resolved = await Accounts.ResolveCommandUser(target, cmd);
             if (resolved == null)
                 return;
 
@@ -561,7 +655,7 @@ namespace KanonBot.Functions.OSUBot
             OnlineOsuInfo.Mode = mode!.Value;
             #endregion
 
-            switch (command.match_name)
+            switch (matchName)
             {
                 case "occ":
                     try
@@ -587,12 +681,14 @@ namespace KanonBot.Functions.OSUBot
                     break;
                 ////////////////////////////////////////////////////////////////////////////////////////
                 case "zkfc":
+                    var orderNumber = cmd.Get<int>("order_number");
+                    if (orderNumber < 1) orderNumber = 1;
                     var scores = await API.OSU.Client.GetUserScoresLeagcy(
                         osuID,
                         API.OSU.UserScoreType.Best,
                         API.OSU.Mode.OSU,
                         1,
-                        command.order_number - 1
+                        orderNumber - 1
                     );
                     if (scores == null)
                     {
@@ -615,17 +711,16 @@ namespace KanonBot.Functions.OSUBot
             }
         }
 
-        private static async Task Bpht(Target target, string cmd)
+        public static async Task Bpht(Target target, ParsedCommand cmd)
         {
             #region 验证
-            // 解析指令
-            var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Info);
-            var resolved = await Accounts.ResolveCommandUser(target, command);
+            var resolved = await Accounts.ResolveCommandUser(target, cmd);
             if (resolved == null)
                 return;
 
             long osuID = resolved.OsuId;
             API.OSU.Mode? mode = resolved.Mode;
+            bool special_version_pp = cmd.Flag("special_pp");
 
             // 验证osu信息
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID, mode!.Value);
@@ -643,7 +738,7 @@ namespace KanonBot.Functions.OSUBot
                 mode!.Value,
                 100,
                 0,
-                LegacyOnly: command.special_version_pp
+                LegacyOnly: special_version_pp
             );
             if (allBP == null)
             {
@@ -654,7 +749,7 @@ namespace KanonBot.Functions.OSUBot
             // 如果bp数量小于10则取消
             if (allBP!.Length < 10)
             {
-                if (cmd == "")
+                if (cmd.SelfQuery)
                     await target.reply("你的bp太少啦，多打些吧");
                 else
                     await target.reply($"{OnlineOsuInfo.Username}的bp太少啦，请让ta多打些吧");
@@ -677,12 +772,10 @@ namespace KanonBot.Functions.OSUBot
             await target.reply(str);
         }
 
-        private static async Task SeasonalPass(Target target, string cmd)
+        public static async Task SeasonalPass(Target target, ParsedCommand cmd)
         {
             #region 验证
-            // 解析指令
-            var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Info);
-            var resolved = await Accounts.ResolveCommandUser(target, command);
+            var resolved = await Accounts.ResolveCommandUser(target, cmd);
             if (resolved == null)
                 return;
 

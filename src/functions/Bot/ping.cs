@@ -1,14 +1,20 @@
+using CommandSystem;
+using CommandSystem.Definition;
+using CommandSystem.Parsing;
 using KanonBot.Drivers;
-using KanonBot.Message;
-using KanonBot.API;
 
 namespace KanonBot.Functions.OSUBot
 {
-    public class Ping
+    public class PingCommand : ICommand
     {
-        public async static Task Execute(Target target)
+        public CommandDef Definition => new()
         {
-            await target.reply("meow~");
-        }
+            Name = "ping",
+            Args = [],
+            Flags = []
+        };
+
+        public Task Execute(Target target, ParsedCommand cmd)
+            => target.reply("meow~");
     }
 }

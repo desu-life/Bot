@@ -56,6 +56,7 @@ public class LegacyParser
         var result = new ParsedCommand
         {
             CommandName = cmdName,
+            RawArgs = rawArgs,
             Parse = def.Args.DistinctBy(a => a.Name).ToDictionary(a => a.Name, a => a.Parse)
         };
 

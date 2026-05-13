@@ -170,9 +170,6 @@ namespace KanonBot.Functions
             return await API.IAM.Client.GetIamUserIdByExternalId(provider, v);
         }
 
-        /// <summary>
-        /// Get platform account info from target (unchanged).
-        /// </summary>
         public static AccInfo GetAccInfo(Target target)
         {
             switch (target.platform)

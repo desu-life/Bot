@@ -1,14 +1,21 @@
+using CommandSystem;
+using CommandSystem.Definition;
+using CommandSystem.Parsing;
 using KanonBot.Drivers;
-using KanonBot.Message;
-using KanonBot.API;
 
 namespace KanonBot.Functions.OSUBot
 {
-    public class Help
+    public class HelpCommand : ICommand
     {
-        public async static Task Execute(Target target, string cmd)
+        public CommandDef Definition => new()
         {
-            await target.reply(
+            Name = "help",
+            Args = [],
+            Flags = []
+        };
+
+        public Task Execute(Target target, ParsedCommand cmd)
+            => target.reply(
                 """
                 用户查询：
                 !info/recent/bp/get
@@ -17,6 +24,5 @@ namespace KanonBot.Functions.OSUBot
                 更多细节请移步 https://support.desu.life/posts/2022-kanonbot-usage-doc/ 查阅
                 """
             );
-        }
     }
 }

@@ -1,3 +1,7 @@
+using CommandSystem;
+using CommandSystem.Definition;
+using CommandSystem.Execution;
+using CommandSystem.Parsing;
 using KanonBot.Drivers;
 using KanonBot.Message;
 using KanonBot.API;
@@ -8,18 +12,63 @@ using System.IO;
 using LanguageExt.UnsafeValueAccess;
 using KanonBot.API.OSU;
 using KanonBot.OsuPerformance;
-using KanonBot.Command;
 
 namespace KanonBot.Functions.OSUBot
 {
+    public class ScoreCommand : ICommand
+    {
+        public CommandDef Definition => new()
+        {
+            Name = "score",
+            Args =
+            [
+                new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
+                new() { Name = "bid",      Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseInt(s) },
+                new() { Name = "bid",      Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
+                new() { Name = "osu_mods", Prefix = ArgPrefix.Plus },
+            ],
+            Flags =
+            [
+                new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
+                new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
+            ]
+        };
+
+        public Task Execute(Target target, ParsedCommand cmd)
+            => Score.Execute(target, cmd, ppFirst: false, fetch_source: true);
+    }
+
+    public class PpCommand : ICommand
+    {
+        public CommandDef Definition => new()
+        {
+            Name = "pp",
+            Args =
+            [
+                new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
+                new() { Name = "bid",      Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseInt(s) },
+                new() { Name = "bid",      Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
+                new() { Name = "osu_mods", Prefix = ArgPrefix.Plus },
+            ],
+            Flags =
+            [
+                new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
+                new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
+            ]
+        };
+
+        public Task Execute(Target target, ParsedCommand cmd)
+            => Score.Execute(target, cmd, ppFirst: true, fetch_source: true);
+    }
+
     public class Score
     {
-        async public static Task Execute(Target target, string cmd, bool ppFirst = false, bool fetch_source = false)
+        public static async Task Execute(Target target, ParsedCommand cmd, bool ppFirst = false, bool fetch_source = false)
         {
             #region 验证
-            // 解析指令
-            var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Score);
-            var resolved = await Accounts.ResolveCommandUser(target, command);
+            var resolved = await Accounts.ResolveCommandUser(target, cmd);
             if (resolved == null) return;
 
             long osuID = resolved.OsuId;
@@ -38,18 +87,21 @@ namespace KanonBot.Functions.OSUBot
             #endregion
 
             // 解析Mod
+            var osu_mods = cmd.GetString("osu_mods") ?? "";
             List<string> mods = new();
             try
             {
                 mods = Enumerable
-                    .Range(0, command.osu_mods.Length / 2)
-                    .Select(p => new string(command.osu_mods.AsSpan().Slice(p * 2, 2)).ToUpper())
+                    .Range(0, osu_mods.Length / 2)
+                    .Select(p => new string(osu_mods.AsSpan().Slice(p * 2, 2)).ToUpper())
                     .ToList();
             }
             catch { }
 
             // 判断是否给定了bid
-            if (command.order_number == -1)
+            var bid = cmd.Get<int>("bid");
+            if (bid == 0) bid = -1;
+            if (bid == -1)
             {
                 if (!fetch_source)
                 {
@@ -60,7 +112,7 @@ namespace KanonBot.Functions.OSUBot
                 var lastBeatmapId = HistoryBeatmapMapper.Get(target.source);
                 if (lastBeatmapId != null)
                 {
-                    command.order_number = (int)lastBeatmapId;
+                    bid = (int)lastBeatmapId;
                 }
             }
 
@@ -81,7 +133,7 @@ namespace KanonBot.Functions.OSUBot
                 using var rmods = RosuPP.Mods.FromAcronyms(string.Concat(mods), sbmode!.Value.ToOsu().ToRosu());
                 var tmpScore = await API.PPYSB.Client.GetMapScore(
                     userId: osuID,
-                    command.order_number,
+                    bid,
                     sbmode.Value,
                     rmods.Bits(),
                     ppFirst
@@ -93,7 +145,7 @@ namespace KanonBot.Functions.OSUBot
             } else {
                 var scoreDatas = await API.OSU.Client.GetUserBeatmapScores(
                     osuID,
-                    command.order_number,
+                    bid,
                     mode!.Value
                 );
                 if (ppFirst) {
@@ -112,12 +164,12 @@ namespace KanonBot.Functions.OSUBot
                     } else {
                         scoreData = (await API.OSU.Client.GetUserBeatmapScore(
                             osuID,
-                            command.order_number,
+                            bid,
                             mods,
                             mode!.Value
                         ) ?? await API.OSU.Client.GetUserBeatmapScore(
                             osuID,
-                            command.order_number,
+                            bid,
                             mods,
                             mode!.Value,
                             true
@@ -128,7 +180,7 @@ namespace KanonBot.Functions.OSUBot
 
             if (scoreData == null)
             {
-                if (command.self_query)
+                if (cmd.SelfQuery)
                     await target.reply("猫猫没有找到你的成绩");
                 else
                     await target.reply("猫猫没有找到TA的成绩");
@@ -145,8 +197,9 @@ namespace KanonBot.Functions.OSUBot
                 scoreData.User = tempOsuInfo;
             }
 
+            bool special_version_pp = cmd.Flag("special_pp");
             Image.ScoreV2.ScorePanelData data;
-            data = await UniversalCalculator.CalculatePanelData(scoreData, UniversalCalculator.GetCalculatorKind(is_ppysb, command.special_version_pp));
+            data = await UniversalCalculator.CalculatePanelData(scoreData, UniversalCalculator.GetCalculatorKind(is_ppysb, special_version_pp));
             
             using var img = await Image.ScoreV2.DrawScore(data);
             await target.reply(img, new JpegEncoder());

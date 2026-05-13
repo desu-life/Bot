@@ -1,3 +1,7 @@
+using CommandSystem;
+using CommandSystem.Definition;
+using CommandSystem.Execution;
+using CommandSystem.Parsing;
 using KanonBot.Drivers;
 using KanonBot.Message;
 using KanonBot.API;
@@ -6,22 +10,32 @@ using Flurl;
 using Flurl.Http;
 using RosuPP;
 using System.IO;
-using KanonBot.Command;
 
 namespace KanonBot.Functions.OSUBot
 {
-    public class Leeway
+    public class LeewayCommand : ICommand
     {
-        async public static Task Execute(Target target, string cmd)
+        public CommandDef Definition => new()
+        {
+            Name = "leeway",
+            Aliases = ["lc"],
+            Args =
+            [
+                new() { Name = "bid",      Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseInt(s) },
+                new() { Name = "bid",      Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
+                new() { Name = "osu_mods", Prefix = ArgPrefix.Plus },
+            ],
+            Flags = []
+        };
+
+        public async Task Execute(Target target, ParsedCommand cmd)
         {
             API.OSU.Models.User? OnlineOsuInfo;
 
-            // 解析指令
-            var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Leeway);
-
             // 解析模式
-            command.osu_mode ??= API.OSU.Mode.OSU;
-            if (command.osu_mode is not API.OSU.Mode.OSU) { await target.reply("Leeway仅支持osu!std模式。"); return; }
+            var osuMode = cmd.GetString("osu_mode")?.ParseMode() ?? API.OSU.Mode.OSU;
+            if (osuMode is not API.OSU.Mode.OSU) { await target.reply("Leeway仅支持osu!std模式。"); return; }
 
             // 验证账户 (via IAM)
             var AccInfo = Accounts.GetAccInfo(target);
@@ -68,22 +82,23 @@ namespace KanonBot.Functions.OSUBot
             }
 
             long bid;
-            if (command.order_number == 0) // 检查玩家是否指定bid
+            var parsedBid = cmd.Get<int>("bid");
+            if (parsedBid == 0) // 检查玩家是否指定bid
             {
-                var scoreInfos = await API.OSU.Client.GetUserScores(OnlineOsuInfo.Id, API.OSU.UserScoreType.Recent, command.osu_mode ?? API.OSU.Mode.OSU, 1, command.order_number - 1, true);
+                var scoreInfos = await API.OSU.Client.GetUserScores(OnlineOsuInfo.Id, API.OSU.UserScoreType.Recent, osuMode, 1, 0, true);
                 if (scoreInfos == null) { await target.reply("获取成绩时出错。"); return; };    // 正常是找不到玩家，但是上面有验证，这里做保险
                 if (scoreInfos!.Length > 0) { bid = scoreInfos[0].Beatmap!.BeatmapId; }
                 else { await target.reply("猫猫找不到你最近游玩的成绩。"); return; }
             }
             else
             {
-                bid = command.order_number;
+                bid = parsedBid;
             }
 
             // 尝试寻找玩家在该谱面的最高成绩
             long score = 0;
             var empty_mods = System.Array.Empty<string>(); // 要的是最高分，直接给传一个空集合得了
-            var scoreData = await API.OSU.Client.GetUserBeatmapScore(OnlineOsuInfo.Id, bid, empty_mods, command.osu_mode ?? API.OSU.Mode.OSU);
+            var scoreData = await API.OSU.Client.GetUserBeatmapScore(OnlineOsuInfo.Id, bid, empty_mods, osuMode);
             if (scoreData != null)
             {
                 score = scoreData.Score.ScoreAuto;
@@ -109,7 +124,7 @@ namespace KanonBot.Functions.OSUBot
 
             LeewayCalculator lc = new(); // 实例化
 
-            string[] mods = lc.GetMods(command.osu_mods.ToUpper()); // 获取mods
+            string[] mods = lc.GetMods((cmd.GetString("osu_mods") ?? "").ToUpper()); // 获取mods
             int maxScore = lc.CalculateMaxScore(beatmap, mods); // 计算理论值
             string modsString = lc.GetModsString(mods); // 获取模式字符串
 

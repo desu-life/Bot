@@ -1,6 +1,9 @@
 using System.IO;
+using CommandSystem;
+using CommandSystem.Definition;
+using CommandSystem.Execution;
+using CommandSystem.Parsing;
 using KanonBot.API.OSU;
-using KanonBot.Command;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
 using KanonBot.Message;
@@ -11,13 +14,32 @@ using SixLabors.ImageSharp.Formats.Png;
 
 namespace KanonBot.Functions.OSUBot
 {
+    public class TodayBpCommand : ICommand
+    {
+        public CommandDef Definition => new()
+        {
+            Name = "todaybp",
+            Args =
+            [
+                new() { Name = "username",     Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
+                new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+            ],
+            Flags =
+            [
+                new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" },
+            ]
+        };
+
+        public Task Execute(Target target, ParsedCommand cmd)
+            => TodayBP.Execute(target, cmd);
+    }
+
     public class TodayBP
     {
-        public static async Task Execute(Target target, string cmd, bool includeFails = false)
+        public static async Task Execute(Target target, ParsedCommand cmd, bool includeFails = false)
         {
-            // 解析指令
-            var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Info);
-            var resolved = await Accounts.ResolveCommandUser(target, command);
+            var resolved = await Accounts.ResolveCommandUser(target, cmd);
             if (resolved == null)
                 return;
 
@@ -72,7 +94,7 @@ namespace KanonBot.Functions.OSUBot
                 var now = DateTime.Now;
                 var t = now.Hour < 4 ? now.Date.AddDays(-1).AddHours(4) : now.Date.AddHours(4);
 
-                t = t.AddDays(-command.order_number);
+                t = t.AddDays(-cmd.Get<int>("order_number"));
 
                 for (int i = 0; i < scoreInfos.Length; i++)
                 {
@@ -87,7 +109,7 @@ namespace KanonBot.Functions.OSUBot
 
                 if (scores.Count == 0)
                 {
-                    if (command.self_query)
+                    if (cmd.SelfQuery)
                     {
                         await target.reply($"你今天在 {tempOsuInfo.Mode.ToStr()} 模式上还没有新bp呢。。");
                     }
@@ -110,7 +132,7 @@ namespace KanonBot.Functions.OSUBot
                             s.Score,
                             UniversalCalculator.GetCalculatorKind(
                                 is_ppysb,
-                                command.special_version_pp
+                                false
                             )
                         );
                     }
@@ -128,7 +150,7 @@ namespace KanonBot.Functions.OSUBot
             }
             else
             {
-                if (command.self_query)
+                if (cmd.SelfQuery)
                 {
                     await target.reply($"你在 {tempOsuInfo.Mode.ToStr()} 模式上还没有bp呢。。");
                 }

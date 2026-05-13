@@ -1,4 +1,8 @@
 ﻿using System.IO;
+using CommandSystem;
+using CommandSystem.Definition;
+using CommandSystem.Execution;
+using CommandSystem.Parsing;
 using Flurl.Http;
 using KanonBot.Drivers;
 using KanonBot.Message;
@@ -11,48 +15,67 @@ using Img = SixLabors.ImageSharp.Image;
 
 namespace KanonBot.Functions.OSUBot
 {
+    public class BadgeHelpCommand : ICommand
+    {
+        public CommandDef Definition => new() { Name = "badge", Args = [], Flags = [] };
+        public Task Execute(Target target, ParsedCommand cmd)
+            => target.reply("!badge info/list\n徽章设置/兑换等操作请前往 https://hub.kagamistudio.com");
+    }
+
+    public class BadgeInfoCommand : ICommand
+    {
+        public CommandDef Definition => new()
+        {
+            Name = "badge info",
+            Args = [new() { Name = "badge_number", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple, Parse = s => CommandDefs.ParseInt(s) }],
+            Flags = []
+        };
+        public Task Execute(Target target, ParsedCommand cmd)
+            => Badge.ExecuteInfo(target, cmd.RawArgs);
+    }
+
+    public class BadgeListCommand : ICommand
+    {
+        public CommandDef Definition => new() { Name = "badge list", Args = [], Flags = [] };
+        public Task Execute(Target target, ParsedCommand cmd)
+            => Badge.ExecuteList(target);
+    }
+
+    public class BadgeDeprecatedCommand : ICommand
+    {
+        public CommandDef Definition => new()
+        {
+            Name = "badge set",
+            Aliases = ["badge redeem", "badge sudo"],
+            Args = [],
+            Flags = []
+        };
+        public Task Execute(Target target, ParsedCommand cmd)
+            => target.reply("徽章管理已迁移至网页端，请前往 https://hub.kagamistudio.com 进行操作。");
+    }
+
     public class Badge
     {
-        public static async Task Execute(Drivers.Target target, string cmd)
+        public static async Task ExecuteInfo(Drivers.Target target, string cmd)
         {
-            // Resolve IAM user
             var userCtx = await Accounts.ResolveIamUser(target);
             if (userCtx == null)
             {
                 await target.reply("你还没有绑定 desu.life 账户，先使用 !bind 来进行绑定哦。");
                 return;
             }
+            await Info(target, cmd, userCtx);
+        }
 
-            string rootCmd,
-                childCmd = "";
-            try
+        public static async Task ExecuteList(Drivers.Target target)
+        {
+            var userCtx = await Accounts.ResolveIamUser(target);
+            if (userCtx == null)
             {
-                var tmp = cmd.Split(' ', 2, StringSplitOptions.TrimEntries);
-                rootCmd = tmp[0];
-                childCmd = tmp[1];
+                await target.reply("你还没有绑定 desu.life 账户，先使用 !bind 来进行绑定哦。");
+                return;
             }
-            catch
-            {
-                rootCmd = cmd;
-            }
-
-            switch (rootCmd.ToLower())
-            {
-                case "info":
-                    await Info(target, childCmd, userCtx);
-                    return;
-                case "list":
-                    await List(target, userCtx);
-                    return;
-                case "set":
-                case "redeem":
-                case "sudo":
-                    await target.reply("徽章管理已迁移至网页端，请前往 https://hub.kagamistudio.com 进行操作。");
-                    return;
-                default:
-                    await target.reply("!badge info/list\n徽章设置/兑换等操作请前往 https://hub.kagamistudio.com");
-                    return;
-            }
+            await List(target, userCtx);
         }
 
         private static async Task Info(Drivers.Target target, string cmd, Accounts.UserContext userCtx)

@@ -1,3 +1,6 @@
+using CommandSystem;
+using CommandSystem.Definition;
+using CommandSystem.Parsing;
 using KanonBot.Drivers;
 using KanonBot.Message;
 using KanonBot.API;
@@ -7,11 +10,22 @@ using System.IO;
 
 namespace KanonBot.Functions.OSUBot
 {
-    public class PPvs
+    public class PpvsCommand : ICommand
     {
-        public async static Task Execute(Target target, string cmd)
+        public CommandDef Definition => new()
         {
-            var cmds = cmd.Split('#');
+            Name = "ppvs",
+            Args =
+            [
+                new() { Name = "users_raw", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+            ],
+            Flags = []
+        };
+
+        public async Task Execute(Target target, ParsedCommand cmd)
+        {
+            var rawInput = cmd.RawArgs;
+            var cmds = rawInput.Split('#');
             if (cmds.Length == 1) {
                 if (cmds[0].Length == 0)
                 {

@@ -1,6 +1,9 @@
 using System.IO;
+using CommandSystem;
+using CommandSystem.Definition;
+using CommandSystem.Execution;
+using CommandSystem.Parsing;
 using KanonBot.API.OSU;
-using KanonBot.Command;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
 using KanonBot.Message;
@@ -11,13 +14,53 @@ using SixLabors.ImageSharp.Formats.Png;
 
 namespace KanonBot.Functions.OSUBot
 {
+    public class RecentListCommand : ICommand
+    {
+        public CommandDef Definition => new()
+        {
+            Name = "res",
+            Args =
+            [
+                new() { Name = "username",     Prefix = ArgPrefix.None,  Strategy = ParseStrategy.Simple },
+                new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
+            ],
+            Flags =
+            [
+                new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
+            ]
+        };
+
+        public Task Execute(Target target, ParsedCommand cmd)
+            => RecentList.Execute(target, cmd, includeFails: true);
+    }
+
+    public class PassRecentListCommand : ICommand
+    {
+        public CommandDef Definition => new()
+        {
+            Name = "prs",
+            Args =
+            [
+                new() { Name = "username",     Prefix = ArgPrefix.None,  Strategy = ParseStrategy.Simple },
+                new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
+            ],
+            Flags =
+            [
+                new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
+            ]
+        };
+
+        public Task Execute(Target target, ParsedCommand cmd)
+            => RecentList.Execute(target, cmd, includeFails: false);
+    }
+
     public class RecentList
     {
-        public static async Task Execute(Target target, string cmd, bool includeFails = false)
+        public static async Task Execute(Target target, ParsedCommand cmd, bool includeFails = false)
         {
-            // 解析指令
-            var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Recent);
-            var resolved = await Accounts.ResolveCommandUser(target, command);
+            var resolved = await Accounts.ResolveCommandUser(target, cmd);
             if (resolved == null) return;
 
             long osuID = resolved.OsuId;
@@ -64,6 +107,7 @@ namespace KanonBot.Functions.OSUBot
             // 正常是找不到玩家，但是上面有验证，这里做保险
             if (scoreInfos.Length > 0)
             {
+                bool special_version_pp = cmd.Flag("special_pp");
                 List<Image.ScoreList.ScoreRank> scores = [];
                 for (int i = 0; i < scoreInfos.Length; ++i) {
                     scores.Add(new Image.ScoreList.ScoreRank {
@@ -74,7 +118,7 @@ namespace KanonBot.Functions.OSUBot
 
                 await Parallel.ForEachAsync(scores, async (s, _) => {
                     var b = await Utils.LoadOrDownloadBeatmap(s.Score.Beatmap!);
-                    s.PPInfo = UniversalCalculator.CalculateData(b, s.Score, UniversalCalculator.GetCalculatorKind(is_ppysb, command.special_version_pp));
+                    s.PPInfo = UniversalCalculator.CalculateData(b, s.Score, UniversalCalculator.GetCalculatorKind(is_ppysb, special_version_pp));
                 });
 
                 using var img = await KanonBot.Image.ScoreList.Draw(

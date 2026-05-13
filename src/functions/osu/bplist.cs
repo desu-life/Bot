@@ -1,6 +1,9 @@
 using System.IO;
+using CommandSystem;
+using CommandSystem.Definition;
+using CommandSystem.Execution;
+using CommandSystem.Parsing;
 using KanonBot.API.OSU;
-using KanonBot.Command;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
 using KanonBot.Message;
@@ -11,25 +14,39 @@ using SixLabors.ImageSharp.Formats.Png;
 
 namespace KanonBot.Functions.OSUBot
 {
+    public class BpListCommand : ICommand
+    {
+        public CommandDef Definition => new()
+        {
+            Name = "bplist",
+            Args =
+            [
+                new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
+                new() { Name = "range", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseRange(s) },
+                new() { Name = "range",    Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseRange(s) },
+                new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
+            ],
+            Flags = [new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" }]
+        };
+
+        public Task Execute(Target target, ParsedCommand cmd)
+            => BPList.Execute(target, cmd);
+    }
+
     public class BPList
     {
-        public static async Task Execute(Target target, string cmd, bool includeFails = false)
+        public static async Task Execute(Target target, ParsedCommand cmd, bool includeFails = false)
         {
-            // 解析指令
-            var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.BPList);
-
-            if (command.StartAt.IsNone)
+            if (!cmd.Has("range"))
             {
                 await target.reply("指定的范围不正确");
                 return;
             }
-            if (command.EndAt.IsNone)
-            {
-                await target.reply("指定的范围不正确");
-                return;
-            }
-            int StartAt = command.StartAt.Value();
-            int EndAt = command.EndAt.Value();
+            var range = cmd.Get<Range>("range");
+            int StartAt, EndAt;
+            StartAt = range.Start.Value;
+            EndAt = range.End.Value;
+            if (StartAt == 0) StartAt = 1; // ParseRange returns Range(0, single) for single value
 
             if (StartAt < 1 || StartAt > 199)
             {
@@ -47,7 +64,7 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
 
-            var resolved = await Accounts.ResolveCommandUser(target, command);
+            var resolved = await Accounts.ResolveCommandUser(target, cmd);
             if (resolved == null) return;
 
             long osuID = resolved.OsuId;
@@ -110,7 +127,7 @@ namespace KanonBot.Functions.OSUBot
 
                 await Parallel.ForEachAsync(scores, async (s, _) => {
                     var b = await Utils.LoadOrDownloadBeatmap(s.Score.Beatmap!);
-                    s.PPInfo = UniversalCalculator.CalculateData(b, s.Score, UniversalCalculator.GetCalculatorKind(is_ppysb, command.special_version_pp));
+                    s.PPInfo = UniversalCalculator.CalculateData(b, s.Score, UniversalCalculator.GetCalculatorKind(is_ppysb, false));
                 });
 
                 scores.Sort((a, b) => b.PPInfo!.ppStat.total > a.PPInfo!.ppStat.total ? 1 : -1);
@@ -125,7 +142,7 @@ namespace KanonBot.Functions.OSUBot
             }
             else
             {
-                if (command.self_query) {
+                if (cmd.SelfQuery) {
                     await target.reply($"你在 {tempOsuInfo.Mode.ToStr()} 模式上还没有bp呢。。");
                 } else {
                     await target.reply(

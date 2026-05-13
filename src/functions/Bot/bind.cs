@@ -1,14 +1,25 @@
+using CommandSystem;
+using CommandSystem.Definition;
+using CommandSystem.Parsing;
 using KanonBot.Drivers;
-using KanonBot.Message;
-using KanonBot.API;
 
 namespace KanonBot.Functions.OSUBot
 {
-    public class Bind
+    public class BindCommand : ICommand
     {
-          public static async Task Execute(Target target, string cmd)
+        public CommandDef Definition => new()
         {
-            var input = cmd.Trim();
+            Name = "bind",
+            Args =
+            [
+                new() { Name = "code", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+            ],
+            Flags = []
+        };
+
+        public async Task Execute(Target target, ParsedCommand cmd)
+        {
+            var input = cmd.RawArgs.Trim();
             var accInfo = Accounts.GetAccInfo(target);
             if (accInfo.platform == Platform.Unknown)
             {

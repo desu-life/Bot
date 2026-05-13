@@ -1,8 +1,11 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using CommandSystem;
+using CommandSystem.Definition;
+using CommandSystem.Execution;
+using CommandSystem.Parsing;
 using KanonBot.API;
 using KanonBot.API.OSU;
-using KanonBot.Command;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
 using KanonBot.Message;
@@ -14,20 +17,41 @@ using static LinqToDB.Common.Configuration;
 
 namespace KanonBot.Functions.OSUBot
 {
-    public class Info
+    public class InfoCommand : ICommand
     {
-        async public static Task Execute(Target target, string cmd)
+        public CommandDef Definition => new()
+        {
+            Name = "info",
+            Args =
+            [
+                new() { Name = "username",     Prefix = ArgPrefix.None,  Strategy = ParseStrategy.Simple },
+                new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon, Parse = s => s },
+                new() { Name = "order_number", Prefix = ArgPrefix.Hash,  Parse = s => CommandDefs.ParseInt(s) },
+            ],
+            Flags =
+            [
+                new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
+                new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
+                new() { Name = "dev_panel",  Value = "dev", SlashName = "is_dev" },
+                new() { Name = "sp_panel",   Value = "p",   SlashName = "is_special_panel" },
+            ]
+        };
+
+        public async Task Execute(Target target, ParsedCommand cmd)
         {
             #region 验证
-            // 解析指令
-            var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Info);
-            var resolved = await Accounts.ResolveCommandUser(target, command);
+            var resolved = await Accounts.ResolveCommandUser(target, cmd);
             if (resolved == null) return;
 
             long osuID = resolved.OsuId;
             API.OSU.Mode? mode = resolved.Mode;
             API.PPYSB.Mode? sbmode = resolved.SbMode;
             bool is_ppysb = resolved.IsPpysb;
+
+            var orderNumber = cmd.Get<int>("order_number");
+            bool special_version_pp = cmd.Flag("special_pp");
+            bool dev_panel = cmd.Flag("dev_panel");
+            bool special_panel = cmd.Flag("sp_panel");
 
             // 验证osu信息
             var (tempOsuInfo, sbinfo) = await Utils.ResolveOsuUser(resolved);
@@ -64,13 +88,13 @@ namespace KanonBot.Functions.OSUBot
                 data.userInfo.Mode = mode!.Value;
                 if (resolved.OsuId > 0)
                 {
-                    if (command.order_number > 0)
+                    if (orderNumber > 0)
                     {
                         // 从数据库取指定天数前的记录
                         (data.daysBefore, data.prevUserInfo) = await Database.Client.GetOsuUserData(
                             resolved.OsuId,
                             data.userInfo.Mode,
-                            command.order_number
+                            orderNumber
                         );
                         if (data.daysBefore > 0)
                             ++data.daysBefore;
@@ -200,7 +224,7 @@ namespace KanonBot.Functions.OSUBot
             }
 
 
-            if (command.special_panel) custominfoengineVer = custominfoengineVer == 1 ? 2 : 1;
+            if (special_panel) custominfoengineVer = custominfoengineVer == 1 ? 2 : 1;
 
             //info默认输出高质量图片？
             SixLabors.ImageSharp.Image img;
@@ -208,7 +232,7 @@ namespace KanonBot.Functions.OSUBot
             switch (custominfoengineVer) //0=null 1=v1 2=v2
             {
                 case 1:
-                    if (command.special_version_pp && !is_ppysb)
+                    if (special_version_pp && !is_ppysb)
                     {
                         var allBPList = await Task.WhenAll(
                             [
@@ -218,7 +242,7 @@ namespace KanonBot.Functions.OSUBot
                                     mode!.Value,
                                     100,
                                     0,
-                                    LegacyOnly: command.special_version_pp
+                                    LegacyOnly: special_version_pp
                                 ),
                                 API.OSU.Client.GetUserScores(
                                     data.userInfo.Id,
@@ -226,7 +250,7 @@ namespace KanonBot.Functions.OSUBot
                                     mode!.Value,
                                     100,
                                     100,
-                                    LegacyOnly: command.special_version_pp
+                                    LegacyOnly: special_version_pp
                                 )
                             ]
                         );
@@ -276,7 +300,7 @@ namespace KanonBot.Functions.OSUBot
                                     mode!.Value,
                                     100,
                                     0,
-                                    LegacyOnly: command.special_version_pp
+                                    LegacyOnly: special_version_pp
                                 ),
                                 API.OSU.Client.GetUserScores(
                                     data.userInfo.Id,
@@ -284,12 +308,12 @@ namespace KanonBot.Functions.OSUBot
                                     mode!.Value,
                                     100,
                                     100,
-                                    LegacyOnly: command.special_version_pp
+                                    LegacyOnly: special_version_pp
                                 )
                             ]
                         );
                         allBP = allBPList.Flatten();
-                        if (command.special_version_pp)
+                        if (special_version_pp)
                         {
                             var ppInfo = Utils.CalculateBonusPP(allBP, data.userInfo);
                             await Parallel.ForEachAsync(allBP, async (s, _) => {
@@ -311,7 +335,7 @@ namespace KanonBot.Functions.OSUBot
                         false,
                         isDataOfDayAvaiavle,
                         false,
-                        kind: UniversalCalculator.GetCalculatorKind(is_ppysb, command.special_version_pp)
+                        kind: UniversalCalculator.GetCalculatorKind(is_ppysb, special_version_pp)
                     );
                     
                     break;

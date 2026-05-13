@@ -1,3 +1,5 @@
+using CommandSystem.Parsing;
+
 namespace CommandSystem.Definition;
 
 /// <summary>
@@ -6,36 +8,56 @@ namespace CommandSystem.Definition;
 public class CommandDef
 {
     public string Name { get; init; } = "";
+    public List<string> Aliases { get; init; } = [];
     public bool LegacyStartsWithMatch { get; init; } = false;
-    public List<ArgDef> Args { get; init; } = [ ];
-    public List<FlagDef> Flags { get; init; } = [ ];
+    public List<string> ExcludePrefixes { get; init; } = [];
+    public List<ArgDef> Args { get; init; } = [];
+    public List<FlagDef> Flags { get; init; } = [];
 }
 
 /// <summary>
-/// 指令注册表
+/// 指令注册表，存储 ICommand 实例
 /// </summary>
 public class CommandRegistry
 {
-    private readonly Dictionary<string, CommandDef> _commands = new();
+    private readonly Dictionary<string, ICommand> _commands = new();
 
-    public void Register(CommandDef def) => _commands[def.Name] = def;
-
-    public bool TryGet(string name, out CommandDef? def) => _commands.TryGetValue(name, out def);
-
-    public (CommandDef? def, string rawArgs) MatchCommand(string body)
+    public void Register(ICommand command)
     {
-        var def = _commands
-            .Values
-            .Where(c => body.StartsWith(c.Name, StringComparison.Ordinal))
-            .OrderByDescending(c => c.Name.Length)
-            .FirstOrDefault(
-                c =>
-                    c.LegacyStartsWithMatch
-                    || body.Length == c.Name.Length
-                    || char.IsWhiteSpace(body[c.Name.Length])
-            );
+        var def = command.Definition;
+        _commands[def.Name] = command;
+        foreach (var alias in def.Aliases)
+            _commands[alias] = command;
+    }
 
-        var rawArgs = def is null ? "" : body[def.Name.Length..].TrimStart();
-        return (def, rawArgs);
+    public bool TryGet(string name, out ICommand? command) => _commands.TryGetValue(name, out command);
+
+    public (ICommand? command, string rawArgs) MatchCommand(string body)
+    {
+        var match = _commands
+            .Where(kv => body.StartsWith(kv.Key, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(kv => kv.Key.Length)
+            .Select(kv => (kv.Value, kv.Key))
+            .FirstOrDefault(pair =>
+            {
+                var (cmd, key) = pair;
+                var def = cmd.Definition;
+
+                // 检查排除前缀
+                if (def.ExcludePrefixes.Any(ex => body.StartsWith(ex, StringComparison.OrdinalIgnoreCase)))
+                    return false;
+
+                // StartsWith 匹配或精确匹配（name 后必须是结尾或空白）
+                return def.LegacyStartsWithMatch
+                    || body.Length == key.Length
+                    || char.IsWhiteSpace(body[key.Length]);
+            });
+
+        if (match == default)
+            return (null, "");
+
+        var (command, matchedKey) = match;
+        var rawArgs = body[matchedKey.Length..].TrimStart();
+        return (command, rawArgs);
     }
 }

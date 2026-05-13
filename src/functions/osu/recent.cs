@@ -1,6 +1,9 @@
 using System.IO;
+using CommandSystem;
+using CommandSystem.Definition;
+using CommandSystem.Execution;
+using CommandSystem.Parsing;
 using KanonBot.API.OSU;
-using KanonBot.Command;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
 using KanonBot.Message;
@@ -11,13 +14,56 @@ using SixLabors.ImageSharp.Formats.Png;
 
 namespace KanonBot.Functions.OSUBot
 {
+    public class RecentCommand : ICommand
+    {
+        public CommandDef Definition => new()
+        {
+            Name = "recent",
+            Aliases = ["re"],
+            Args =
+            [
+                new() { Name = "username",     Prefix = ArgPrefix.None,  Strategy = ParseStrategy.Simple },
+                new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
+            ],
+            Flags =
+            [
+                new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
+                new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
+            ]
+        };
+
+        public Task Execute(Target target, ParsedCommand cmd)
+            => Recent.Execute(target, cmd, includeFails: true);
+    }
+
+    public class PassRecentCommand : ICommand
+    {
+        public CommandDef Definition => new()
+        {
+            Name = "pr",
+            Args =
+            [
+                new() { Name = "username",     Prefix = ArgPrefix.None,  Strategy = ParseStrategy.Simple },
+                new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
+            ],
+            Flags =
+            [
+                new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
+                new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
+            ]
+        };
+
+        public Task Execute(Target target, ParsedCommand cmd)
+            => Recent.Execute(target, cmd, includeFails: false);
+    }
+
     public class Recent
     {
-        public static async Task Execute(Target target, string cmd, bool includeFails = false)
+        public static async Task Execute(Target target, ParsedCommand cmd, bool includeFails = false)
         {
-            // 解析指令
-            var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Recent);
-            var resolved = await Accounts.ResolveCommandUser(target, command);
+            var resolved = await Accounts.ResolveCommandUser(target, cmd);
             if (resolved == null) return;
 
             long osuID = resolved.OsuId;
@@ -34,6 +80,10 @@ namespace KanonBot.Functions.OSUBot
             }
 
             API.OSU.Models.ScoreLazer[]? scoreInfos = null;
+            var orderNumber = cmd.Get<int>("order_number");
+            if (orderNumber < 1) orderNumber = 1;
+            bool special_version_pp = cmd.Flag("special_pp");
+            bool dev_panel = cmd.Flag("dev_panel");
 
             if (is_ppysb) {
                 var ss = await API.PPYSB.Client.GetUserScores(
@@ -41,7 +91,7 @@ namespace KanonBot.Functions.OSUBot
                 API.PPYSB.UserScoreType.Recent,
                     sbmode!.Value,
                     20,
-                    command.order_number - 1,
+                    orderNumber - 1,
                     includeFails
                 );
                 scoreInfos = ss?.Map(s => s.ToOsu(sbinfo!, sbmode!.Value)).ToArray();
@@ -51,7 +101,7 @@ namespace KanonBot.Functions.OSUBot
                     API.OSU.UserScoreType.Recent,
                     mode!.Value,
                     20, //default was 1, due to seasonalpass set it to 20
-                    command.order_number - 1,
+                    orderNumber - 1,
                     includeFails
                 );
             }
@@ -65,11 +115,11 @@ namespace KanonBot.Functions.OSUBot
             if (scoreInfos.Length > 0)
             {
                 Image.ScoreV2.ScorePanelData data;
-                data = await UniversalCalculator.CalculatePanelData(scoreInfos[0], UniversalCalculator.GetCalculatorKind(is_ppysb, command.special_version_pp));
+                data = await UniversalCalculator.CalculatePanelData(scoreInfos[0], UniversalCalculator.GetCalculatorKind(is_ppysb, special_version_pp));
                 
                 
                 using var img =
-                    command.dev_panel
+                    dev_panel
                         ? await Image.OsuScorePanelV3.Draw(data)
                         : await Image.ScoreV2.DrawScore(data);
 

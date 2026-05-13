@@ -1,8 +1,11 @@
 using System.IO;
+using CommandSystem;
+using CommandSystem.Definition;
+using CommandSystem.Execution;
+using CommandSystem.Parsing;
 using DotNext.Collections.Generic;
 using KanonBot.API;
 using KanonBot.API.OSU;
-using KanonBot.Command;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
 using KanonBot.Image;
@@ -14,25 +17,31 @@ using SixLabors.ImageSharp.Formats.Png;
 
 namespace KanonBot.Functions.OSUBot
 {
-    public class Search
+    public class SearchCommand : ICommand
     {
-        public static async Task Execute(Target target, string cmd)
+        public CommandDef Definition => new()
         {
-            if (string.IsNullOrWhiteSpace(cmd)) { return; }
+            Name = "search",
+            Aliases = ["sc"],
+            Args =
+            [
+                new() { Name = "search_arg", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                new() { Name = "osu_mods", Prefix = ArgPrefix.Plus },
+            ],
+            Flags = []
+        };
 
-            var command = BotCmdHelper.CmdParser(
-                cmd,
-                BotCmdHelper.FuncType.Search,
-                false,
-                true,
-                true,
-                false,
-                false
-            );
+        public async Task Execute(Target target, ParsedCommand cmd)
+        {
+            var searchArg = cmd.GetString("search_arg") ?? "";
+            if (string.IsNullOrWhiteSpace(searchArg)) { return; }
+
             // 判断是否给定了bid
             API.OSU.Models.Mod[]? mods_lazer = null;
-            var index = (int)Math.Max(0, command.order_number - 1);
-            var isBid = int.TryParse(command.search_arg, out var bid);
+            var index = (int)Math.Max(0, cmd.Get<int>("order_number") - 1);
+            var isBid = int.TryParse(searchArg, out var bid);
+            var osu_mods = cmd.GetString("osu_mods") ?? "";
 
             bool beatmapFound = true;
             API.OSU.Models.BeatmapSearchResult? beatmaps = null;
@@ -42,23 +51,23 @@ namespace KanonBot.Functions.OSUBot
             string? diff_arg = null;
             
             // 找到方括号的位置
-            int startIndex = command.search_arg.LastIndexOf('[');
-            int endIndex = command.search_arg.LastIndexOf(']');
+            int startIndex = searchArg.LastIndexOf('[');
+            int endIndex = searchArg.LastIndexOf(']');
 
             if (startIndex < endIndex && startIndex > 0)
             {
                 // 提取name
-                string name = command.search_arg[..startIndex].Trim();
+                string name = searchArg[..startIndex].Trim();
 
                 // 提取subname
-                string subname = command.search_arg.Substring(startIndex + 1, endIndex - startIndex - 1).Trim();
+                string subname = searchArg.Substring(startIndex + 1, endIndex - startIndex - 1).Trim();
                 if (!string.IsNullOrEmpty(name)) {
                     search_arg = name;
                     diff_arg = subname;
                 }
             }
 
-            search_arg ??= command.search_arg;
+            search_arg ??= searchArg;
             Log.Debug($"Name: {search_arg}");
             Log.Debug($"Subname: {diff_arg}");
 
@@ -75,7 +84,7 @@ namespace KanonBot.Functions.OSUBot
                 }
             } catch { }
 
-            beatmaps = await API.OSU.Client.SearchBeatmap(command.search_arg, null);
+            beatmaps = await API.OSU.Client.SearchBeatmap(searchArg, null);
             if (beatmaps != null) {
                 beatmaps.Beatmapsets = [.. beatmaps.Beatmapsets.OrderByDescending(x => {
                     var beatmaps = x.Beatmaps ?? [];
@@ -108,7 +117,7 @@ namespace KanonBot.Functions.OSUBot
 
             if (!beatmapFound)
             {
-                beatmaps = await API.OSU.Client.SearchBeatmap(command.search_arg, null, false);
+                beatmaps = await API.OSU.Client.SearchBeatmap(searchArg, null, false);
                 beatmapFound = true;
             }
 
@@ -182,7 +191,7 @@ namespace KanonBot.Functions.OSUBot
 
             var b = await Utils.LoadOrDownloadBeatmap(beatmap);
 
-            using var rmods = RosuPP.Mods.FromAcronyms(command.osu_mods, beatmap.Mode.ToRosu());
+            using var rmods = RosuPP.Mods.FromAcronyms(osu_mods, beatmap.Mode.ToRosu());
             rmods.Sanitize();
             rmods.RemoveUnknownMods();
             using var js = RosuPP.OwnedString.Empty();
@@ -203,7 +212,7 @@ namespace KanonBot.Functions.OSUBot
             }
             else
             {
-                if (command.special_version_pp) {
+                if (false) {
                     data = OsuCalculator.CalculatePanelSSData(b, beatmap, mods_lazer);
                 } else {
                     data = RosuCalculator.CalculatePanelSSData(b, beatmap, mods_lazer);

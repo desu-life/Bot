@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
+using CommandSystem;
 using DotNext.Threading;
 using Flurl.Util;
 using KanonBot.Drivers;
@@ -58,128 +59,17 @@ namespace KanonBot.Command
 
         public static ReduplicateTargetChecker reduplicateTargetChecker = new();
 
+        private static readonly PlatformHandler _handler = new();
+
         private static async Task Run(Target target, string cmd)
         {
-            string rootCmd;
-            string childCmd = "";
-            string childCmdOriginal = "";
-
             try
             {
-                var tmp = cmd.Split(' ', 2, StringSplitOptions.TrimEntries);
-                rootCmd = tmp[0].ToDBC();
-                childCmd = tmp[1].ToDBC();
-                childCmdOriginal = tmp[1];
-            }
-            catch
-            {
-                rootCmd = cmd.ToDBC();
-            }
-
-            try
-            {
-                switch (rootCmd.ToLower()) // 不区分大小写
-                {
-                    case "bind":
-                        await Bind.Execute(target, childCmd);
-                        return;
-                    case "info":
-                        await Info.Execute(target, childCmd);
-                        return;
-                    case "sc":
-                    case "search":
-                        await Search.Execute(target, childCmdOriginal);
-                        return;
-                    case "res":
-                        await RecentList.Execute(target, childCmd, true);
-                        return;
-                    case "prs":
-                        await RecentList.Execute(target, childCmd, false);
-                        return;
-                    case "recent":
-                    case "re":
-                        await Recent.Execute(target, childCmd, true);
-                        return;
-                    case "pr":
-                        await Recent.Execute(target, childCmd, false);
-                        return;
-                    case "bp":
-                        await BestPerformance.Execute(target, childCmd);
-                        return;
-                    case "score":
-                        await Score.Execute(target, childCmd, fetch_source: true);
-                        return;
-                    case "pp":
-                        await Score.Execute(target, childCmd, true, fetch_source: true);
-                        return;
-                    case "help":
-                        await Help.Execute(target, childCmd);
-                        return;
-                    case "ping":
-                        await Ping.Execute(target);
-                        return;
-                    case "update":
-                        await Update.Execute(target, childCmd);
-                        return;
-                    case "get":
-                        await Get.Execute(target, childCmd);
-                        return; // get bonuspp/elo/rolecost/bpht/todaybp/annualpass
-                    case "todaybp":
-                        await TodayBP.Execute(target, childCmd);
-                        return;
-                    case "badge":
-                        await Badge.Execute(target, childCmd);
-                        return;
-                    case "leeway":
-                    case "lc":
-                        await Leeway.Execute(target, childCmd);
-                        return;
-                    case "set":
-                        await Setter.Execute(target, childCmd);
-                        return;
-                    case "ppvs":
-                        await PPvs.Execute(target, childCmd);
-                        return;
-                    //超级管理员
-                    case "su":
-                        await Su.Execute(target, childCmd);
-                        return;
-                }
-
-                // 有些例外，用StartsWith匹配
-                // if (rootCmd.StartsWith("bp"))
-                // {
-                //     string numberPart = cmd[2..];
-                //     if (!string.IsNullOrEmpty(numberPart) && int.TryParse(numberPart, out int number))
-                //     {
-                //         await BestPerformance.Execute(target, cmd[2..].Trim());
-                //         return;
-                //     }                    
-                    
-                // }
-
-                if (cmd.StartsWith("bp"))
-                {
-                    // 防止和某抽象bot冲突
-                    if (cmd.StartsWith("bpa"))
-                    {
-                        return;
-                    }
-
-                    // 修复白菜bpme兼容
-                    if (cmd.StartsWith("bpme"))
-                    {
-                        return;
-                    }
-
-                    if (cmd.StartsWith("bplist"))
-                    {
-                        return;
-                    }
-
-                    await BestPerformance.Execute(target, cmd[2..].Trim());
+                var (command, parsed) = _handler.HandleLegacy(cmd);
+                if (command is null || parsed is null)
                     return;
-                }
+
+                await command.Execute(target, parsed);
             }
             catch (Flurl.Http.FlurlHttpTimeoutException)
             {

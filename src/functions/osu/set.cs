@@ -1,60 +1,64 @@
+using CommandSystem;
+using CommandSystem.Definition;
+using CommandSystem.Parsing;
 using KanonBot.Drivers;
 using KanonBot.Message;
 using KanonBot.API.OSU;
 using KanonBot.API.PPYSB;
 using KanonBot.Functions;
-using KanonBot.Command;
 
 namespace KanonBot.Functions.OSUBot
 {
-    public class Setter
+    // ── Set ICommand classes ──────────────────────────────
+
+    public class SetHelpCommand : ICommand
     {
         private const string SettingsUrl = "https://hub.kagamistudio.com/settings/";
+        public CommandDef Definition => new() { Name = "set", Args = [], Flags = [] };
+        public Task Execute(Target target, ParsedCommand cmd)
+            => target.reply($"面板相关设置已迁移到网页端，请前往 {SettingsUrl} 进行设置。");
+    }
 
-        public static async Task Execute(Target target, string cmd)
+    public class SetOsuModeCommand : ICommand
+    {
+        public CommandDef Definition => new()
         {
-            string rootCmd,
-                childCmd = "";
-            try
-            {
-                var tmp = cmd.Split(' ', 2, StringSplitOptions.TrimEntries);;
-                rootCmd = tmp[0];
-                childCmd = tmp[1];
-            }
-            catch
-            {
-                rootCmd = cmd;
-            }
-            switch (rootCmd.ToLower())
-            {
-                case "osumode":
-                    await SetOsuMode(target, childCmd);
-                    return;
-                case "osuinfopanelversion":
-                case "osuinfopanelv2colormode":
-                case "osuinfopanelv2colorcustom":
-                case "osuinfopanelv2img":
-                case "osuinfopanelv1img":
-                case "osuinfopanelv2panel":
-                case "osuinfopanelv1panel":
-                    await target.reply($"该设置项已迁移到网页端，请前往 {SettingsUrl} 进行设置。");
-                    break;
-                default:
-                    await target.reply(
-                        $"面板相关设置已迁移到网页端，请前往 {SettingsUrl} 进行设置。"
-                    );
-                    return;
-            }
-        }
+            Name = "set osumode",
+            Args = [new() { Name = "mode", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple }],
+            Flags = [new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" }]
+        };
+        public Task Execute(Target target, ParsedCommand cmd) => Setter.SetOsuMode(target, cmd);
+    }
 
-        private static async Task SetOsuMode(Target target, string cmd)
+    public class SetDeprecatedCommand : ICommand
+    {
+        private const string SettingsUrl = "https://hub.kagamistudio.com/settings/";
+        public CommandDef Definition => new()
         {
-            var tokens = cmd
-                .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .ToList();
+            Name = "set osuinfopanelversion",
+            Aliases = [
+                "set osuinfopanelv2colormode",
+                "set osuinfopanelv2colorcustom",
+                "set osuinfopanelv2img",
+                "set osuinfopanelv1img",
+                "set osuinfopanelv2panel",
+                "set osuinfopanelv1panel",
+            ],
+            Args = [],
+            Flags = []
+        };
+        public Task Execute(Target target, ParsedCommand cmd)
+            => target.reply($"该设置项已迁移到网页端，请前往 {SettingsUrl} 进行设置。");
+    }
 
-            var hasSbFlag = tokens.Any(t => t.Equals("&sb", StringComparison.OrdinalIgnoreCase));
-            var modeToken = tokens.FirstOrDefault(t => !t.StartsWith("&"));
+    // ── Setter internal methods ────────────────────────────
+
+    public class Setter
+    {
+        public static async Task SetOsuMode(Target target, ParsedCommand cmd)
+        {
+            var modeToken = cmd.GetString("mode");
+            bool hasSbFlag = cmd.Flag("sb_server");
 
             if (string.IsNullOrWhiteSpace(modeToken))
             {
@@ -80,10 +84,13 @@ namespace KanonBot.Functions.OSUBot
             bool isSbOnlyMode = sbMode.HasValue && (int)sbMode.Value > 3;
             bool useSbMode = hasSbFlag || isSbOnlyMode;
 
-            var resolveCmd = BotCmdHelper.CmdParser(
-                $":{modeToken}" + (useSbMode ? "&sb" : string.Empty),
-                BotCmdHelper.FuncType.Info
-            );
+            // Build a ParsedCommand for ResolveCommandUser (self-query with mode)
+            var resolveCmd = new ParsedCommand
+            {
+                SelfQuery = true,
+                Args = new() { ["osu_mode"] = modeToken, ["username"] = null },
+                Flags = new() { ["sb_server"] = useSbMode },
+            };
             var resolved = await Accounts.ResolveCommandUser(target, resolveCmd);
             if (resolved == null || resolved.IamUserId == null)
                 return;

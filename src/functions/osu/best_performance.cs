@@ -1,8 +1,11 @@
 using System.IO;
 using System.Security.Cryptography;
+using CommandSystem;
+using CommandSystem.Definition;
+using CommandSystem.Execution;
+using CommandSystem.Parsing;
 using KanonBot.API;
 using KanonBot.API.OSU;
-using KanonBot.Command;
 using KanonBot.Drivers;
 using KanonBot.Functions.OSU;
 using KanonBot.Message;
@@ -14,14 +17,32 @@ using SixLabors.ImageSharp.Formats.Png;
 
 namespace KanonBot.Functions.OSUBot
 {
-    public class BestPerformance
+    public class BpCommand : ICommand
     {
-        public static async Task Execute(Target target, string cmd)
+        public CommandDef Definition => new()
+        {
+            Name = "bp",
+            LegacyStartsWithMatch = true,
+            ExcludePrefixes = ["bpa", "bpme", "bplist"],
+            Args =
+            [
+                new() { Name = "username",     Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
+                new() { Name = "order_number", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseInt(s) },
+                new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
+            ],
+            Flags =
+            [
+                new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
+                new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
+                new() { Name = "dev_panel",  Value = "dev", SlashName = "is_dev" },
+            ]
+        };
+
+        public async Task Execute(Target target, ParsedCommand cmd)
         {
             #region 验证
-            // 解析指令
-            var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.BestPerformance);
-            var resolved = await Accounts.ResolveCommandUser(target, command);
+            var resolved = await Accounts.ResolveCommandUser(target, cmd);
             if (resolved == null) return;
 
             long osuID = resolved.OsuId;
@@ -40,22 +61,22 @@ namespace KanonBot.Functions.OSUBot
             #endregion
 
             // 输入检查
-            if (command.order_number < 1)
-            {
-                command.order_number = 1;
-            }
+            var orderNumber = cmd.Get<int>("order_number");
+            if (orderNumber < 1) orderNumber = 1;
+            bool special_version_pp = cmd.Flag("special_pp");
+            bool dev_panel = cmd.Flag("dev_panel");
 
             API.OSU.Models.ScoreLazer[]? scores = null;
 
             
-            if (command.special_version_pp && is_ppysb)
+            if (special_version_pp && is_ppysb)
             {
                 var ss = await API.PPYSB.Client.GetUserScores(
                     osuID,
                 API.PPYSB.UserScoreType.Best,
                     sbmode!.Value,
                     1,
-                    command.order_number - 1
+                    orderNumber - 1
                 );
                 scores = ss?.Map(s => s.ToOsu(sbinfo!, sbmode!.Value)).ToArray();
             } else {
@@ -64,7 +85,7 @@ namespace KanonBot.Functions.OSUBot
                     API.OSU.UserScoreType.Best,
                     mode!.Value,
                     1,
-                    command.order_number - 1
+                    orderNumber - 1
                 );
             }
 
@@ -84,10 +105,10 @@ namespace KanonBot.Functions.OSUBot
                 score.User ??= tempOsuInfo;
 
                 Image.ScoreV2.ScorePanelData data;
-                data = await UniversalCalculator.CalculatePanelData(score, UniversalCalculator.GetCalculatorKind(is_ppysb, command.special_version_pp));
+                data = await UniversalCalculator.CalculatePanelData(score, UniversalCalculator.GetCalculatorKind(is_ppysb, special_version_pp));
 
                 using var img =
-                    command.dev_panel
+                    dev_panel
                         ? await Image.OsuScorePanelV3.Draw(data)
                         : await Image.ScoreV2.DrawScore(data);
 

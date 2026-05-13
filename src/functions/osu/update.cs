@@ -1,3 +1,7 @@
+using CommandSystem;
+using CommandSystem.Definition;
+using CommandSystem.Execution;
+using CommandSystem.Parsing;
 using KanonBot.Drivers;
 using KanonBot.Message;
 using KanonBot.API;
@@ -5,18 +9,29 @@ using KanonBot.Functions.OSU;
 using System.IO;
 using LanguageExt.UnsafeValueAccess;
 using KanonBot.API.OSU;
-using KanonBot.Command;
 
 namespace KanonBot.Functions.OSUBot
 {
-    public class Update
+    public class UpdateCommand : ICommand
     {
-        async public static Task Execute(Target target, string cmd)
+        public CommandDef Definition => new()
+        {
+            Name = "update",
+            Args =
+            [
+                new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
+            ],
+            Flags =
+            [
+                new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" },
+            ]
+        };
+
+        public async Task Execute(Target target, ParsedCommand cmd)
         {
             #region 验证
-            // 解析指令
-            var command = BotCmdHelper.CmdParser(cmd, BotCmdHelper.FuncType.Info);
-            var resolved = await Accounts.ResolveCommandUser(target, command);
+            var resolved = await Accounts.ResolveCommandUser(target, cmd);
             if (resolved == null) return;
 
             long osuID = resolved.OsuId;

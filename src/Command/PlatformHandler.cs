@@ -5,35 +5,35 @@ using CommandSystem.Parsing;
 namespace CommandSystem;
 
 /// <summary>
-/// 平台适配层示例
-/// Legacy（!cmd）和 Slash（/cmd）统一输出 ParsedCommand
+/// 平台适配层
+/// Legacy（!cmd）和 Slash（/cmd）统一输出 (ICommand, ParsedCommand)
 /// </summary>
 public class PlatformHandler
 {
-    private readonly CommandRegistry _registry = CommandDefs.BuildRegistry();
+    private readonly CommandRegistry _registry = CommandRegistrar.BuildRegistry();
     private readonly LegacyParser _legacy = new();
     private readonly SlashParser _slash = new();
 
     // ── Legacy 入口（!info zhjk #10 :3 &sb）────────────
-    public ParsedCommand? HandleLegacy(string message)
+    public (ICommand? command, ParsedCommand? parsed) HandleLegacy(string body)
     {
-        if (!message.StartsWith('!'))
-            return null;
+        var (matchedCmd, matchedRawArgs) = _registry.MatchCommand(body);
+        if (matchedCmd is null)
+            return (null, null);
 
-        var body = message[1..]; // 去掉 !
-
-        var (matchedDef, matchedRawArgs) = _registry.MatchCommand(body);
-        if (matchedDef is not null)
-            return _legacy.Parse(matchedDef.Name, matchedRawArgs, matchedDef);
-        return null;
+        var def = matchedCmd.Definition;
+        var parsed = _legacy.Parse(def.Name, matchedRawArgs, def);
+        return (matchedCmd, parsed);
     }
 
     // ── Slash 入口（Discord 传来的已解析 key-value）──────
-    public ParsedCommand? HandleSlash(string cmdName, Dictionary<string, string> options)
+    public (ICommand? command, ParsedCommand? parsed) HandleSlash(string cmdName, Dictionary<string, string> options)
     {
-        if (!_registry.TryGet(cmdName, out var def) || def is null)
-            return null;
+        if (!_registry.TryGet(cmdName, out var cmd) || cmd is null)
+            return (null, null);
 
-        return _slash.Parse(cmdName, options, def);
+        var def = cmd.Definition;
+        var parsed = _slash.Parse(cmdName, options, def);
+        return (cmd, parsed);
     }
 }
