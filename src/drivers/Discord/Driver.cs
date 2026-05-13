@@ -45,7 +45,6 @@ public partial class Discord : ISocket, IDriver, IReply
         if (!string.IsNullOrEmpty(gatewayHost))
         {
             config.GatewayHost = gatewayHost;
-            config.GatewayIntents = GatewayIntents.AllUnprivileged;
         }
 
         var client = new DiscordSocketClient(config);
