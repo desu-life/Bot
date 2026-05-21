@@ -1,6 +1,7 @@
 using System.IO;
 using Destructurama;
 using Flurl.Http.Newtonsoft;
+using KanonBot.I18n;
 using KanonBot.Command;
 using KanonBot.Drivers;
 using KanonBot.Event;
@@ -62,6 +63,11 @@ else
     }
     Log.Logger = log.CreateLogger();
 }
+// 初始化 i18n 本地化
+KanonBot.I18n.Localizer.Initialize();
+Log.Information("i18n initialized, loaded locales: {Locales}",
+    string.Join(", ", KanonBot.I18n.Localizer.Instance.Store.LoadedLocales.Select(l => l.ToCode())));
+
 Log.Information("初始化成功 {@config}", config);
 
 if (config.dev)

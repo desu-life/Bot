@@ -61,6 +61,20 @@
 		<!-- <PackageReference Include="Svg.Skia" Version="3.0.4" /> -->
 	</ItemGroup>
 
+	<!-- i18n embedded resources -->
+	<ItemGroup>
+	  <EmbeddedResource Include="../res/i18n/zh-CN.json" LogicalName="KanonBot.res.i18n.zh-CN.json" />
+	  <EmbeddedResource Include="../res/i18n/en.json" LogicalName="KanonBot.res.i18n.en.json" />
+	</ItemGroup>
+
+	<!-- Source Generator -->
+	<ItemGroup>
+	  <ProjectReference Include="../generators/KanonBot.Generators.Attributes/KanonBot.Generators.Attributes.csproj" />
+	  <ProjectReference Include="../generators/KanonBot.Generators/KanonBot.Generators.csproj"
+	    OutputItemType="Analyzer"
+	    ReferenceOutputAssembly="false" />
+	</ItemGroup>
+
 	<!-- RosuPP -->
 	<ItemGroup>
 	  <ProjectReference Include="../dependencies/takumi-html-ffi/bindings/takumi-render-uniffi/csharp/Takumi.Render.UniFFI/Takumi.Render.UniFFI.csproj" />

@@ -1,0 +1,50 @@
+{
+  "error.timeout": "获取数据超时，请稍后重试吧",
+  "error.network": "获取数据时出错，之后再试试吧",
+  "error.file_io": "文件操作异常，错误内容已自动上报",
+  "error.unknown": "出现了未知错误，错误内容已自动上报",
+  "error.user_not_found": "猫猫没有找到此用户。",
+  "error.query_scores_failed": "查询成绩时出错。",
+
+  "account.platform_unknown": "无法获取您的平台信息。",
+  "account.platform_unsupported": "当前平台暂不支持此功能。",
+  "account.not_bound": "你还没有绑定 desu.life 账户，请使用 {prefix}bind 进行绑定。",
+  "account.fetch_failed": "获取账户信息失败，请稍后再试。",
+  "account.ppysb_not_bound": "你还没有绑定 ppy.sb 账户，请前往 https://iam.neonprizma.com/ 绑定。",
+  "account.osu_not_bound": "你还没有绑定 osu! 账户，请前往 https://iam.neonprizma.com/ 绑定。",
+  "account.other_osu_not_bound": "ta还没有绑定osu账户呢。",
+  "account.other_ppysb_not_bound": "ta还没有绑定ppy.sb账户呢。",
+  "account.banned": "被办了。",
+
+  "help.main": "用户查询：\n{prefix}info/recent/bp/get\n绑定/用户设置：\n{prefix}bind/reg/set\n更多细节请移步 https://support.desu.life/posts/2022-kanonbot-usage-doc/ 查阅",
+
+  "badge.help": "{prefix}badge info/list\n徽章设置/兑换等操作请前往 https://hub.kagamistudio.com",
+  "badge.deprecated": "徽章管理已迁移至网页端，请前往 https://hub.kagamistudio.com 进行操作。",
+  "badge.not_bound": "你还没有绑定 desu.life 账户，先使用 {prefix}bind 来进行绑定哦。",
+  "badge.invalid_id": "请提供正确的徽章编号，如: {prefix}badge info 1",
+  "badge.no_badges": "你还没有佩戴的徽章呢...",
+  "badge.no_badges_with_link": "你还没有佩戴的徽章呢...\n前往 https://hub.kagamistudio.com 管理你的徽章。",
+
+  "osu.bp_not_found": "猫猫找不到该BP。",
+  "osu.no_scores_mode": "你最近还没有玩过{0}模式呢。。",
+  "osu.no_scores_in_mode": "这个模式你还没有成绩呢..",
+  "osu.too_few_plays": "打过的图太少了，多玩一玩再来寻求推荐吧~",
+  "osu.no_recommendation": "猫猫没办法给你推荐谱面了，当前存入数据库的已经找不到合适的谱面推荐给你了...",
+  "osu.bp_too_few_self": "你的bp太少啦，多打些吧",
+  "osu.bp_too_few_other": "{0}的bp太少啦，请让ta多打些吧",
+  "osu.no_seasonal_pass": "用户在本季度暂无季票信息。",
+  "osu.invalid_range": "指定的范围不正确",
+  "osu.update_in_progress": "少女祈祷中...",
+  "osu.update_done": "主要数据已更新完毕，pp+数据正在后台更新，请稍后使用info功能查看结果。",
+  "osu.not_in_range": "{0} 不在参赛范围内。",
+  "osu.cost_result": "在ONC中，{0} 的cost为：{1}",
+  "osu.pp_plus_failed": "获取pp+失败",
+
+  "bot.ping": "meow~",
+
+  "get.help": "{prefix}get bonuspp/bplist/rolecost/bpht/todaybp/seasonalpass/recommend/profile/bg",
+  "set.help": "{prefix}set mode <osu/taiko/catch/mania>",
+  "su.help": "{prefix}su updateall",
+  "su.update_all_done": "全部数据更新完毕。",
+  "su.update_all_progress": "正在更新 {0}/{1}..."
+}

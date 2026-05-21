@@ -1,0 +1,50 @@
+{
+  "error.timeout": "Request timed out, please try again later.",
+  "error.network": "An error occurred while fetching data, please try again later.",
+  "error.file_io": "A file operation error occurred and has been automatically reported.",
+  "error.unknown": "An unknown error occurred and has been automatically reported.",
+  "error.user_not_found": "User not found.",
+  "error.query_scores_failed": "An error occurred while querying scores.",
+
+  "account.platform_unknown": "Unable to determine your platform information.",
+  "account.platform_unsupported": "This feature is not supported on the current platform.",
+  "account.not_bound": "You haven't linked your desu.life account yet. Use {prefix}bind to link.",
+  "account.fetch_failed": "Failed to fetch account information. Please try again later.",
+  "account.ppysb_not_bound": "You haven't linked your ppy.sb account yet. Visit https://iam.neonprizma.com/ to link.",
+  "account.osu_not_bound": "You haven't linked your osu! account yet. Visit https://iam.neonprizma.com/ to link.",
+  "account.other_osu_not_bound": "This user hasn't linked their osu! account yet.",
+  "account.other_ppysb_not_bound": "This user hasn't linked their ppy.sb account yet.",
+  "account.banned": "This account has been restricted.",
+
+  "help.main": "User queries:\n{prefix}info/recent/bp/get\nBinding/Settings:\n{prefix}bind/reg/set\nFor more details, visit https://support.desu.life/posts/2022-kanonbot-usage-doc/",
+
+  "badge.help": "{prefix}badge info/list\nFor badge management, visit https://hub.kagamistudio.com",
+  "badge.deprecated": "Badge management has been moved to the web. Visit https://hub.kagamistudio.com",
+  "badge.not_bound": "You haven't linked your desu.life account yet. Use {prefix}bind to link first.",
+  "badge.invalid_id": "Please provide a valid badge ID, e.g.: {prefix}badge info 1",
+  "badge.no_badges": "You don't have any badges equipped yet...",
+  "badge.no_badges_with_link": "You don't have any badges equipped yet...\nVisit https://hub.kagamistudio.com to manage your badges.",
+
+  "osu.bp_not_found": "Could not find that BP.",
+  "osu.no_scores_mode": "You haven't played any {0} recently.",
+  "osu.no_scores_in_mode": "You don't have any scores in this mode yet.",
+  "osu.too_few_plays": "Not enough plays yet. Play more and come back for recommendations!",
+  "osu.no_recommendation": "Unable to recommend any beatmaps. No suitable maps found in the database for you.",
+  "osu.bp_too_few_self": "Your BP list is too short. Play more!",
+  "osu.bp_too_few_other": "{0}'s BP list is too short.",
+  "osu.no_seasonal_pass": "No seasonal pass data available for this quarter.",
+  "osu.invalid_range": "The specified range is invalid.",
+  "osu.update_in_progress": "Updating...",
+  "osu.update_done": "Main data has been updated. PP+ data is being updated in the background.",
+  "osu.not_in_range": "{0} is not within the tournament range.",
+  "osu.cost_result": "In ONC, {0}'s cost is: {1}",
+  "osu.pp_plus_failed": "Failed to fetch PP+ data.",
+
+  "bot.ping": "meow~",
+
+  "get.help": "{prefix}get bonuspp/bplist/rolecost/bpht/todaybp/seasonalpass/recommend/profile/bg",
+  "set.help": "{prefix}set mode <osu/taiko/catch/mania>",
+  "su.help": "{prefix}su updateall",
+  "su.update_all_done": "All data has been updated.",
+  "su.update_all_progress": "Updating {0}/{1}..."
+}
