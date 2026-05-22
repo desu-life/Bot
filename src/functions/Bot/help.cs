@@ -2,7 +2,6 @@ using CommandSystem;
 using CommandSystem.Definition;
 using CommandSystem.Parsing;
 using KanonBot.Drivers;
-using KanonBot.I18n;
 
 namespace KanonBot.Functions.OSUBot
 {
@@ -17,6 +16,6 @@ namespace KanonBot.Functions.OSUBot
             };
 
         public Task Execute(Target target, ParsedCommand cmd) =>
-            target.reply(target.T("help.main"));
+            target.Treply("help.main");
     }
 }

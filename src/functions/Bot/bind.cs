@@ -24,7 +24,7 @@ namespace KanonBot.Functions.OSUBot
             var accInfo = Accounts.GetAccInfo(target);
             if (accInfo.platform == Platform.Unknown)
             {
-                await target.reply("无法获取您的平台信息。");
+                await target.Treply("account.platform_unknown");
                 return;
             }
 
@@ -35,13 +35,13 @@ namespace KanonBot.Functions.OSUBot
             }
             catch (NotSupportedException)
             {
-                await target.reply("当前平台暂不支持绑定流程。");
+                await target.Treply("bind.platform_unsupported");
                 return;
             }
 
             if (provider is not ("qq" or "discord"))
             {
-                await target.reply("当前平台暂不支持绑定流程。");
+                await target.Treply("bind.platform_unsupported");
                 return;
             }
 
@@ -55,7 +55,7 @@ namespace KanonBot.Functions.OSUBot
                 var code = input.Split(' ', 2, StringSplitOptions.TrimEntries)[0];
                 if (code.Length != 6)
                 {
-                    await target.reply("验证码格式不正确，请输入网页显示的验证码。\n用法: !bind 验证码");
+                    await target.Treply("bind.code_format_error");
                     return;
                 }
 
@@ -63,24 +63,24 @@ namespace KanonBot.Functions.OSUBot
                 switch (verifyResult)
                 {
                     case API.IAM.VerifyResult.Success:
-                        await target.reply("验证码已提交，请回到网页检查你的绑定状态哦。");
+                        await target.Treply("bind.code_submitted");
                         return;
                     case API.IAM.VerifyResult.InvalidCode:
-                        await target.reply("验证码无效或已过期，请重新使用 !bind 生成新的绑定链接并完成网页流程。");
+                        await target.Treply("bind.code_invalid");
                         return;
                     case API.IAM.VerifyResult.AlreadyBound:
-                        await target.reply("你的 QQ 账户已经绑定过 desu.life 账户了。若需更换绑定，请联系管理员。");
+                        await target.Treply("bind.already_bound_qq");
                         return;
                     case API.IAM.VerifyResult.InvalidApiKey:
                         Log.Error("IAM API Key is invalid for QQ submit-code");
-                        await target.reply("服务配置错误，请联系管理员。");
+                        await target.Treply("bind.service_error");
                         return;
                     case API.IAM.VerifyResult.Misconfigured:
                         Log.Error("IAM integration is misconfigured for QQ submit-code");
-                        await target.reply("服务配置错误，请联系管理员。");
+                        await target.Treply("bind.service_error");
                         return;
                     default:
-                        await target.reply("提交验证码失败，请稍后再试。");
+                        await target.Treply("bind.submit_failed");
                         return;
                 }
             }
@@ -94,33 +94,31 @@ namespace KanonBot.Functions.OSUBot
                         || string.IsNullOrWhiteSpace(sessionResult.Session.Url)
                     )
                     {
-                        await target.reply("生成绑定链接失败，请稍后再试。");
+                        await target.Treply("bind.session_failed");
                         return;
                     }
 
-                    await target.reply(
-                        $"请点击一次性链接完成绑定：\n{sessionResult.Session.Url}\n进入页面后直接使用 osu! 登录，完成绑定流程\n绑定的验证码可以通过 !bind 验证码 提交。"
-                    );
+                    await target.Treply("bind.session_link", sessionResult.Session.Url);
                     return;
                 case API.IAM.BindSessionResultType.AlreadyBound:
-                    await target.reply("你的平台账户已经绑定过 desu.life 账户了。若需更换绑定，请联系管理员。");
+                    await target.Treply("bind.already_bound");
                     return;
                 case API.IAM.BindSessionResultType.InvalidApiKey:
                     Log.Error(
                         "IAM API Key is invalid for provider {Provider} bind-session",
                         provider
                     );
-                    await target.reply("服务配置错误，请联系管理员。");
+                    await target.Treply("bind.service_error");
                     return;
                 case API.IAM.BindSessionResultType.Misconfigured:
                     Log.Error(
                         "IAM integration is misconfigured for provider {Provider} bind-session",
                         provider
                     );
-                    await target.reply("服务配置错误，请联系管理员。");
+                    await target.Treply("bind.service_error");
                     return;
                 default:
-                    await target.reply("生成绑定链接失败，请稍后再试。");
+                    await target.Treply("bind.session_failed");
                     return;
             }
         }

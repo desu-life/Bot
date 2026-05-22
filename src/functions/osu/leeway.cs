@@ -38,7 +38,7 @@ namespace KanonBot.Functions.OSUBot
             var osuMode = cmd.GetString("osu_mode")?.ParseMode() ?? API.OSU.Mode.OSU;
             if (osuMode is not API.OSU.Mode.OSU)
             {
-                await target.reply("Leeway仅支持osu!std模式。");
+                await target.Treply("osu.leeway_std_only");
                 return;
             }
 
@@ -51,48 +51,35 @@ namespace KanonBot.Functions.OSUBot
             }
             catch (NotSupportedException)
             {
-                await target.reply("当前平台暂不支持此功能。");
+                await target.Treply("account.platform_unsupported");
                 return;
             }
 
             var iamUserId = await API.IAM.Client.GetIamUserIdByExternalId(provider, AccInfo.uid);
             if (iamUserId == null)
             {
-                await target.reply("你还没有绑定 desu.life 账户，请使用 !bind 进行绑定。");
+                await target.Treply("account.not_bound");
                 return;
             }
 
             var bindings = await API.IAM.Client.GetUserBindings(iamUserId);
             if (bindings == null)
             {
-                await target.reply("获取账户信息失败，请稍后再试。");
+                await target.Treply("account.fetch_failed");
                 return;
             }
 
             var osuUid = API.IAM.Client.ExtractOsuUid(bindings);
             if (!osuUid.HasValue)
             {
-                await target.reply("你还没有绑定 osu! 账户，请前往 https://iam.neonprizma.com/ 绑定。");
+                await target.Treply("account.osu_not_bound");
                 return;
             }
 
-            // 验证osu信息
             OnlineOsuInfo = await API.OSU.Client.GetUser(osuUid.Value);
-            //}
-            //else
-            //{
-            // 验证osu信息
-            //    try { OnlineOsuInfo = Osu.GetUser(command.osu_username); }
-            //    catch { OnlineOsuInfo = new Osu.UserInfo(); }
-            //    is_bounded = false;
-            //}
-
-            // 验证osu信息
             if (OnlineOsuInfo == null)
             {
-                //if (is_bounded) { await target.reply("被办了。"); return; }
-                //await target.reply("猫猫没有找到此用户。"); return;
-                await target.reply("被办了。");
+                await target.Treply("account.banned");
                 return;
             }
 
@@ -112,7 +99,7 @@ namespace KanonBot.Functions.OSUBot
                     );
                 if (scoreInfos == null)
                 {
-                    await target.reply("获取成绩时出错。");
+                    await target.Treply("osu.scores_error");
                     return;
                 }
                 ; // 正常是找不到玩家，但是上面有验证，这里做保险
@@ -122,7 +109,7 @@ namespace KanonBot.Functions.OSUBot
                 }
                 else
                 {
-                    await target.reply("猫猫找不到你最近游玩的成绩。");
+                    await target.Treply("osu.leeway_recent_not_found");
                     return;
                 }
             }
@@ -142,7 +129,7 @@ namespace KanonBot.Functions.OSUBot
                 score = scoreData.Score.ScoreAuto;
                 if (scoreData.Score.Mode is not API.OSU.Mode.OSU)
                 {
-                    await target.reply("Leeway仅支持osu!std模式。");
+                    await target.Treply("osu.leeway_std_only");
                     return;
                 } // 检查谱面是否是std
             }
@@ -160,7 +147,7 @@ namespace KanonBot.Functions.OSUBot
             {
                 // 加载失败
                 File.Delete($"./work/beatmap/{bid}.osu");
-                await target.reply("无法获取铺面信息。");
+                await target.Treply("osu.beatmap_load_failed");
                 return;
             }
 

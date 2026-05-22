@@ -15,6 +15,6 @@ namespace KanonBot.Functions.OSUBot
                 Flags =  [ ]
             };
 
-        public Task Execute(Target target, ParsedCommand cmd) => target.reply("meow~");
+        public Task Execute(Target target, ParsedCommand cmd) => target.Treply("bot.ping");
     }
 }

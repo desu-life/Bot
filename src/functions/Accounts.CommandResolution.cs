@@ -1,7 +1,6 @@
 using CommandSystem.Parsing;
 using KanonBot.API.OSU;
 using KanonBot.Drivers;
-using KanonBot.I18n;
 using LanguageExt.UnsafeValueAccess;
 
 namespace KanonBot.Functions
@@ -36,7 +35,7 @@ namespace KanonBot.Functions
             var accInfo = GetAccInfo(target);
             if (accInfo.platform == Platform.Unknown)
             {
-                await target.reply(target.T("account.platform_unknown"));
+                await target.Treply("account.platform_unknown");
                 return null;
             }
 
@@ -48,21 +47,21 @@ namespace KanonBot.Functions
             }
             catch (NotSupportedException)
             {
-                await target.reply(target.T("account.platform_unsupported"));
+                await target.Treply("account.platform_unsupported");
                 return null;
             }
 
             var iamUserId = await API.IAM.Client.GetIamUserIdByExternalId(provider, accInfo.uid);
             if (iamUserId == null)
             {
-                await target.reply(target.T("account.not_bound"));
+                await target.Treply("account.not_bound");
                 return null;
             }
 
             var bindings = await API.IAM.Client.GetUserBindings(iamUserId);
             if (bindings == null)
             {
-                await target.reply(target.T("account.fetch_failed"));
+                await target.Treply("account.fetch_failed");
                 return null;
             }
 
@@ -74,7 +73,7 @@ namespace KanonBot.Functions
                 var ppysbUid = API.IAM.Client.ExtractPpysbUid(bindings);
                 if (!ppysbUid.HasValue)
                 {
-                    await target.reply(target.T("account.ppysb_not_bound"));
+                    await target.Treply("account.ppysb_not_bound");
                     return null;
                 }
 
@@ -104,7 +103,7 @@ namespace KanonBot.Functions
                 var osuUid = API.IAM.Client.ExtractOsuUid(bindings);
                 if (!osuUid.HasValue)
                 {
-                    await target.reply(target.T("account.osu_not_bound"));
+                    await target.Treply("account.osu_not_bound");
                     return null;
                 }
 
@@ -162,9 +161,9 @@ namespace KanonBot.Functions
             {
                 // User registered but osu not available
                 if (!hasOsuBinding)
-                    await target.reply(target.T("account.other_osu_not_bound"));
+                    await target.Treply("account.other_osu_not_bound");
                 else
-                    await target.reply(target.T("account.banned"));
+                    await target.Treply("account.banned");
                 return null;
             }
             else if (!atOSU.IsNone && iamUserId == null)
@@ -202,7 +201,7 @@ namespace KanonBot.Functions
                     .GetUser(username, osuMode ?? API.OSU.Mode.OSU);
                 if (onlineUser == null)
                 {
-                    await target.reply(target.T("error.user_not_found"));
+                    await target.Treply("error.user_not_found");
                     return null;
                 }
 
@@ -244,9 +243,9 @@ namespace KanonBot.Functions
             if (atOSU.IsNone && iamUserId != null)
             {
                 if (!hasPpysbBinding)
-                    await target.reply(target.T("account.other_ppysb_not_bound"));
+                    await target.Treply("account.other_ppysb_not_bound");
                 else
-                    await target.reply(target.T("account.banned"));
+                    await target.Treply("account.banned");
                 return null;
             }
             else if (!atOSU.IsNone && iamUserId == null)
@@ -283,7 +282,7 @@ namespace KanonBot.Functions
                 var onlineUser = await API.PPYSB.Client.GetUser(username);
                 if (onlineUser == null)
                 {
-                    await target.reply(target.T("error.user_not_found"));
+                    await target.Treply("error.user_not_found");
                     return null;
                 }
 

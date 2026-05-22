@@ -88,7 +88,7 @@ namespace KanonBot.Functions.OSUBot
             var (tempOsuInfo, sbinfo) = await Utils.ResolveOsuUser(resolved);
             if (tempOsuInfo == null)
             {
-                await target.reply("猫猫没有找到此用户。");
+                await target.Treply("error.user_not_found");
                 return;
             }
 
@@ -114,7 +114,7 @@ namespace KanonBot.Functions.OSUBot
             {
                 if (!fetch_source)
                 {
-                    await target.reply("请提供谱面bid。");
+                    await target.Treply("osu.provide_bid");
                     return;
                 }
 
@@ -210,9 +210,9 @@ namespace KanonBot.Functions.OSUBot
             if (scoreData == null)
             {
                 if (cmd.SelfQuery)
-                    await target.reply("猫猫没有找到你的成绩");
+                    await target.Treply("osu.score_not_found_self");
                 else
-                    await target.reply("猫猫没有找到TA的成绩");
+                    await target.Treply("osu.score_not_found_other");
                 return;
             }
             //ppy的getscore api不会返回beatmapsets信息，需要手动获取

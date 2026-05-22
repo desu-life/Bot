@@ -241,7 +241,7 @@ namespace KanonBot.Functions.OSUBot
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID, API.OSU.Mode.OSU); //取osu模式的值
             if (OnlineOsuInfo == null)
             {
-                await target.reply("猫猫没有找到此用户。");
+                await target.Treply("error.user_not_found");
                 return;
             }
             OnlineOsuInfo.Mode = mode!.Value;
@@ -268,7 +268,7 @@ namespace KanonBot.Functions.OSUBot
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID, API.OSU.Mode.OSU); //取osu模式的值
             if (OnlineOsuInfo == null)
             {
-                await target.reply("猫猫没有找到此用户。");
+                await target.Treply("error.user_not_found");
                 return;
             }
             OnlineOsuInfo.Mode = mode!.Value;
@@ -286,12 +286,12 @@ namespace KanonBot.Functions.OSUBot
                 );
             if (allBP == null)
             {
-                await target.reply("打过的图太少了，多玩一玩再来寻求推荐吧~");
+                await target.Treply("osu.too_few_plays");
                 return;
             }
             if (allBP.Length < 20)
             {
-                await target.reply("打过的图太少了，多玩一玩再来寻求推荐吧~");
+                await target.Treply("osu.too_few_plays");
                 return;
             }
 
@@ -396,7 +396,7 @@ namespace KanonBot.Functions.OSUBot
                 }
                 else
                 {
-                    await target.reply("猫猫没办法给你推荐谱面了，当前存入数据库的已经找不到合适的谱面推荐给你了...");
+                    await target.Treply("osu.no_recommendation");
                     return;
                 }
             }
@@ -473,7 +473,7 @@ namespace KanonBot.Functions.OSUBot
                 }
                 else
                 {
-                    await target.reply("猫猫没办法给你推荐谱面了，当前存入数据库的已经找不到合适的谱面推荐给你了...");
+                    await target.Treply("osu.no_recommendation");
                     return;
                 }
             }
@@ -481,7 +481,7 @@ namespace KanonBot.Functions.OSUBot
             //检查谱面列表长度
             if (data.Count == 0)
             {
-                await target.reply("猫猫没办法给你推荐谱面了，当前存入数据库的已经找不到合适的谱面推荐给你了...");
+                await target.Treply("osu.no_recommendation");
                 return;
             }
 
@@ -526,7 +526,7 @@ namespace KanonBot.Functions.OSUBot
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID, mode!.Value);
             if (OnlineOsuInfo == null)
             {
-                await target.reply("猫猫没有找到此用户。");
+                await target.Treply("error.user_not_found");
                 return;
             }
             OnlineOsuInfo.Mode = mode!.Value;
@@ -535,7 +535,7 @@ namespace KanonBot.Functions.OSUBot
             // 计算bonuspp
             if (OnlineOsuInfo!.Statistics.PP == 0)
             {
-                await target.reply($"你最近还没有玩过{OnlineOsuInfo.Mode.ToStr()}模式呢。。");
+                await target.Treply("osu.no_scores_mode", OnlineOsuInfo.Mode.ToStr());
                 return;
             }
             // 因为上面确定过模式，这里就直接用userdata里的mode了
@@ -567,12 +567,12 @@ namespace KanonBot.Functions.OSUBot
             );
             if (allBP == null)
             {
-                await target.reply("查询成绩时出错。");
+                await target.Treply("error.query_scores_failed");
                 return;
             }
             if (allBP!.Length == 0)
             {
-                await target.reply("这个模式你还没有成绩呢..");
+                await target.Treply("osu.no_scores_in_mode");
                 return;
             }
 
@@ -627,44 +627,9 @@ namespace KanonBot.Functions.OSUBot
                     return -1;
                 }
             }
-            // static double ostcost(long rank, int elo)
-            // {
-            //     double rankelo,
-            //         cost;
-            //     if (elo == 0)
-            //     {
-            //         elo = (int)(1500 - 600 * (Math.Log((rank + 500) / 8500.0) / Math.Log(4.0)));
-            //     }
-            //     else
-            //     {
-            //         rankelo = 1500 - 600 * (Math.Log((rank + 500) / 8500.0) / Math.Log(4.0));
-            //         if (elo > rankelo)
-            //         {
-            //             rankelo = elo;
-            //         }
-            //         else
-            //         {
-            //             elo = (int)(0.8 * rankelo + 0.2 * elo);
-            //         }
-            //     }
-            //     if (elo > 850)
-            //     {
-            //         cost = 27 * (elo - 700) / 3200.0;
-            //     }
-            //     else
-            //     {
-            //         cost = 3 * Math.Pow(((elo - 400) / 600.0), 3);
-            //         if (cost <= 0)
-            //         {
-            //             cost = 0;
-            //         }
-            //     }
-            //     return Math.Round(cost, 2);
-            // }
 
             static double zkfccost(User userInfo, API.OSU.Models.Score score)
             {
-                //formula  cost=bp1pp*0.6+(bp1pp-bp100pp)*0.4+tth/175+PPTotal*0.05      !!!!not this one
                 //formula  cost=pp/1831+tth/13939393  !!!!current
                 double t = 0.0;
                 try
@@ -691,7 +656,7 @@ namespace KanonBot.Functions.OSUBot
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID, mode!.Value);
             if (OnlineOsuInfo == null)
             {
-                await target.reply("猫猫没有找到此用户。");
+                await target.Treply("error.user_not_found");
                 return;
             }
             OnlineOsuInfo.Mode = mode!.Value;
@@ -703,13 +668,11 @@ namespace KanonBot.Functions.OSUBot
                     try
                     {
                         var pppData = await API.OSU.Client.GetUserPlusData(OnlineOsuInfo.Id);
-                        await target.reply(
-                            $"在猫猫杯S1中，{OnlineOsuInfo.Username} 的cost为：{occost(OnlineOsuInfo, pppData.User)}"
-                        );
+                        await target.Treply("get.occ_cost_result", OnlineOsuInfo.Username, occost(OnlineOsuInfo, pppData.User));
                     }
                     catch
                     {
-                        await target.reply($"获取pp+失败");
+                        await target.Treply("osu.pp_plus_failed");
                         return;
                     }
                     break;
@@ -717,9 +680,9 @@ namespace KanonBot.Functions.OSUBot
                 case "onc":
                     var onc = oncost(OnlineOsuInfo);
                     if (onc == -1)
-                        await target.reply($"{OnlineOsuInfo.Username} 不在参赛范围内。");
+                        await target.Treply("osu.not_in_range", OnlineOsuInfo.Username);
                     else
-                        await target.reply($"在ONC中，{OnlineOsuInfo.Username} 的cost为：{onc}");
+                        await target.Treply("osu.cost_result", OnlineOsuInfo.Username, onc);
                     break;
                 ////////////////////////////////////////////////////////////////////////////////////////
                 case "zkfc":
@@ -737,21 +700,17 @@ namespace KanonBot.Functions.OSUBot
                         );
                     if (scores == null)
                     {
-                        await target.reply("查询成绩时出错。");
+                        await target.Treply("error.query_scores_failed");
                         return;
                     }
                     if (scores!.Length > 0)
                     {
-                        await target.reply(
-                            $"在ZKFC S2中，{OnlineOsuInfo.Username} 的cost为：{Math.Round(zkfccost(OnlineOsuInfo, scores[0]), 2)}"
-                        );
+                        await target.Treply("get.zkfc_cost_result", OnlineOsuInfo.Username, Math.Round(zkfccost(OnlineOsuInfo, scores[0]), 2));
                     }
                     break;
                 ////////////////////////////////////////////////////////////////////////////////////////
                 default:
-                    await target.reply(
-                        $"请输入要查询cost的比赛名称的缩写。\n当前已支持的比赛：onc/occ/zkfc\n其他比赛请联系赛事主办方提供cost算法"
-                    );
+                    await target.Treply("get.cost_help");
                     break;
             }
         }
@@ -771,7 +730,7 @@ namespace KanonBot.Functions.OSUBot
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID, mode!.Value);
             if (OnlineOsuInfo == null)
             {
-                await target.reply("猫猫没有找到此用户。");
+                await target.Treply("error.user_not_found");
                 return;
             }
             OnlineOsuInfo.Mode = mode!.Value;
@@ -789,7 +748,7 @@ namespace KanonBot.Functions.OSUBot
                 );
             if (allBP == null)
             {
-                await target.reply("查询成绩时出错。");
+                await target.Treply("error.query_scores_failed");
                 return;
             }
             double totalPP = 0;
@@ -797,9 +756,9 @@ namespace KanonBot.Functions.OSUBot
             if (allBP!.Length < 10)
             {
                 if (cmd.SelfQuery)
-                    await target.reply("你的bp太少啦，多打些吧");
+                    await target.Treply("osu.bp_too_few_self");
                 else
-                    await target.reply($"{OnlineOsuInfo.Username}的bp太少啦，请让ta多打些吧");
+                    await target.Treply("osu.bp_too_few_other", OnlineOsuInfo.Username);
                 return;
             }
             foreach (var item in allBP)
@@ -833,7 +792,7 @@ namespace KanonBot.Functions.OSUBot
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID, mode!.Value);
             if (OnlineOsuInfo == null)
             {
-                await target.reply("猫猫没有找到此用户。");
+                await target.Treply("error.user_not_found");
                 return;
             }
             OnlineOsuInfo.Mode = mode!.Value;
@@ -844,7 +803,7 @@ namespace KanonBot.Functions.OSUBot
                 .GetSeasonalPassInfo(OnlineOsuInfo!.Id, OnlineOsuInfo!.Mode!.ToStr())!;
             if (seasonalpassinfo == null)
             {
-                await target.reply("用户在本季度暂无季票信息。");
+                await target.Treply("osu.no_seasonal_pass");
                 return;
             }
 
@@ -881,47 +840,6 @@ namespace KanonBot.Functions.OSUBot
                 + $"({t}%)"
                 + $"\n共获得了了{seasonalpassinfo.point}pt\n距离升级大约还需要{Math.Abs(temppoint)}pt";
             await target.reply(str);
-
-            ////查询前先更新
-            //if (DBOsuInfo != null)
-            //    await Seasonalpass.Update(
-            //        OnlineOsuInfo!.Id,
-            //        OnlineOsuInfo!.PlayMode!.ToStr(),
-            //        OnlineOsuInfo.Statistics.TotalHits
-            //    );
-
-            ////旧版，将于2023年1月1日弃用
-            //var seasonalpassinfo = await Database.Client.GetSeasonalPassInfo(OnlineOsuInfo!.Id, OnlineOsuInfo!.PlayMode!.ToStr())!;
-
-            //if (seasonalpassinfo == null)
-            //{
-            //    await target.reply("数据库中无此用户的季票信息，请稍后再试。");
-            //    return;
-            //}
-            ////10000tth一级，每升1级所需tth+2000
-            //long temptth = seasonalpassinfo.tth - seasonalpassinfo.inittth;
-            //int levelcount = 0;
-            //while (true)
-            //{
-            //    temptth = temptth - (10000 + levelcount * 2000);
-            //    if (temptth > 0)
-            //        levelcount = levelcount + 1;
-            //    else break;
-            //}
-            //int tt = 0;
-            //for (int i = 0; i < levelcount; ++i)
-            //{
-            //    tt += 10000 + i * 2000;
-            //}
-            //double t = Math.Round(
-            //    Math.Round(
-            //        ((double)((seasonalpassinfo.tth - seasonalpassinfo.inittth - tt) * 100) / (double)(10000 + levelcount * 2000)), 4), 4
-            //);
-            //string str;
-            //str = $"{OnlineOsuInfo.Username}\n自2022年11月29日以来\n您在{OnlineOsuInfo!.PlayMode!.ToStr()}模式下的等级为{levelcount}级 " +
-            //$"({t}%)" +
-            //$"\n共击打了{seasonalpassinfo.tth - seasonalpassinfo.inittth}次\n距离升级还需要{Math.Abs(temptth)}tth";
-            //await target.reply(str);
         }
     }
 }

@@ -47,7 +47,7 @@ namespace KanonBot.Functions.OSUBot
         {
             if (!cmd.Has("range"))
             {
-                await target.reply("指定的范围不正确");
+                await target.Treply("osu.invalid_range");
                 return;
             }
             var range = cmd.Get<Range>("range");
@@ -60,17 +60,17 @@ namespace KanonBot.Functions.OSUBot
 
             if (StartAt < 1 || StartAt > 199)
             {
-                await target.reply("指定的范围不正确");
+                await target.Treply("osu.invalid_range");
                 return;
             }
             if (EndAt < 2 || EndAt > 200)
             {
-                await target.reply("指定的范围不正确");
+                await target.Treply("osu.invalid_range");
                 return;
             }
             if (EndAt < StartAt)
             {
-                await target.reply("指定的范围不正确");
+                await target.Treply("osu.invalid_range");
                 return;
             }
 
@@ -87,7 +87,7 @@ namespace KanonBot.Functions.OSUBot
             var (tempOsuInfo, sbinfo) = await Utils.ResolveOsuUser(resolved);
             if (tempOsuInfo == null)
             {
-                await target.reply("猫猫没有找到此用户。");
+                await target.Treply("error.user_not_found");
                 return;
             }
 
@@ -123,7 +123,7 @@ namespace KanonBot.Functions.OSUBot
 
             if (scoreInfos == null)
             {
-                await target.reply("查询成绩时出错。");
+                await target.Treply("error.query_scores_failed");
                 return;
             }
             // 正常是找不到玩家，但是上面有验证，这里做保险
@@ -143,7 +143,7 @@ namespace KanonBot.Functions.OSUBot
 
                 if (scores.Count == 0)
                 {
-                    await target.reply($"找不到对应的成绩。。");
+                    await target.Treply("osu.no_bp_scores");
                     return;
                 }
 
@@ -173,13 +173,11 @@ namespace KanonBot.Functions.OSUBot
             {
                 if (cmd.SelfQuery)
                 {
-                    await target.reply($"你在 {tempOsuInfo.Mode.ToStr()} 模式上还没有bp呢。。");
+                    await target.Treply("osu.no_bp_self", tempOsuInfo.Mode.ToStr());
                 }
                 else
                 {
-                    await target.reply(
-                        $"{tempOsuInfo.Username} 在 {tempOsuInfo.Mode.ToStr()} 模式上还没有bp呢。。"
-                    );
+                    await target.Treply("osu.no_bp_other", tempOsuInfo.Username, tempOsuInfo.Mode.ToStr());
                 }
                 return;
             }

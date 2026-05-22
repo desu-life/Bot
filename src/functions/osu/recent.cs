@@ -84,7 +84,7 @@ namespace KanonBot.Functions.OSUBot
             var (tempOsuInfo, sbinfo) = await Utils.ResolveOsuUser(resolved);
             if (tempOsuInfo == null)
             {
-                await target.reply("猫猫没有找到此用户。");
+                await target.Treply("error.user_not_found");
                 return;
             }
 
@@ -125,7 +125,7 @@ namespace KanonBot.Functions.OSUBot
 
             if (scoreInfos == null)
             {
-                await target.reply("查询成绩时出错。");
+                await target.Treply("error.query_scores_failed");
                 return;
             }
             // 正常是找不到玩家，但是上面有验证，这里做保险
@@ -157,7 +157,7 @@ namespace KanonBot.Functions.OSUBot
             }
             else
             {
-                await target.reply("猫猫找不到该玩家最近游玩的成绩。");
+                await target.Treply("osu.recent_not_found");
                 return;
             }
         }

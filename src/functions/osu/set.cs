@@ -23,7 +23,7 @@ namespace KanonBot.Functions.OSUBot
             };
 
         public Task Execute(Target target, ParsedCommand cmd) =>
-            target.reply($"面板相关设置已迁移到网页端，请前往 {SettingsUrl} 进行设置。");
+            target.Treply("set.migrated", SettingsUrl);
     }
 
     public class SetOsuModeCommand : ICommand
@@ -63,7 +63,7 @@ namespace KanonBot.Functions.OSUBot
             };
 
         public Task Execute(Target target, ParsedCommand cmd) =>
-            target.reply($"该设置项已迁移到网页端，请前往 {SettingsUrl} 进行设置。");
+            target.Treply("set.deprecated", SettingsUrl);
     }
 
     // ── Setter internal methods ────────────────────────────
@@ -77,9 +77,7 @@ namespace KanonBot.Functions.OSUBot
 
             if (string.IsNullOrWhiteSpace(modeToken))
             {
-                await target.reply(
-                    "用法: !set osumode <模式> [&sb]\n示例: !set osumode std / !set osumode rx0 / !set osumode rx0 &sb"
-                );
+                await target.Treply("set.mode_usage");
                 return;
             }
 
@@ -88,13 +86,13 @@ namespace KanonBot.Functions.OSUBot
 
             if (osuMode == null && sbMode == null)
             {
-                await target.reply("提供的模式不正确，请重新确认 (osu/taiko/fruits/mania/rx0/ap0)");
+                await target.Treply("set.invalid_mode");
                 return;
             }
 
             if (sbMode != null && !sbMode.Value.IsSupported())
             {
-                await target.reply("提供的 sb 模式当前不支持，请更换模式后重试。");
+                await target.Treply("set.sb_mode_unsupported");
                 return;
             }
 
@@ -116,9 +114,7 @@ namespace KanonBot.Functions.OSUBot
             {
                 if (!sbMode.HasValue)
                 {
-                    await target.reply(
-                        "当前模式不是可用的 ppy.sb 模式。\n示例: osu / taiko / ctb / mania / rx0 / ap0"
-                    );
+                    await target.Treply("set.sb_mode_invalid");
                     return;
                 }
 
@@ -132,7 +128,7 @@ namespace KanonBot.Functions.OSUBot
                         .SetPpySbGameMode(resolved.IamUserId, sbModeRaw);
                     if (!sbOk)
                     {
-                        await target.reply("发生了错误，无法设置osu模式，请联系管理员。");
+                        await target.Treply("set.error");
                         return;
                     }
 
@@ -144,18 +140,18 @@ namespace KanonBot.Functions.OSUBot
                             .SetGameMode(resolved.IamUserId, osuModeRaw);
                     }
 
-                    await target.reply("成功设置sb服的模式为 " + sbMode.Value.ToDisplay());
+                    await target.Treply("set.sb_mode_success", sbMode.Value.ToDisplay());
                 }
                 catch
                 {
-                    await target.reply("发生了错误，无法设置osu模式，请联系管理员。");
+                    await target.Treply("set.error");
                 }
             }
             else
             {
                 if (!osuMode.HasValue)
                 {
-                    await target.reply("提供的模式不正确，请重新确认 (osu/taiko/fruits/mania)");
+                    await target.Treply("set.invalid_mode_standard");
                     return;
                 }
 
@@ -164,13 +160,13 @@ namespace KanonBot.Functions.OSUBot
                     var modeRaw = ToOsuModeApiValue(osuMode.Value);
                     var ok = await API.Kagami.Client.SetGameMode(resolved.IamUserId, modeRaw);
                     if (ok)
-                        await target.reply("成功设置模式为 " + osuMode.Value.ToDisplay());
+                        await target.Treply("set.mode_success", osuMode.Value.ToDisplay());
                     else
-                        await target.reply("发生了错误，无法设置osu模式，请联系管理员。");
+                        await target.Treply("set.error");
                 }
                 catch
                 {
-                    await target.reply("发生了错误，无法设置osu模式，请联系管理员。");
+                    await target.Treply("set.error");
                 }
             }
         }

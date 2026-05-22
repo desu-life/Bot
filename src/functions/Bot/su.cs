@@ -85,7 +85,7 @@ namespace KanonBot.Functions.OSU
 
         public static async Task SuDailyUpdateAsync(Target target)
         {
-            await target.reply("已手动开始数据更新，稍后会发送结果。");
+            await target.Treply("su.update_started");
             var _ = Task.Run(async () =>
             {
                 var (count, span) = await GeneralUpdate.UpdateUsers();
@@ -97,11 +97,11 @@ namespace KanonBot.Functions.OSU
                 Text += $" {span.Seconds} 秒";
                 try
                 {
-                    await target.reply($"数据更新完成，一共更新了 {count} 个用户\n{Text}");
+                    await target.Treply("su.update_complete", count, Text);
                 }
                 catch
                 {
-                    await target.reply($"数据更新完成\n{Text}");
+                    await target.Treply("su.update_complete_short", Text);
                 }
             });
         }

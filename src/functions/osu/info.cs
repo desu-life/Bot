@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.IO;
 using CommandSystem;
 using CommandSystem.Definition;
@@ -59,7 +59,7 @@ namespace KanonBot.Functions.OSUBot
             var (tempOsuInfo, sbinfo) = await Utils.ResolveOsuUser(resolved);
             if (tempOsuInfo == null)
             {
-                await target.reply("猫猫没有找到此用户。");
+                await target.Treply("error.user_not_found");
                 return;
             }
 

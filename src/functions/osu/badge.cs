@@ -26,7 +26,7 @@ namespace KanonBot.Functions.OSUBot
             };
 
         public Task Execute(Target target, ParsedCommand cmd) =>
-            target.reply("!badge info/list\n徽章设置/兑换等操作请前往 https://hub.kagamistudio.com");
+            target.Treply("badge.help");
     }
 
     public class BadgeInfoCommand : ICommand
@@ -71,7 +71,7 @@ namespace KanonBot.Functions.OSUBot
             };
 
         public Task Execute(Target target, ParsedCommand cmd) =>
-            target.reply("徽章管理已迁移至网页端，请前往 https://hub.kagamistudio.com 进行操作。");
+            target.Treply("badge.deprecated");
     }
 
     public class Badge
@@ -81,7 +81,7 @@ namespace KanonBot.Functions.OSUBot
             var userCtx = await Accounts.ResolveIamUser(target);
             if (userCtx == null)
             {
-                await target.reply("你还没有绑定 desu.life 账户，先使用 !bind 来进行绑定哦。");
+                await target.Treply("badge.not_bound");
                 return;
             }
             await Info(target, cmd, userCtx);
@@ -92,7 +92,7 @@ namespace KanonBot.Functions.OSUBot
             var userCtx = await Accounts.ResolveIamUser(target);
             if (userCtx == null)
             {
-                await target.reply("你还没有绑定 desu.life 账户，先使用 !bind 来进行绑定哦。");
+                await target.Treply("badge.not_bound");
                 return;
             }
             await List(target, userCtx);
@@ -106,22 +106,20 @@ namespace KanonBot.Functions.OSUBot
         {
             if (!int.TryParse(cmd, out int badgeNum) || badgeNum < 1)
             {
-                await target.reply("请提供正确的徽章编号，如: !badge info 1");
+                await target.Treply("badge.invalid_id");
                 return;
             }
 
             var profile = await API.Kagami.Client.GetPublicKanonBotProfile(userCtx.IamUserId);
             if (profile == null || profile.InstalledBadges.Count == 0)
             {
-                await target.reply("你还没有佩戴的徽章呢...");
+                await target.Treply("badge.no_badges");
                 return;
             }
 
             if (badgeNum > profile.InstalledBadges.Count)
             {
-                await target.reply(
-                    $"你当前佩戴了 {profile.InstalledBadges.Count} 个徽章，没有编号为 {badgeNum} 的。"
-                );
+                await target.Treply("badge.out_of_range", profile.InstalledBadges.Count, badgeNum);
                 return;
             }
 
@@ -162,7 +160,7 @@ namespace KanonBot.Functions.OSUBot
             var profile = await API.Kagami.Client.GetPublicKanonBotProfile(userCtx.IamUserId);
             if (profile == null || profile.InstalledBadges.Count == 0)
             {
-                await target.reply("你还没有佩戴的徽章呢...\n前往 https://hub.kagamistudio.com 管理你的徽章。");
+                await target.Treply("badge.no_badges_with_link");
                 return;
             }
 

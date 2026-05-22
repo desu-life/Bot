@@ -178,7 +178,7 @@ namespace KanonBot.Functions.OSUBot
 
             if (!beatmapFound)
             {
-                await target.reply("未找到谱面。");
+                await target.Treply("osu.beatmap_not_found");
                 return;
             }
 
