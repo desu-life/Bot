@@ -1,6 +1,4 @@
 using KanonBot.Drivers;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace KanonBot.Message;
 
@@ -44,15 +42,7 @@ public class Chain: IEquatable<Chain>
     }
 
 
-    public string Build()
-    {
-        var raw = "";
-        foreach (var item in this.msgList)
-        {
-            raw += item.Build();
-        }
-        return raw;
-    }
+    public string Build() => string.Concat(this.msgList.Select(item => item.Build()));
 
     public override string ToString()
     {

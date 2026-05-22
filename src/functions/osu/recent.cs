@@ -153,7 +153,11 @@ namespace KanonBot.Functions.OSUBot
 
                 if (is_ppysb)
                     return;
-                _ = Task.Run(() => BeatmapTechDataProcess(scoreInfos, osuID));
+                _ = Task.Run(async () =>
+                {
+                    try { await BeatmapTechDataProcess(scoreInfos, osuID); }
+                    catch (Exception ex) { Log.Error(ex, "BeatmapTechDataProcess failed"); }
+                });
             }
             else
             {
@@ -177,14 +181,9 @@ namespace KanonBot.Functions.OSUBot
                     //季票信息
                     if (oid is not null)
                     {
-                        bool temp_abletoinsert = true;
-                        foreach (var c in x.Mods)
-                        {
-                            if (c.Acronym.ToUpper() == "AP")
-                                temp_abletoinsert = false;
-                            if (c.Acronym.ToUpper() == "RX")
-                                temp_abletoinsert = false;
-                        }
+                        bool temp_abletoinsert = !x.Mods.Any(c =>
+                            c.Acronym.Equals("AP", StringComparison.OrdinalIgnoreCase) ||
+                            c.Acronym.Equals("RX", StringComparison.OrdinalIgnoreCase));
                         if (temp_abletoinsert)
                             await Seasonalpass.Update(oid.Value, data);
                     }
@@ -192,16 +191,10 @@ namespace KanonBot.Functions.OSUBot
                     if (x.Mode == API.OSU.Mode.OSU)
                     {
                         if (
-                            x.Beatmap!.Status == API.OSU.Models.Status.Ranked
-                            || x.Beatmap!.Status == API.OSU.Models.Status.Approved
+                            x.Beatmap!.Status is API.OSU.Models.Status.Ranked
+                                or API.OSU.Models.Status.Approved
                         )
-                            if (
-                                x.Rank.ToUpper() == "XH"
-                                || x.Rank.ToUpper() == "X"
-                                || x.Rank.ToUpper() == "SH"
-                                || x.Rank.ToUpper() == "S"
-                                || x.Rank.ToUpper() == "A"
-                            )
+                            if (x.Rank.ToUpperInvariant() is "XH" or "X" or "SH" or "S" or "A")
                             {
                                 await Database
                                     .Client

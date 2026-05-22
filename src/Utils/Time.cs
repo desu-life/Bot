@@ -1,113 +1,54 @@
-using System.IO;
-using System.Security.Cryptography;
-
 namespace KanonBot;
 
 public static partial class Utils
 {
-    public static string GetTimeStamp(bool isMillisec)
+    public static string GetTimeStamp(bool isMillisec) =>
+        isMillisec
+            ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString()
+            : DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
+
+    public static DateTimeOffset TimeStampMilliToDateTime(int timeStamp) =>
+        DateTimeOffset.FromUnixTimeMilliseconds(timeStamp);
+
+    public static DateTimeOffset TimeStampSecToDateTime(long timeStamp) =>
+        DateTimeOffset.FromUnixTimeSeconds(timeStamp);
+
+    public enum DurationFormat
     {
-        TimeSpan ts = DateTime.Now - new DateTime(1970, 1, 1, 0, 0, 0, 0);
-        if (!isMillisec)
-            return Convert.ToInt64(ts.TotalSeconds).ToString();
-        else
-            return Convert.ToInt64(ts.TotalMilliseconds).ToString();
+        DayFull,           // "1d 2h 3m 4s"
+        DayNoSec,          // "1d 2h 3m"
+        HourFull,          // "2h 3m 4s" or "3m 4s"
+        HourNoSec,         // "2h 3m" or "3m"
+        TimeColon,         // "2:03:04" or "3:04"
+        TimeScoreV3,       // "2H,03M,04S" or "3M,04S"
     }
 
-    public static DateTimeOffset TimeStampMilliToDateTime(int timeStamp)
+    public static string FormatDuration(long totalSeconds, DurationFormat format)
     {
-        return DateTimeOffset.FromUnixTimeMilliseconds(timeStamp);
+        long day = totalSeconds / 86400;
+        long rem = totalSeconds % 86400;
+        long hour = rem / 3600;
+        rem %= 3600;
+        long minute = rem / 60;
+        long second = rem % 60;
+
+        return format switch
+        {
+            DurationFormat.DayFull => $"{day}d {hour}h {minute}m {second}s",
+            DurationFormat.DayNoSec => $"{day}d {hour}h {minute}m",
+            DurationFormat.HourFull => hour > 0 ? $"{hour}h {minute}m {second}s" : $"{minute}m {second}s",
+            DurationFormat.HourNoSec => hour > 0 ? $"{hour}h {minute}m" : $"{minute}m",
+            DurationFormat.TimeColon => hour > 0 ? $"{hour}:{minute:00}:{second:00}" : $"{minute}:{second:00}",
+            DurationFormat.TimeScoreV3 => hour > 0 ? $"{hour}H,{minute:00}M,{second:00}S" : $"{minute}M,{second:00}S",
+            _ => $"{hour}h {minute}m {second}s"
+        };
     }
 
-    public static DateTimeOffset TimeStampSecToDateTime(long timeStamp)
-    {
-        return DateTimeOffset.FromUnixTimeSeconds(timeStamp);
-    }
-
-    public static string DayDuration2String(long duration)
-    {
-        long day,
-            hour,
-            minute,
-            second;
-        day = duration / 86400;
-        duration %= 86400;
-        hour = duration / 3600;
-        duration %= 3600;
-        minute = duration / 60;
-        second = duration % 60;
-        return $"{day}d {hour}h {minute}m {second}s";
-    }
-
-    public static string DayDuration2StringWithoutSec(long duration)
-    {
-        long day,
-            hour,
-            minute,
-            second;
-        day = duration / 86400;
-        duration %= 86400;
-        hour = duration / 3600;
-        duration %= 3600;
-        minute = duration / 60;
-        second = duration % 60;
-        return $"{day}d {hour}h {minute}m";
-    }
-
-    public static string Duration2String(long duration)
-    {
-        long hour,
-            minute,
-            second;
-        hour = duration / 3600;
-        duration %= 3600;
-        minute = duration / 60;
-        second = duration % 60;
-        if (hour > 0)
-            return $"{hour}h {minute}m {second}s";
-        return $"{minute}m {second}s";
-    }
-
-    
-    public static string Duration2StringWithoutSec(long duration)
-    {
-        long hour,
-            minute,
-            second;
-        hour = duration / 3600;
-        duration %= 3600;
-        minute = duration / 60;
-        second = duration % 60;
-        if (hour > 0)
-            return $"{hour}h {minute}m";
-        return $"{minute}m";
-    }
-
-    public static string Duration2TimeString(long duration)
-    {
-        long hour,
-            minute,
-            second;
-        hour = duration / 3600;
-        duration %= 3600;
-        minute = duration / 60;
-        second = duration % 60;
-        if (hour > 0)
-            return $"{hour}:{minute:00}:{second:00}";
-        return $"{minute}:{second:00}";
-    }
-
-    public static string Duration2TimeStringForScoreV3(long duration)
-    {
-        long hour,
-            minute,
-            second;
-        hour = duration / 3600;
-        duration %= 3600;
-        minute = duration / 60;
-        second = duration % 60;
-        if (hour > 0)
-            return $"{hour}H,{minute:00}M,{second:00}S";
-        return $"{minute}M,{second:00}S";
-    }
+    // Keep existing method signatures as thin wrappers for backward compatibility
+    public static string DayDuration2String(long duration) => FormatDuration(duration, DurationFormat.DayFull);
+    public static string DayDuration2StringWithoutSec(long duration) => FormatDuration(duration, DurationFormat.DayNoSec);
+    public static string Duration2String(long duration) => FormatDuration(duration, DurationFormat.HourFull);
+    public static string Duration2StringWithoutSec(long duration) => FormatDuration(duration, DurationFormat.HourNoSec);
+    public static string Duration2TimeString(long duration) => FormatDuration(duration, DurationFormat.TimeColon);
+    public static string Duration2TimeStringForScoreV3(long duration) => FormatDuration(duration, DurationFormat.TimeScoreV3);
 }
