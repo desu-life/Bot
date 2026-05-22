@@ -1,9 +1,8 @@
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using KanonBot.Serializer;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NullValueHandling = Newtonsoft.Json.NullValueHandling;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 
 namespace KanonBot.API.PPYSB;
 

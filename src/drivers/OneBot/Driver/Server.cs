@@ -10,7 +10,7 @@ using KanonBot;
 using KanonBot.Event;
 using KanonBot.Message;
 using KanonBot.Serializer;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using Serilog;
 using System.Text;
 using System.Net;
@@ -221,7 +221,7 @@ public partial class OneBot
                                         return;
                                 }
                             }
-                            catch (JsonSerializationException)
+                            catch (System.Text.Json.JsonException)
                             {
                                 // throw new NotSupportedException($"不支持的消息格式，请使用数组消息格式");
                                 Log.Error(

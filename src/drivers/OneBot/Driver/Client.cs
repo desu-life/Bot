@@ -7,7 +7,7 @@ using KanonBot;
 using KanonBot.Event;
 using KanonBot.Message;
 using KanonBot.Serializer;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using Serilog;
 using WatsonWebsocket;
 
@@ -100,7 +100,7 @@ public partial class OneBot
                                             return;
                                     }
                                 }
-                                catch (JsonSerializationException)
+                                catch (System.Text.Json.JsonException)
                                 {
                                     Log.Error("不支持的消息格式，请使用数组消息格式，连接断开");
                                     await this.Stop();

@@ -1,6 +1,7 @@
 using System.IO;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Destructurama;
-using Flurl.Http.Newtonsoft;
 using KanonBot.I18n;
 using KanonBot.Command;
 using KanonBot.Drivers;
@@ -9,8 +10,6 @@ using KanonBot.Functions.OSU;
 using KanonBot.Serializer;
 using LanguageExt.ClassInstances.Pred;
 using LanguageExt.UnsafeValueAccess;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using RosuPP;
 using SixLabors.ImageSharp.Diagnostics;
 using API = KanonBot.API;
@@ -30,13 +29,13 @@ else
 }
 
 FlurlHttp
-    .Clients.UseNewtonsoft()
-    .WithDefaults(c =>
+    .Clients.WithDefaults(c =>
     {
         c.Settings.Redirects.Enabled = true;
         c.Settings.Redirects.MaxAutoRedirects = 10;
         c.Settings.Redirects.ForwardAuthorizationHeader = true;
         c.Settings.Redirects.AllowSecureToInsecure = true;
+        c.Settings.JsonSerializer = new Flurl.Http.Configuration.DefaultJsonSerializer(Json.Options);
     });
 
 var config = Config.inner;
@@ -230,11 +229,11 @@ foreach (var driverConfig in config.drivers)
                                 switch (e)
                                 {
                                     case RawEvent r:
-                                        var data = (r.value as QQGuild.Models.PayloadBase<JToken>)!;
+                                        var data = (r.value as QQGuild.Models.PayloadBase<JsonNode>)!;
                                         Log.Debug(
                                             "收到QQ Guild事件: {@0} 数据: {1}",
                                             data,
-                                            data.Data?.ToString(Formatting.None) ?? null
+                                            data.Data?.ToJsonString() ?? null
                                         );
                                         break;
                                     case Ready l:

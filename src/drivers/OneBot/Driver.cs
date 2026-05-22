@@ -6,7 +6,7 @@ using System.Net.WebSockets;
 using KanonBot.Message;
 using KanonBot.Serializer;
 using KanonBot.Event;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using Serilog;
 using KanonBot;
 

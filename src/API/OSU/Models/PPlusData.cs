@@ -1,8 +1,7 @@
 #pragma warning disable CS8618 // 非null 字段未初始化
 using KanonBot.Serializer;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NullValueHandling = Newtonsoft.Json.NullValueHandling;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 
 namespace KanonBot.API.OSU;
 
@@ -16,169 +15,169 @@ public partial class Models
 
         public class UserData
         {
-            [JsonProperty("Rank")]
+            [JsonPropertyName("Rank")]
             public int Rank { get; set; }
 
-            [JsonProperty("CountryRank")]
+            [JsonPropertyName("CountryRank")]
             public int CountryRank { get; set; }
 
-            [JsonProperty("UserID")]
+            [JsonPropertyName("UserID")]
             public long UserId { get; set; }
 
-            [JsonProperty("UserName")]
+            [JsonPropertyName("UserName")]
             public string UserName { get; set; }
 
-            [JsonProperty("CountryCode")]
+            [JsonPropertyName("CountryCode")]
             public string CountryCode { get; set; }
 
-            [JsonProperty("PerformanceTotal")]
+            [JsonPropertyName("PerformanceTotal")]
             public double PerformanceTotal { get; set; }
 
-            [JsonProperty("AimTotal")]
+            [JsonPropertyName("AimTotal")]
             public double AimTotal { get; set; }
 
-            [JsonProperty("JumpAimTotal")]
+            [JsonPropertyName("JumpAimTotal")]
             public double JumpAimTotal { get; set; }
 
-            [JsonProperty("FlowAimTotal")]
+            [JsonPropertyName("FlowAimTotal")]
             public double FlowAimTotal { get; set; }
 
-            [JsonProperty("PrecisionTotal")]
+            [JsonPropertyName("PrecisionTotal")]
             public double PrecisionTotal { get; set; }
 
-            [JsonProperty("SpeedTotal")]
+            [JsonPropertyName("SpeedTotal")]
             public double SpeedTotal { get; set; }
 
-            [JsonProperty("StaminaTotal")]
+            [JsonPropertyName("StaminaTotal")]
             public double StaminaTotal { get; set; }
 
-            [JsonProperty("AccuracyTotal")]
+            [JsonPropertyName("AccuracyTotal")]
             public double AccuracyTotal { get; set; }
 
-            [JsonProperty("AccuracyPercentTotal")]
+            [JsonPropertyName("AccuracyPercentTotal")]
             public double AccuracyPercentTotal { get; set; }
 
-            [JsonProperty("PlayCount")]
+            [JsonPropertyName("PlayCount")]
             public int PlayCount { get; set; }
 
-            [JsonProperty("CountRankSS")]
+            [JsonPropertyName("CountRankSS")]
             public int CountRankSS { get; set; }
 
-            [JsonProperty("CountRankS")]
+            [JsonPropertyName("CountRankS")]
             public int CountRankS { get; set; }
         }
 
         public class UserDataNext
         {
-            [JsonProperty("id")]
+            [JsonPropertyName("id")]
             public long Id { get; set; }
 
-            [JsonProperty("performances")]
+            [JsonPropertyName("performances")]
             public UserPerformancesNext Performances { get; set; }
         }
 
         public class UserPerformancesNext
         {
-            [JsonProperty("pp")]
+            [JsonPropertyName("pp")]
             public double PerformanceTotal { get; set; }
 
-            [JsonProperty("ppAim")]
+            [JsonPropertyName("ppAim")]
             public double AimTotal { get; set; }
 
-            [JsonProperty("ppJumpAim")]
+            [JsonPropertyName("ppJumpAim")]
             public double JumpAimTotal { get; set; }
 
-            [JsonProperty("ppFlowAim")]
+            [JsonPropertyName("ppFlowAim")]
             public double FlowAimTotal { get; set; }
 
-            [JsonProperty("ppPrecision")]
+            [JsonPropertyName("ppPrecision")]
             public double PrecisionTotal { get; set; }
 
-            [JsonProperty("ppSpeed")]
+            [JsonPropertyName("ppSpeed")]
             public double SpeedTotal { get; set; }
 
-            [JsonProperty("ppStamina")]
+            [JsonPropertyName("ppStamina")]
             public double StaminaTotal { get; set; }
 
-            [JsonProperty("ppAcc")]
+            [JsonPropertyName("ppAcc")]
             public double AccuracyTotal { get; set; }
         }
 
         public class UserPerformances
         {
-            [JsonProperty("SetID")]
+            [JsonPropertyName("SetID")]
             public long SetId { get; set; }
 
-            [JsonProperty("Artist")]
+            [JsonPropertyName("Artist")]
             public string Artist { get; set; }
 
-            [JsonProperty("Title")]
+            [JsonPropertyName("Title")]
             public string Title { get; set; }
 
-            [JsonProperty("Version")]
+            [JsonPropertyName("Version")]
             public string Version { get; set; }
 
-            [JsonProperty("MaxCombo")]
+            [JsonPropertyName("MaxCombo")]
             public int MaxCombo { get; set; }
 
-            [JsonProperty("UserID")]
+            [JsonPropertyName("UserID")]
             public long UserId { get; set; }
 
-            [JsonProperty("BeatmapID")]
+            [JsonPropertyName("BeatmapID")]
             public long BeatmapId { get; set; }
 
-            [JsonProperty("Total")]
+            [JsonPropertyName("Total")]
             public double TotalTotal { get; set; }
 
-            [JsonProperty("Aim")]
+            [JsonPropertyName("Aim")]
             public double Aim { get; set; }
 
-            [JsonProperty("JumpAim")]
+            [JsonPropertyName("JumpAim")]
             public double JumpAim { get; set; }
 
-            [JsonProperty("FlowAim")]
+            [JsonPropertyName("FlowAim")]
             public double FlowAim { get; set; }
 
-            [JsonProperty("Precision")]
+            [JsonPropertyName("Precision")]
             public double Precision { get; set; }
 
-            [JsonProperty("Speed")]
+            [JsonPropertyName("Speed")]
             public double Speed { get; set; }
 
-            [JsonProperty("Stamina")]
+            [JsonPropertyName("Stamina")]
             public double Stamina { get; set; }
 
-            [JsonProperty("HigherSpeed")]
+            [JsonPropertyName("HigherSpeed")]
             public double HigherSpeed { get; set; }
 
-            [JsonProperty("Accuracy")]
+            [JsonPropertyName("Accuracy")]
             public double Accuracy { get; set; }
 
-            [JsonProperty("Count300")]
+            [JsonPropertyName("Count300")]
             public int CountGreat { get; set; }
 
-            [JsonProperty("Count100")]
+            [JsonPropertyName("Count100")]
             public int CountOk { get; set; }
 
-            [JsonProperty("Count50")]
+            [JsonPropertyName("Count50")]
             public int CountMeh { get; set; }
 
-            [JsonProperty("Misses")]
+            [JsonPropertyName("Misses")]
             public int CountMiss { get; set; }
 
-            [JsonProperty("AccuracyPercent")]
+            [JsonPropertyName("AccuracyPercent")]
             public double AccuracyPercent { get; set; }
 
-            [JsonProperty("Combo")]
+            [JsonPropertyName("Combo")]
             public int Combo { get; set; }
 
-            [JsonProperty("EnabledMods")]
+            [JsonPropertyName("EnabledMods")]
             public int EnabledMods { get; set; }
 
-            [JsonProperty("Rank")]
+            [JsonPropertyName("Rank")]
             public string Rank { get; set; }
 
-            [JsonProperty("Date")]
+            [JsonPropertyName("Date")]
             public DateTimeOffset Date { get; set; }
         }
     }

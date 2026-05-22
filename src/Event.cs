@@ -1,5 +1,5 @@
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using KanonBot.Drivers;
 
 namespace KanonBot.Event;
@@ -20,7 +20,7 @@ public class RawEvent : IEvent
     public override string ToString()
     {
         return value switch {
-            JObject j => j.ToString(Formatting.None),
+            JsonObject j => j.ToJsonString(),
             _ => $"{value}",
         };
     }

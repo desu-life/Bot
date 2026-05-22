@@ -27,6 +27,10 @@ public class OSU
             System.IO.Directory.SetCurrentDirectory("../../../../");
             Config.inner = Config.load(configPath);
         }
+        Flurl.Http.FlurlHttp.Clients.WithDefaults(c =>
+        {
+            c.Settings.JsonSerializer = new Flurl.Http.Configuration.DefaultJsonSerializer(Json.Options);
+        });
     }
 
     [Fact]

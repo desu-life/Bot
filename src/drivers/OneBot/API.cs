@@ -3,8 +3,8 @@ using DotNext.Threading;
 using KanonBot.Message;
 using KanonBot.Serializer;
 using LanguageExt.UnsafeValueAccess;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 using Serilog;
 namespace KanonBot.Drivers;
 public partial class OneBot

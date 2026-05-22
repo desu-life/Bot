@@ -2,7 +2,7 @@ using System.Net.WebSockets;
 using KanonBot.Event;
 using KanonBot.Message;
 using KanonBot.Serializer;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 using WatsonWebsocket;
 
 namespace KanonBot.Drivers;
@@ -84,14 +84,14 @@ public partial class QQGuild : ISocket, IDriver, IReply
         switch (obj.Type)
         {
             case Enums.EventType.Ready:
-                var readyData = (obj.Data as JObject)?.ToObject<Models.ReadyData>();
+                var readyData = (obj.Data as JsonObject)?.ToObject<Models.ReadyData>();
                 this.SessionId = readyData!.SessionId;
                 this.selfID = readyData.User.ID;
                 Log.Information("鉴权成功 {@0}", readyData);
                 this.eventAction?.Invoke(this, new Ready(readyData.User.ID, Platform.Guild));
                 break;
             case Enums.EventType.AtMessageCreate:
-                var MessageData = (obj.Data as JObject)?.ToObject<Models.MessageData>();
+                var MessageData = (obj.Data as JsonObject)?.ToObject<Models.MessageData>();
                 var source = MessageSource.FromGuild(MessageData!.ChannelID);
                 this.msgAction?.Invoke(
                     new Target()
@@ -118,7 +118,7 @@ public partial class QQGuild : ISocket, IDriver, IReply
 
     async Task Parse(string msg)
     {
-        var obj = Json.Deserialize<Models.PayloadBase<JToken>>(msg)!;
+        var obj = Json.Deserialize<Models.PayloadBase<JsonNode>>(msg)!;
         // Log.Debug("收到消息: {@0} 数据: {1}", obj, obj.Data?.ToString(Formatting.None) ?? null);
 
         if (obj.Seq != null)
@@ -130,7 +130,7 @@ public partial class QQGuild : ISocket, IDriver, IReply
                 this.Dispatch(obj);
                 break;
             case Enums.OperationCode.Hello:
-                var heartbeatInterval = (obj.Data as JObject)!["heartbeat_interval"]!.Value<int>();
+                var heartbeatInterval = (obj.Data as JsonObject)!["heartbeat_interval"]!.Value<int>();
 
                 SetHeartBeatTicker(heartbeatInterval); // 设置心跳定时器
 

@@ -1,4 +1,4 @@
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 using KanonBot.Message;
 using System.IO;
 using Discord.WebSocket;

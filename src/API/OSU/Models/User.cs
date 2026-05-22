@@ -2,78 +2,76 @@
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using KanonBot.Serializer;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NullValueHandling = Newtonsoft.Json.NullValueHandling;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 
 namespace KanonBot.API.OSU;
 
 public partial class Models
 {
     public class UserExtended : User {
-        [JsonProperty("discord", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("discord")]
         public string? Discord { get; set; }
 
-        [JsonProperty("has_supported")]
+        [JsonPropertyName("has_supported")]
         public bool HasSupported { get; set; }
 
-        [JsonProperty("interests", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("interests")]
         public string? Interests { get; set; }
 
-        [JsonProperty("join_date")]
+        [JsonPropertyName("join_date")]
         public DateTimeOffset JoinDate { get; set; }
 
-        [JsonProperty("kudosu")]
-        public JObject Kudosu { get; set; }
+        [JsonPropertyName("kudosu")]
+        public JsonObject Kudosu { get; set; }
 
-        [JsonProperty("location", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("location")]
         public string? Location { get; set; }
 
-        [JsonProperty("max_blocks")]
+        [JsonPropertyName("max_blocks")]
         public long MaxBlocks { get; set; }
 
-        [JsonProperty("max_friends")]
+        [JsonPropertyName("max_friends")]
         public long MaxFriends { get; set; }
 
-        [JsonProperty("occupation", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("occupation")]
         public string? Occupation { get; set; }
 
         /// <summary>
         /// 这个是指的官网用户的默认游玩模式，并非查询的成绩模式！！！
         /// 使用时请把此值强制赋值成查询的模式
         /// </summary>
-        [JsonProperty("playmode")]
-        [JsonConverter(typeof(JsonEnumConverter))]
+        [JsonPropertyName("playmode")]
         public Mode Mode { get; set; }
 
-        [JsonProperty("playstyle")]
+        [JsonPropertyName("playstyle")]
         public string[] Playstyle { get; set; }
 
-        [JsonProperty("post_count")]
+        [JsonPropertyName("post_count")]
         public long PostCount { get; set; }
 
-        [JsonProperty("profile_hue", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("profile_hue")]
         public long? ProfileHue { get; set; }
 
-        [JsonProperty("profile_order")]
+        [JsonPropertyName("profile_order")]
         public string[] ProfileOrder { get; set; }
 
-        [JsonProperty("title", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("title")]
         public string? Title { get; set; }
 
-        [JsonProperty("title_url", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("title_url")]
         public string? TitleUrl { get; set; }
 
-        [JsonProperty("twitter", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("twitter")]
         public string? Twitter { get; set; }
 
-        [JsonProperty("website", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("website")]
         public string? Website { get; set; }
 
-        [JsonProperty("comments_count")]
+        [JsonPropertyName("comments_count")]
         public long CommentsCount { get; set; }
 
-        [JsonProperty("mapping_follower_count", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("mapping_follower_count")]
         public long? MappingFollowerCount { get; set; }
 
         [JsonIgnore]
@@ -89,161 +87,161 @@ public partial class Models
 
     public class User
     {
-        [JsonProperty("avatar_url")]
+        [JsonPropertyName("avatar_url")]
         public Uri AvatarUrl { get; set; }
 
-        [JsonProperty("country_code")]
+        [JsonPropertyName("country_code")]
         public string CountryCode { get; set; }
 
-        [JsonProperty("default_group", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("default_group")]
         public string? DefaultGroup { get; set; }
 
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public long Id { get; set; }
 
-        [JsonProperty("is_active")]
+        [JsonPropertyName("is_active")]
         public bool IsActive { get; set; }
 
-        [JsonProperty("is_bot")]
+        [JsonPropertyName("is_bot")]
         public bool IsBot { get; set; }
 
-        [JsonProperty("is_deleted")]
+        [JsonPropertyName("is_deleted")]
         public bool IsDeleted { get; set; }
 
-        [JsonProperty("is_online")]
+        [JsonPropertyName("is_online")]
         public bool IsOnline { get; set; }
 
-        [JsonProperty("is_supporter")]
+        [JsonPropertyName("is_supporter")]
         public bool IsSupporter { get; set; }
 
-        [JsonProperty("last_visit", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("last_visit")]
         public DateTimeOffset? LastVisit { get; set; }
 
-        [JsonProperty("pm_friends_only")]
+        [JsonPropertyName("pm_friends_only")]
         public bool PmFriendsOnly { get; set; }
 
-        [JsonProperty("profile_colour", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("profile_colour")]
         public string? ProfileColor { get; set; }
 
-        [JsonProperty("username")]
+        [JsonPropertyName("username")]
         public string Username { get; set; }
 
         // UserJsonAvailableIncludes
 
-        [JsonProperty("account_history", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("account_history")]
         public UserAccountHistory[]? AccountHistory { get; set; }
 
-        [JsonProperty("badges", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("badges")]
         public UserBadge[]? Badges { get; set; }
 
-        [JsonProperty("beatmap_playcounts_count", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("beatmap_playcounts_count")]
         public long? BeatmapPlaycountsCount { get; set; }
 
-        [JsonProperty("country", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("country")]
         public Country? Country { get; set; }
 
-        [JsonProperty("cover", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("cover")]
         public UserCover? Cover { get; set; }
 
-        [JsonProperty("favourite_beatmapset_count", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("favourite_beatmapset_count")]
         public long? FavouriteBeatmapsetCount { get; set; }
 
-        [JsonProperty("follower_count", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("follower_count")]
         public long? FollowerCount { get; set; }
 
-        [JsonProperty("graveyard_beatmapset_count", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("graveyard_beatmapset_count")]
         public long? GraveyardBeatmapsetCount { get; set; }
 
-        [JsonProperty("guest_beatmapset_count", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("guest_beatmapset_count")]
         public long? GuestBeatmapsetCount { get; set; }
 
-        [JsonProperty("loved_beatmapset_count", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("loved_beatmapset_count")]
         public long? LovedBeatmapsetCount { get; set; }
 
-        [JsonProperty("pending_beatmapset_count", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("pending_beatmapset_count")]
         public long? PendingBeatmapsetCount { get; set; }
 
-        [JsonProperty("ranked_beatmapset_count", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("ranked_beatmapset_count")]
         public long? RankedBeatmapsetCount { get; set; }
 
-        [JsonProperty("groups", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("groups")]
         public UserGroup[]? Groups { get; set; }
 
-        [JsonProperty("rank_highest", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("rank_highest")]
         public UserHighestRank? HighestRank { get; set; }
 
-        [JsonProperty("is_admin", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("is_admin")]
         public bool? is_admin { get; set; }
 
-        [JsonProperty("is_bng", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("is_bng")]
         public bool? is_bng { get; set; }
 
-        [JsonProperty("is_full_bn", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("is_full_bn")]
         public bool? is_full_bn { get; set; }
 
-        [JsonProperty("is_gmt", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("is_gmt")]
         public bool? is_gmt { get; set; }
 
-        [JsonProperty("is_limited_bn", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("is_limited_bn")]
         public bool? is_limited_bn { get; set; }
 
-        [JsonProperty("is_moderator", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("is_moderator")]
         public bool? is_moderator { get; set; }
 
-        [JsonProperty("is_nat", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("is_nat")]
         public bool? is_nat { get; set; }
 
-        [JsonProperty("is_restricted", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("is_restricted")]
         public bool? IsRestricted { get; set; }
 
-        [JsonProperty("is_silenced", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("is_silenced")]
         public bool? is_silenced { get; set; }
         
-        [JsonProperty("medals", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("medals")]
         public MedalCompact[]? medals { get; set; }
 
-        [JsonProperty("monthly_playcounts", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("monthly_playcounts")]
         public MonthlyCount[]? monthly_playcounts { get; set; }
 
-        [JsonProperty("page", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("page")]
         public UserPage? page { get; set; }
         
-        [JsonProperty("previous_usernames", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("previous_usernames")]
         public string[]? PreviousUsernames { get; set; }
 
         // 搞不懂为啥这里ppy要给两个rankhistory
-        [JsonProperty("rank_history", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("rank_history")]
         public RankHistory? RankHistory { get; set; }
 
-        [JsonProperty("replays_watched_counts", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("replays_watched_counts")]
         public MonthlyCount[]? replays_watched_counts { get; set; }
 
-        [JsonProperty("scores_best_count", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("scores_best_count")]
         public long? ScoresBestCount { get; set; }
 
-        [JsonProperty("scores_first_count", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("scores_first_count")]
         public long? ScoresFirstCount { get; set; }
 
-        [JsonProperty("scores_recent_count", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("scores_recent_count")]
         public long? ScoresRecentCount { get; set; }
 
-        [JsonProperty("scores_pinned_count", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("scores_pinned_count")]
         public long? ScoresPinnedCount { get; set; }
 
-        [JsonProperty("statistics", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("statistics")]
         public UserStatistics? StatisticsCurrent { get; set; }
         
-        [JsonProperty("statistics_rulesets")]
+        [JsonPropertyName("statistics_rulesets")]
         public UserStatisticsModes StatisticsModes { get; set; }
 
-        [JsonProperty("support_level", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("support_level")]
         public long? SupportLevel { get; set; }
 
-        [JsonProperty("active_tournament_banners", NullValueHandling = NullValueHandling.Ignore)]
-        public JArray? ActiveTournamentBanners { get; set; }
+        [JsonPropertyName("active_tournament_banners")]
+        public JsonArray? ActiveTournamentBanners { get; set; }
 
-        [JsonProperty("active_tournament_banner", NullValueHandling = NullValueHandling.Ignore)]
-        public JObject ActiveTournamentBanner { get; set; }
+        [JsonPropertyName("active_tournament_banner")]
+        public JsonObject ActiveTournamentBanner { get; set; }
 
         [JsonIgnore]
         public UserStatistics Statistics => StatisticsCurrent ?? StatisticsModes.Osu;
@@ -252,257 +250,256 @@ public partial class Models
     
     public class Country
     {
-        [JsonProperty("code")]
+        [JsonPropertyName("code")]
         public string Code { get; set; }
 
-        [JsonProperty("display", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("display")]
         public string? Display { get; set; }
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
     }
 
     public class UserCover
     {
-        [JsonProperty("custom_url", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("custom_url")]
         public Uri? CustomUrl { get; set; }
 
-        [JsonProperty("url")]
+        [JsonPropertyName("url")]
         public Uri Url { get; set; }
 
-        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("id")]
         public string? Id { get; set; }
     }
 
     public class Count
     {
-        [JsonProperty("start_date")]
+        [JsonPropertyName("start_date")]
         public DateTimeOffset StartDate { get; set; }
 
-        [JsonProperty("count")]
+        [JsonPropertyName("count")]
         public long CountCount { get; set; }
     }
 
     public class UserPage
     {
-        [JsonProperty("html")]
+        [JsonPropertyName("html")]
         public string Html { get; set; }
 
-        [JsonProperty("raw")]
+        [JsonPropertyName("raw")]
         public string Raw { get; set; }
     }
 
     public class UserHighestRank
     {
-        [JsonProperty("rank")]
+        [JsonPropertyName("rank")]
         public uint Rank { get; set; }
 
-        [JsonProperty("updated_at")]
+        [JsonPropertyName("updated_at")]
         public DateTimeOffset UpdatedAt { get; set; }
     }
 
     public class RankHistory
     {
-        [JsonProperty("mode")]
-        [JsonConverter(typeof(JsonEnumConverter))]
+        [JsonPropertyName("mode")]
         public Mode Mode { get; set; }
 
-        [JsonProperty("data")]
+        [JsonPropertyName("data")]
         public long[] Data { get; set; }
     }
 
 
     public class UserStatisticsModes {
-        [JsonProperty("osu")]
+        [JsonPropertyName("osu")]
         public UserStatistics Osu { get; set; }
 
-        [JsonProperty("taiko")]
+        [JsonPropertyName("taiko")]
         public UserStatistics Taiko { get; set; }
 
-        [JsonProperty("fruits")]
+        [JsonPropertyName("fruits")]
         public UserStatistics Catch { get; set; }
 
-        [JsonProperty("mania")]
+        [JsonPropertyName("mania")]
         public UserStatistics Mania { get; set; }
     }
 
     public class UserStatistics
     {
-        [JsonProperty("level")]
+        [JsonPropertyName("level")]
         public UserLevel Level { get; set; }
 
-        [JsonProperty("global_rank", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("global_rank")]
         public long GlobalRank { get; set; }
 
-        [JsonProperty("pp")]
+        [JsonPropertyName("pp")]
         public double PP { get; set; }
 
-        [JsonProperty("ranked_score")]
+        [JsonPropertyName("ranked_score")]
         public long RankedScore { get; set; }
 
-        [JsonProperty("hit_accuracy")]
+        [JsonPropertyName("hit_accuracy")]
         public double HitAccuracy { get; set; }
 
-        [JsonProperty("play_count")]
+        [JsonPropertyName("play_count")]
         public long PlayCount { get; set; }
 
-        [JsonProperty("play_time")]
+        [JsonPropertyName("play_time")]
         public long PlayTime { get; set; }
 
-        [JsonProperty("total_score")]
+        [JsonPropertyName("total_score")]
         public long TotalScore { get; set; }
 
-        [JsonProperty("total_hits")]
+        [JsonPropertyName("total_hits")]
         public long TotalHits { get; set; }
 
-        [JsonProperty("maximum_combo")]
+        [JsonPropertyName("maximum_combo")]
         public long MaximumCombo { get; set; }
 
-        [JsonProperty("replays_watched_by_others")]
+        [JsonPropertyName("replays_watched_by_others")]
         public long ReplaysWatchedByOthers { get; set; }
 
-        [JsonProperty("is_ranked")]
+        [JsonPropertyName("is_ranked")]
         public bool IsRanked { get; set; }
 
-        [JsonProperty("grade_counts")]
+        [JsonPropertyName("grade_counts")]
         public UserGradeCounts GradeCounts { get; set; }
 
-        [JsonProperty("country_rank", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("country_rank")]
         public long CountryRank { get; set; }
 
-        [JsonProperty("rank")]
+        [JsonPropertyName("rank")]
         public UserRank Rank { get; set; }
     }
 
     public class UserGradeCounts
     {
-        [JsonProperty("ss", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("ss")]
         public int SS { get; set; }
 
-        [JsonProperty("ssh", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("ssh")]
         public int SSH { get; set; }
 
-        [JsonProperty("s", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("s")]
         public int S { get; set; }
 
-        [JsonProperty("sh", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("sh")]
         public int SH { get; set; }
 
-        [JsonProperty("a", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("a")]
         public int A { get; set; }
     }
 
     public class UserGroup
     {
-        [JsonProperty("colour", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("colour")]
         public string Color { get; set; }
 
-        [JsonProperty("description", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("description")]
         public string Description { get; set; }
 
-        [JsonProperty("has_playmodes")]
+        [JsonPropertyName("has_playmodes")]
         public bool HasModes { get; set; }
 
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public uint Id { get; set; }
 
-        [JsonProperty("identifier")]
+        [JsonPropertyName("identifier")]
         public string Identifier { get; set; }
 
-        [JsonProperty("is_probationary")]
+        [JsonPropertyName("is_probationary")]
         public bool IsProbationary { get; set; }
 
-        [JsonProperty("playmodes", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("playmodes")]
         public Mode[]? Modes { get; set; }
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonProperty("short_name")]
+        [JsonPropertyName("short_name")]
         public string ShortName { get; set; }
     }
     public class UserLevel
     {
-        [JsonProperty("current")]
+        [JsonPropertyName("current")]
         public int Current { get; set; }
 
-        [JsonProperty("progress")]
+        [JsonPropertyName("progress")]
         public int Progress { get; set; }
     }
 
     public class MonthlyCount
     {
-        [JsonProperty("start_date")]
+        [JsonPropertyName("start_date")]
         public string start_date { get; set; }
 
-        [JsonProperty("count")]
+        [JsonPropertyName("count")]
         public int count { get; set; }
     }
 
     public class UserRank
     {
-        [JsonProperty("country", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("country")]
         public int Country { get; set; }
     }
 
     public class UserAchievement
     {
-        [JsonProperty("achieved_at")]
+        [JsonPropertyName("achieved_at")]
         public DateTimeOffset AchievedAt { get; set; }
 
-        [JsonProperty("achievement_id")]
+        [JsonPropertyName("achievement_id")]
         public long AchievementId { get; set; }
     }
 
     public class UserBadge
     {
-        [JsonProperty("awarded_at")]
+        [JsonPropertyName("awarded_at")]
         public DateTimeOffset AwardedAt { get; set; }
 
-        [JsonProperty("description")]
+        [JsonPropertyName("description")]
         public string Description { get; set; }
 
-        [JsonProperty("image_url")]
+        [JsonPropertyName("image_url")]
         public Uri ImageUrl { get; set; }
 
-        [JsonProperty("url")]
+        [JsonPropertyName("url")]
         public Uri Url { get; set; }
     }
 
     public class UserAccountHistory
     {
-        [JsonProperty("id", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("id")]
         public uint? Id { get; set; }
 
-        [JsonProperty("timestamp")]
+        [JsonPropertyName("timestamp")]
         public DateTimeOffset Time { get; set; }
 
-        [JsonProperty("description", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("description")]
         public string? Description { get; set; }
 
-        [JsonProperty("type")]
-        [JsonConverter(typeof(JsonEnumConverter))]
+        [JsonPropertyName("type")]
         public HistoryType HistoryType { get; set; }
 
-        [JsonProperty("length")]
+        [JsonPropertyName("length")]
         public uint Seconds { get; set; }
 
-        [JsonProperty("permanent")]
+        [JsonPropertyName("permanent")]
         public bool Permanent { get; set; }
     }
 
+    [JsonConverter(typeof(JsonStringEnumConverter<HistoryType>))]
     public enum HistoryType
     {
-        [Description("note")]
+        [JsonStringEnumMemberName("note")]
         Note,
 
-        [Description("restriction")]
+        [JsonStringEnumMemberName("restriction")]
         Restriction,
 
-        [Description("tournament_ban")]
+        [JsonStringEnumMemberName("tournament_ban")]
         TournamentBan,
 
-        [Description("silence")]
+        [JsonStringEnumMemberName("silence")]
         Silence,
     }
 }

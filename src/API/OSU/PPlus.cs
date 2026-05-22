@@ -1,4 +1,4 @@
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 using System.Net;
 using KanonBot.Serializer;
 using System.IO;
@@ -49,7 +49,7 @@ namespace KanonBot.API.OSU
                         .SetQueryParam("clientSecret", config.osu?.pppClientSecret)
                         .PostAsync();
 
-                    var body = await result.GetJsonAsync<JObject>();
+                    var body = await result.GetJsonAsync<JsonObject>();
                     
                     if (body["data"] != null)
                     {
@@ -140,7 +140,7 @@ namespace KanonBot.API.OSU
                         return null;
                     }
 
-                    var s = await response.GetJsonAsync<JObject>();
+                    var s = await response.GetJsonAsync<JsonObject>();
                     var data = s["data"]?.ToObject<Models.PPlusData.UserDataNext>();
                     return data;
                 }
@@ -167,7 +167,7 @@ namespace KanonBot.API.OSU
                         return null;
                     }
 
-                    var s = await response.GetJsonAsync<JObject>();
+                    var s = await response.GetJsonAsync<JsonObject>();
                     var data = s["data"]?.ToObject<Models.PPlusData.UserDataNext>();
                     return data;
                 }

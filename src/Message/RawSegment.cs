@@ -1,5 +1,5 @@
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 
 namespace KanonBot.Message;
 
@@ -7,7 +7,7 @@ public record RawSegment(string type, Object value) : IMsgSegment
 {
     public string Build() => value switch
     {
-        JObject j => $"<raw;{type}={j.ToString(Formatting.None)}>",
+        JsonObject j => $"<raw;{type}={j.ToJsonString()}>",
         _ => $"<raw;{type}={value}>",
     };
 

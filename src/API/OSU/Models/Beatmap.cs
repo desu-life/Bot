@@ -1,8 +1,7 @@
 #pragma warning disable CS8618 // 非null 字段未初始化
 using KanonBot.Serializer;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NullValueHandling = Newtonsoft.Json.NullValueHandling;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 using System.ComponentModel;
 
 namespace KanonBot.API.OSU;
@@ -11,145 +10,143 @@ public partial class Models
 {
     public class BeatmapList {
 
-        [JsonProperty(PropertyName = "beatmaps")]
+        [JsonPropertyName("beatmaps")]
         public Beatmap[] Beatmaps { get; set; }
     }
 
     public class Beatmap
     {
-        [JsonProperty(PropertyName = "beatmapset_id")]
+        [JsonPropertyName("beatmapset_id")]
         public long BeatmapsetId { get; set; }
 
-        [JsonProperty(PropertyName = "difficulty_rating")]
+        [JsonPropertyName("difficulty_rating")]
         public double DifficultyRating { get; set; }
 
-        [JsonProperty(PropertyName = "id")]
+        [JsonPropertyName("id")]
         public long BeatmapId { get; set; }
 
-        [JsonProperty(PropertyName = "mode")]
-        [JsonConverter(typeof(JsonEnumConverter))]
+        [JsonPropertyName("mode")]
         public Mode Mode { get; set; }
 
-        [JsonProperty(PropertyName = "status")]
-        [JsonConverter(typeof(JsonEnumConverter))]
+        [JsonPropertyName("status")]
         public Status Status { get; set; }
 
-        [JsonProperty(PropertyName = "total_length")]
+        [JsonPropertyName("total_length")]
         public uint TotalLength { get; set; }
 
-        [JsonProperty(PropertyName = "user_id")]
+        [JsonPropertyName("user_id")]
         public long UserId { get; set; }
 
-        [JsonProperty(PropertyName = "version")]
+        [JsonPropertyName("version")]
         public string Version { get; set; }
 
         // Accuracy = OD
 
-        [JsonProperty(PropertyName = "accuracy")]
+        [JsonPropertyName("accuracy")]
         public double OD { get; set; }
 
-        [JsonProperty(PropertyName = "ar")]
+        [JsonPropertyName("ar")]
         public double AR { get; set; }
 
-        [JsonProperty(PropertyName = "bpm", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("bpm")]
         public double? BPM { get; set; }
 
-        [JsonProperty(PropertyName = "convert")]
+        [JsonPropertyName("convert")]
         public bool Convert { get; set; }
 
-        [JsonProperty(PropertyName = "count_circles")]
+        [JsonPropertyName("count_circles")]
         public long CountCircles { get; set; }
 
-        [JsonProperty(PropertyName = "count_sliders")]
+        [JsonPropertyName("count_sliders")]
         public long CountSliders { get; set; }
 
-        [JsonProperty(PropertyName = "count_spinners")]
+        [JsonPropertyName("count_spinners")]
         public long CountSpinners { get; set; }
 
-        [JsonProperty(PropertyName = "cs")]
+        [JsonPropertyName("cs")]
         public double CS { get; set; }
 
-        [JsonProperty(PropertyName = "deleted_at", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("deleted_at")]
         public DateTimeOffset? DeletedAt { get; set; }
 
-        [JsonProperty(PropertyName = "drain")]
+        [JsonPropertyName("drain")]
         public double HPDrain { get; set; }
 
-        [JsonProperty(PropertyName = "hit_length")]
+        [JsonPropertyName("hit_length")]
         public long HitLength { get; set; }
 
-        [JsonProperty(PropertyName = "is_scoreable")]
+        [JsonPropertyName("is_scoreable")]
         public bool IsScoreable { get; set; }
 
-        [JsonProperty(PropertyName = "last_updated")]
+        [JsonPropertyName("last_updated")]
         public DateTimeOffset LastUpdated { get; set; }
 
-        [JsonProperty(PropertyName = "mode_int")]
+        [JsonPropertyName("mode_int")]
         public int ModeInt { get; set; }
 
-        [JsonProperty(PropertyName = "passcount")]
+        [JsonPropertyName("passcount")]
         public long Passcount { get; set; }
 
-        [JsonProperty(PropertyName = "playcount")]
+        [JsonPropertyName("playcount")]
         public long Playcount { get; set; }
 
-        [JsonProperty(PropertyName = "ranked")]
+        [JsonPropertyName("ranked")]
         public long Ranked { get; set; }
 
-        [JsonProperty(PropertyName = "url")]
+        [JsonPropertyName("url")]
         public Uri Url { get; set; }
 
-        [JsonProperty(PropertyName = "checksum", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("checksum")]
         public string? Checksum { get; set; }
 
-        [JsonProperty(PropertyName = "beatmapset", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("beatmapset")]
         public Beatmapset? Beatmapset { get; set; }
 
-        [JsonProperty(PropertyName = "failtimes")]
+        [JsonPropertyName("failtimes")]
         public BeatmapFailtimes Failtimes { get; set; }
 
-        [JsonProperty(PropertyName = "max_combo", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("max_combo")]
         public long? MaxCombo { get; set; }
     }
 
 
     public class BeatmapFailtimes
     {
-        [JsonProperty(PropertyName = "fail", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("fail")]
         public int[]? Fail { get; set; }
 
-        [JsonProperty(PropertyName = "exit", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("exit")]
         public int[]? Exit { get; set; }
     }
 
     [DefaultValue(Unknown)]
+    [JsonConverter(typeof(JsonStringEnumConverter<Status>))]
     public enum Status
     {
         /// <summary>
         /// 未知，在转换错误时为此值
         /// </summary>
-        [Description("")]
         Unknown,
 
-        [Description("graveyard")]
+        [JsonStringEnumMemberName("graveyard")]
         Graveyard,
 
-        [Description("wip")]
+        [JsonStringEnumMemberName("wip")]
         WIP,
 
-        [Description("pending")]
+        [JsonStringEnumMemberName("pending")]
         Pending,
 
-        [Description("ranked")]
+        [JsonStringEnumMemberName("ranked")]
         Ranked,
 
-        [Description("approved")]
+        [JsonStringEnumMemberName("approved")]
         Approved,
 
-        [Description("qualified")]
+        [JsonStringEnumMemberName("qualified")]
         Qualified,
 
-        [Description("loved")]
+        [JsonStringEnumMemberName("loved")]
         Loved
     }
 }

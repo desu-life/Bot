@@ -1,9 +1,8 @@
 #pragma warning disable CS8618 // 非null 字段未初始化
 using KanonBot.OsuPerformance;
 using KanonBot.Serializer;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NullValueHandling = Newtonsoft.Json.NullValueHandling;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 
 namespace KanonBot.API.OSU;
 
@@ -11,55 +10,55 @@ public partial class Models
 {
     public class ScoreV1
     {
-        [JsonProperty("beatmap_id")]
+        [JsonPropertyName("beatmap_id")]
         public long BeatmapId { get; set; }
 
-        [JsonProperty("score_id")]
+        [JsonPropertyName("score_id")]
         public long ScoreId { get; set; }
 
-        [JsonProperty("score")]
+        [JsonPropertyName("score")]
         public uint Score { get; set; }
 
-        [JsonProperty("maxcombo")]
+        [JsonPropertyName("maxcombo")]
         public uint MaxCombo { get; set; }
 
-        [JsonProperty("count50")]
+        [JsonPropertyName("count50")]
         public uint Count50 { get; set; }
 
-        [JsonProperty("count100")]
+        [JsonPropertyName("count100")]
         public uint Count100 { get; set; }
 
-        [JsonProperty("count300")]
+        [JsonPropertyName("count300")]
         public uint Count300 { get; set; }
 
-        [JsonProperty("countmiss")]
+        [JsonPropertyName("countmiss")]
         public uint CountMiss { get; set; }
 
-        [JsonProperty("countkatu")]
+        [JsonPropertyName("countkatu")]
         public uint CountKatu { get; set; }
 
-        [JsonProperty("countgeki")]
+        [JsonPropertyName("countgeki")]
         public uint CountGeki { get; set; }
 
-        [JsonProperty("perfect")]
+        [JsonPropertyName("perfect")]
         public short Perfect { get; set; }
 
-        [JsonProperty("enabled_mods")]
+        [JsonPropertyName("enabled_mods")]
         public uint EnabledMods { get; set; }
 
-        [JsonProperty("user_id")]
+        [JsonPropertyName("user_id")]
         public long UserId { get; set; }
 
-        [JsonProperty("date")]
+        [JsonPropertyName("date")]
         public DateTimeOffset Date { get; set; }
 
-        [JsonProperty("rank")]
+        [JsonPropertyName("rank")]
         public string Rank { get; set; }
 
-        [JsonProperty("pp")]
+        [JsonPropertyName("pp")]
         public double PP { get; set; }
 
-        [JsonProperty("replay_available")]
+        [JsonPropertyName("replay_available")]
         public long ReplayAvailable { get; set; }
 
         public ScoreLazer ToLazerScore(Mode mode)
@@ -108,124 +107,71 @@ public partial class Models
 
     public class UserV1
     {
-        [JsonProperty("user_id")]
-        [JsonConverter(typeof(ParseStringConverter))]
+        [JsonPropertyName("user_id")]
         public long UserId { get; set; }
 
-        [JsonProperty("username")]
+        [JsonPropertyName("username")]
         public string Username { get; set; }
 
-        [JsonProperty("join_date")]
+        [JsonPropertyName("join_date")]
         public DateTimeOffset JoinDate { get; set; }
 
-        [JsonProperty("count300")]
-        [JsonConverter(typeof(ParseStringConverter))]
+        [JsonPropertyName("count300")]
         public long Count300 { get; set; }
 
-        [JsonProperty("count100")]
-        [JsonConverter(typeof(ParseStringConverter))]
+        [JsonPropertyName("count100")]
         public long Count100 { get; set; }
 
-        [JsonProperty("count50")]
-        [JsonConverter(typeof(ParseStringConverter))]
+        [JsonPropertyName("count50")]
         public long Count50 { get; set; }
 
-        [JsonProperty("playcount")]
-        [JsonConverter(typeof(ParseStringConverter))]
+        [JsonPropertyName("playcount")]
         public long Playcount { get; set; }
 
-        [JsonProperty("ranked_score")]
+        [JsonPropertyName("ranked_score")]
         public string RankedScore { get; set; }
 
-        [JsonProperty("total_score")]
+        [JsonPropertyName("total_score")]
         public string TotalScore { get; set; }
 
-        [JsonProperty("pp_rank")]
-        [JsonConverter(typeof(ParseStringConverter))]
+        [JsonPropertyName("pp_rank")]
         public long PpRank { get; set; }
 
-        [JsonProperty("level")]
+        [JsonPropertyName("level")]
         public string Level { get; set; }
 
-        [JsonProperty("pp_raw")]
+        [JsonPropertyName("pp_raw")]
         public string PpRaw { get; set; }
 
-        [JsonProperty("accuracy")]
+        [JsonPropertyName("accuracy")]
         public string Accuracy { get; set; }
 
-        [JsonProperty("count_rank_ss")]
-        [JsonConverter(typeof(ParseStringConverter))]
+        [JsonPropertyName("count_rank_ss")]
         public long CountRankSs { get; set; }
 
-        [JsonProperty("count_rank_ssh")]
-        [JsonConverter(typeof(ParseStringConverter))]
+        [JsonPropertyName("count_rank_ssh")]
         public long CountRankSsh { get; set; }
 
-        [JsonProperty("count_rank_s")]
-        [JsonConverter(typeof(ParseStringConverter))]
+        [JsonPropertyName("count_rank_s")]
         public long CountRankS { get; set; }
 
-        [JsonProperty("count_rank_sh")]
-        [JsonConverter(typeof(ParseStringConverter))]
+        [JsonPropertyName("count_rank_sh")]
         public long CountRankSh { get; set; }
 
-        [JsonProperty("count_rank_a")]
-        [JsonConverter(typeof(ParseStringConverter))]
+        [JsonPropertyName("count_rank_a")]
         public long CountRankA { get; set; }
 
-        [JsonProperty("country")]
+        [JsonPropertyName("country")]
         public string Country { get; set; }
 
-        [JsonProperty("total_seconds_played")]
-        [JsonConverter(typeof(ParseStringConverter))]
+        [JsonPropertyName("total_seconds_played")]
         public long TotalSecondsPlayed { get; set; }
 
-        [JsonProperty("pp_country_rank")]
-        [JsonConverter(typeof(ParseStringConverter))]
+        [JsonPropertyName("pp_country_rank")]
         public long PpCountryRank { get; set; }
 
-        [JsonProperty("events")]
+        [JsonPropertyName("events")]
         public object[] Events { get; set; }
 
     }
-    internal class ParseStringConverter : JsonConverter
-    {
-        public override bool CanConvert(Type t) => t == typeof(long) || t == typeof(long?);
-
-        public override object? ReadJson(
-            JsonReader reader,
-            Type t,
-            object? existingValue,
-            JsonSerializer serializer
-        )
-        {
-            if (reader.TokenType == JsonToken.Null)
-                return null;
-            var value = serializer.Deserialize<string>(reader);
-            if (Int64.TryParse(value, out long l))
-            {
-                return l;
-            }
-            throw new Exception("Cannot unmarshal type long");
-        }
-
-        public override void WriteJson(
-            JsonWriter writer,
-            object? untypedValue,
-            JsonSerializer serializer
-        )
-        {
-            if (untypedValue == null)
-            {
-                serializer.Serialize(writer, null);
-                return;
-            }
-            var value = (long)untypedValue;
-            serializer.Serialize(writer, value.ToString());
-            return;
-        }
-
-        public static readonly ParseStringConverter Singleton = new();
-    }
-
 }

@@ -2,23 +2,22 @@
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using KanonBot.Serializer;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NullValueHandling = Newtonsoft.Json.NullValueHandling;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 
 namespace KanonBot.API.PPYSB;
 
 public partial class Models
 {
     public class ApiResponse {
-        [JsonProperty("status")]
+        [JsonPropertyName("status")]
         public string Status { get; set; }
     }
     public class ApiResponseV2 {
-        [JsonProperty("status")]
+        [JsonPropertyName("status")]
         public string Status { get; set; }
         
-        [JsonProperty("meta")]
+        [JsonPropertyName("meta")]
         public Dictionary<string, object> Meta { get; set; }
     }
    

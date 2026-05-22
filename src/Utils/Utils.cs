@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.IO;
 using System.Text.RegularExpressions;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 using SixLabors.ImageSharp;
 using FuzzySharp;
 using KanonBot.API.OSU;

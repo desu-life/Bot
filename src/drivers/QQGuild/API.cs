@@ -1,4 +1,4 @@
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 
 namespace KanonBot.Drivers;
 public partial class QQGuild
@@ -23,7 +23,7 @@ public partial class QQGuild
 
         async public Task<string> GetWebsocketUrl()
         {
-            return (await this.http().AppendPathSegments("gateway", "bot").GetJsonAsync<JObject>())["url"]!.ToString();
+            return (await this.http().AppendPathSegments("gateway", "bot").GetJsonAsync<JsonObject>())["url"]!.ToString();
         }
 
         async public Task<Models.MessageData> SendMessage(string ChannelID, Models.SendMessageData data)

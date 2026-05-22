@@ -1,5 +1,5 @@
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 using KanonBot.Message;
 using KanonBot.API;
 using KanonBot.Serializer;
@@ -18,32 +18,32 @@ public partial class OneBot
                     msg switch {
                         TextSegment text => new Models.Segment {
                             msgType = Enums.SegmentType.Text,
-                            rawData = new JObject { { "text", text.value } }
+                            rawData = new JsonObject { { "text", text.value } }
                         },
                         ImageSegment image => new Models.Segment {
                             msgType = Enums.SegmentType.Image,
                             rawData = image.t switch {
-                                ImageSegment.Type.Base64 => new JObject { { "file", $"base64://{image.value}" } },
-                                ImageSegment.Type.Url => new JObject { { "file", image.value } },
-                                ImageSegment.Type.File => new JObject { { "file", Ali.PutFile(Utils.LoadFile2Byte(image.value).Result, "jpg") } }, // 这里还有缺陷，如果图片上传失败的话，还是会尝试发送
+                                ImageSegment.Type.Base64 => new JsonObject { { "file", $"base64://{image.value}" } },
+                                ImageSegment.Type.Url => new JsonObject { { "file", image.value } },
+                                ImageSegment.Type.File => new JsonObject { { "file", Ali.PutFile(Utils.LoadFile2Byte(image.value).Result, "jpg") } }, // 这里还有缺陷，如果图片上传失败的话，还是会尝试发送
                                 _ => throw new ArgumentException("不支持的图片类型")
                             }
                         },
                         AtSegment at => at.platform switch {
                             Platform.OneBot => new Models.Segment {
                                 msgType = Enums.SegmentType.At,
-                                rawData = new JObject { { "qq", at.value } }
+                                rawData = new JsonObject { { "qq", at.value } }
                             },
                             _ => throw new ArgumentException("不支持的平台类型")
                         },
                         EmojiSegment face => new Models.Segment {
                             msgType = Enums.SegmentType.Face,
-                            rawData = new JObject { { "id", face.value } }
+                            rawData = new JsonObject { { "id", face.value } }
                         },
                         // 收到未知消息就转换为纯文本
                         _ => new Models.Segment {
                             msgType = Enums.SegmentType.Text,
-                            rawData = new JObject { { "text", msg.Build() } }
+                            rawData = new JsonObject { { "text", msg.Build() } }
                         }
                     }
                 );

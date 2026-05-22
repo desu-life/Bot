@@ -2,26 +2,24 @@
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using KanonBot.Serializer;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
-using NullValueHandling = Newtonsoft.Json.NullValueHandling;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 
 namespace KanonBot.API.PPYSB;
 
 public partial class Models
 {
     public class UserResponse : ApiResponse {
-        [JsonProperty("player")]
+        [JsonPropertyName("player")]
         public User Player { get; set; }
     }
 
     public class User {
 
-        [JsonProperty("info")]
+        [JsonPropertyName("info")]
         public UserInfo Info { get; set; }
 
-        [JsonProperty("stats")]
+        [JsonPropertyName("stats")]
         public UserStats Stats { get; set; }
 
         [JsonIgnore]
@@ -29,136 +27,136 @@ public partial class Models
     }
 
     public class UserInfo {
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public long Id { get; set; }
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonProperty("safe_name")]
+        [JsonPropertyName("safe_name")]
         public string SafeName { get; set; }
 
-        [JsonProperty("priv")]
+        [JsonPropertyName("priv")]
         public Privileges Privileges { get; set; }
 
-        [JsonProperty("country")]
+        [JsonPropertyName("country")]
         public string Country { get; set; }
 
-        [JsonProperty("silence_end")]
+        [JsonPropertyName("silence_end")]
         public uint SilenceEnd { get; set; }
 
-        [JsonProperty("donor_end")]
+        [JsonPropertyName("donor_end")]
         public uint DonorEnd { get; set; }
 
-        [JsonProperty("creation_time")]
-        [JsonConverter(typeof(UnixDateTimeConverter))]
+        [JsonPropertyName("creation_time")]
+        [JsonConverter(typeof(FlexibleDateTimeOffsetConverter))]
         public DateTimeOffset CreationTime { get; set; }
 
-        [JsonProperty("latest_activity")]
-        [JsonConverter(typeof(UnixDateTimeConverter))]
+        [JsonPropertyName("latest_activity")]
+        [JsonConverter(typeof(FlexibleDateTimeOffsetConverter))]
         public DateTimeOffset LatestActivity { get; set; }
 
-        [JsonProperty("clan_id")]
+        [JsonPropertyName("clan_id")]
         public uint ClanId { get; set; }
 
-        [JsonProperty("clan_priv")]
+        [JsonPropertyName("clan_priv")]
         public uint ClanPrivileges { get; set; }
 
-        [JsonProperty("preferred_mode")]
+        [JsonPropertyName("preferred_mode")]
         public Mode PreferredMode { get; set; }
 
-        [JsonProperty("play_style")]
+        [JsonPropertyName("play_style")]
         public uint PlayStyle { get; set; }
 
-        [JsonProperty("custom_badge_name")]
+        [JsonPropertyName("custom_badge_name")]
         public string? CustomBadgeName { get; set; }
 
-        [JsonProperty("custom_badge_icon")]
+        [JsonPropertyName("custom_badge_icon")]
         public string? CustomBadgeIcon { get; set; }
 
-        [JsonProperty("userpage_content")]
+        [JsonPropertyName("userpage_content")]
         public string? UserPageContent { get; set; }
     }
 
     public class UserStats {
-        [JsonProperty("0")]
+        [JsonPropertyName("0")]
         public UserStat? StatOsu { get; set; }
 
-        [JsonProperty("1")]
+        [JsonPropertyName("1")]
         public UserStat? StatTaiko { get; set; }
 
-        [JsonProperty("2")]
+        [JsonPropertyName("2")]
         public UserStat? StatFruits { get; set; }
 
-        [JsonProperty("3")]
+        [JsonPropertyName("3")]
         public UserStat? StatMania { get; set; }
 
-        [JsonProperty("4")]
+        [JsonPropertyName("4")]
         public UserStat? StatRelaxOsu { get; set; }
 
-        [JsonProperty("5")]
+        [JsonPropertyName("5")]
         public UserStat? StatRelaxTaiko { get; set; }
 
-        [JsonProperty("6")]
+        [JsonPropertyName("6")]
         public UserStat? StatRelaxFruits { get; set; }
 
-        [JsonProperty("8")]
+        [JsonPropertyName("8")]
         public UserStat? StatAutoPilotOsu { get; set; }
     }
     public class UserStat {
 
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public uint Id { get; set; }
 
-        [JsonProperty("mode")]
+        [JsonPropertyName("mode")]
         public Mode Mode { get; set; }
 
-        [JsonProperty("tscore")]
+        [JsonPropertyName("tscore")]
         public long TotalScore { get; set; }
 
-        [JsonProperty("rscore")]
+        [JsonPropertyName("rscore")]
         public long RankedScore { get; set; }
 
-        [JsonProperty("pp")]
+        [JsonPropertyName("pp")]
         public uint PP { get; set; }
 
-        [JsonProperty("plays")]
+        [JsonPropertyName("plays")]
         public uint Plays { get; set; }
 
-        [JsonProperty("playtime")]
+        [JsonPropertyName("playtime")]
         public uint PlayTime { get; set; }
 
-        [JsonProperty("acc")]
+        [JsonPropertyName("acc")]
         public double Accuracy { get; set; }
 
-        [JsonProperty("max_combo")]
+        [JsonPropertyName("max_combo")]
         public uint MaxCombo { get; set; }
 
-        [JsonProperty("total_hits")]
+        [JsonPropertyName("total_hits")]
         public long TotalHits { get; set; }
 
-        [JsonProperty("replay_views")]
+        [JsonPropertyName("replay_views")]
         public uint ReplayViews { get; set; }
 
-        [JsonProperty("xh_count")]
+        [JsonPropertyName("xh_count")]
         public int XhCount { get; set; }
 
-        [JsonProperty("x_count")]
+        [JsonPropertyName("x_count")]
         public int XCount { get; set; }
 
-        [JsonProperty("sh_count")]
+        [JsonPropertyName("sh_count")]
         public int ShCount { get; set; }
 
-        [JsonProperty("s_count")]
+        [JsonPropertyName("s_count")]
         public int SCount { get; set; }
 
-        [JsonProperty("a_count")]
+        [JsonPropertyName("a_count")]
         public int ACount { get; set; }
 
-        [JsonProperty("rank")]
+        [JsonPropertyName("rank")]
         public long Rank { get; set; }
 
-        [JsonProperty("country_rank")]
+        [JsonPropertyName("country_rank")]
         public long CountryRank { get; set; }
     }
 }

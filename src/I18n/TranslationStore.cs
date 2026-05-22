@@ -1,7 +1,8 @@
 using System.Collections.Concurrent;
 using System.IO;
 using System.Reflection;
-using Newtonsoft.Json;
+using System.Text.Json;
+using KanonBot.Serializer;
 
 namespace KanonBot.I18n;
 
@@ -37,7 +38,7 @@ public class TranslationStore
 
             using var reader = new StreamReader(stream);
             var json = reader.ReadToEnd();
-            var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+            var dict = Json.Deserialize<Dictionary<string, string>>(json);
             if (dict is not null)
             {
                 _translations[locale.Value] = dict;
@@ -59,7 +60,7 @@ public class TranslationStore
             var fileName = Path.GetFileNameWithoutExtension(file);
             var locale = LocaleExtensions.ParseLocale(fileName);
             var json = File.ReadAllText(file);
-            var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+            var dict = Json.Deserialize<Dictionary<string, string>>(json);
             if (dict is not null)
             {
                 _translations[locale] = dict;

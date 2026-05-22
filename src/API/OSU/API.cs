@@ -1,5 +1,5 @@
 // Flurl.Http.FlurlHttpTimeoutException
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 using System.Net;
 using KanonBot.Serializer;
 using System.IO;
@@ -43,7 +43,7 @@ namespace KanonBot.API.OSU
 
         async private static Task<bool> GetToken()
         {
-            JObject j = new()
+            JsonObject j = new()
             {
                 { "grant_type", "client_credentials" },
                 { "client_id", config.osu?.clientId },
@@ -53,12 +53,12 @@ namespace KanonBot.API.OSU
             };
 
             var result = await "https://osu.ppy.sh/oauth/token".PostJsonAsync(j);
-            var body = await result.GetJsonAsync<JObject>();
+            var body = await result.GetJsonAsync<JsonObject>();
             await tokenRefreshLock.WaitAsync();
             try
             {
-                Token = ((string?)body["access_token"]) ?? "";
-                TokenExpireTime = DateTimeOffset.Now.ToUnixTimeSeconds() + long.Parse(((string?)body["expires_in"]) ?? "0");
+                Token = body["access_token"]?.GetValue<string>() ?? "";
+                TokenExpireTime = DateTimeOffset.Now.ToUnixTimeSeconds() + (body["expires_in"]?.GetValue<long>() ?? 0);
                 return true;
             }
             catch
@@ -324,7 +324,7 @@ namespace KanonBot.API.OSU
             if (res.StatusCode == 404)
                 return null;
             else
-                return (await res.GetJsonAsync<JObject>())["scores"]!.ToObject<Models.ScoreLazer[]>();
+                return (await res.GetJsonAsync<JsonObject>())["scores"]!.ToObject<Models.ScoreLazer[]>();
         }
 
         // 通过osuv1 api osu uid获取用户信息
@@ -377,9 +377,9 @@ namespace KanonBot.API.OSU
         async public static Task<Models.BeatmapAttributes?> GetBeatmapAttributes(long bid, string[] mods, Mode mode = Mode.OSU)
         {
             await CheckToken();
-            JObject j = new()
+            JsonObject j = new()
             {
-                { "mods", new JArray(mods) },
+                { "mods", new JsonArray(mods.Select(m => (JsonNode)JsonValue.Create(m)!).ToArray()) },
                 { "ruleset", mode.ToStr() },
             };
 
@@ -393,7 +393,7 @@ namespace KanonBot.API.OSU
             }
             else
             {
-                var body = await res.GetJsonAsync<JObject>();
+                var body = await res.GetJsonAsync<JsonObject>();
                 var beatmap = body["attributes"]!.ToObject<Models.BeatmapAttributes>()!;
                 beatmap.Mode = mode;
                 return beatmap;
@@ -421,9 +421,9 @@ namespace KanonBot.API.OSU
             {
                 // 获取谱面信息
                 var apiUrl = $"https://api.sayobot.cn/v2/beatmapinfo?K={sid}";
-                var response = await apiUrl.GetJsonAsync<JObject>();
+                var response = await apiUrl.GetJsonAsync<JsonObject>();
 
-                if (response?.SelectToken("data.bid_data") is not JArray bidDataArray) return null;
+                if (response?.SelectToken("data.bid_data") is not JsonArray bidDataArray) return null;
 
                 // 查找目标谱面并获取背景图片文件名
                 foreach (var beatmap in bidDataArray)
@@ -452,7 +452,7 @@ namespace KanonBot.API.OSU
         }
 
         // 搜索用户数量 未使用
-        async public static Task<JObject?> SearchUser(string userName)
+        async public static Task<JsonObject?> SearchUser(string userName)
         {
             var body = await http()
                 .AppendPathSegment("search")
@@ -461,14 +461,14 @@ namespace KanonBot.API.OSU
                     mode = "user",
                     query = userName
                 })
-                .GetJsonAsync<JObject>();
-            return body["user"] as JObject;
+                .GetJsonAsync<JsonObject>();
+            return body["user"] as JsonObject;
         }
      
         // 获取pp+数据
         async public static Task<Models.PPlusData> GetUserPlusData(long uid)
         {
-            var res = await $"https://syrin.me/pp+/api/user/{uid}/".GetJsonAsync<JObject>();
+            var res = await $"https://syrin.me/pp+/api/user/{uid}/".GetJsonAsync<JsonObject>();
             var data = new Models.PPlusData()
             {
                 User = res["user_data"]!.ToObject<Models.PPlusData.UserData>()!,
@@ -479,7 +479,7 @@ namespace KanonBot.API.OSU
 
         async public static Task<Models.PPlusData> GetUserPlusData(string username)
         {
-            var res = await $"https://syrin.me/pp+/api/user/{username}/".GetJsonAsync<JObject>();
+            var res = await $"https://syrin.me/pp+/api/user/{username}/".GetJsonAsync<JsonObject>();
             var data = new Models.PPlusData() {
                 User = res["user_data"]!.ToObject<Models.PPlusData.UserData>()!,
                 Performances = res["user_performances"]!["total"]!.ToObject<Models.PPlusData.UserPerformances[]>()

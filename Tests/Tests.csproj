@@ -26,4 +26,8 @@
 		<ProjectReference Include="../src/KanonBot.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="TestFiles\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
