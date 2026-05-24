@@ -54,7 +54,14 @@ public class Target
         using var ms = new System.IO.MemoryStream();
         img.Save(ms, encoder);
         var base64 = Convert.ToBase64String(ms.ToArray());
-        return this.reply(new Msg.Chain().image(base64, Msg.ImageSegment.Type.Base64));
+        return reply(new Msg.Chain().image(base64, Msg.ImageSegment.Type.Base64));
+    }
+
+    public Task<bool> reply(Takumi.Render.UniFFI.RenderedImage img)
+    {
+        using var stream = new System.IO.MemoryStream(img.Bytes, writable: false);
+        var base64 = Convert.ToBase64String(stream.ToArray());
+        return reply(new Msg.Chain().image(base64, Msg.ImageSegment.Type.Base64));
     }
 
     public async Task<bool> reply(Msg.Chain msgChain)

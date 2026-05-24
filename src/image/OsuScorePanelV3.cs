@@ -64,7 +64,7 @@ namespace KanonBot.Image
                         $"./work/panelv2/icons/mode_icon/score/{data.scoreInfo.Mode.ToStr()}.png"
             );
             osuscoremode_icon.Mutate(x => x.Resize(110, 110));
-            var modeC = Utils.ForStarDifficulty(data.ppInfo.star);
+            var modeC = Utils.ForStarDifficulty(data.ppInfo!.star);
             osuscoremode_icon.Mutate(
                 x =>
                     x.ProcessPixelRowsAsVector4(row =>

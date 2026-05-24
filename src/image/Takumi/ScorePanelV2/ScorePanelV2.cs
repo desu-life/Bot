@@ -34,7 +34,7 @@ public static class ScoreV2
 
     private static readonly Renderer Renderer = CreateTemplateRenderer(workingRoot);
 
-    public static async Task<Img> DrawScore(ScorePanelData data)
+    public static async Task<RenderedImage> DrawScore(ScorePanelData data, ImageFormat format = ImageFormat.Jpeg)
     {
         ArgumentNullException.ThrowIfNull(data);
         ArgumentNullException.ThrowIfNull(data.ppInfo);
@@ -46,20 +46,17 @@ public static class ScoreV2
         var templatePath = IOPath.Combine(workingRoot, "templates", "ScorePanelV2", "index.jinja");
         var context = await BuildTemplateContext(data, workingRoot);
 
-        var rendered = Renderer.RenderTemplateFile(
+        return Renderer.RenderTemplateFile(
             templatePath,
             new RenderRequest
             {
                 ContextJson = JsonSerializer.Serialize(context, TemplateJsonOptions),
                 Viewport = new RenderSize(1950u, 1088u),
-                Format = ImageFormat.Png,
+                Format = format,
                 LoadLinkedStylesheets = true,
                 ResolveLocalAssets = true
             }
         );
-
-        using var stream = new MemoryStream(rendered.Bytes, writable: false);
-        return await Img.LoadAsync<Rgba32>(stream);
     }
 
     private static Renderer CreateTemplateRenderer(string workingRoot)

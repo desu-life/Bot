@@ -235,8 +235,8 @@ namespace KanonBot.Functions.OSUBot
                 UniversalCalculator.GetCalculatorKind(is_ppysb, special_version_pp)
             );
 
-            using var img = await Image.Takumi.ScoreV2.DrawScore(data);
-            await target.reply(img, new JpegEncoder());
+            var img = await Image.Takumi.ScoreV2.DrawScore(data);
+            await target.reply(img);
 
             // 缓存本来源查询
             HistoryBeatmapMapper.Map(target.source, scoreData.BeatmapId);

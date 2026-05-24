@@ -119,11 +119,16 @@ namespace KanonBot.Functions.OSUBot
                     UniversalCalculator.GetCalculatorKind(is_ppysb, special_version_pp)
                 );
 
-                using var img = dev_panel
-                    ? await Image.OsuScorePanelV3.Draw(data)
-                    : await Image.Takumi.ScoreV2.DrawScore(data);
-
-                await target.reply(img, new JpegEncoder());
+                if (dev_panel)
+                {
+                    using var img = await Image.OsuScorePanelV3.Draw(data);
+                    await target.reply(img, new JpegEncoder());
+                }
+                else
+                {
+                    var img = await Image.Takumi.ScoreV2.DrawScore(data);
+                    await target.reply(img);
+                }
 
                 // 缓存本来源查询
                 HistoryBeatmapMapper.Map(target.source, score.BeatmapId);
@@ -157,7 +162,7 @@ namespace KanonBot.Functions.OSUBot
                         .Client
                         .InsertOsuStandardBeatmapTechData(
                             score.Beatmap!.BeatmapId,
-                            data.ppInfo.star,
+                            data.ppInfo!.star,
                             (int)data.ppInfo.ppStats![0].total,
                             (int)data.ppInfo.ppStats![0].acc!,
                             (int)data.ppInfo.ppStats![0].speed!,

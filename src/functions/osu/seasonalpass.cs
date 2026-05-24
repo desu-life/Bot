@@ -33,7 +33,7 @@ namespace KanonBot.Functions.OSU
                     //pt基准值
                     double pt = 10.0;
                     //各难度区间加成
-                    if (score.ppInfo.star < 1 && score.ppInfo.star > 0)
+                    if (score.ppInfo!.star < 1 && score.ppInfo.star > 0)
                         multiply += 1.0;
                     else if (score.ppInfo.star < 2)
                         multiply += 1.1;

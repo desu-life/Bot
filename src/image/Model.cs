@@ -4,8 +4,8 @@ namespace KanonBot.Image;
 
 public class ScorePanelData
 {
+    public required OSU.Models.ScoreLazer scoreInfo;
     public OsuPerformance.PPInfo? ppInfo;
-    public OSU.Models.ScoreLazer? scoreInfo;
     public RosuPP.Mode mode;
     public string? server;
     public double? oldPP;

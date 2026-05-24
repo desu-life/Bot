@@ -265,8 +265,8 @@ namespace KanonBot.Functions.OSUBot
             data.scoreInfo.StartedAt = DateTime.UtcNow;
             data.scoreInfo.Score = 1000000;
 
-            using var img = await Image.Takumi.ScoreV2.DrawScore(data);
-            await target.reply(img, new JpegEncoder());
+            var img = await Image.Takumi.ScoreV2.DrawScore(data);
+            await target.reply(img);
 
             // 缓存本来源查询
             HistoryBeatmapMapper.Map(target.source, beatmap.BeatmapId);
