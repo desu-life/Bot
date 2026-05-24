@@ -1,16 +1,16 @@
-[submodule "rosu-pp-ffi"]
-	path = dependencies/rosu-pp-ffi
-	url = https://github.com/fantasyzhjk/rosu-pp-ffi
-[submodule "sb-pp-ffi"]
-	path = dependencies/sb-pp-ffi
-	url = https://github.com/fantasyzhjk/rosu-pp-ffi
-[submodule "OppaiSharp"]
-	path = dependencies/OppaiSharp
-	url = https://github.com/fantasyzhjk/OppaiSharp
-[submodule "osu"]
-	path = dependencies/osu
-	url = https://github.com/ppy/osu
-	branch = pp-dev
+[submodule "dependencies/rosu-pp-ffi"]
+    path = dependencies/rosu-pp-ffi
+    url = https://github.com/fantasyzhjk/rosu-pp-ffi
+[submodule "dependencies/sb-pp-ffi"]
+    path = dependencies/sb-pp-ffi
+    url = https://github.com/fantasyzhjk/sb-pp-ffi
+[submodule "dependencies/OppaiSharp"]
+    path = dependencies/OppaiSharp
+    url = https://github.com/fantasyzhjk/OppaiSharp
+[submodule "dependencies/osu"]
+    path = dependencies/osu
+    url = https://github.com/ppy/osu
+    branch = pp-dev
 [submodule "dependencies/takumi-html-ffi"]
-	path = dependencies/takumi-html-ffi
-	url = https://github.com/fantasyzhjk/takumi-html-ffi
+    path = dependencies/takumi-html-ffi
+    url = https://github.com/fantasyzhjk/takumi-html-ffi
