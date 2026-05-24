@@ -15,7 +15,7 @@
   
   {% set truncate_style = "" %}
   {% if max_width %}
-    {% set truncate_style = "max-width: " ~ max_width ~ "px; white-space: nowrap; overflow-x: hidden; overflow-x: clip; text-overflow: ellipsis;" %}
+    {% set truncate_style = "max-width: " ~ max_width ~ "px; white-space: nowrap; overflow-x: clip; text-overflow: ellipsis;" %}
   {% endif %}
 
   <div class="duo"
