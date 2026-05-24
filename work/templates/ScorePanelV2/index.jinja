@@ -1,0 +1,173 @@
+{% macro duo(text, x, baseline, size, color="#ffffff", anchor="left", weight="400", shadow_y=3, extra_class="", extra_style="") -%}
+  {% set anchor_style = "transform: translateY(-100%);" %}
+  {% if anchor == "center" %}
+    {% set anchor_style = "transform: translate(-50%, -100%);" %}
+  {% elif anchor == "right" %}
+    {% set anchor_style = "transform: translate(-100%, -100%);" %}
+  {% endif %}
+  {% set extra_class_style = "" %}
+  {% if extra_class == "headline" %}
+    {% set extra_class_style = "letter-spacing: -0.01em;" %}
+  {% endif %}
+  <div class="duo"
+    style="left: {{ x }}px; top: {{ baseline }}px; font-size: {{ size }}px; color: {{ color }}; --shadow-y: {{ shadow_y }}px; font-weight: {{ weight }}; font-family: 'Torus', 'HarmonyOS Sans', 'HarmonyOS Sans Naskh Arabic', sans-serif; {{ anchor_style }} {{ extra_class_style }} {{ extra_style }}">
+    {{ text }}
+  </div>
+{%- endmacro %}
+
+{% macro single(text, x, baseline, size, color="#ffffff", anchor="left", family="font-torus", weight="400", extra_class="", extra_style="") -%}
+  {% set anchor_style = "transform: translateY(-100%);" %}
+  {% if anchor == "center" %}
+    {% set anchor_style = "transform: translate(-50%, -100%);" %}
+  {% elif anchor == "right" %}
+    {% set anchor_style = "transform: translate(-100%, -100%);" %}
+  {% endif %}
+  <div class="single"
+    style="left: {{ x }}px; top: {{ baseline }}px; font-size: {{ size }}px; color: {{ color }}; font-weight: {{ weight }}; font-family: 'Torus', 'HarmonyOS Sans', 'HarmonyOS Sans Naskh Arabic', sans-serif; {{ anchor_style }} {{ extra_style }}">
+    {{ text }}
+  </div>
+{%- endmacro %}
+
+{% macro unit_pair(value, unit, x, baseline, size, value_color, unit_color, anchor="left", family="font-torus", weight="400", gap=0, extra_class="", extra_style="") -%}
+  {% set anchor_style = "transform: translateY(-100%);" %}
+  {% if anchor == "center" %}
+    {% set anchor_style = "transform: translate(-50%, -100%);" %}
+  {% elif anchor == "right" %}
+    {% set anchor_style = "transform: translate(-100%, -100%);" %}
+  {% endif %}
+  <div class="unit-pair"
+    style="left: {{ x }}px; top: {{ baseline }}px; font-size: {{ size }}px; --value-color: {{ value_color }}; --unit-color: {{ unit_color }}; --gap: {{ gap }}px; font-weight: {{ weight }}; font-family: 'Torus', 'HarmonyOS Sans', 'HarmonyOS Sans Naskh Arabic', sans-serif; {{ anchor_style }} {{ extra_style }}">
+    <span class="value">{{ value }}</span>
+    <span class="unit">{{ unit }}</span>
+  </div>
+{%- endmacro %}
+
+{# 计算变量 #}
+{% set mod_items = mods | default([]) %}
+{% set mod_step = 120 if mod_items | length > 7 else 160 %}
+{% set pp_breakdown_positions = [1532, 1672, 1812] %}
+{% set total_pp_est_width = (total_pp_value | length) * 31 %}
+
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <img id="backgroundBlur" src="{{ map_bg_src }}"/>
+  <div id="backgroundShade"></div>
+
+  <img id="panelMain" src="{{ panel_src }}"/>
+
+  <div id="smallBgShell">
+    <img id="smallBgImage" src="{{ map_bg_src }}"/>
+  </div>
+
+  {% if server %}
+    <div id="serverText">{{ server }}</div>
+  {% endif %}
+
+  {# 难度环 #}
+  <div id="difficultyRingCompose" style="--ring-color: {{ difficulty_ring.color }};">
+    <div class="difficulty-ring-fill">
+      <img class="difficulty-ring-cover" src="{{ difficulty_ring.cover_src }}"/>
+    </div>
+    <img class="difficulty-ring-frame" src="{{ difficulty_ring.ring_src }}"/>
+  </div>
+
+  {% if status_icon_src %}
+    <img id="statusIcon" src="{{ status_icon_src }}"/>
+  {% endif %}
+
+  {% if is_lazer %}
+    <img id="rankingBlur" src="{{ ranking_src }}"/>
+  {% endif %}
+  <img id="rankingImage" src="{{ ranking_src }}"/>
+
+  {# Mods 渲染 #}
+  {% if mods %}
+    <div class="mods-layer">
+      {% for mod in mods %}
+        <div class="mod-slot" style="left: {{ 440 + loop.index0 * mod_step }}px; top: 440px;">
+          <img class="mod-image" src="{{ mod.icon_src }}" alt="{{ mod.acronym }}" />
+          {% if mod.fallback_text %}
+            <div class="mod-fallback-text">{{ mod.fallback_text }}</div>
+          {% endif %}
+          {% if mod.bar_display %}
+            <div class="mod-setting-bar" style="--overlay-color: {{ mod.overlay_color | default('#666666') }};"></div>
+            <div class="mod-setting-text">{{ mod.bar_display }}</div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <img id="avatarImage" src="{{ avatar_src }}" />
+
+  {# 谱面基本信息 #}
+  {{ duo(title_display, 499, 102, 60, '#ffffff', 'left', '400', 5, 'headline') }}
+  {{ duo(artist_display, 519, 172, 40, '#ffffff') }}
+  {{ duo(creator_display, 795, 172, 40, '#ffffff') }}
+  {{ duo(beatmap_id_display, 1008, 172, 40, '#ffffff') }}
+
+  {# 谱面属性数值 #}
+  {{ duo(song_time_display, 1741, 120, 24.25, '#f1ce59') }}
+  {{ duo(bpm_display, 1457, 120, 24.25, '#f1ce59') }}
+  {{ duo(ar_display, 1457, 211, 24.25, '#f1ce59') }}
+  {{ duo(od_display, 1741, 211, 24.25, '#f1ce59') }}
+  {{ duo(cs_display, 1457, 305, 24.25, '#f1ce59') }}
+  {{ duo(hp_display, 1741, 305, 24.25, '#f1ce59') }}
+  {{ duo(star_display, 584, 285, 24.25, '#f1ce59') }}
+  {{ duo(version_display, 584, 313, 24.25, '#ffffff') }}
+
+  {# 玩家信息 #}
+  {{ duo(username_display, 145, 464, 36, '#ffffff', 'left', '600') }}
+  {{ duo(ended_at_display, 145, 499, 27.61, '#ffffff') }}
+
+  {# PP 预测 #}
+  {% for value in pp_forecast_values %}
+    {{ unit_pair(value, 'pp', 50 + 139 * loop.index0, 635, 33.5, '#fc65a9', '#cf93ae') }}
+  {% endfor %}
+
+  {{ unit_pair(pp_if_fc_value, 'pp', 99, 559, 24.5, '#fc65a9', '#cf93ae') }}
+
+  {# PP 组成成分 #}
+  {% for value in pp_breakdown_values %}
+    {% if loop.index0 < 3 %}
+      {{ unit_pair(value, 'pp', pp_breakdown_positions[loop.index0], 635, 33.5, '#fc65a9', '#cf93ae') }}
+    {% endif %}
+  {% endfor %}
+
+  {# 旧版 PP 对比 #}
+  {% if old_pp_value %}
+    {{ single('(oldpp)', 1825 - total_pp_est_width - 150, 447, 20, '#cf93ae', 'right') }}
+    {{ single(old_pp_value, 1825 - total_pp_est_width - 175, 497, 61, '#fc65a9', 'right') }}
+    {{ single('pp →', 1899 - total_pp_est_width - 100, 497, 61, '#cf93ae', 'right') }}
+  {% endif %}
+
+  {{ single(total_pp_value, 1825, 497, 61, '#fc65a9', 'right') }}
+  {{ single('pp', 1899, 497, 61, '#cf93ae', 'right') }}
+
+  {# 分数与判定 #}
+  {{ single(score_display, 980, 742, 40, '#ffffff', 'center') }}
+
+  {% for judgement in judgements %}
+    {{ duo(judgement.value, judgement.x, judgement.y, judgement.size, '#ffffff', 'center', '400', 3) }}
+  {% endfor %}
+
+  {# 正确率与连击 #}
+  {{ duo(accuracy_display, 360, 960, 53.56, '#87ff6a', 'center', '400', 3, '', '--main-filter: hue-rotate(' ~ accuracy_hue_deg ~ 'deg);') }}
+
+  {% if combo_max_display %}
+    {{ duo(combo_current_display, 1588, 960, 53.56, '#87ff6a', 'right', '400', 3, '', '--main-filter: hue-rotate(' ~ combo_hue_deg ~ 'deg);') }}
+    {{ duo(' / ', 1598, 960, 53.56, ' #ffffff', 'center', '400', 3) }}
+    {{ duo(combo_max_display, 1607, 960, 53.56, '#87ff6a', 'left', '400', 3) }}
+  {% else %}
+    {{ duo(combo_current_display, 1598, 960, 53.56, '#87ff6a', 'center') }}
+  {% endif %}
+</body>
+
+</html>

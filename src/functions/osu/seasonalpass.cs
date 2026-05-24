@@ -11,7 +11,7 @@ namespace KanonBot.Functions.OSU
     public static class Seasonalpass
     {
         //查询seasonal pass放在了get.cs里
-        public static async Task Update(long oid, Image.ScoreV2.ScorePanelData score)
+        public static async Task Update(long oid, Image.ScorePanelData score)
         {
             //只记录ranked谱面
             if (

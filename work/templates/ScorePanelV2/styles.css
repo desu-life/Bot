@@ -1,0 +1,259 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #000;
+}
+
+body {
+  display: flex;
+  width: 1950px;
+  height: 1088px;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+#backgroundBlur {
+  position: absolute;
+  left: 1px;
+  top: 0;
+  width: 1948px;
+  height: 1088px;
+  object-fit: cover;
+  border-radius: 20px;
+  filter: blur(5px);
+  transform: scale(1.06);
+  transform-origin: center;
+  z-index: 1;
+}
+
+#backgroundShade {
+  position: absolute;
+  left: 1px;
+  top: 0;
+  width: 1948px;
+  height: 1088px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.33);
+  z-index: 2;
+}
+
+#panelMain {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1950px;
+  height: 1088px;
+  z-index: 4;
+}
+
+#smallBgShell {
+  position: absolute;
+  left: 27px;
+  top: 34px;
+  width: 433px;
+  height: 296px;
+  overflow: hidden;
+  border-radius: 20px;
+  z-index: 5;
+}
+
+#smallBgImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#serverText {
+  position: absolute;
+  right: 37px;
+  bottom: 27px;
+  z-index: 20;
+  font-family: "Fredoka", "HarmonyOS Sans", sans-serif;
+  font-size: 60px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: rgba(156, 156, 156, 0.3);
+  mix-blend-mode: lighten;
+}
+
+#difficultyRingCompose {
+  position: absolute;
+  left: 512px;
+  top: 257px;
+  width: 65px;
+  height: 65px;
+  z-index: 14;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+.difficulty-ring-fill,
+.difficulty-ring-cover,
+.difficulty-ring-frame {
+  position: absolute;
+  inset: 0;
+}
+
+.difficulty-ring-fill {
+  inset: 8%;
+  border-radius: 50%;
+  background: var(--ring-color, #000000);
+  overflow: hidden;
+}
+
+.difficulty-ring-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.5;
+}
+
+.difficulty-ring-frame {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  mix-blend-mode: lighten;
+}
+
+#statusIcon {
+  position: absolute;
+  left: 415px;
+  top: 16px;
+  width: 71px;
+  height: 71px;
+  z-index: 13;
+}
+
+#rankingBlur {
+  position: absolute;
+  left: 825px;
+  top: 755px;
+  width: 300px;
+  height: 300px;
+  object-fit: contain;
+  filter: blur(40px);
+  opacity: 0.2;
+  z-index: 8;
+}
+
+#rankingImage {
+  position: absolute;
+  left: 913px;
+  top: 874px;
+  width: 124px;
+  height: 62px;
+  object-fit: contain;
+  z-index: 12;
+}
+
+.mods-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1950px;
+  height: 1088px;
+  z-index: 12;
+}
+
+.mod-slot {
+  position: absolute;
+  width: 200px;
+  height: 90px;
+}
+
+.mod-image {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 200px;
+  height: auto;
+  display: block;
+}
+
+.mod-fallback-text {
+  position: absolute;
+  left: 125px;
+  top: 31px;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  font-family: "Mizolet", "HarmonyOS Sans", sans-serif;
+  font-size: 40px;
+  line-height: 0.82;
+  color: #ffffff;
+  text-transform: uppercase;
+  white-space: nowrap;
+  text-shadow: 0 3px 0 #000000;
+}
+
+.mod-setting-bar {
+  position: absolute;
+  left: 35px;
+  top: 50px;
+  width: 130px;
+  height: 20px;
+  border-radius: 7px;
+  background: var(--overlay-color, #666);
+  opacity: 0.7;
+  mix-blend-mode: multiply;
+}
+
+.mod-setting-text {
+  position: absolute;
+  left: 100px;
+  top: 60px;
+  transform: translate(-50%, -50%);
+  font-family: "Mizolet", "HarmonyOS Sans", sans-serif;
+  font-size: 8px;
+  line-height: 0.82;
+  color: #d3d3d3;
+  white-space: nowrap;
+}
+
+#avatarImage {
+  position: absolute;
+  left: 40px;
+  top: 425px;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f5f5f5; 
+  z-index: 13;
+  background-color: #f5f5f5;
+}
+
+/* 宏（Macro）复用组件 */
+.duo,
+.single,
+.unit-pair {
+  position: absolute;
+  z-index: 15;
+  line-height: 0.82;
+  white-space: nowrap;
+}
+
+.duo {
+  color: var(--text-color, #fff);
+  filter: var(--main-filter, none);
+  text-shadow: 0 var(--shadow-y, 3px) 0 var(--shadow-color, #000);
+}
+
+.unit-pair {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--gap, 0px);
+}
+
+.unit-pair .value {
+  color: var(--value-color, #fff);
+}
+
+.unit-pair .unit {
+  color: var(--unit-color, #ccc);
+}
+
+.headline {
+  letter-spacing: -0.01em;
+}

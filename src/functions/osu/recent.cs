@@ -131,7 +131,7 @@ namespace KanonBot.Functions.OSUBot
             // 正常是找不到玩家，但是上面有验证，这里做保险
             if (scoreInfos.Length > 0)
             {
-                Image.ScoreV2.ScorePanelData data;
+                Image.ScorePanelData data;
                 data = await UniversalCalculator.CalculatePanelData(
                     scoreInfos[0],
                     UniversalCalculator.GetCalculatorKind(is_ppysb, special_version_pp)
@@ -139,7 +139,7 @@ namespace KanonBot.Functions.OSUBot
 
                 using var img = dev_panel
                     ? await Image.OsuScorePanelV3.Draw(data)
-                    : await Image.ScoreV2.DrawScore(data);
+                    : await Image.Takumi.ScoreV2.DrawScore(data);
 
                 await target.reply(img, new JpegEncoder());
 

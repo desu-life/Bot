@@ -21,8 +21,8 @@
     <ProjectReference Include="../osu/osu.Game.Rulesets.Osu/osu.Game.Rulesets.Osu.csproj" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
     <ProjectReference Include="../osu/osu.Game.Rulesets.Taiko/osu.Game.Rulesets.Taiko.csproj" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="ppy.osu.Game.Resources" Version="2026.411.0" ExcludeAssets="all" PrivateAssets="all" />
-    <PackageReference Include="ppy.osu.Framework" Version="2026.406.0" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
+    <PackageReference Include="ppy.osu.Game.Resources" Version="2026.516.0" ExcludeAssets="all" PrivateAssets="all" />
+    <PackageReference Include="ppy.osu.Framework" Version="2026.513.0" ExcludeAssets="native;build;content" PrivateAssets="native;build;content" />
   </ItemGroup>
 
 </Project>

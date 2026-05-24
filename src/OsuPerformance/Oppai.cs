@@ -18,9 +18,9 @@ public static class OppaiCalculator
         return Oppai.Beatmap.Read(reader);
     }
 
-    public static ScoreV2.ScorePanelData CalculatePanelData(byte[] b, API.OSU.Models.ScoreLazer score)
+    public static ScorePanelData CalculatePanelData(byte[] b, API.OSU.Models.ScoreLazer score)
     {
-        var data = new ScoreV2.ScorePanelData { scoreInfo = score };
+        var data = new ScorePanelData { scoreInfo = score };
         if (score.IsLazer) {
             data.server = "Lazer";
         }

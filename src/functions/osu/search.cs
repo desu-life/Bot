@@ -232,7 +232,7 @@ namespace KanonBot.Functions.OSUBot
             mods_lazer = Serializer.Json.Deserialize<API.OSU.Models.Mod[]>(js.ToCstr())!;
             Log.Debug($"Mods: {string.Join(",", mods_lazer.Select(x => x.Acronym))}");
 
-            ScoreV2.ScorePanelData data;
+            ScorePanelData data;
             API.OSU.Models.User? user = await API.OSU.Client.GetUser(3);
             var is_sb = mods_lazer.Any(x => x.Acronym is "RX" or "AP");
             if (is_sb)
@@ -265,7 +265,7 @@ namespace KanonBot.Functions.OSUBot
             data.scoreInfo.StartedAt = DateTime.UtcNow;
             data.scoreInfo.Score = 1000000;
 
-            using var img = await Image.ScoreV2.DrawScore(data);
+            using var img = await Image.Takumi.ScoreV2.DrawScore(data);
             await target.reply(img, new JpegEncoder());
 
             // 缓存本来源查询

@@ -366,10 +366,11 @@ go-cqhttp/
 cqhttp/
 logs/
 config.toml
-work/
 target/
 Cargo.lock
 work.7z
 work.bak/
 .idea/
 mail_desu_life_mailaddr_verify_template.txt
+work/*
+!work/templates/

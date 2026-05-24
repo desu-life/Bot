@@ -14,7 +14,7 @@ namespace KanonBot.OsuPerformance
 
     public static class UniversalCalculator
     {
-        public static async Task<ScoreV2.ScorePanelData> CalculatePanelData(
+        public static async Task<ScorePanelData> CalculatePanelData(
             API.OSU.Models.ScoreLazer score,
             CalculatorKind kind = CalculatorKind.Unset
         )
@@ -23,7 +23,7 @@ namespace KanonBot.OsuPerformance
             return CalculatePanelData(b, score, kind);
         }
 
-        public static ScoreV2.ScorePanelData CalculatePanelData(
+        public static ScorePanelData CalculatePanelData(
             byte[] b,
             API.OSU.Models.ScoreLazer score,
             CalculatorKind kind = CalculatorKind.Unset

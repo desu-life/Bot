@@ -229,13 +229,13 @@ namespace KanonBot.Functions.OSUBot
             }
 
             bool special_version_pp = cmd.Flag("special_pp");
-            Image.ScoreV2.ScorePanelData data;
+            Image.ScorePanelData data;
             data = await UniversalCalculator.CalculatePanelData(
                 scoreData,
                 UniversalCalculator.GetCalculatorKind(is_ppysb, special_version_pp)
             );
 
-            using var img = await Image.ScoreV2.DrawScore(data);
+            using var img = await Image.Takumi.ScoreV2.DrawScore(data);
             await target.reply(img, new JpegEncoder());
 
             // 缓存本来源查询

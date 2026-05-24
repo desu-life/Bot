@@ -23,8 +23,8 @@ static class Fonts
 
     public static FontFamily Mizolet = fonts.Add("./work/fonts/mizolet.ttf");
     public static FontFamily MizoletBokutoh = fonts.Add("./work/fonts/mizolet-bokutoh.ttf");
-    public static FontFamily FredokaRegular = fonts.Add("./work/fonts/fredoka/Fredoka-Regular.ttf");
-    public static FontFamily FredokaBold = fonts.Add("./work/fonts/fredoka/Fredoka-Bold.ttf");
+    public static FontFamily FredokaRegular = fonts.Add("./work/fonts/Fredoka/Fredoka-Regular.ttf");
+    public static FontFamily FredokaBold = fonts.Add("./work/fonts/Fredoka/Fredoka-Bold.ttf");
 
     public static Font Get(this FontFamily fontFamily, float size) =>
         memo<(FontFamily, float), Font>(static args => new Font(args.Item1, args.Item2)).Invoke((fontFamily, size));

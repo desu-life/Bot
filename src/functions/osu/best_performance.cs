@@ -71,7 +71,7 @@ namespace KanonBot.Functions.OSUBot
 
             API.OSU.Models.ScoreLazer[]? scores = null;
 
-            if (special_version_pp && is_ppysb)
+            if (is_ppysb)
             {
                 var ss = await API.PPYSB
                     .Client
@@ -113,7 +113,7 @@ namespace KanonBot.Functions.OSUBot
 
                 score.User ??= tempOsuInfo;
 
-                Image.ScoreV2.ScorePanelData data;
+                Image.ScorePanelData data;
                 data = await UniversalCalculator.CalculatePanelData(
                     score,
                     UniversalCalculator.GetCalculatorKind(is_ppysb, special_version_pp)
@@ -121,7 +121,7 @@ namespace KanonBot.Functions.OSUBot
 
                 using var img = dev_panel
                     ? await Image.OsuScorePanelV3.Draw(data)
-                    : await Image.ScoreV2.DrawScore(data);
+                    : await Image.Takumi.ScoreV2.DrawScore(data);
 
                 await target.reply(img, new JpegEncoder());
 
@@ -141,7 +141,7 @@ namespace KanonBot.Functions.OSUBot
 
         private static async Task BeatmapTechDataProcess(
             Models.ScoreLazer score,
-            Image.ScoreV2.ScorePanelData data
+            Image.ScorePanelData data
         )
         {
             if (Config.inner!.dev)

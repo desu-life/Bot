@@ -63,6 +63,7 @@
 
 	<!-- RosuPP -->
 	<ItemGroup>
+	  <ProjectReference Include="../dependencies/takumi-html-ffi/bindings/takumi-render-uniffi/csharp/Takumi.Render.UniFFI/Takumi.Render.UniFFI.csproj" />
 	  <ProjectReference Include="../dependencies/rosu-pp-ffi/SharpRosuPP/RosuPP/RosuPP.csproj" />
 	  <ProjectReference Include="../dependencies/sb-pp-ffi/SharpRosuPP/RosuPP/SBRosuPP.csproj" />
 	  <ProjectReference Include="../dependencies/OppaiSharp/OppaiSharp/OppaiSharp.csproj" />
