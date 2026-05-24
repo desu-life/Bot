@@ -363,7 +363,7 @@ namespace KanonBot.Functions.OSUBot
                 data = await Database
                     .Client
                     .GetOsuStandardBeatmapTechData(
-                        (int)ppinfo.ppInfo.ppStat.aim!,
+                        (int)ppinfo.ppInfo!.ppStat.aim!,
                         (int)ppinfo.ppInfo.ppStat.speed!,
                         (int)ppinfo.ppInfo.ppStat.acc!,
                         isDiffReductionMod ? NFEZHT_range : normal_range,

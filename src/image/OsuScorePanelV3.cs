@@ -18,7 +18,7 @@ namespace KanonBot.Image
         {
             var scoreimg = new Image<Rgba32>(2848, 1602);
 
-            var ppInfo = data.ppInfo;
+            var ppInfo = data.ppInfo!;
 
             //下载头像
             using var avatar = await Utils.LoadOrDownloadAvatar(data.scoreInfo.User!);

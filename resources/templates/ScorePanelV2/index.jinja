@@ -1,21 +1,30 @@
-{% macro duo(text, x, baseline, size, color="#ffffff", anchor="left", weight="400", shadow_y=3, extra_class="", extra_style="") -%}
+{# 计算变量 #}
+{% set mod_items = mods | default([]) %}
+{% set mod_step = 120 if mod_items | length > 7 else 160 %}
+{% set pp_breakdown_positions = [1532, 1672, 1812] %}
+{% set total_pp_est_width = (total_pp_value | length) * 31 %}
+{% set font_family = "'Torus', 'HarmonyOS Sans', 'HarmonyOS Sans Naskh Arabic', sans-serif" %}
+
+{% macro duo(text, x, y, size, color="#ffffff", anchor="left", weight="400", shadow_y=3, extra_class="", extra_style="", max_width=none) -%}
   {% set anchor_style = "transform: translateY(-100%);" %}
   {% if anchor == "center" %}
     {% set anchor_style = "transform: translate(-50%, -100%);" %}
   {% elif anchor == "right" %}
     {% set anchor_style = "transform: translate(-100%, -100%);" %}
   {% endif %}
-  {% set extra_class_style = "" %}
-  {% if extra_class == "headline" %}
-    {% set extra_class_style = "letter-spacing: -0.01em;" %}
+  
+  {% set truncate_style = "" %}
+  {% if max_width %}
+    {% set truncate_style = "max-width: " ~ max_width ~ "px; white-space: nowrap; overflow-x: hidden; overflow-x: clip; text-overflow: ellipsis;" %}
   {% endif %}
+
   <div class="duo"
-    style="left: {{ x }}px; top: {{ baseline }}px; font-size: {{ size }}px; color: {{ color }}; --shadow-y: {{ shadow_y }}px; font-weight: {{ weight }}; font-family: 'Torus', 'HarmonyOS Sans', 'HarmonyOS Sans Naskh Arabic', sans-serif; {{ anchor_style }} {{ extra_class_style }} {{ extra_style }}">
+    style="left: {{ x }}px; top: {{ y }}px; font-size: {{ size }}px; color: {{ color }}; --shadow-y: {{ shadow_y }}px; font-weight: {{ weight }}; font-family: {{ font_family }}; {{ anchor_style }} {{ truncate_style }} {{ extra_style }}">
     {{ text }}
   </div>
 {%- endmacro %}
 
-{% macro single(text, x, baseline, size, color="#ffffff", anchor="left", family="font-torus", weight="400", extra_class="", extra_style="") -%}
+{% macro single(text, x, y, size, color="#ffffff", anchor="left", family="font-torus", weight="400", extra_class="", extra_style="") -%}
   {% set anchor_style = "transform: translateY(-100%);" %}
   {% if anchor == "center" %}
     {% set anchor_style = "transform: translate(-50%, -100%);" %}
@@ -23,12 +32,12 @@
     {% set anchor_style = "transform: translate(-100%, -100%);" %}
   {% endif %}
   <div class="single"
-    style="left: {{ x }}px; top: {{ baseline }}px; font-size: {{ size }}px; color: {{ color }}; font-weight: {{ weight }}; font-family: 'Torus', 'HarmonyOS Sans', 'HarmonyOS Sans Naskh Arabic', sans-serif; {{ anchor_style }} {{ extra_style }}">
+    style="left: {{ x }}px; top: {{ y }}px; font-size: {{ size }}px; color: {{ color }}; font-weight: {{ weight }}; font-family: {{ font_family }}; {{ anchor_style }} {{ extra_style }}">
     {{ text }}
   </div>
 {%- endmacro %}
 
-{% macro unit_pair(value, unit, x, baseline, size, value_color, unit_color, anchor="left", family="font-torus", weight="400", gap=0, extra_class="", extra_style="") -%}
+{% macro unit_pair(value, unit, x, y, size, value_color, unit_color, anchor="left", family="font-torus", weight="400", gap=0, extra_class="", extra_style="") -%}
   {% set anchor_style = "transform: translateY(-100%);" %}
   {% if anchor == "center" %}
     {% set anchor_style = "transform: translate(-50%, -100%);" %}
@@ -36,17 +45,13 @@
     {% set anchor_style = "transform: translate(-100%, -100%);" %}
   {% endif %}
   <div class="unit-pair"
-    style="left: {{ x }}px; top: {{ baseline }}px; font-size: {{ size }}px; --value-color: {{ value_color }}; --unit-color: {{ unit_color }}; --gap: {{ gap }}px; font-weight: {{ weight }}; font-family: 'Torus', 'HarmonyOS Sans', 'HarmonyOS Sans Naskh Arabic', sans-serif; {{ anchor_style }} {{ extra_style }}">
+    style="left: {{ x }}px; top: {{ y }}px; font-size: {{ size }}px; --value-color: {{ value_color }}; --unit-color: {{ unit_color }}; --gap: {{ gap }}px; font-weight: {{ weight }}; font-family: {{ font_family }}; {{ anchor_style }} {{ extra_style }}">
     <span class="value">{{ value }}</span>
     <span class="unit">{{ unit }}</span>
   </div>
 {%- endmacro %}
 
-{# 计算变量 #}
-{% set mod_items = mods | default([]) %}
-{% set mod_step = 120 if mod_items | length > 7 else 160 %}
-{% set pp_breakdown_positions = [1532, 1672, 1812] %}
-{% set total_pp_est_width = (total_pp_value | length) * 31 %}
+
 
 <!doctype html>
 <html lang="en">
@@ -108,9 +113,9 @@
   <img id="avatarImage" src="{{ avatar_src }}" />
 
   {# 谱面基本信息 #}
-  {{ duo(title_display, 499, 102, 60, '#ffffff', 'left', '400', 5, 'headline') }}
-  {{ duo(artist_display, 519, 172, 40, '#ffffff') }}
-  {{ duo(creator_display, 795, 172, 40, '#ffffff') }}
+  {{ duo(title_display, 499, 102, 60, '#ffffff', 'left', '400', 5, 'headline', max_width=800) }}
+  {{ duo(artist_display, 519, 172, 40, '#ffffff', 'left', '400', 3, '', max_width=250) }}
+  {{ duo(creator_display, 795, 172, 40, '#ffffff', 'left', '400', 3, '', max_width=200) }}
   {{ duo(beatmap_id_display, 1008, 172, 40, '#ffffff') }}
 
   {# 谱面属性数值 #}
@@ -121,10 +126,10 @@
   {{ duo(cs_display, 1457, 305, 24.25, '#f1ce59') }}
   {{ duo(hp_display, 1741, 305, 24.25, '#f1ce59') }}
   {{ duo(star_display, 584, 285, 24.25, '#f1ce59') }}
-  {{ duo(version_display, 584, 313, 24.25, '#ffffff') }}
+  {{ duo(version_display, 584, 313, 24.25, '#ffffff', 'left', '400', 3, '', max_width=175) }}
 
   {# 玩家信息 #}
-  {{ duo(username_display, 145, 464, 36, '#ffffff', 'left', '600') }}
+  {{ duo(username_display, 145, 464, 36, '#ffffff', 'left', '600', 3, '', max_width=280) }}
   {{ duo(ended_at_display, 145, 499, 27.61, '#ffffff') }}
 
   {# PP 预测 #}

@@ -15,6 +15,7 @@ using OSU = KanonBot.API.OSU;
 
 public static class ScoreV2
 {
+    private static readonly string templateRoot = IOPath.Combine(AppContext.BaseDirectory, "resources", "templates");
     private static readonly string workingRoot = IOPath.Combine(Directory.GetCurrentDirectory(), "work");
     private static readonly JsonSerializerOptions TemplateJsonOptions = new()
     {
@@ -43,7 +44,7 @@ public static class ScoreV2
         ArgumentNullException.ThrowIfNull(data.scoreInfo.Beatmapset);
         ArgumentNullException.ThrowIfNull(data.scoreInfo.User);
 
-        var templatePath = IOPath.Combine(workingRoot, "templates", "ScorePanelV2", "index.jinja");
+        var templatePath = IOPath.Combine(templateRoot, "ScorePanelV2", "index.jinja");
         var context = await BuildTemplateContext(data, workingRoot);
 
         return Renderer.RenderTemplateFile(
@@ -98,13 +99,13 @@ public static class ScoreV2
             RankingSrc = AssetPath("ranking", $"ranking-{(score.Passed ? score.RankAuto : "F")}.png"),
             DifficultyRing = new DifficultyRingModel
             {
-                Color = ToCssHex(Utils.ForStarDifficultyScore(ppInfo!.star)),
+                Color = Utils.ForStarDifficultyScore(ppInfo!.star).ToCssColor(),
                 CoverSrc = AssetPath("icons", "ringcontent.png"),
                 RingSrc = GetRingAssetPath(data.mode)
             },
-            TitleDisplay = Utils.TruncateTextByWidth(beatmapset.Title, CreateTextOptions(TorusRegular.Get(60)), 725),
-            ArtistDisplay = Utils.TruncateTextByWidth(beatmapset.Artist, CreateTextOptions(TorusRegular.Get(40)), 205),
-            CreatorDisplay = Utils.TruncateTextByWidth(beatmapset.Creator, CreateTextOptions(TorusRegular.Get(40)), 145),
+            TitleDisplay = beatmapset.Title,
+            ArtistDisplay = beatmapset.Artist,
+            CreatorDisplay = beatmapset.Creator,
             BeatmapIdDisplay = beatmap.BeatmapId.ToString(),
             SongTimeDisplay = BuildSongTimeDisplay(data),
             BpmDisplay = ppInfo.bpm.ToString("0.##"),
@@ -113,7 +114,7 @@ public static class ScoreV2
             CsDisplay = ppInfo.CS.ToString("0.0#"),
             HpDisplay = ppInfo.HP.ToString("0.0#"),
             StarDisplay = $"Stars: {ppInfo.star:0.##}",
-            VersionDisplay = BuildVersionDisplay(beatmap.Version),
+            VersionDisplay = beatmap.Version,
             UsernameDisplay = user.Username,
             EndedAtDisplay = score.EndedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm:ss"),
             PpIfFcValue = GetForecastValue(ppInfo.ppStats, 5),
@@ -201,16 +202,13 @@ public static class ScoreV2
 
     private static async Task<string?> GetOverlayColorAsync(string iconAbsolutePath)
     {
-        var icon = await Utils.TryReadImageRgba(iconAbsolutePath);
+        using var icon = await Utils.TryReadImageRgba(iconAbsolutePath);
         if (icon is null)
         {
             return null;
         }
 
-        using (icon)
-        {
-            return ToCssHex(Utils.GetDominantColor(icon));
-        }
+        return Utils.GetDominantColor(icon).ToCssColor();
     }
 
     private static List<JudgementModel> BuildJudgements(ScorePanelData data)
@@ -254,7 +252,7 @@ public static class ScoreV2
 
     private static string BuildSongTimeDisplay(ScorePanelData data)
     {
-        var songTime = Utils.Duration2TimeString((long)Math.Round(data.scoreInfo!.Beatmap!.TotalLength / data.ppInfo!.clockrate));
+        var songTime = Utils.Duration2TimeString((long)Math.Round(data.scoreInfo.Beatmap!.TotalLength / data.ppInfo!.clockrate));
         if (data.playtime is not null)
         {
             var playTime = Utils.Duration2TimeString((long)Math.Round(data.playtime.Value / data.ppInfo.clockrate));
@@ -262,24 +260,6 @@ public static class ScoreV2
         }
 
         return songTime;
-    }
-
-    private static string BuildVersionDisplay(string version)
-    {
-        var textOptions = CreateTextOptions(TorusRegular.Get(24.25f));
-        var display = string.Empty;
-
-        foreach (var c in version)
-        {
-            display += c;
-            if (TextMeasurer.MeasureSize(display, textOptions).Width > 140)
-            {
-                display += "...";
-                break;
-            }
-        }
-
-        return display;
     }
 
     private static RichTextOptions CreateTextOptions(Font font)
@@ -376,9 +356,8 @@ public static class ScoreV2
         return IOPath.Combine(workingRoot, IOPath.Combine(parts));
     }
 
-    private static string ToCssHex(Color color)
+    private static string ToCssColor(this Color color)
     {
-        var pixel = color.ToPixel<Rgba32>();
-        return $"#{pixel.R:x2}{pixel.G:x2}{pixel.B:x2}";
+        return $"#{color.ToHex()}";
     }
 }
