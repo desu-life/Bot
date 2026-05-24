@@ -29,8 +29,10 @@ public static class ScoreV2
         IOPath.Combine(workingRoot, "fonts", "Fredoka", "Fredoka-Bold.ttf"),
         IOPath.Combine(workingRoot, "fonts", "Fredoka", "Fredoka-Regular.ttf"),
         IOPath.Combine(workingRoot, "fonts", "mizolet.ttf"),
-        IOPath.Combine(workingRoot, "fonts", "HarmonyOS_Sans_SC", "HarmonyOS_Sans_SC_Regular.ttf"),
-        IOPath.Combine(workingRoot, "fonts", "HarmonyOS_Sans_Naskh_Arabic", "HarmonyOS_Sans_Naskh_Arabic_Regular.ttf")
+        IOPath.Combine(workingRoot, "fonts", "rhr", "ResourceHanRoundedCN-Regular.ttf"),
+        IOPath.Combine(workingRoot, "fonts", "rhr", "ResourceHanRoundedCN-Bold.ttf"),
+        IOPath.Combine(workingRoot, "fonts", "noto_arabic", "NotoSansArabic-Regular.ttf"),
+        IOPath.Combine(workingRoot, "fonts", "noto_arabic", "NotoSansArabic-SemiBold.ttf"),
     ];
 
     private static readonly Renderer Renderer = CreateTemplateRenderer(workingRoot);

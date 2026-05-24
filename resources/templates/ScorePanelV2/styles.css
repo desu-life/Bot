@@ -69,7 +69,7 @@ body {
   right: 37px;
   bottom: 27px;
   z-index: 20;
-  font-family: "Fredoka", "HarmonyOS Sans", sans-serif;
+  font-family: 'Fredoka', 'Resource Han Rounded CN', 'Noto Sans Arabic', sans-serif;
   font-size: 60px;
   font-weight: 700;
   line-height: 1;
@@ -178,7 +178,7 @@ body {
   top: 31px;
   transform: translate(-50%, -50%);
   z-index: 2;
-  font-family: "Mizolet", "HarmonyOS Sans", sans-serif;
+  font-family: 'Mizolet', 'Resource Han Rounded CN', 'Noto Sans Arabic', sans-serif;
   font-size: 40px;
   line-height: 0.82;
   color: #ffffff;
@@ -204,7 +204,7 @@ body {
   left: 100px;
   top: 54px;
   transform: translate(-50%, -50%);
-  font-family: "Mizolet", "HarmonyOS Sans", sans-serif;
+  font-family: 'Mizolet', 'Resource Han Rounded CN', 'Noto Sans Arabic', sans-serif;
   font-size: 8px;
   line-height: 0.82;
   color: #d3d3d3;

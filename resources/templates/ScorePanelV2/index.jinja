@@ -3,7 +3,7 @@
 {% set mod_step = 120 if mod_items | length > 7 else 160 %}
 {% set pp_breakdown_positions = [1532, 1672, 1812] %}
 {% set total_pp_est_width = (total_pp_value | length) * 31 %}
-{% set font_family = "'Torus', 'HarmonyOS Sans', 'HarmonyOS Sans Naskh Arabic', sans-serif" %}
+{% set font_family = "'Torus', 'Resource Han Rounded CN', 'Noto Sans Arabic', sans-serif" %}
 
 {% macro duo(text, x, y, size, color="#ffffff", anchor="left", weight="400", shadow_y=3, extra_class="", extra_style="", max_width=none) -%}
   {% set anchor_style = "transform: translateY(-100%);" %}
