@@ -11,3 +11,6 @@
 	path = dependencies/osu
 	url = https://github.com/ppy/osu
 	branch = pp-dev
+[submodule "dependencies/takumi-html-ffi"]
+	path = dependencies/takumi-html-ffi
+	url = https://github.com/fantasyzhjk/takumi-html-ffi
