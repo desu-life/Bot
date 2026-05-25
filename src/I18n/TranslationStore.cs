@@ -42,7 +42,11 @@ public class TranslationStore
             if (dict is not null)
             {
                 _translations[locale.Value] = dict;
-                Log.Information("Loaded i18n translations for {Locale} ({Count} keys)", locale.Value.ToCode(), dict.Count);
+                Log.Information(
+                    "Loaded i18n translations for {Locale} ({Count} keys)",
+                    locale.Value.ToCode(),
+                    dict.Count
+                );
             }
         }
     }
@@ -64,7 +68,11 @@ public class TranslationStore
             if (dict is not null)
             {
                 _translations[locale] = dict;
-                Log.Information("Loaded i18n translations from file for {Locale} ({Count} keys)", locale.ToCode(), dict.Count);
+                Log.Information(
+                    "Loaded i18n translations from file for {Locale} ({Count} keys)",
+                    locale.ToCode(),
+                    dict.Count
+                );
             }
         }
     }
@@ -87,11 +95,18 @@ public class TranslationStore
             return value;
 
         // 回退到默认语言
-        if (locale != FallbackLocale &&
-            _translations.TryGetValue(FallbackLocale, out var fallbackDict) &&
-            fallbackDict.TryGetValue(key, out var fallbackValue))
+        if (
+            locale != FallbackLocale
+            && _translations.TryGetValue(FallbackLocale, out var fallbackDict)
+            && fallbackDict.TryGetValue(key, out var fallbackValue)
+        )
         {
-            Log.Debug("i18n key '{Key}' missing for {Locale}, falling back to {Fallback}", key, locale.ToCode(), FallbackLocale.ToCode());
+            Log.Debug(
+                "i18n key '{Key}' missing for {Locale}, falling back to {Fallback}",
+                key,
+                locale.ToCode(),
+                FallbackLocale.ToCode()
+            );
             return fallbackValue;
         }
 
@@ -101,8 +116,7 @@ public class TranslationStore
     /// <summary>
     /// 检查 key 是否存在于任意语言
     /// </summary>
-    public bool HasKey(string key)
-        => _translations.Values.Any(d => d.ContainsKey(key));
+    public bool HasKey(string key) => _translations.Values.Any(d => d.ContainsKey(key));
 
     /// <summary>
     /// 获取已加载的所有语言

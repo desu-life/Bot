@@ -9,7 +9,8 @@ namespace KanonBot.I18n;
 public class LocaleResolver
 {
     private readonly IUserLocaleProvider _provider;
-    private readonly ConcurrentDictionary<string, (Locale locale, DateTime cachedAt)> _cache = new();
+    private readonly ConcurrentDictionary<string, (Locale locale, DateTime cachedAt)> _cache =
+        new();
     private static readonly TimeSpan CacheTTL = TimeSpan.FromMinutes(10);
 
     public LocaleResolver(IUserLocaleProvider? provider = null)
@@ -20,24 +21,26 @@ public class LocaleResolver
     /// <summary>
     /// 获取平台默认语言
     /// </summary>
-    public static Locale GetPlatformDefault(Platform platform) => platform switch
-    {
-        Platform.Discord => Locale.En,
-        Platform.OneBot => Locale.ZhCN,
-        Platform.Guild => Locale.ZhCN,
-        _ => Locale.ZhCN,
-    };
+    public static Locale GetPlatformDefault(Platform platform) =>
+        platform switch
+        {
+            Platform.Discord => Locale.En,
+            Platform.OneBot => Locale.ZhCN,
+            Platform.Guild => Locale.ZhCN,
+            _ => Locale.ZhCN,
+        };
 
     /// <summary>
     /// 获取平台的命令前缀
     /// </summary>
-    public static string GetPlatformPrefix(Platform platform) => platform switch
-    {
-        Platform.Discord => "/",
-        Platform.OneBot => "!",
-        Platform.Guild => "!",
-        _ => "!",
-    };
+    public static string GetPlatformPrefix(Platform platform) =>
+        platform switch
+        {
+            Platform.Discord => "/",
+            Platform.OneBot => "!",
+            Platform.Guild => "!",
+            _ => "!",
+        };
 
     /// <summary>
     /// 解析目标语言：用户偏好 > 平台默认
@@ -75,7 +78,10 @@ public class LocaleResolver
             return GetPlatformDefault(platform);
 
         var cacheKey = $"{platform}:{userId}";
-        if (_cache.TryGetValue(cacheKey, out var cached) && DateTime.UtcNow - cached.cachedAt < CacheTTL)
+        if (
+            _cache.TryGetValue(cacheKey, out var cached)
+            && DateTime.UtcNow - cached.cachedAt < CacheTTL
+        )
             return cached.locale;
 
         return GetPlatformDefault(platform);

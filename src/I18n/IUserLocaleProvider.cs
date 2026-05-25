@@ -21,6 +21,6 @@ public interface IUserLocaleProvider
 /// </summary>
 public class NullUserLocaleProvider : IUserLocaleProvider
 {
-    public Task<Locale?> GetUserLocaleAsync(string userId, Platform platform)
-        => Task.FromResult<Locale?>(null);
+    public Task<Locale?> GetUserLocaleAsync(string userId, Platform platform) =>
+        Task.FromResult<Locale?>(null);
 }

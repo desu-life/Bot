@@ -12,7 +12,11 @@ public partial class Localizer
     private readonly LocaleResolver _resolver;
 
     private static Localizer? _instance;
-    public static Localizer Instance => _instance ?? throw new InvalidOperationException("Localizer has not been initialized. Call Localizer.Initialize() first.");
+    public static Localizer Instance =>
+        _instance
+        ?? throw new InvalidOperationException(
+            "Localizer has not been initialized. Call Localizer.Initialize() first."
+        );
 
     public TranslationStore Store => _store;
     public LocaleResolver Resolver => _resolver;
@@ -39,7 +43,10 @@ public partial class Localizer
     /// <summary>
     /// 初始化用于测试的实例
     /// </summary>
-    public static Localizer InitializeForTest(TranslationStore store, LocaleResolver? resolver = null)
+    public static Localizer InitializeForTest(
+        TranslationStore store,
+        LocaleResolver? resolver = null
+    )
     {
         _instance = new Localizer(store, resolver ?? new LocaleResolver());
         return _instance;
@@ -87,7 +94,12 @@ public partial class Localizer
     /// <summary>
     /// 获取翻译文本，自动注入平台前缀变量
     /// </summary>
-    public string GetWithPlatform(string key, Locale locale, Platform platform, params object[] args)
+    public string GetWithPlatform(
+        string key,
+        Locale locale,
+        Platform platform,
+        params object[] args
+    )
     {
         var template = _store.Get(key, locale);
         if (template is null)
@@ -109,14 +121,13 @@ public partial class Localizer
     /// <summary>
     /// 获取 Target 对应的语言（同步）
     /// </summary>
-    public Locale GetLocale(Target target)
-        => _resolver.Resolve(target.sender, target.platform);
+    public Locale GetLocale(Target target) => _resolver.Resolve(target.sender, target.platform);
 
     /// <summary>
     /// 获取 Target 对应的语言（异步，可查用户偏好）
     /// </summary>
-    public Task<Locale> GetLocaleAsync(Target target)
-        => _resolver.ResolveAsync(target.sender, target.platform);
+    public Task<Locale> GetLocaleAsync(Target target) =>
+        _resolver.ResolveAsync(target.sender, target.platform);
 
     private static string FormatTemplate(string template, object[] args)
     {
