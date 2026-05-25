@@ -33,7 +33,7 @@ public partial class Localizer
     public static Localizer Initialize(IUserLocaleProvider? userLocaleProvider = null)
     {
         var store = new TranslationStore();
-        store.LoadFromEmbeddedResources();
+        store.Load();
 
         var resolver = new LocaleResolver(userLocaleProvider);
         _instance = new Localizer(store, resolver);

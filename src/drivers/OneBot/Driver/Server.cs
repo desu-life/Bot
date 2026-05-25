@@ -190,6 +190,7 @@ public partial class OneBot
         {
             // Log.Debug($"[{OneBot.platform} Core] Raw: {msg}");
             var m = Json.ToLinq(msg);
+            ArgumentNullException.ThrowIfNull(m);
             if (m["post_type"] != null)
             {
                 switch ((string?)m["post_type"])

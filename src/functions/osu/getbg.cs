@@ -19,8 +19,9 @@ namespace KanonBot.Functions.OSUBot
             var index = Math.Max(0, cmd.Get<int>("order_number") - 1);
             var isBid = int.TryParse(searchArg, out var bid);
 
-            var beatmapset = await SearchAndValidate(searchArg, isBid, bid, index, hasLeaderboard: true)
-                          ?? await SearchAndValidate(searchArg, isBid, bid, index, hasLeaderboard: false);
+            var beatmapset =
+                await SearchAndValidate(searchArg, isBid, bid, index, hasLeaderboard: true)
+                ?? await SearchAndValidate(searchArg, isBid, bid, index, hasLeaderboard: false);
 
             if (beatmapset is not { Beatmaps.Length: > 0 })
             {
@@ -53,15 +54,22 @@ namespace KanonBot.Functions.OSUBot
         }
 
         private static async Task<API.OSU.Models.Beatmapset?> SearchAndValidate(
-            string searchArg, bool isBid, int bid, int index, bool hasLeaderboard)
+            string searchArg,
+            bool isBid,
+            int bid,
+            int index,
+            bool hasLeaderboard
+        )
         {
             var beatmaps = await API.OSU.Client.SearchBeatmap(searchArg, null, hasLeaderboard);
-            if (beatmaps == null) return null;
+            if (beatmaps == null)
+                return null;
 
             if (isBid)
             {
-                beatmaps.Beatmapsets = beatmaps.Beatmapsets
-                    .OrderByDescending(x => x.Beatmaps.Any(y => y.BeatmapId == bid))
+                beatmaps.Beatmapsets = beatmaps
+                    .Beatmapsets
+                    .OrderByDescending(x => x.Beatmaps!.Any(y => y.BeatmapId == bid))
                     .ToList();
             }
 

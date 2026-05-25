@@ -18,17 +18,6 @@ public static partial class Utils
         return GetEnumMemberName(fieldInfo);
     }
 
-    public static string? GetObjectDescription(object value)
-    {
-        foreach (var field in value.GetType().GetFields())
-        {
-            if (field.GetValue(null)?.Equals(value) ?? false)
-                return GetEnumMemberName(field);
-        }
-
-        return null;
-    }
-
     private static string GetEnumMemberName(FieldInfo fieldInfo)
     {
         var jsonName = fieldInfo.GetCustomAttribute<JsonStringEnumMemberNameAttribute>();

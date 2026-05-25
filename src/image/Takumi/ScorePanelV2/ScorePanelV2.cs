@@ -15,12 +15,17 @@ using OSU = KanonBot.API.OSU;
 
 public static class ScoreV2
 {
-    private static readonly string templateRoot = IOPath.Combine(AppContext.BaseDirectory, "resources", "templates");
-    private static readonly string workingRoot = IOPath.Combine(Directory.GetCurrentDirectory(), "work");
-    private static readonly JsonSerializerOptions TemplateJsonOptions = new()
-    {
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
+    private static readonly string templateRoot = IOPath.Combine(
+        AppContext.BaseDirectory,
+        "resources",
+        "templates"
+    );
+    private static readonly string workingRoot = IOPath.Combine(
+        Directory.GetCurrentDirectory(),
+        "work"
+    );
+    private static readonly JsonSerializerOptions TemplateJsonOptions =
+        new() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
 
     private static readonly string[] TemplateFontPaths =
     [
@@ -36,7 +41,10 @@ public static class ScoreV2
 
     private static readonly Renderer Renderer = CreateTemplateRenderer(workingRoot);
 
-    public static async Task<RenderedImage> DrawScore(ScorePanelData data, ImageFormat format = ImageFormat.Jpeg)
+    public static async Task<RenderedImage> DrawScore(
+        ScorePanelData data,
+        ImageFormat format = ImageFormat.Jpeg
+    )
     {
         ArgumentNullException.ThrowIfNull(data);
         ArgumentNullException.ThrowIfNull(data.ppInfo);
@@ -74,7 +82,10 @@ public static class ScoreV2
         return renderer;
     }
 
-    private static async Task<ScorePanelContext> BuildTemplateContext(ScorePanelData data, string workingRoot)
+    private static async Task<ScorePanelContext> BuildTemplateContext(
+        ScorePanelData data,
+        string workingRoot
+    )
     {
         var ppInfo = data.ppInfo;
         var score = data.scoreInfo!;
@@ -83,11 +94,16 @@ public static class ScoreV2
         var user = score.User!;
 
         using var _ = await Utils.LoadOrDownloadAvatar(user);
-        using var background = await Utils.LoadOrDownloadBackground(beatmap.BeatmapsetId, beatmap.BeatmapId);
+        using var background = await Utils.LoadOrDownloadBackground(
+            beatmap.BeatmapsetId,
+            beatmap.BeatmapId
+        );
 
-        var backgroundSrc = background is not null && File.Exists(AssetPath("background", $"{beatmap.BeatmapId}.png"))
-            ? AssetPath("background", $"{beatmap.BeatmapId}.png")
-            : AssetPath("legacy", "load-failed-img.png");
+        var backgroundSrc =
+            background is not null
+            && File.Exists(AssetPath("background", $"{beatmap.BeatmapId}.png"))
+                ? AssetPath("background", $"{beatmap.BeatmapId}.png")
+                : AssetPath("legacy", "load-failed-img.png");
 
         var accuracyPercent = score.AccAuto * 100f;
 
@@ -97,7 +113,10 @@ public static class ScoreV2
             MapBgSrc = backgroundSrc,
             AvatarSrc = GetAvatarAssetPath(user),
             PanelSrc = GetPanelAssetPath(data.mode),
-            RankingSrc = AssetPath("ranking", $"ranking-{(score.Passed ? score.RankAuto : "F")}.png"),
+            RankingSrc = AssetPath(
+                "ranking",
+                $"ranking-{(score.Passed ? score.RankAuto : "F")}.png"
+            ),
             DifficultyRing = new DifficultyRingModel
             {
                 Color = Utils.ForStarDifficultyScore(ppInfo!.star).ToCssColor(),
@@ -149,9 +168,12 @@ public static class ScoreV2
         };
     }
 
-    private static async Task<List<ModModel>?> BuildModModels(ScorePanelData data, string workingRoot)
+    private static async Task<List<ModModel>?> BuildModModels(
+        ScorePanelData data,
+        string workingRoot
+    )
     {
-        var mods = data.scoreInfo!.Mods.AsEnumerable();
+        var mods = data.scoreInfo.Mods.AsEnumerable();
         if (data.scoreInfo.IsClassic)
         {
             mods = mods.Where(mod => !mod.IsClassic);
@@ -163,13 +185,19 @@ public static class ScoreV2
         {
             var acronym = mod.Acronym.ToUpperInvariant();
             var iconRelativePath = AssetPath("mods", $"{acronym}.png");
-            var iconAbsolutePath = IOPath.Combine(workingRoot, iconRelativePath.Replace('/', IOPath.DirectorySeparatorChar));
+            var iconAbsolutePath = IOPath.Combine(
+                workingRoot,
+                iconRelativePath.Replace('/', IOPath.DirectorySeparatorChar)
+            );
             var fallbackText = null as string;
 
             if (!File.Exists(iconAbsolutePath))
             {
                 iconRelativePath = AssetPath("mods", "Unknown.png");
-                iconAbsolutePath = IOPath.Combine(workingRoot, iconRelativePath.Replace('/', IOPath.DirectorySeparatorChar));
+                iconAbsolutePath = IOPath.Combine(
+                    workingRoot,
+                    iconRelativePath.Replace('/', IOPath.DirectorySeparatorChar)
+                );
                 fallbackText = acronym;
             }
 
@@ -178,7 +206,7 @@ public static class ScoreV2
 
             if (data.scoreInfo.IsLazer)
             {
-                var speedChange = (double?)mod.Settings?.GetValue("speed_change");
+                var speedChange = (double?)mod.Settings?["speed_change"];
                 if (speedChange is not null)
                 {
                     barDisplay = $"{speedChange}x";
@@ -219,8 +247,7 @@ public static class ScoreV2
         if (data.mode is RosuPP.Mode.Catch)
         {
             var statistics = score.ConvertStatistics;
-            return
-            [
+            return [
                 new JudgementModel { Value = statistics.CountGreat.ToString(), X = 790, Y = 849, Size = 40.0 },
                 new JudgementModel { Value = statistics.CountOk.ToString(), X = 790, Y = 972, Size = 40.0 },
                 new JudgementModel { Value = statistics.CountMeh.ToString(), X = 1152, Y = 849, Size = 40.0 },
@@ -231,8 +258,7 @@ public static class ScoreV2
         if (data.mode is RosuPP.Mode.Mania)
         {
             var statistics = score.Statistics;
-            return
-            [
+            return [
                 new JudgementModel { Value = statistics.CountGreat.ToString(), X = 790, Y = 832, Size = 35.0 },
                 new JudgementModel { Value = statistics.CountGeki.ToString(), X = 1156, Y = 834, Size = 35.0 },
                 new JudgementModel { Value = statistics.CountKatu.ToString(), X = 790, Y = 907, Size = 35.0 },
@@ -242,8 +268,7 @@ public static class ScoreV2
             ];
         }
 
-        return
-        [
+        return [
             new JudgementModel { Value = score.Statistics.CountGreat.ToString(), X = 792, Y = 854, Size = 53.09 },
             new JudgementModel { Value = score.Statistics.CountOk.ToString(), X = 792, Y = 982, Size = 53.09 },
             new JudgementModel { Value = score.Statistics.CountMeh.ToString(), X = 1154, Y = 854, Size = 53.09 },
@@ -253,10 +278,14 @@ public static class ScoreV2
 
     private static string BuildSongTimeDisplay(ScorePanelData data)
     {
-        var songTime = Utils.Duration2TimeString((long)Math.Round(data.scoreInfo.Beatmap!.TotalLength / data.ppInfo!.clockrate));
+        var songTime = Utils.Duration2TimeString(
+            (long)Math.Round(data.scoreInfo.Beatmap!.TotalLength / data.ppInfo!.clockrate)
+        );
         if (data.playtime is not null)
         {
-            var playTime = Utils.Duration2TimeString((long)Math.Round(data.playtime.Value / data.ppInfo.clockrate));
+            var playTime = Utils.Duration2TimeString(
+                (long)Math.Round(data.playtime.Value / data.ppInfo.clockrate)
+            );
             songTime = $"{playTime} / {songTime}";
         }
 
@@ -269,7 +298,7 @@ public static class ScoreV2
         {
             VerticalAlignment = VerticalAlignment.Bottom,
             HorizontalAlignment = HorizontalAlignment.Left,
-            FallbackFontFamilies = [HarmonySans, HarmonySansArabic]
+            FallbackFontFamilies =  [ HarmonySans, HarmonySansArabic ]
         };
     }
 
@@ -314,7 +343,8 @@ public static class ScoreV2
     {
         return mode switch
         {
-            RosuPP.Mode.Catch => AssetPath("legacy", "v2_scorepanel", "default-score-v2-fruits.png"),
+            RosuPP.Mode.Catch
+                => AssetPath("legacy", "v2_scorepanel", "default-score-v2-fruits.png"),
             RosuPP.Mode.Mania => AssetPath("legacy", "v2_scorepanel", "default-score-v2-mania.png"),
             _ => AssetPath("legacy", "v2_scorepanel", "default-score-v2.png")
         };
@@ -345,9 +375,7 @@ public static class ScoreV2
 
     private static string GetAvatarAssetPath(OSU.Models.User user)
     {
-        var fileName = user.AvatarUrl.Host == "a.ppy.sb"
-            ? $"sb-{user.Id}.png"
-            : $"{user.Id}.png";
+        var fileName = user.AvatarUrl.Host == "a.ppy.sb" ? $"sb-{user.Id}.png" : $"{user.Id}.png";
 
         return AssetPath("avatar", fileName);
     }

@@ -14,46 +14,11 @@ public class TranslationStore
     private readonly ConcurrentDictionary<Locale, Dictionary<string, string>> _translations = new();
     private static readonly Locale FallbackLocale = Locale.ZhCN;
 
-    /// <summary>
-    /// 从程序集的嵌入式资源加载所有翻译文件
-    /// </summary>
-    public void LoadFromEmbeddedResources(Assembly? assembly = null)
+    public void Load()
     {
-        assembly ??= Assembly.GetExecutingAssembly();
-        var resourceNames = assembly.GetManifestResourceNames();
-
-        foreach (var name in resourceNames)
-        {
-            // 资源名格式: KanonBot.res.i18n.zh-CN.json
-            if (!name.Contains("i18n"))
-                continue;
-
-            var locale = ExtractLocaleFromResourceName(name);
-            if (locale is null)
-                continue;
-
-            using var stream = assembly.GetManifestResourceStream(name);
-            if (stream is null)
-                continue;
-
-            using var reader = new StreamReader(stream);
-            var json = reader.ReadToEnd();
-            var dict = Json.Deserialize<Dictionary<string, string>>(json);
-            if (dict is not null)
-            {
-                _translations[locale.Value] = dict;
-                Log.Information(
-                    "Loaded i18n translations for {Locale} ({Count} keys)",
-                    locale.Value.ToCode(),
-                    dict.Count
-                );
-            }
-        }
+        LoadFromDirectory(Path.Combine(AppContext.BaseDirectory, "resources", "i18n"));
     }
 
-    /// <summary>
-    /// 从文件系统加载翻译（用于开发/测试）
-    /// </summary>
     public void LoadFromDirectory(string directoryPath)
     {
         if (!Directory.Exists(directoryPath))

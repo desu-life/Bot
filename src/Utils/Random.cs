@@ -33,7 +33,6 @@ public static partial class Utils
 
     public static string RandomRedemptionCode()
     {
-        const string chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         Span<byte> randomBytes = stackalloc byte[25];
         RandomNumberGenerator.Fill(randomBytes);
 

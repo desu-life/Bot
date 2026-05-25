@@ -1,21 +1,22 @@
-using System.Diagnostics;
-using System.Text.RegularExpressions;
-using System.Reflection;
 using System.ComponentModel;
-using API = KanonBot.API;
-using KanonBot.Serializer;
-using KanonBot.Drivers;
+using System.Diagnostics;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using KanonBot;
+using KanonBot.Drivers;
+using KanonBot.Serializer;
 using Newtonsoft.Json.Linq;
-using Msg = KanonBot.Message;
-using Img = KanonBot.Image;
 using SixLabors.ImageSharp;
+using API = KanonBot.API;
+using Img = KanonBot.Image;
+using Msg = KanonBot.Message;
 
 namespace Tests;
 
 public class Misc
 {
     private readonly ITestOutputHelper Output;
+
     public Misc(ITestOutputHelper Output)
     {
         this.Output = Output;
@@ -34,7 +35,6 @@ public class Misc
     [Fact]
     public void UtilsTest()
     {
-        Assert.Equal("osu", Utils.GetObjectDescription(API.OSU.Mode.OSU));
         Output.WriteLine(Utils.ForStarDifficulty(1.25).ToString());
         Output.WriteLine(Utils.ForStarDifficulty(2).ToString());
         Output.WriteLine(Utils.ForStarDifficulty(2.5).ToString());
@@ -42,10 +42,10 @@ public class Misc
         Output.WriteLine(Utils.ForStarDifficulty(3.5).ToString());
     }
 
-        [Fact]
-        public void IamBindingsTimestampDeserialize()
-        {
-                var json = """
+    [Fact]
+    public void IamBindingsTimestampDeserialize()
+    {
+        var json = """
                 {
                     "userId": "d505966d-54c3-40ed-bd90-e93b99b07398",
                     "userName": "Zh_Jk",
@@ -63,19 +63,22 @@ public class Misc
                 }
                 """;
 
-                var result = Json.Deserialize<KanonBot.API.IAM.UserBindingsResponse>(json);
+        var result = Json.Deserialize<KanonBot.API.IAM.UserBindingsResponse>(json);
 
-                Assert.NotNull(result);
-                Assert.Equal("Zh_Jk", result!.UserName);
-                Assert.Equal(DateTimeOffset.FromUnixTimeMilliseconds(1775382990862), result.CreateAt);
-                Assert.Null(result.LastLoginAt);
-                Assert.Equal("9037287", result.Bindings.Osu);
-        }
+        Assert.NotNull(result);
+        Assert.Equal("Zh_Jk", result!.UserName);
+        Assert.Equal(DateTimeOffset.FromUnixTimeMilliseconds(1775382990862), result.CreateAt);
+        Assert.Null(result.LastLoginAt);
+        Assert.Equal("9037287", result.Bindings.Osu);
+    }
 
     [Fact]
     public void MsgChain()
     {
-        var c = new Msg.Chain().msg("hello").image("C:\\hello.png", Msg.ImageSegment.Type.Url).msg("test\nhaha");
+        var c = new Msg.Chain()
+            .msg("hello")
+            .image("C:\\hello.png", Msg.ImageSegment.Type.Url)
+            .msg("test\nhaha");
         c.Add(new Msg.RawSegment("Test", new JObject { { "test", "test" } }));
         Assert.True(c.StartsWith("he"));
         Assert.False(c.StartsWith("!"));
@@ -100,6 +103,4 @@ public class Misc
     //     };
     //     KanonBot.Mail.Send(ms);
     // }
-
 }
-

@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using CommandSystem;
 using CommandSystem.Definition;
@@ -19,8 +21,6 @@ using KanonBot.Image;
 using KanonBot.Message;
 using KanonBot.OsuPerformance;
 using LanguageExt.UnsafeValueAccess;
-using System.Text.Json.Serialization;
-using System.Text.Json.Nodes;
 using SixLabors.ImageSharp.Formats.Png;
 using static KanonBot.API.OSU.Models;
 using static KanonBot.API.OSU.Models.PPlusData;
@@ -592,7 +592,7 @@ namespace KanonBot.Functions.OSUBot
         public static async Task Rolecost(Target target, ParsedCommand cmd)
         {
             var matchName = (cmd.GetString("match_name") ?? "").ToLower().Trim();
-            static double occost(User userInfo, UserData pppData)
+            static double occost(User userInfo, UserPerformancesNext pppData)
             {
                 double a,
                     c,
@@ -667,8 +667,15 @@ namespace KanonBot.Functions.OSUBot
                 case "occ":
                     try
                     {
-                        var pppData = await API.OSU.Client.GetUserPlusData(OnlineOsuInfo.Id);
-                        await target.Treply("get.occ_cost_result", OnlineOsuInfo.Username, occost(OnlineOsuInfo, pppData.User));
+                        var pppData = await API.OSU
+                            .Client
+                            .PPlus
+                            .GetUserPlusDataNext(OnlineOsuInfo.Id);
+                        await target.Treply(
+                            "get.occ_cost_result",
+                            OnlineOsuInfo.Username,
+                            occost(OnlineOsuInfo, pppData.Performances)
+                        );
                     }
                     catch
                     {
@@ -705,7 +712,11 @@ namespace KanonBot.Functions.OSUBot
                     }
                     if (scores!.Length > 0)
                     {
-                        await target.Treply("get.zkfc_cost_result", OnlineOsuInfo.Username, Math.Round(zkfccost(OnlineOsuInfo, scores[0]), 2));
+                        await target.Treply(
+                            "get.zkfc_cost_result",
+                            OnlineOsuInfo.Username,
+                            Math.Round(zkfccost(OnlineOsuInfo, scores[0]), 2)
+                        );
                     }
                     break;
                 ////////////////////////////////////////////////////////////////////////////////////////

@@ -1,3 +1,5 @@
+#pragma warning disable CS8629
+
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using KanonBot.API.OSU;
@@ -123,7 +125,7 @@ public class JsonMigrationTests
     [Fact]
     public void Beatmap_Deserialization()
     {
-        var json = File.ReadAllText("TestFiles/beatmap.json");
+        var json = File.ReadAllText("Tests/TestFiles/beatmap.json");
         var result = Json.Deserialize<Models.Beatmap>(json);
         Assert.NotNull(result);
         Assert.True(result.BeatmapId > 0);
@@ -132,7 +134,7 @@ public class JsonMigrationTests
     [Fact]
     public void Score_Deserialization()
     {
-        var json = File.ReadAllText("TestFiles/score.json");
+        var json = File.ReadAllText("Tests/TestFiles/score.json");
         var result = Json.Deserialize<Models.Score>(json);
         Assert.NotNull(result);
     }
@@ -140,7 +142,7 @@ public class JsonMigrationTests
     [Fact]
     public void User_Deserialization()
     {
-        var json = File.ReadAllText("TestFiles/user.json");
+        var json = File.ReadAllText("Tests/TestFiles/user.json");
         var result = Json.Deserialize<Models.UserExtended>(json);
         Assert.NotNull(result);
         Assert.True(result.Id > 0);
@@ -149,7 +151,7 @@ public class JsonMigrationTests
     [Fact]
     public void PPlusData_Deserialization()
     {
-        var json = File.ReadAllText("TestFiles/ppplus.json");
+        var json = File.ReadAllText("Tests/TestFiles/ppplus.json");
         var node = JsonNode.Parse(json);
         Assert.NotNull(node);
         var userData = node["user_data"]?.ToObject<Models.PPlusData.UserData>();

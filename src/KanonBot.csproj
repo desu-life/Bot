@@ -59,19 +59,27 @@
 		<!-- <PackageReference Include="Svg.Skia" Version="3.0.4" /> -->
 	</ItemGroup>
 
-	<!-- i18n embedded resources -->
-	<ItemGroup>
-	  <EmbeddedResource Include="../res/i18n/zh-CN.json" LogicalName="KanonBot.res.i18n.zh-CN.json" />
-	  <EmbeddedResource Include="../res/i18n/en.json" LogicalName="KanonBot.res.i18n.en.json" />
+	<!-- Source Generator -->
+	 <ItemGroup>
+	  <ProjectReference Include="../generators/KanonBot.Generators.Attributes/KanonBot.Generators.Attributes.csproj" />
+	  <ProjectReference Include="../generators/KanonBot.Generators/KanonBot.Generators.csproj"
+	    OutputItemType="Analyzer"
+	    ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
-	<!-- Source Generator -->
-
-	<!-- RosuPP -->
+	<!-- ProjectReference -->
 	<ItemGroup>
+	  <ProjectReference Include="../dependencies/takumi-html-ffi/bindings/takumi-render-uniffi/csharp/Takumi.Render.UniFFI/Takumi.Render.UniFFI.csproj" />
 	  <ProjectReference Include="../dependencies/rosu-pp-ffi/SharpRosuPP/RosuPP/RosuPP.csproj" />
 	  <ProjectReference Include="../dependencies/sb-pp-ffi/SharpRosuPP/RosuPP/SBRosuPP.csproj" />
 	  <ProjectReference Include="../dependencies/OppaiSharp/OppaiSharp/OppaiSharp.csproj" />
 	  <ProjectReference Include="../dependencies/osu-pp/osu-pp.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="..\resources\**\*.*">
+			<Link>resources\%(RecursiveDir)%(Filename)%(Extension)</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 </Project>
