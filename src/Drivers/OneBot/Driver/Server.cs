@@ -245,10 +245,9 @@ public partial class OneBot
                                 return;
                         }
                     }
-                    catch (JsonException)
+                    catch (JsonException ex)
                     {
-                        // throw new NotSupportedException($"不支持的消息格式，请使用数组消息格式");
-                        Log.Error("不支持的消息格式，请使用数组消息格式，断开来自{0}的连接", socket.ConnectionInfo);
+                        Log.Error(ex, "不支持的消息格式，请使用数组消息格式，断开来自{0}的连接", socket.ConnectionInfo);
                         this.Disconnect(socket.ConnectionInfo.Guid);
                         return;
                     }

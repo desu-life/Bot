@@ -46,7 +46,7 @@ public class JsonMigrationTests
     {
         var payload = JsonSerializer.Deserialize<QQGuild.Models.PayloadBase<object>>("{\"t\":\"READY\"}");
         Assert.NotNull(payload);
-        Assert.Equal(QQGuild.Enums.EventType.Ready, payload.Type);
+        Assert.Equal(QQGuild.Enums.EventType.Ready, payload!.Type);
 
         var requestJson = JsonSerializer.Serialize(
             new OneBot.Models.CQRequest<object>
@@ -154,7 +154,7 @@ public class JsonMigrationTests
         var json = File.ReadAllText("Tests/TestFiles/ppplus.json");
         var node = JsonNode.Parse(json);
         Assert.NotNull(node);
-        var userData = node["user_data"]?.ToObject<Models.PPlusData.UserData>();
+        var userData = node!["user_data"]?.ToObject<Models.PPlusData.UserData>();
         Assert.NotNull(userData);
     }
 
@@ -165,7 +165,7 @@ public class JsonMigrationTests
         var node = JsonNode.Parse(json);
         var result = node?.SelectToken("a.b.c");
         Assert.NotNull(result);
-        Assert.Equal(42, result.GetValue<int>());
+        Assert.Equal(42, result!.GetValue<int>());
     }
 
     [Fact]
@@ -175,7 +175,7 @@ public class JsonMigrationTests
         var node = JsonNode.Parse(json);
         var beatmap = node.ToObject<Models.Beatmap>();
         Assert.NotNull(beatmap);
-        Assert.Equal(100L, beatmap.BeatmapId);
+        Assert.Equal(100L, beatmap!.BeatmapId);
         Assert.Equal(Models.Status.Ranked, beatmap.Status);
     }
 
@@ -188,7 +188,7 @@ public class JsonMigrationTests
         Assert.NotNull(deserialized);
         Assert.Equal("DT", deserialized.Acronym);
         Assert.NotNull(deserialized.Settings);
-        Assert.Equal(1.5, (double)deserialized.Settings["speed_change"]!);
+        Assert.Equal(1.5, (double)deserialized.Settings!["speed_change"]!);
     }
 
     [Fact]
