@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using KanonBot.API;
 using static KanonBot.API.OSU.OSUExtensions;
 
-namespace KanonBot.Functions.OSU
+namespace KanonBot.Functions
 {
-    public static class Seasonalpass
+    public static class SeasonalPass
     {
         //查询seasonal pass放在了get.cs里
         public static async Task Update(long oid, Image.ScorePanelData score)

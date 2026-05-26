@@ -3,10 +3,10 @@ using CommandSystem.Definition;
 using CommandSystem.Parsing;
 using Flurl.Util;
 using KanonBot.Drivers;
-using KanonBot.Functions.OSUBot;
+using KanonBot.Functions;
 using static KanonBot.Functions.Accounts;
 
-namespace KanonBot.Functions.OSU
+namespace KanonBot.Functions
 {
     public class SuHelpCommand : ICommand
     {

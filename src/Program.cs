@@ -5,7 +5,7 @@ using Destructurama;
 using KanonBot.Command;
 using KanonBot.Drivers;
 using KanonBot.Event;
-using KanonBot.Functions.OSU;
+using KanonBot.Functions;
 using KanonBot.I18n;
 using KanonBot.Serializer;
 using LanguageExt.ClassInstances.Pred;

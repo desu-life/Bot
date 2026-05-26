@@ -13,7 +13,7 @@ using Serilog;
 using static KanonBot.API.OSU.OSUExtensions;
 using static KanonBot.Database.Model;
 
-namespace KanonBot.Functions.OSU
+namespace KanonBot.Functions
 {
     public static class GeneralUpdate
     {

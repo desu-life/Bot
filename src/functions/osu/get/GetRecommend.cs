@@ -4,7 +4,7 @@ using CommandSystem.Parsing;
 using KanonBot.Drivers;
 using KanonBot.OsuPerformance;
 
-namespace KanonBot.Functions.OSUBot
+namespace KanonBot.Functions
 {
     public class GetRecommendCommand : ICommand
     {

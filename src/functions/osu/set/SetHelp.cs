@@ -3,7 +3,7 @@ using CommandSystem.Definition;
 using CommandSystem.Parsing;
 using KanonBot.Drivers;
 
-namespace KanonBot.Functions.OSUBot
+namespace KanonBot.Functions
 {
     public class SetHelpCommand : ICommand
     {

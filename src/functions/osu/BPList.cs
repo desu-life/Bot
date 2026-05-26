@@ -5,39 +5,73 @@ using CommandSystem.Execution;
 using CommandSystem.Parsing;
 using KanonBot.API.OSU;
 using KanonBot.Drivers;
-using KanonBot.Functions.OSU;
+using KanonBot.Functions;
 using KanonBot.Message;
 using KanonBot.OsuPerformance;
 using LanguageExt.UnsafeValueAccess;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 
-namespace KanonBot.Functions.OSUBot
+namespace KanonBot.Functions
 {
-    public class TodayBpCommand : ICommand
+    public class BpListCommand : ICommand
     {
         public CommandDef Definition =>
             new()
             {
-                Name = "todaybp",
-                Description = "Show today's best performance",
+                Name = "bplist",
+                Description = "Show an osu! best performance list",
                 Args =
                 [
-                    new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                    new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
+                    new() { Name = "range", Description = "Score rank range", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseRange(s) },
+                    new() { Name = "range", Description = "Score rank range", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseRange(s) },
                     new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
-                    new() { Name = "order_number", Description = "Score index", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
                 ],
-                Flags = [ new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" }, ]
+                Flags =
+                [
+                    new() { Name = "special_pp", Description = "Alternative pp calculater", Value = "", SlashName = "is_special_pp" },
+                    new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" }
+                ]
             };
 
-        public Task Execute(Target target, ParsedCommand cmd) => ExecuteTodayBP(target, cmd);
+        public Task Execute(Target target, ParsedCommand cmd) => ExecuteBPList(target, cmd);
 
-        public static async Task ExecuteTodayBP(
+        public static async Task ExecuteBPList(
             Target target,
             ParsedCommand cmd,
             bool includeFails = false
         )
         {
+            if (!cmd.Has("range"))
+            {
+                await target.Treply("osu.invalid_range");
+                return;
+            }
+            var range = cmd.Get<Range>("range");
+            int StartAt,
+                EndAt;
+            StartAt = range.Start.Value;
+            EndAt = range.End.Value;
+            if (StartAt == 0)
+                StartAt = 1; // ParseRange returns Range(0, single) for single value
+
+            if (StartAt < 1 || StartAt > 199)
+            {
+                await target.Treply("osu.invalid_range");
+                return;
+            }
+            if (EndAt < 2 || EndAt > 200)
+            {
+                await target.Treply("osu.invalid_range");
+                return;
+            }
+            if (EndAt < StartAt)
+            {
+                await target.Treply("osu.invalid_range");
+                return;
+            }
+
             var resolved = await Accounts.ResolveCommandUser(target, cmd);
             if (resolved == null)
                 return;
@@ -75,11 +109,11 @@ namespace KanonBot.Functions.OSUBot
             {
                 scoreInfos = await API.OSU
                     .Client
-                    .GetUserScores(
+                    .GetUserScoresPage(
                         osuID,
                         API.OSU.UserScoreType.Best,
                         mode!.Value,
-                        100,
+                        200,
                         0,
                         includeFails
                     );
@@ -94,32 +128,20 @@ namespace KanonBot.Functions.OSUBot
             if (scoreInfos.Length > 0)
             {
                 List<Image.ScoreList.ScoreRank> scores = [ ];
-                var now = DateTime.Now;
-                var t = now.Hour < 4 ? now.Date.AddDays(-1).AddHours(4) : now.Date.AddHours(4);
-
-                t = t.AddDays(-cmd.Get<int>("order_number"));
-
-                for (int i = 0; i < scoreInfos.Length; i++)
+                for (
+                    int i = StartAt - 1;
+                    i < (scoreInfos.Length > EndAt ? EndAt : scoreInfos.Length);
+                    ++i
+                )
                 {
-                    var item = scoreInfos[i];
-                    var bp_time = item.EndedAt.ToLocalTime();
-
-                    if (bp_time >= t)
-                    {
-                        scores.Add(new Image.ScoreList.ScoreRank { Score = item, Rank = i + 1 });
-                    }
+                    scores.Add(
+                        new Image.ScoreList.ScoreRank { Score = scoreInfos[i], Rank = i + 1, }
+                    );
                 }
 
                 if (scores.Count == 0)
                 {
-                    if (cmd.SelfQuery)
-                    {
-                        await target.Treply("osu.no_todaybp_self", tempOsuInfo.Mode.ToStr());
-                    }
-                    else
-                    {
-                        await target.Treply("osu.no_todaybp_other", tempOsuInfo.Username, tempOsuInfo.Mode.ToStr());
-                    }
+                    await target.Treply("osu.no_bp_scores");
                     return;
                 }
 
@@ -131,7 +153,7 @@ namespace KanonBot.Functions.OSUBot
                         s.PPInfo = UniversalCalculator.CalculateData(
                             b,
                             s.Score,
-                            UniversalCalculator.GetCalculatorKind(is_ppysb, false)
+                            UniversalCalculator.GetCalculatorKind(is_ppysb, cmd.Flag("special_pp"))
                         );
                     }
                 );
@@ -141,7 +163,7 @@ namespace KanonBot.Functions.OSUBot
                 using var img = await KanonBot
                     .Image
                     .ScoreList
-                    .Draw(KanonBot.Image.ScoreList.Type.TODAYBP, scores, tempOsuInfo);
+                    .Draw(KanonBot.Image.ScoreList.Type.BPLIST, scores, tempOsuInfo);
 
                 await target.reply(img, new PngEncoder());
             }
@@ -160,22 +182,23 @@ namespace KanonBot.Functions.OSUBot
         }
     }
 
-    public class GetTodayBpCommand : ICommand
+    public class GetBpListCommand : ICommand
     {
         public CommandDef Definition =>
             new()
             {
-                Name = "get todaybp",
-                Description = "Show an osu! today's best performance",
+                Name = "get bplist",
+                Description = "Show an osu! best performance list",
                 Args =
                 [
-                    new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
-                    new() { Name = "order_number", Description = "Score index", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                    new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
+                    new() { Name = "range", Description = "Score rank range", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseRange(s) },
+                    new() { Name = "range", Description = "Score rank range", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseRange(s) },
                     new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
                 ],
                 Flags = [ new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" } ]
             };
 
-        public Task Execute(Target target, ParsedCommand cmd) => TodayBpCommand.ExecuteTodayBP(target, cmd);
+        public Task Execute(Target target, ParsedCommand cmd) => BpListCommand.ExecuteBPList(target, cmd);
     }
 }

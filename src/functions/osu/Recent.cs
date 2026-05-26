@@ -5,14 +5,14 @@ using CommandSystem.Execution;
 using CommandSystem.Parsing;
 using KanonBot.API.OSU;
 using KanonBot.Drivers;
-using KanonBot.Functions.OSU;
+using KanonBot.Functions;
 using KanonBot.Message;
 using KanonBot.OsuPerformance;
 using LanguageExt.UnsafeValueAccess;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 
-namespace KanonBot.Functions.OSUBot
+namespace KanonBot.Functions
 {
     public class RecentCommand : ICommand
     {
@@ -187,7 +187,7 @@ namespace KanonBot.Functions.OSUBot
                             c.Acronym.Equals("AP", StringComparison.OrdinalIgnoreCase) ||
                             c.Acronym.Equals("RX", StringComparison.OrdinalIgnoreCase));
                         if (temp_abletoinsert)
-                            await Seasonalpass.Update(oid.Value, data);
+                            await SeasonalPass.Update(oid.Value, data);
                     }
                     //std推图
                     if (x.Mode == API.OSU.Mode.OSU)

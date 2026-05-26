@@ -3,7 +3,7 @@ using System.Numerics;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using KanonBot.API.Kagami;
-using KanonBot.Functions.OSU;
+using KanonBot.Functions;
 using KanonBot.Image;
 using KanonBot.Image.Components;
 using KanonBot.OsuPerformance;

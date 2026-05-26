@@ -6,7 +6,7 @@ using KanonBot.Drivers;
 using static KanonBot.API.OSU.Models;
 using static KanonBot.API.OSU.Models.PPlusData;
 
-namespace KanonBot.Functions.OSUBot
+namespace KanonBot.Functions
 {
 
     public class GetRoleCostCommand : ICommand

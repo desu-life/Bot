@@ -1,7 +1,7 @@
 #pragma warning disable CS8602 // 解引用可能出现空引用。
 using KanonBot.API;
 using KanonBot.Drivers;
-using KanonBot.Functions.OSU;
+using KanonBot.Functions;
 using KanonBot.Message;
 using LanguageExt.SomeHelp;
 using LanguageExt.UnsafeValueAccess;

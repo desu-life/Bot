@@ -5,7 +5,7 @@ using CommandSystem.Execution;
 using CommandSystem.Parsing;
 using KanonBot.Drivers;
 
-namespace KanonBot.Functions.OSUBot
+namespace KanonBot.Functions
 {
     public class GetBgCommand : ICommand
     {

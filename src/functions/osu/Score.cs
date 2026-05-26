@@ -6,14 +6,14 @@ using CommandSystem.Parsing;
 using KanonBot.API;
 using KanonBot.API.OSU;
 using KanonBot.Drivers;
-using KanonBot.Functions.OSU;
+using KanonBot.Functions;
 using KanonBot.Message;
 using KanonBot.OsuPerformance;
 using LanguageExt.UnsafeValueAccess;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 
-namespace KanonBot.Functions.OSUBot
+namespace KanonBot.Functions
 {
     public class ScoreCommand : ICommand
     {

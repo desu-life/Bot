@@ -8,7 +8,7 @@ using KanonBot.Message;
 using KanonBot.Serializer;
 using SixLabors.ImageSharp.Formats.Jpeg;
 
-namespace KanonBot.Functions.OSUBot
+namespace KanonBot.Functions
 {
     public class PpvsCommand : ICommand
     {

@@ -6,11 +6,11 @@ using CommandSystem.Parsing;
 using KanonBot.API;
 using KanonBot.API.OSU;
 using KanonBot.Drivers;
-using KanonBot.Functions.OSU;
+using KanonBot.Functions;
 using KanonBot.Message;
 using LanguageExt.UnsafeValueAccess;
 
-namespace KanonBot.Functions.OSUBot
+namespace KanonBot.Functions
 {
     public class UpdateCommand : ICommand
     {

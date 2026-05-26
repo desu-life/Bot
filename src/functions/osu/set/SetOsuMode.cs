@@ -8,7 +8,7 @@ using KanonBot.Functions;
 using KanonBot.Message;
 using static KanonBot.API.OSU.OSUExtensions;
 
-namespace KanonBot.Functions.OSUBot
+namespace KanonBot.Functions
 {
     public class SetOsuModeCommand : ICommand
     {

@@ -11,7 +11,7 @@ using KanonBot.Drivers;
 using KanonBot.Message;
 using RosuPP;
 
-namespace KanonBot.Functions.OSUBot
+namespace KanonBot.Functions
 {
     public class LeewayCommand : ICommand
     {

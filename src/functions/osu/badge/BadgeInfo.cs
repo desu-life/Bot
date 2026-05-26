@@ -9,7 +9,7 @@ using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.PixelFormats;
 using Img = SixLabors.ImageSharp.Image;
 
-namespace KanonBot.Functions.OSUBot
+namespace KanonBot.Functions
 {
     public class BadgeInfoCommand : ICommand
     {

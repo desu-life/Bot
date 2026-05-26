@@ -2,7 +2,7 @@
 using System.IO;
 using System.Numerics;
 using KanonBot.API.Kagami;
-using KanonBot.Functions.OSU;
+using KanonBot.Functions;
 using KanonBot.Image;
 using KanonBot.Image.Components;
 using SixLabors.Fonts;
