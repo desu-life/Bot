@@ -15,8 +15,8 @@ namespace KanonBot.Functions.OSUBot
                 Description = "Recommend osu! beatmaps",
                 Args =
                 [
-                    new() { Name = "username", Description = "osu! username or user ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
-                    new() { Name = "osu_mode", Description = "osu! game mode", Prefix = ArgPrefix.Colon },
+                    new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                    new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
                     new() { Name = "osu_mods", Description = "osu! mods", Prefix = ArgPrefix.Plus },
                 ],
                 Flags = [ ]

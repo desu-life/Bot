@@ -14,7 +14,7 @@ namespace KanonBot.Functions.OSU
             new()
             {
                 Name = "su",
-                Description = "Show superuser commands",
+                Description = "Show commands",
                 Args = [ ],
                 Flags = [ ]
             };
@@ -28,7 +28,7 @@ namespace KanonBot.Functions.OSU
             new()
             {
                 Name = "su updateall",
-                Description = "Run the administrator daily update task",
+                Description = "Daily update task",
                 Args = [ ],
                 Flags = [ ]
             };

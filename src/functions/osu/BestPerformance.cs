@@ -28,16 +28,16 @@ namespace KanonBot.Functions.OSUBot
                 ExcludePrefixes =  [ "bpa", "bpme", "bplist" ],
                 Args =
                 [
-                    new() { Name = "username", Description = "osu! username or user ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
-                    new() { Name = "order_number", Description = "Score list position", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseInt(s) },
-                    new() { Name = "order_number", Description = "Score list position", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
-                    new() { Name = "osu_mode", Description = "osu! game mode", Prefix = ArgPrefix.Colon },
+                    new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
+                    new() { Name = "order_number", Description = "Score index", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseInt(s) },
+                    new() { Name = "order_number", Description = "Score index", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                    new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
                 ],
                 Flags =
                 [
-                    new() { Name = "special_pp", Description = "Use special pp panel", Value = "", SlashName = "is_special_pp" },
-                    new() { Name = "sb_server", Description = "Use the ppysb server", Value = "sb", SlashName = "is_sb" },
-                    new() { Name = "dev_panel", Description = "Show developer panel", Value = "dev", SlashName = "is_dev" },
+                    new() { Name = "special_pp", Description = "Alternative pp calculater", Value = "", SlashName = "is_special_pp" },
+                    new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" },
+                    new() { Name = "dev_panel", Description = "Use the Dev panel", Value = "dev", SlashName = "is_dev" },
                 ]
             };
 

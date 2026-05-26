@@ -11,7 +11,7 @@ namespace KanonBot.Functions.OSUBot
             new()
             {
                 Name = "bind",
-                Description = "Bind your account with KanonBot",
+                Description = "Bind your account",
                 Args =
                 [
                     new() { Name = "code", Description = "Binding verification code", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },

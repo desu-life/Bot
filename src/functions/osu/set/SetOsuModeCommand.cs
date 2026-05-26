@@ -16,12 +16,12 @@ namespace KanonBot.Functions.OSUBot
             new()
             {
                 Name = "set osumode",
-                Description = "Set your default osu! game mode",
+                Description = "Set your default osu! Gamemode",
                 Args =
                 [
-                    new() { Name = "mode", Description = "Default osu! game mode", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple }
+                    new() { Name = "mode", Description = "Default osu! Gamemode", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple }
                 ],
-                Flags = [ new() { Name = "sb_server", Description = "Use the ppysb server", Value = "sb", SlashName = "is_sb" } ]
+                Flags = [ new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" } ]
             };
 
         public async Task Execute(Target target, ParsedCommand cmd)

@@ -21,19 +21,19 @@ namespace KanonBot.Functions.OSUBot
             new()
             {
                 Name = "score",
-                Description = "Show a user's score on a beatmap",
+                Description = "Show a user's score on a beatmap (sorted by score)",
                 Args =
                 [
-                    new() { Name = "username", Description = "osu! username or user ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
+                    new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
                     new() { Name = "bid", Description = "Beatmap ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseInt(s) },
                     new() { Name = "bid", Description = "Beatmap ID", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
-                    new() { Name = "osu_mode", Description = "osu! game mode", Prefix = ArgPrefix.Colon },
+                    new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
                     new() { Name = "osu_mods", Description = "osu! mods", Prefix = ArgPrefix.Plus },
                 ],
                 Flags =
                 [
-                    new() { Name = "special_pp", Description = "Use special pp panel", Value = "", SlashName = "is_special_pp" },
-                    new() { Name = "sb_server", Description = "Use the ppysb server", Value = "sb", SlashName = "is_sb" },
+                    new() { Name = "special_pp", Description = "Alternative pp calculater", Value = "", SlashName = "is_special_pp" },
+                    new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" },
                 ]
             };
 
@@ -47,19 +47,19 @@ namespace KanonBot.Functions.OSUBot
             new()
             {
                 Name = "pp",
-                Description = "Calculate pp for a user's beatmap score",
+                Description = "Show a user's score on a beatmap (sorted by pp)",
                 Args =
                 [
-                    new() { Name = "username", Description = "osu! username or user ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
+                    new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
                     new() { Name = "bid", Description = "Beatmap ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseInt(s) },
                     new() { Name = "bid", Description = "Beatmap ID", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
-                    new() { Name = "osu_mode", Description = "osu! game mode", Prefix = ArgPrefix.Colon },
+                    new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
                     new() { Name = "osu_mods", Description = "osu! mods", Prefix = ArgPrefix.Plus },
                 ],
                 Flags =
                 [
-                    new() { Name = "special_pp", Description = "Use special pp panel", Value = "", SlashName = "is_special_pp" },
-                    new() { Name = "sb_server", Description = "Use the ppysb server", Value = "sb", SlashName = "is_sb" },
+                    new() { Name = "special_pp", Description = "Alternative pp calculater", Value = "", SlashName = "is_special_pp" },
+                    new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" },
                 ]
             };
 

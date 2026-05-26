@@ -28,12 +28,12 @@ namespace KanonBot.Functions.OSUBot
                 Args =
                 [
                     new() { Name = "search_arg", Description = "Beatmap search query", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
-                    new() { Name = "order_number", Description = "Search result position", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                    new() { Name = "order_number", Description = "Search result index", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
                     new() { Name = "osu_mods", Description = "osu! mods", Prefix = ArgPrefix.Plus },
                 ],
                 Flags =
                 [
-                    new() { Name = "special_pp", Description = "Use special pp panel", Value = "", SlashName = "is_special_pp" },
+                    new() { Name = "special_pp", Description = "Alternative pp calculater", Value = "", SlashName = "is_special_pp" },
                 ]
             };
 

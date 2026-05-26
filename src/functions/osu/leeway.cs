@@ -25,7 +25,7 @@ namespace KanonBot.Functions.OSUBot
                 [
                     new() { Name = "bid", Description = "Beatmap ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseInt(s) },
                     new() { Name = "bid", Description = "Beatmap ID", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
-                    new() { Name = "osu_mode", Description = "osu! game mode", Prefix = ArgPrefix.Colon },
+                    new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
                     new() { Name = "osu_mods", Description = "osu! mods", Prefix = ArgPrefix.Plus },
                 ],
                 Flags =  [ ]

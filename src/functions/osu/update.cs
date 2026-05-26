@@ -21,10 +21,10 @@ namespace KanonBot.Functions.OSUBot
                 Description = "Refresh cached osu! user data",
                 Args =
                 [
-                    new() { Name = "username", Description = "osu! username or user ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
-                    new() { Name = "osu_mode", Description = "osu! game mode", Prefix = ArgPrefix.Colon },
+                    new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                    new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
                 ],
-                Flags =  [ new() { Name = "sb_server", Description = "Use the ppysb server", Value = "sb", SlashName = "is_sb" }, ]
+                Flags =  [ new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" }, ]
             };
 
         public async Task Execute(Target target, ParsedCommand cmd)

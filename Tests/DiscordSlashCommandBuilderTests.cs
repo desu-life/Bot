@@ -18,11 +18,11 @@ file class SlashBuilderTestCommand : ICommand
         Description = "Show bonus pp",
         Args =
         [
-            new() { Name = "username", Description = "osu! username or user ID", Prefix = ArgPrefix.None },
+            new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None },
         ],
         Flags =
         [
-            new() { Name = "sb_server", Description = "Use the ppysb server", Value = "sb", SlashName = "is_sb" },
+            new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" },
         ]
     };
 

@@ -15,7 +15,7 @@ file class TestInfoCommand : ICommand
         Name = "info",
         Description = "Show info",
         Aliases = ["i"],
-        Args = [new() { Name = "username", Description = "osu! username or user ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple }],
+        Args = [new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple }],
         Flags = []
     };
     public Task Execute(Target target, ParsedCommand cmd) => Task.CompletedTask;

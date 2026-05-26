@@ -12,12 +12,11 @@ namespace KanonBot.Functions.OSUBot
             {
                 Name = "get mu",
                 Description = "Show an osu! profile link",
-                SlashName = "get-profile",
                 Aliases = [ "get profile" ],
                 Args =
                 [
-                    new() { Name = "username", Description = "osu! username or user ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
-                    new() { Name = "osu_mode", Description = "osu! game mode", Prefix = ArgPrefix.Colon },
+                    new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                    new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
                 ],
                 Flags = [ ]
             };
