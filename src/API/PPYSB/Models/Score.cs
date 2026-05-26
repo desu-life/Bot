@@ -78,7 +78,7 @@ public partial class Models
         public DateTimeOffset PlayTime { get; set; }
 
         [JsonPropertyName("time_elapsed")]
-        public string TimeElapsed { get; set; }
+        public int TimeElapsed { get; set; }
 
         [JsonPropertyName("perfect")]
         public uint Perfect { get; set; }
