@@ -27,6 +27,7 @@ public enum ParseStrategy
 public class ArgDef
 {
     public string Name { get; init; } = "";
+    public string Description { get; init; } = "";
     public ArgPrefix Prefix { get; init; } = ArgPrefix.None;
     public ParseStrategy Strategy { get; init; } = ParseStrategy.Simple;
 

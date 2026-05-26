@@ -5,6 +5,7 @@ using KanonBot.Functions.OSU;
 using KanonBot.Message;
 using LanguageExt.SomeHelp;
 using LanguageExt.UnsafeValueAccess;
+using Discord.WebSocket;
 
 namespace KanonBot.Functions
 {
@@ -191,6 +192,15 @@ namespace KanonBot.Functions
                     }
                     break;
                 case Platform.Discord:
+                    if (target.raw is SocketSlashCommand s)
+                    {
+                        return new AccInfo()
+                        {
+                            platform = Platform.Discord,
+                            uid = s.User.Id.ToString()
+                        };
+                    }
+
                     if (target.raw is Discord.IMessage d)
                     {
                         return new AccInfo()

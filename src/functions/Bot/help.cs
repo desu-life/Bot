@@ -11,6 +11,7 @@ namespace KanonBot.Functions.OSUBot
             new()
             {
                 Name = "help",
+                Description = "Show KanonBot help",
                 Args =  [ ],
                 Flags =  [ ]
             };

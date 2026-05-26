@@ -20,17 +20,18 @@ namespace KanonBot.Functions.OSUBot
             new()
             {
                 Name = "bplist",
+                Description = "Show an osu! best performance list",
                 Args =
                 [
-                    new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
-                    new() { Name = "range", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseRange(s) },
-                    new() { Name = "range",    Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseRange(s) },
-                    new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
+                    new() { Name = "username", Description = "osu! username or user ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
+                    new() { Name = "range", Description = "Score rank range", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseRange(s) },
+                    new() { Name = "range", Description = "Score rank range", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseRange(s) },
+                    new() { Name = "osu_mode", Description = "osu! game mode", Prefix = ArgPrefix.Colon },
                 ],
                 Flags =
                 [
-                    new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
-                    new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" }
+                    new() { Name = "special_pp", Description = "Use special pp panel", Value = "", SlashName = "is_special_pp" },
+                    new() { Name = "sb_server", Description = "Use the ppysb server", Value = "sb", SlashName = "is_sb" }
                 ]
             };
 

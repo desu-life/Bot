@@ -23,18 +23,19 @@ namespace KanonBot.Functions.OSUBot
             new()
             {
                 Name = "info",
+                Description = "Show an osu! user profile panel",
                 Args =
                 [
-                    new() { Name = "username",     Prefix = ArgPrefix.None,  Strategy = ParseStrategy.Simple },
-                    new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon, Parse = s => s },
-                    new() { Name = "order_number", Prefix = ArgPrefix.Hash,  Parse = s => CommandDefs.ParseInt(s) },
+                    new() { Name = "username", Description = "osu! username or user ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                    new() { Name = "osu_mode", Description = "osu! game mode", Prefix = ArgPrefix.Colon, Parse = s => s },
+                    new() { Name = "order_number", Description = "Score list position", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
                 ],
                 Flags =
                 [
-                    new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
-                    new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
-                    new() { Name = "dev_panel",  Value = "dev", SlashName = "is_dev" },
-                    new() { Name = "sp_panel",   Value = "p",   SlashName = "is_special_panel" },
+                    new() { Name = "special_pp", Description = "Use special pp panel", Value = "", SlashName = "is_special_pp" },
+                    new() { Name = "sb_server", Description = "Use the ppysb server", Value = "sb", SlashName = "is_sb" },
+                    new() { Name = "dev_panel", Description = "Show developer panel", Value = "dev", SlashName = "is_dev" },
+                    new() { Name = "sp_panel", Description = "Show special panel", Value = "p", SlashName = "is_special_panel" },
                 ]
             };
 

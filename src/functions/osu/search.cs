@@ -23,16 +23,17 @@ namespace KanonBot.Functions.OSUBot
             new()
             {
                 Name = "search",
+                Description = "Search osu! beatmaps",
                 Aliases =  [ "sc" ],
                 Args =
                 [
-                    new() { Name = "search_arg", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
-                    new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
-                    new() { Name = "osu_mods", Prefix = ArgPrefix.Plus },
+                    new() { Name = "search_arg", Description = "Beatmap search query", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                    new() { Name = "order_number", Description = "Search result position", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                    new() { Name = "osu_mods", Description = "osu! mods", Prefix = ArgPrefix.Plus },
                 ],
                 Flags =
                 [
-                    new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
+                    new() { Name = "special_pp", Description = "Use special pp panel", Value = "", SlashName = "is_special_pp" },
                 ]
             };
 

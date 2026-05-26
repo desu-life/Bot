@@ -4,6 +4,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using CommandSystem;
+using CommandSystem.Parsing;
 using DotNext.Threading;
 using Flurl.Util;
 using KanonBot.Drivers;
@@ -63,12 +64,30 @@ namespace KanonBot.Command
 
         private static async Task Run(Target target, string cmd)
         {
+            var (command, parsed) = _handler.HandleLegacy(cmd);
+            if (command is null || parsed is null)
+                return;
+
+            await RunCommand(target, command, parsed);
+        }
+
+        public static async Task ParserSlash(
+            Target target,
+            string slashName,
+            Dictionary<string, string> options
+        )
+        {
+            var (command, parsed) = _handler.HandleSlash(slashName, options);
+            if (command is null || parsed is null)
+                return;
+
+            await RunCommand(target, command, parsed);
+        }
+
+        private static async Task RunCommand(Target target, ICommand command, ParsedCommand parsed)
+        {
             try
             {
-                var (command, parsed) = _handler.HandleLegacy(cmd);
-                if (command is null || parsed is null)
-                    return;
-
                 await command.Execute(target, parsed);
             }
             catch (Flurl.Http.FlurlHttpTimeoutException)

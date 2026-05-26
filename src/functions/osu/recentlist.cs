@@ -14,52 +14,6 @@ using SixLabors.ImageSharp.Formats.Png;
 
 namespace KanonBot.Functions.OSUBot
 {
-    public class RecentListCommand : ICommand
-    {
-        public CommandDef Definition =>
-            new()
-            {
-                Name = "res",
-                Args =
-                [
-                    new() { Name = "username",     Prefix = ArgPrefix.None,  Strategy = ParseStrategy.Simple },
-                    new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
-                    new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
-                ],
-                Flags =
-                [
-                    new() { Name = "special_pp", Value = "",   SlashName = "is_special_pp" },
-                    new() { Name = "sb_server",  Value = "sb", SlashName = "is_sb" },
-                ]
-            };
-
-        public Task Execute(Target target, ParsedCommand cmd) =>
-            RecentList.Execute(target, cmd, includeFails: true);
-    }
-
-    public class PassRecentListCommand : ICommand
-    {
-        public CommandDef Definition =>
-            new()
-            {
-                Name = "prs",
-                Args =
-                [
-                    new() { Name = "username",     Prefix = ArgPrefix.None,  Strategy = ParseStrategy.Simple },
-                    new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
-                    new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
-                ],
-                Flags =
-                [
-                    new() { Name = "special_pp", Value = "",   SlashName = "is_special_pp" },
-                    new() { Name = "sb_server",  Value = "sb", SlashName = "is_sb" },
-                ]
-            };
-
-        public Task Execute(Target target, ParsedCommand cmd) =>
-            RecentList.Execute(target, cmd, includeFails: false);
-    }
-
     public class RecentList
     {
         public static async Task Execute(

@@ -36,6 +36,11 @@ public interface IReply
     Task<bool> Reply(Target target, Message.Chain msg);
 }
 
+public interface IPrivateReply
+{
+    Task<bool> PrivateReply(Target target, Message.Chain msg);
+}
+
 public class Drivers
 {
     ManualResetEvent exitEvent = new(false);

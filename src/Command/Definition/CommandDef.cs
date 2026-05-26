@@ -7,12 +7,24 @@ namespace CommandSystem.Definition;
 /// </summary>
 public class CommandDef
 {
+    private string? _slashName;
+
     public string Name { get; init; } = "";
+    public string Description { get; init; } = "";
+    public string SlashName
+    {
+        get => string.IsNullOrWhiteSpace(_slashName) ? ToDefaultSlashName(Name) : _slashName;
+        init => _slashName = value;
+    }
+
     public List<string> Aliases { get; init; } = [ ];
     public bool LegacyStartsWithMatch { get; init; } = false;
     public List<string> ExcludePrefixes { get; init; } = [ ];
     public List<ArgDef> Args { get; init; } = [ ];
     public List<FlagDef> Flags { get; init; } = [ ];
+
+    public static string ToDefaultSlashName(string name) =>
+        name.Trim().Replace(' ', '-').ToLowerInvariant();
 }
 
 /// <summary>
@@ -21,6 +33,10 @@ public class CommandDef
 public class CommandRegistry
 {
     private readonly Dictionary<string, ICommand> _commands = new();
+    private readonly Dictionary<string, ICommand> _slashCommands = new();
+    private readonly List<ICommand> _registeredCommands = new();
+
+    public IReadOnlyList<ICommand> Commands => _registeredCommands;
 
     public void Register(ICommand command)
     {
@@ -28,10 +44,23 @@ public class CommandRegistry
         _commands[def.Name] = command;
         foreach (var alias in def.Aliases)
             _commands[alias] = command;
+
+        if (_slashCommands.TryGetValue(def.SlashName, out var existing))
+        {
+            throw new InvalidOperationException(
+                $"Duplicate slash command name '{def.SlashName}' for '{existing.Definition.Name}' and '{def.Name}'."
+            );
+        }
+
+        _slashCommands[def.SlashName] = command;
+        _registeredCommands.Add(command);
     }
 
     public bool TryGet(string name, out ICommand? command) =>
         _commands.TryGetValue(name, out command);
+
+    public bool TryGetSlash(string slashName, out ICommand? command) =>
+        _slashCommands.TryGetValue(slashName, out command);
 
     public (ICommand? command, string rawArgs) MatchCommand(string body)
     {

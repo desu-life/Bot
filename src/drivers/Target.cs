@@ -37,6 +37,7 @@ public class Target
     public required Platform platform { get; init; }
     public bool isFromAdmin { get; set; } = false;
     public DateTimeOffset time { get; set; } = DateTimeOffset.Now;
+    public bool HasReplied { get; private set; } = false;
 
     // 原平台消息结构
     public object? raw { get; init; }
@@ -47,6 +48,11 @@ public class Target
     public Task<bool> reply(string m)
     {
         return this.reply(new Msg.Chain().msg(m));
+    }
+
+    public Task<bool> privateReply(string m)
+    {
+        return this.privateReply(new Msg.Chain().msg(m));
     }
 
     public Task<bool> reply(SixLabors.ImageSharp.Image img, SixLabors.ImageSharp.Formats.IImageEncoder encoder)
@@ -66,11 +72,35 @@ public class Target
 
     public async Task<bool> reply(Msg.Chain msgChain)
     {
+        bool result;
         if (this.socket is IReply r) {
-            return await r.Reply(this, msgChain);
+            result = await r.Reply(this, msgChain);
         } else {
             await socket.SendAsync(msgChain.ToString());
-            return true;
+            result = true;
         }
+
+        if (result)
+            HasReplied = true;
+
+        return result;
+    }
+
+    public async Task<bool> privateReply(Msg.Chain msgChain)
+    {
+        bool result;
+        if (this.socket is IPrivateReply r)
+        {
+            result = await r.PrivateReply(this, msgChain);
+        }
+        else
+        {
+            result = await reply(msgChain);
+        }
+
+        if (result)
+            HasReplied = true;
+
+        return result;
     }
 }

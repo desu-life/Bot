@@ -229,6 +229,15 @@ public class Config
 
         [TomlProperty("gateway_host")]
         public string? gatewayHost { get; set; }
+
+        [TomlProperty("slash_mode")]
+        public string slashMode { get; set; } = "guild"; //global or guild
+
+        [TomlProperty("slash_guild_ids")]
+        public long[] slashGuildIds { get; set; } = [];
+
+        [TomlProperty("slash_register_on_startup")]
+        public bool slashRegisterOnStartup { get; set; } = false;
     }
 
     public class Base

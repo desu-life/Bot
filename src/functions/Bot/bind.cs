@@ -11,9 +11,10 @@ namespace KanonBot.Functions.OSUBot
             new()
             {
                 Name = "bind",
+                Description = "Bind your account with KanonBot",
                 Args =
                 [
-                    new() { Name = "code", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                    new() { Name = "code", Description = "Binding verification code", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
                 ],
                 Flags =  [ ]
             };
@@ -98,7 +99,7 @@ namespace KanonBot.Functions.OSUBot
                         return;
                     }
 
-                    await target.Treply("bind.session_link", sessionResult.Session.Url);
+                    await target.TprivateReply("bind.session_link", sessionResult.Session.Url);
                     return;
                 case API.IAM.BindSessionResultType.AlreadyBound:
                     await target.Treply("bind.already_bound");

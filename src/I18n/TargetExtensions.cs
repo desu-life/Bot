@@ -21,6 +21,9 @@ public static class TargetI18nExtensions
     public static Task<bool> Treply(this Target target, string key, params object[] args) =>
         target.reply(Localizer.Instance.Get(key, target, args));
 
+    public static Task<bool> TprivateReply(this Target target, string key, params object[] args) =>
+        target.privateReply(Localizer.Instance.Get(key, target, args));
+
     public static string GetPrefix(this Target target) =>
         LocaleResolver.GetPlatformPrefix(target.platform);
 }

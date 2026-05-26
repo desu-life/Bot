@@ -11,6 +11,7 @@ namespace KanonBot.Functions.OSUBot
             new()
             {
                 Name = "ping",
+                Description = "Check whether KanonBot is online",
                 Args =  [ ],
                 Flags =  [ ]
             };

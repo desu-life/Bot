@@ -49,7 +49,7 @@ public class JsonMigrationTests
         Assert.Equal(QQGuild.Enums.EventType.Ready, payload.Type);
 
         var requestJson = JsonSerializer.Serialize(
-            new OneBot.Models.CQRequest
+            new OneBot.Models.CQRequest<object>
             {
                 action = OneBot.Enums.Actions.SendMsg,
                 Params = new { }

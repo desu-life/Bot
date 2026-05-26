@@ -15,56 +15,6 @@ using SixLabors.ImageSharp.Formats.Png;
 
 namespace KanonBot.Functions.OSUBot
 {
-    public class ScoreCommand : ICommand
-    {
-        public CommandDef Definition =>
-            new()
-            {
-                Name = "score",
-                Args =
-                [
-                    new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
-                    new() { Name = "bid",      Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseInt(s) },
-                    new() { Name = "bid",      Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
-                    new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
-                    new() { Name = "osu_mods", Prefix = ArgPrefix.Plus },
-                ],
-                Flags =
-                [
-                    new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
-                    new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
-                ]
-            };
-
-        public Task Execute(Target target, ParsedCommand cmd) =>
-            Score.Execute(target, cmd, ppFirst: false, fetch_source: true);
-    }
-
-    public class PpCommand : ICommand
-    {
-        public CommandDef Definition =>
-            new()
-            {
-                Name = "pp",
-                Args =
-                [
-                    new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
-                    new() { Name = "bid",      Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseInt(s) },
-                    new() { Name = "bid",      Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
-                    new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
-                    new() { Name = "osu_mods", Prefix = ArgPrefix.Plus },
-                ],
-                Flags =
-                [
-                    new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
-                    new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
-                ]
-            };
-
-        public Task Execute(Target target, ParsedCommand cmd) =>
-            Score.Execute(target, cmd, ppFirst: true, fetch_source: true);
-    }
-
     public class Score
     {
         public static async Task Execute(

@@ -14,39 +14,42 @@ public class CommandParsingTests
     private static CommandDef MakeInfoDef() => new()
     {
         Name = "info",
+        Description = "Show info",
         Args =
         [
-            new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
-            new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
+            new() { Name = "username", Description = "osu! username or user ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+            new() { Name = "osu_mode", Description = "osu! game mode", Prefix = ArgPrefix.Colon },
         ],
         Flags =
         [
-            new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" },
+            new() { Name = "sb_server", Description = "Use the ppysb server", Value = "sb", SlashName = "is_sb" },
         ]
     };
 
     private static CommandDef MakeBpDef() => new()
     {
         Name = "bp",
+        Description = "Show bp",
         LegacyStartsWithMatch = true,
         ExcludePrefixes = ["bpa", "bpme", "bplist"],
         Args =
         [
-            new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
-            new() { Name = "order_number", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => int.TryParse(s, out var n) ? n : null },
-            new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => int.TryParse(s, out var n) ? n : null },
-            new() { Name = "osu_mode", Prefix = ArgPrefix.Colon },
+            new() { Name = "username", Description = "osu! username or user ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
+            new() { Name = "order_number", Description = "Score list position", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => int.TryParse(s, out var n) ? n : null },
+            new() { Name = "order_number", Description = "Score list position", Prefix = ArgPrefix.Hash, Parse = s => int.TryParse(s, out var n) ? n : null },
+            new() { Name = "osu_mode", Description = "osu! game mode", Prefix = ArgPrefix.Colon },
         ],
         Flags =
         [
-            new() { Name = "special_pp", Value = "", SlashName = "is_special_pp" },
-            new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" },
+            new() { Name = "special_pp", Description = "Use special pp panel", Value = "", SlashName = "is_special_pp" },
+            new() { Name = "sb_server", Description = "Use the ppysb server", Value = "sb", SlashName = "is_sb" },
         ]
     };
 
     private static CommandDef MakeSimpleDef() => new()
     {
         Name = "ping",
+        Description = "Ping",
         Args = [],
         Flags = []
     };
@@ -251,5 +254,34 @@ public class CommandParsingTests
 
         Assert.Equal("test", result.Args["username"]);
         Assert.False(result.Args.ContainsKey("nonexistent_param"));
+    }
+
+    [Fact]
+    public void Slash_RawArgs_ForSimpleArg()
+    {
+        var def = new CommandDef
+        {
+            Name = "bind",
+            Description = "Bind account",
+            Args = [new() { Name = "code", Description = "Binding verification code", Prefix = ArgPrefix.None }],
+            Flags = []
+        };
+
+        var result = _slash.Parse("bind", new() { ["code"] = "123456" }, def);
+
+        Assert.Equal("123456", result.RawArgs);
+    }
+
+    [Fact]
+    public void Slash_RawArgs_ForPrefixedArgsAndFlags()
+    {
+        var def = MakeInfoDef();
+        var result = _slash.Parse(
+            "info",
+            new() { ["username"] = "zhjk", ["osu_mode"] = "mania", ["is_sb"] = "true" },
+            def
+        );
+
+        Assert.Equal("zhjk :mania &sb", result.RawArgs);
     }
 }

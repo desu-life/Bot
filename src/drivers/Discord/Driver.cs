@@ -1,4 +1,6 @@
 using System.Net;
+using System.Globalization;
+using CommandSystem.Execution;
 using Discord;
 using Discord.Net.Rest;
 using Discord.Net.WebSockets;
@@ -9,26 +11,39 @@ using Serilog.Events;
 
 namespace KanonBot.Drivers;
 
-public partial class Discord : ISocket, IDriver, IReply
+public partial class Discord : ISocket, IDriver, IReply, IPrivateReply
 {
     public static readonly Platform platform = Platform.Discord;
+    public delegate Task SlashCommandDelegate(Target target, string slashName, Dictionary<string, string> options);
+
     public string? selfID { get; private set; }
     DiscordSocketClient instance;
     event IDriver.MessageDelegate? msgAction;
     event IDriver.EventDelegate? eventAction;
+    event SlashCommandDelegate? slashAction;
     string token;
+    string slashMode;
+    ulong[] slashGuildIds;
+    bool slashRegisterOnStartup;
+    bool slashRegistered;
     public API api;
 
     public Discord(
         string token,
         string botID,
         string? gatewayHost = null,
-        string? apiBaseUrl = null
+        string? apiBaseUrl = null,
+        string slashMode = "global",
+        IEnumerable<ulong>? slashGuildIds = null,
+        bool slashRegisterOnStartup = false
     )
     {
         // 初始化变量
         this.token = token;
         this.selfID = botID;
+        this.slashMode = slashMode;
+        this.slashGuildIds = slashGuildIds?.ToArray() ?? [];
+        this.slashRegisterOnStartup = slashRegisterOnStartup;
 
         this.api = new(token);
 
@@ -67,10 +82,27 @@ public partial class Discord : ISocket, IDriver, IReply
             return Task.CompletedTask;
         };
 
-        client.Ready += () =>
+        client.SlashCommandExecuted += command =>
         {
-            // 连接成功
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await this.Parse(command);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("未捕获的Discord Slash异常 ↓\n{ex}", ex);
+                }
+            });
             return Task.CompletedTask;
+        };
+
+        client.Ready += async () =>
+        {
+            await RegisterSlashCommandsOnce();
+            if (this.eventAction is not null)
+                await this.eventAction.Invoke(this, new Ready(this.selfID!, Platform.Discord));
         };
 
         this.instance = client;
@@ -134,6 +166,73 @@ public partial class Discord : ISocket, IDriver, IReply
         }
     }
 
+    private async Task Parse(SocketSlashCommand command)
+    {
+        if (this.slashAction is null)
+            return;
+
+        Target? target = null;
+        await command.DeferAsync();
+
+        try
+        {
+            target = new Target()
+            {
+                platform = Platform.Discord,
+                sender = command.User.Id.ToString(),
+                selfAccount = this.selfID,
+                msg = new Chain().msg($"/{command.Data.Name}"),
+                raw = command,
+                source = MessageSource.FromDiscord(command),
+                socket = this,
+                isFromAdmin = true
+            };
+
+            await this.slashAction.Invoke(target, command.Data.Name, FlattenOptions(command.Data.Options));
+        }
+        finally
+        {
+            if (target is null || !target.HasReplied)
+                await TryDeleteOriginalResponse(command);
+        }
+    }
+
+    private static Dictionary<string, string> FlattenOptions(
+        IReadOnlyCollection<SocketSlashCommandDataOption> options
+    )
+    {
+        var result = new Dictionary<string, string>();
+        foreach (var option in options)
+        {
+            if (option.Options.Count > 0)
+            {
+                foreach (var (key, value) in FlattenOptions(option.Options))
+                    result[key] = value;
+
+                continue;
+            }
+
+            if (option.Value is null)
+                continue;
+
+            result[option.Name] = Convert.ToString(option.Value, CultureInfo.InvariantCulture) ?? "";
+        }
+
+        return result;
+    }
+
+    private static async Task TryDeleteOriginalResponse(SocketSlashCommand command)
+    {
+        try
+        {
+            await command.DeleteOriginalResponseAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.Debug("清除Discord Slash defer状态失败 ↓\n{ex}", ex);
+        }
+    }
+
     public IDriver onMessage(IDriver.MessageDelegate action)
     {
         this.msgAction += action;
@@ -143,6 +242,12 @@ public partial class Discord : ISocket, IDriver, IReply
     public IDriver onEvent(IDriver.EventDelegate action)
     {
         this.eventAction += action;
+        return this;
+    }
+
+    public Discord onSlashCommand(SlashCommandDelegate action)
+    {
+        this.slashAction += action;
         return this;
     }
 
@@ -158,10 +263,17 @@ public partial class Discord : ISocket, IDriver, IReply
 
     public async Task<bool> Reply(Target target, Chain msg)
     {
-        var discordRawMessage = target.raw as IMessage;
         try
         {
-            await api.SendMessage(discordRawMessage!.Channel, msg, discordRawMessage);
+            if (target.raw is SocketSlashCommand slashCommand)
+            {
+                await api.SendMessage(slashCommand, msg);
+            }
+            else
+            {
+                var discordRawMessage = target.raw as IMessage;
+                await api.SendMessage(discordRawMessage!.Channel, msg, discordRawMessage);
+            }
         }
         catch (Exception ex)
         {
@@ -169,6 +281,81 @@ public partial class Discord : ISocket, IDriver, IReply
             return false;
         }
         return true;
+    }
+
+    public async Task<bool> PrivateReply(Target target, Chain msg)
+    {
+        try
+        {
+            switch (target.raw)
+            {
+                case SocketSlashCommand slashCommand:
+                    await api.SendPrivateMessage(slashCommand.User, msg);
+                    await TryDeleteOriginalResponse(slashCommand);
+                    return true;
+                case IMessage discordRawMessage:
+                    await api.SendPrivateMessage(discordRawMessage.Author, msg);
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warning("发送Discord私聊消息失败 ↓\n{ex}", ex);
+            return false;
+        }
+    }
+
+    private async Task RegisterSlashCommandsOnce()
+    {
+        if (!slashRegisterOnStartup || slashRegistered)
+            return;
+
+        slashRegistered = true;
+
+        try
+        {
+            var registry = CommandRegistrar.BuildRegistry();
+            var commands = DiscordSlashCommandBuilder.Build(registry);
+
+            switch (slashMode.ToLowerInvariant())
+            {
+                case "guild":
+                    if (slashGuildIds.Length == 0)
+                    {
+                        Log.Error("Discord Slash注册失败: slash_mode=guild 但 slash_guild_ids 为空");
+                        return;
+                    }
+
+                    foreach (var guildId in slashGuildIds)
+                    {
+                        var guild = instance.GetGuild(guildId);
+                        if (guild is null)
+                        {
+                            Log.Error("Discord Slash注册失败: 找不到Guild {GuildId}", guildId);
+                            continue;
+                        }
+
+                        await ((IGuild)guild).BulkOverwriteApplicationCommandsAsync(commands);
+                        Log.Information("Discord Slash已同步到Guild {GuildId}: {Count}条", guildId, commands.Length);
+                    }
+                    return;
+
+                case "global":
+                    await ((IDiscordClient)instance).BulkOverwriteGlobalApplicationCommand(commands);
+                    Log.Information("Discord Slash已同步为全局指令: {Count}条", commands.Length);
+                    return;
+
+                default:
+                    Log.Error("Discord Slash注册失败: 未知slash_mode {SlashMode}", slashMode);
+                    return;
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Error("Discord Slash注册失败 ↓\n{ex}", ex);
+        }
     }
 
     public async Task Start()

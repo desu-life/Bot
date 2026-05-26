@@ -256,7 +256,22 @@ foreach (var driverConfig in config.drivers)
                         ),
 
                 Config.Discord c
-                    => new KanonBot.Drivers.Discord(c.token!, c.botID!, c.gatewayHost, c.apiBaseUrl)
+                    => new KanonBot.Drivers.Discord(
+                            c.token!,
+                            c.botID!,
+                            c.gatewayHost,
+                            c.apiBaseUrl,
+                            c.slashMode,
+                            c.slashGuildIds.Where(id => id > 0).Select(id => (ulong)id),
+                            c.slashRegisterOnStartup
+                        )
+                        .onSlashCommand(
+                            async (target, slashName, options) =>
+                            {
+                                Log.Information("← 收到Discord Slash指令 /{SlashName}", slashName);
+                                await Universal.ParserSlash(target, slashName, options);
+                            }
+                        )
                         .onMessage(
                             async (target) =>
                             {

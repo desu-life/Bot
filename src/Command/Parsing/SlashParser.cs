@@ -1,4 +1,5 @@
 using CommandSystem.Definition;
+using System.Text;
 
 namespace CommandSystem.Parsing;
 
@@ -15,6 +16,7 @@ public class SlashParser
         var result = new ParsedCommand
         {
             CommandName = cmdName,
+            RawArgs = BuildRawArgs(options, def),
             Parse = def.Args.DistinctBy(a => a.Name).ToDictionary(a => a.Name, a => a.Parse)
         };
 
@@ -50,5 +52,55 @@ public class SlashParser
             result.SelfQuery = true;
 
         return result;
+    }
+
+    private static string BuildRawArgs(Dictionary<string, string> options, CommandDef def)
+    {
+        var raw = new StringBuilder();
+        var added = new System.Collections.Generic.HashSet<string>();
+
+        foreach (var argDef in def.Args)
+        {
+            if (!added.Add(argDef.Name))
+                continue;
+
+            if (!options.TryGetValue(argDef.Name, out var value) || string.IsNullOrWhiteSpace(value))
+                continue;
+
+            AppendRawArg(raw, argDef.Prefix, value);
+        }
+
+        foreach (var flagDef in def.Flags)
+        {
+            if (
+                options.TryGetValue(flagDef.SlashName, out var value)
+                && value.ToLowerInvariant() is "true" or "1"
+            )
+            {
+                AppendRawArg(raw, ArgPrefix.And, flagDef.Value);
+            }
+        }
+
+        return raw.ToString().Trim();
+    }
+
+    private static void AppendRawArg(StringBuilder raw, ArgPrefix prefix, string value)
+    {
+        if (raw.Length > 0)
+            raw.Append(' ');
+
+        var prefixChar = prefix switch
+        {
+            ArgPrefix.Colon => ':',
+            ArgPrefix.Hash => '#',
+            ArgPrefix.Plus => '+',
+            ArgPrefix.And => '&',
+            _ => '\0'
+        };
+
+        if (prefixChar != '\0')
+            raw.Append(prefixChar);
+
+        raw.Append(value);
     }
 }

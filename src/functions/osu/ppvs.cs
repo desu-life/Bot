@@ -16,9 +16,10 @@ namespace KanonBot.Functions.OSUBot
             new()
             {
                 Name = "ppvs",
+                Description = "Compare osu! performance plus stats",
                 Args =
                 [
-                    new() { Name = "users_raw", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                    new() { Name = "users_raw", Description = "Users to compare", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
                 ],
                 Flags =  [ ]
             };

@@ -1,4 +1,5 @@
 using Discord;
+using Discord.WebSocket;
 
 namespace KanonBot.Drivers;
 
@@ -13,6 +14,14 @@ public record MessageSource(string Platform, string Type, string Id)
             IDMChannel c    => new("dc", "dm", c.Recipient.Id.ToString()),
             _               => new("dc", "unknown", message.Channel.Id.ToString())
         };
+
+    public static MessageSource FromDiscord(SocketSlashCommand command)
+    {
+        if (command.GuildId.HasValue)
+            return new("dc", "guild", (command.Channel?.Id ?? command.GuildId.Value).ToString());
+
+        return new("dc", "dm", command.User.Id.ToString());
+    }
     
     public static MessageSource FromOneBot(OneBot.Models.CQMessageEventBase message) =>
         message switch

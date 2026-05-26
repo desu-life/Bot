@@ -28,15 +28,15 @@ public class PlatformHandler
 
     // ── Slash 入口（Discord 传来的已解析 key-value）──────
     public (ICommand? command, ParsedCommand? parsed) HandleSlash(
-        string cmdName,
+        string slashName,
         Dictionary<string, string> options
     )
     {
-        if (!_registry.TryGet(cmdName, out var cmd) || cmd is null)
+        if (!_registry.TryGetSlash(slashName, out var cmd) || cmd is null)
             return (null, null);
 
         var def = cmd.Definition;
-        var parsed = _slash.Parse(cmdName, options, def);
+        var parsed = _slash.Parse(def.Name, options, def);
         return (cmd, parsed);
     }
 }

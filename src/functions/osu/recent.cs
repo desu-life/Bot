@@ -14,55 +14,6 @@ using SixLabors.ImageSharp.Formats.Png;
 
 namespace KanonBot.Functions.OSUBot
 {
-    public class RecentCommand : ICommand
-    {
-        public CommandDef Definition =>
-            new()
-            {
-                Name = "recent",
-                Aliases =  [ "re" ],
-                Args =
-                [
-                    new() { Name = "username",     Prefix = ArgPrefix.None,  Strategy = ParseStrategy.Simple },
-                    new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
-                    new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
-                ],
-                Flags =
-                [
-                    new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
-                    new() { Name = "dev_panel",  Value = "dev", SlashName = "is_dev" },
-                    new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
-                ]
-            };
-
-        public Task Execute(Target target, ParsedCommand cmd) =>
-            Recent.Execute(target, cmd, includeFails: true);
-    }
-
-    public class PassRecentCommand : ICommand
-    {
-        public CommandDef Definition =>
-            new()
-            {
-                Name = "pr",
-                Args =
-                [
-                    new() { Name = "username",     Prefix = ArgPrefix.None,  Strategy = ParseStrategy.Simple },
-                    new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
-                    new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
-                ],
-                Flags =
-                [
-                    new() { Name = "special_pp", Value = "",    SlashName = "is_special_pp" },
-                    new() { Name = "dev_panel",  Value = "dev", SlashName = "is_dev" },
-                    new() { Name = "sb_server",  Value = "sb",  SlashName = "is_sb" },
-                ]
-            };
-
-        public Task Execute(Target target, ParsedCommand cmd) =>
-            Recent.Execute(target, cmd, includeFails: false);
-    }
-
     public class Recent
     {
         public static async Task Execute(

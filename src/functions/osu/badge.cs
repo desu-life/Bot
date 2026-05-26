@@ -15,65 +15,6 @@ using Img = SixLabors.ImageSharp.Image;
 
 namespace KanonBot.Functions.OSUBot
 {
-    public class BadgeHelpCommand : ICommand
-    {
-        public CommandDef Definition =>
-            new()
-            {
-                Name = "badge",
-                Args =  [ ],
-                Flags =  [ ]
-            };
-
-        public Task Execute(Target target, ParsedCommand cmd) =>
-            target.Treply("badge.help");
-    }
-
-    public class BadgeInfoCommand : ICommand
-    {
-        public CommandDef Definition =>
-            new()
-            {
-                Name = "badge info",
-                Args =
-                [
-                    new() { Name = "badge_number", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple, Parse = s => CommandDefs.ParseInt(s) }
-                ],
-                Flags =  [ ]
-            };
-
-        public Task Execute(Target target, ParsedCommand cmd) =>
-            Badge.ExecuteInfo(target, cmd.RawArgs);
-    }
-
-    public class BadgeListCommand : ICommand
-    {
-        public CommandDef Definition =>
-            new()
-            {
-                Name = "badge list",
-                Args =  [ ],
-                Flags =  [ ]
-            };
-
-        public Task Execute(Target target, ParsedCommand cmd) => Badge.ExecuteList(target);
-    }
-
-    public class BadgeDeprecatedCommand : ICommand
-    {
-        public CommandDef Definition =>
-            new()
-            {
-                Name = "badge set",
-                Aliases =  [ "badge redeem", "badge sudo" ],
-                Args =  [ ],
-                Flags =  [ ]
-            };
-
-        public Task Execute(Target target, ParsedCommand cmd) =>
-            target.Treply("badge.deprecated");
-    }
-
     public class Badge
     {
         public static async Task ExecuteInfo(Drivers.Target target, string cmd)

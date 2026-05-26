@@ -75,6 +75,57 @@ public partial class Discord
             }
         }
 
+        async public Task SendMessage(SocketSlashCommand command, Chain msgChain)
+        {
+            var allowedMentions = new AllowedMentions(AllowedMentionTypes.None);
+            foreach (var seg in msgChain.Iter()) {
+                switch (seg)
+                {
+                    case ImageSegment s:
+                        switch (s.t)
+                        {
+                            case ImageSegment.Type.Base64: {
+                                    var uuid = Guid.NewGuid();
+                                    using var _s = Utils.Byte2Stream(Convert.FromBase64String(s.value));
+                                    await command.FollowupWithFileAsync(_s, $"{uuid}.png", allowedMentions: allowedMentions);
+                                } break;
+                            case ImageSegment.Type.File: {
+                                    var uuid = Guid.NewGuid();
+                                    using var _s = Utils.LoadFile2ReadStream(s.value);
+                                    await command.FollowupWithFileAsync(_s, $"{uuid}.png", allowedMentions: allowedMentions);
+                                } break;
+                            case ImageSegment.Type.Url: {
+                                    var uuid = Guid.NewGuid();
+                                    using var _s = await s.value.GetStreamAsync();
+                                    await command.FollowupWithFileAsync(_s, $"{uuid}.png", allowedMentions: allowedMentions);
+                                } break;
+                            default:
+                                break;
+                        }
+                        break;
+                    case TextSegment s:
+                        await command.FollowupAsync(s.value, allowedMentions: allowedMentions);
+                        break;
+                    case AtSegment s:
+                        if (s.value == "all") {
+                            await command.FollowupAsync("@everyone", allowedMentions: allowedMentions);
+                        } else {
+                            await command.FollowupAsync($"<@{s.value}>", allowedMentions: allowedMentions);
+                        }
+                        break;
+                    default:
+                        await command.FollowupAsync(seg.Build(), allowedMentions: allowedMentions);
+                        break;
+                }
+            }
+        }
+
+        async public Task SendPrivateMessage(IUser user, Chain msgChain)
+        {
+            var channel = await user.CreateDMChannelAsync();
+            await SendMessage(channel, msgChain);
+        }
+
       
 
        

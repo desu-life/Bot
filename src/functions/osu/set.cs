@@ -9,63 +9,6 @@ using KanonBot.Message;
 
 namespace KanonBot.Functions.OSUBot
 {
-    // ── Set ICommand classes ──────────────────────────────
-
-    public class SetHelpCommand : ICommand
-    {
-        private const string SettingsUrl = "https://hub.kagamistudio.com/settings/";
-        public CommandDef Definition =>
-            new()
-            {
-                Name = "set",
-                Args =  [ ],
-                Flags =  [ ]
-            };
-
-        public Task Execute(Target target, ParsedCommand cmd) =>
-            target.Treply("set.migrated", SettingsUrl);
-    }
-
-    public class SetOsuModeCommand : ICommand
-    {
-        public CommandDef Definition =>
-            new()
-            {
-                Name = "set osumode",
-                Args =
-                [
-                    new() { Name = "mode", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple }
-                ],
-                Flags =  [ new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" } ]
-            };
-
-        public Task Execute(Target target, ParsedCommand cmd) => Setter.SetOsuMode(target, cmd);
-    }
-
-    public class SetDeprecatedCommand : ICommand
-    {
-        private const string SettingsUrl = "https://hub.kagamistudio.com/settings/";
-        public CommandDef Definition =>
-            new()
-            {
-                Name = "set osuinfopanelversion",
-                Aliases =
-                [
-                    "set osuinfopanelv2colormode",
-                    "set osuinfopanelv2colorcustom",
-                    "set osuinfopanelv2img",
-                    "set osuinfopanelv1img",
-                    "set osuinfopanelv2panel",
-                    "set osuinfopanelv1panel",
-                ],
-                Args =  [ ],
-                Flags =  [ ]
-            };
-
-        public Task Execute(Target target, ParsedCommand cmd) =>
-            target.Treply("set.deprecated", SettingsUrl);
-    }
-
     // ── Setter internal methods ────────────────────────────
 
     public class Setter

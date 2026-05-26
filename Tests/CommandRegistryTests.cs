@@ -13,8 +13,9 @@ file class TestInfoCommand : ICommand
     public CommandDef Definition => new()
     {
         Name = "info",
+        Description = "Show info",
         Aliases = ["i"],
-        Args = [new() { Name = "username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple }],
+        Args = [new() { Name = "username", Description = "osu! username or user ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple }],
         Flags = []
     };
     public Task Execute(Target target, ParsedCommand cmd) => Task.CompletedTask;
@@ -25,6 +26,7 @@ file class TestBpCommand : ICommand
     public CommandDef Definition => new()
     {
         Name = "bp",
+        Description = "Show bp",
         LegacyStartsWithMatch = true,
         ExcludePrefixes = ["bpa", "bplist"],
         Args = [],
@@ -38,6 +40,7 @@ file class TestBpListCommand : ICommand
     public CommandDef Definition => new()
     {
         Name = "bplist",
+        Description = "Show bplist",
         Args = [],
         Flags = []
     };
@@ -49,7 +52,20 @@ file class TestRecentCommand : ICommand
     public CommandDef Definition => new()
     {
         Name = "recent",
+        Description = "Show recent",
         Aliases = ["re", "r"],
+        Args = [],
+        Flags = []
+    };
+    public Task Execute(Target target, ParsedCommand cmd) => Task.CompletedTask;
+}
+
+file class TestGetBonusPpCommand : ICommand
+{
+    public CommandDef Definition => new()
+    {
+        Name = "get bonuspp",
+        Description = "Show bonus pp",
         Args = [],
         Flags = []
     };
@@ -65,6 +81,7 @@ public class CommandRegistryTests
         registry.Register(new TestBpCommand());
         registry.Register(new TestBpListCommand());
         registry.Register(new TestRecentCommand());
+        registry.Register(new TestGetBonusPpCommand());
         return registry;
     }
 
@@ -186,5 +203,24 @@ public class CommandRegistryTests
 
         Assert.False(found);
         Assert.Null(cmd);
+    }
+
+    [Fact]
+    public void SlashName_DefaultFlattensLegacyName()
+    {
+        var def = new CommandDef { Name = "get bonuspp" };
+
+        Assert.Equal("get-bonuspp", def.SlashName);
+    }
+
+    [Fact]
+    public void TryGetSlash_ByFlatName()
+    {
+        var registry = BuildTestRegistry();
+        var found = registry.TryGetSlash("get-bonuspp", out var cmd);
+
+        Assert.True(found);
+        Assert.NotNull(cmd);
+        Assert.Equal("get bonuspp", cmd!.Definition.Name);
     }
 }

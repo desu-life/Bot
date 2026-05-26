@@ -20,13 +20,14 @@ namespace KanonBot.Functions.OSUBot
             new()
             {
                 Name = "todaybp",
+                Description = "Show today's best performance",
                 Args =
                 [
-                    new() { Name = "username",     Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
-                    new() { Name = "osu_mode",     Prefix = ArgPrefix.Colon },
-                    new() { Name = "order_number", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                    new() { Name = "username", Description = "osu! username or user ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                    new() { Name = "osu_mode", Description = "osu! game mode", Prefix = ArgPrefix.Colon },
+                    new() { Name = "order_number", Description = "Score list position", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
                 ],
-                Flags =  [ new() { Name = "sb_server", Value = "sb", SlashName = "is_sb" }, ]
+                Flags =  [ new() { Name = "sb_server", Description = "Use the ppysb server", Value = "sb", SlashName = "is_sb" }, ]
             };
 
         public Task Execute(Target target, ParsedCommand cmd) => TodayBP.Execute(target, cmd);
