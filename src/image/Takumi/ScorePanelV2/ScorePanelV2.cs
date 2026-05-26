@@ -18,7 +18,8 @@ public static class ScoreV2
     private static readonly string templateRoot = IOPath.Combine(
         AppContext.BaseDirectory,
         "resources",
-        "templates"
+        "templates",
+        "ScorePanelV2"
     );
     private static readonly string workingRoot = IOPath.Combine(
         Directory.GetCurrentDirectory(),
@@ -53,16 +54,16 @@ public static class ScoreV2
         ArgumentNullException.ThrowIfNull(data.scoreInfo.Beatmapset);
         ArgumentNullException.ThrowIfNull(data.scoreInfo.User);
 
-        var templatePath = IOPath.Combine(templateRoot, "ScorePanelV2", "index.jinja");
+        var templatePath = IOPath.Combine(templateRoot, "index.jinja");
         var context = await BuildTemplateContext(data, workingRoot);
 
-        return Renderer.RenderTemplateFile(
-            templatePath,
+        return Renderer.Render(
             new RenderRequest
             {
+                Input = RenderInput.File(RenderContentKind.JinjaHtml, templatePath),
                 ContextJson = JsonSerializer.Serialize(context, TemplateJsonOptions),
                 Viewport = new RenderSize(1950u, 1088u),
-                Format = format,
+                Format = ImageFormat.Png,
                 LoadLinkedStylesheets = true,
                 ResolveLocalAssets = true
             }
@@ -73,6 +74,7 @@ public static class ScoreV2
     {
         var renderer = new Renderer();
         renderer.AddSearchPath(workingRoot);
+        renderer.AddSearchPath(templateRoot);
 
         foreach (var p in TemplateFontPaths)
         {
