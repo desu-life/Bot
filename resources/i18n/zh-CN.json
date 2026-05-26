@@ -56,7 +56,7 @@
   "osu.leeway_recent_not_found": "猫猫找不到你最近游玩的成绩。",
   "osu.ppvs_usage_self": "{prefix}ppvs 要对比的用户",
   "osu.ppvs_usage_dual": "{prefix}ppvs 用户1#用户2",
-  "osu.ppvs_usage_full": "{prefix}ppvs 用户1#用户2/{prefix}ppvs 要对比的用户",
+  "osu.ppvs_usage_full": "{prefix}ppvs 用户1#用户2 / {prefix}ppvs 要对比的用户 / {prefix}ppvs #要对比的用户",
   "osu.ppvs_loading": "正在获取pp+数据，请稍等。。",
   "osu.ppvs_error": "获取pp+数据时出错，等会儿再试试吧",
   "osu.ppvs_user_not_found": "猫猫没有找到叫 {0} 用户。",

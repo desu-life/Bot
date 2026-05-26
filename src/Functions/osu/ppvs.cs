@@ -19,24 +19,26 @@ namespace KanonBot.Functions
                 Description = "Compare osu! performance plus stats",
                 Args =
                 [
-                    new() { Name = "users_raw", Description = "Users to compare", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                    new() { Name = "user1", Description = "First user to compare", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                    new() { Name = "user2", Description = "Second user to compare", Prefix = ArgPrefix.Hash, Strategy = ParseStrategy.Simple },
                 ],
                 Flags =  [ ]
             };
 
         public async Task Execute(Target target, ParsedCommand cmd)
         {
-            var rawInput = cmd.RawArgs;
-            var cmds = rawInput.Split('#');
-            if (cmds.Length == 1)
-            {
-                if (cmds[0].Length == 0)
-                {
-                    await target.Treply("osu.ppvs_usage_self");
-                    return;
-                }
+            var user1Str = cmd.GetString("user1");
+            var user2Str = cmd.GetString("user2");
 
-                // 通过IAM获取自身osu uid
+            if (string.IsNullOrWhiteSpace(user1Str) && string.IsNullOrWhiteSpace(user2Str))
+            {
+                await target.Treply("osu.ppvs_usage_self");
+                return;
+            }
+
+            // 获取自身 osu 信息（在需要时复用）
+            async Task<API.OSU.Models.User?> GetSelfUser()
+            {
                 var accInfo = Accounts.GetAccInfo(target);
                 string provider;
                 try
@@ -46,7 +48,7 @@ namespace KanonBot.Functions
                 catch (NotSupportedException)
                 {
                     await target.Treply("account.platform_unsupported");
-                    return;
+                    return null;
                 }
 
                 var iamUserId = await API.IAM
@@ -55,115 +57,102 @@ namespace KanonBot.Functions
                 if (iamUserId == null)
                 {
                     await target.Treply("account.not_bound");
-                    return;
+                    return null;
                 }
 
                 var bindings = await API.IAM.Client.GetUserBindings(iamUserId);
                 if (bindings == null)
                 {
                     await target.Treply("account.fetch_failed");
-                    return;
+                    return null;
                 }
 
                 var osuUid = API.IAM.Client.ExtractOsuUid(bindings);
                 if (!osuUid.HasValue)
                 {
                     await target.Treply("account.osu_not_bound");
-                    return;
+                    return null;
                 }
 
-                // 分别获取两位的信息
                 var userSelf = await API.OSU.Client.GetUser(osuUid.Value);
                 if (userSelf == null)
                 {
                     await target.Treply("account.banned");
-                    return;
+                    return null;
                 }
 
-                var user2 = await API.OSU.Client.GetUser(cmds[0]);
-                if (user2 == null)
+                return userSelf;
+            }
+
+            API.OSU.Models.User? leftUser;  // 画在左侧 (u2)
+            API.OSU.Models.User? rightUser; // 画在右侧 (u1)
+
+            if (string.IsNullOrWhiteSpace(user2Str))
+            {
+                // 只指定了一个用户：自己 vs 该用户
+                var selfUser = await GetSelfUser();
+                if (selfUser == null) return;
+
+                rightUser = await API.OSU.Client.GetUser(user1Str!);
+                if (rightUser == null)
                 {
                     await target.Treply("error.user_not_found");
                     return;
                 }
 
-                await target.Treply("osu.ppvs_loading");
-
-                Image.PPVS.PPVSPanelData data = new();
-
-                var d1 = await API.OSU.Client.PPlus.GetUserPlusDataNext(userSelf.Id);
-                if (d1 == null)
-                {
-                    await target.Treply("osu.ppvs_error");
-                    return;
-                }
-                data.u2Name = userSelf.Username;
-                data.u2 = d1.Performances;
-
-                var d2 = await API.OSU.Client.PPlus.GetUserPlusDataNext(user2.Id);
-                if (d2 == null)
-                {
-                    await target.Treply("osu.ppvs_error");
-                    return;
-                }
-                data.u1Name = user2.Username;
-                data.u1 = d2.Performances;
-
-                using var img = await Image.PPVS.DrawPPVS(data);
-                await target.reply(img, new JpegEncoder());
-            }
-            else if (cmds.Length == 2)
-            {
-                if (cmds[0].Length == 0 || cmds[1].Length == 0)
-                {
-                    await target.Treply("osu.ppvs_usage_dual");
-                    return;
-                }
-
-                // 分别获取两位的信息
-                var user1 = await API.OSU.Client.GetUser(cmds[0]);
-                if (user1 == null)
-                {
-                    await target.Treply("osu.ppvs_user_not_found", cmds[0]);
-                    return;
-                }
-
-                var user2 = await API.OSU.Client.GetUser(cmds[1]);
-                if (user2 == null)
-                {
-                    await target.Treply("osu.ppvs_user_not_found", cmds[1]);
-                    return;
-                }
-
-                await target.Treply("osu.ppvs_loading");
-
-                Image.PPVS.PPVSPanelData data = new();
-
-                var d1 = await API.OSU.Client.PPlus.GetUserPlusDataNext(user1.Id);
-                if (d1 == null)
-                {
-                    await target.Treply("osu.ppvs_error");
-                    return;
-                }
-                data.u2Name = user1.Username;
-                data.u2 = d1.Performances;
-
-                var d2 = await API.OSU.Client.PPlus.GetUserPlusDataNext(user2.Id);
-                if (d2 == null)
-                {
-                    await target.Treply("osu.ppvs_error");
-                    return;
-                }
-                data.u1Name = user2.Username;
-                data.u1 = d2.Performances;
-
-                using var img = await Image.PPVS.DrawPPVS(data);
-                await target.reply(img, new JpegEncoder());
+                leftUser = selfUser;
             }
             else
             {
-                await target.Treply("osu.ppvs_usage_full");
+                // 指定了两个用户（user1 可能为空，表示只写了 #user2）
+                if (string.IsNullOrWhiteSpace(user1Str))
+                {
+                    var selfUser = await GetSelfUser();
+                    if (selfUser == null) return;
+                    leftUser = selfUser;
+                }
+                else
+                {
+                    leftUser = await API.OSU.Client.GetUser(user1Str);
+                    if (leftUser == null)
+                    {
+                        await target.Treply("osu.ppvs_user_not_found", user1Str);
+                        return;
+                    }
+                }
+
+                rightUser = await API.OSU.Client.GetUser(user2Str);
+                if (rightUser == null)
+                {
+                    await target.Treply("osu.ppvs_user_not_found", user2Str);
+                    return;
+                }
             }
+
+            await target.Treply("osu.ppvs_loading");
+
+            Image.PPVS.PPVSPanelData data = new();
+
+            var d1 = await API.OSU.Client.PPlus.GetUserPlusDataNext(leftUser.Id);
+            if (d1 == null)
+            {
+                await target.Treply("osu.ppvs_error");
+                return;
+            }
+            data.u2Name = leftUser.Username;
+            data.u2 = d1.Performances;
+
+            var d2 = await API.OSU.Client.PPlus.GetUserPlusDataNext(rightUser.Id);
+            if (d2 == null)
+            {
+                await target.Treply("osu.ppvs_error");
+                return;
+            }
+            data.u1Name = rightUser.Username;
+            data.u1 = d2.Performances;
+
+            using var img = await Image.PPVS.DrawPPVS(data);
+            await target.reply(img, new JpegEncoder());
         }
     }
 }

@@ -51,9 +51,9 @@ public partial class Discord : ISocket, IDriver, IReply, IPrivateReply
 
         var config = new DiscordSocketConfig
         {
+            GatewayIntents = GatewayIntents.AllUnprivileged,
             WebSocketProvider = DefaultWebSocketProvider.Create(WebRequest.DefaultWebProxy),
-            RestClientProvider = baseUrl =>
-                restClientProvider(string.IsNullOrWhiteSpace(apiBaseUrl) ? baseUrl : apiBaseUrl),
+            RestClientProvider = baseUrl => restClientProvider(string.IsNullOrWhiteSpace(apiBaseUrl) ? baseUrl : apiBaseUrl),
         };
 
         // 如果配置了 gateway host，则使用自定义的 gateway 地址
