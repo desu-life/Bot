@@ -67,7 +67,7 @@ public partial class Models
         public BeatmapAvailability Availability { get; set; }
 
         [JsonPropertyName("bpm")]
-        public long BPM { get; set; }
+        public double BPM { get; set; }
 
         [JsonPropertyName("can_be_hyped")]
         public bool CanBeHyped { get; set; }

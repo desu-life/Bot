@@ -1,11 +1,12 @@
 using System.IO;
 using System.Numerics;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using KanonBot.API.Kagami;
 using KanonBot.Functions.OSU;
 using KanonBot.Image;
 using KanonBot.Image.Components;
 using KanonBot.OsuPerformance;
-using System.Text.Json.Serialization;
 using RosuPP;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -17,7 +18,6 @@ using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using System.Text.Json.Nodes;
 using static KanonBot.API.OSU.OSUExtensions;
 using static KanonBot.Image.Fonts;
 using static KanonBot.Image.InfoV1;
@@ -747,7 +747,10 @@ public static class OsuInfoPanelV2
             return options;
         }
 
-        public static InfoCustom FromCustomTheme(InfoPanelV2CustomTheme? theme, Option<InfoCustom> opOption)
+        public static InfoCustom FromCustomTheme(
+            InfoPanelV2CustomTheme? theme,
+            Option<InfoCustom> opOption
+        )
         {
             if (theme == null)
                 return opOption.IfNone(InfoCustom.LightDefault);
@@ -757,161 +760,300 @@ public static class OsuInfoPanelV2
                 var options = opOption.IfNone(InfoCustom.LightDefault);
 
                 // Color fields
-                if (theme.UsernameColor != null) options.UsernameColor = Color.ParseHex(theme.UsernameColor);
+                if (theme.UsernameColor != null)
+                    options.UsernameColor = Color.ParseHex(theme.UsernameColor);
                 if (theme.ModeIconColor != null)
                 {
                     options.ModeIconColor = Color.ParseHex(theme.ModeIconColor);
-                    if (theme.ModeIconColor.Length > 7) options.ModeIconAlpha = true;
+                    if (theme.ModeIconColor.Length > 7)
+                        options.ModeIconAlpha = true;
                 }
-                if (theme.RankColor != null) options.RankColor = Color.ParseHex(theme.RankColor);
-                if (theme.CountryRankColor != null) options.CountryRankColor = Color.ParseHex(theme.CountryRankColor);
-                if (theme.CountryRankDiffColor != null) options.CountryRankDiffColor = Color.ParseHex(theme.CountryRankDiffColor);
+                if (theme.RankColor != null)
+                    options.RankColor = Color.ParseHex(theme.RankColor);
+                if (theme.CountryRankColor != null)
+                    options.CountryRankColor = Color.ParseHex(theme.CountryRankColor);
+                if (theme.CountryRankDiffColor != null)
+                    options.CountryRankDiffColor = Color.ParseHex(theme.CountryRankDiffColor);
                 if (theme.CountryRankDiffIconColor != null)
                 {
-                    options.CountryRankDiffIconColor = Color.ParseHex(theme.CountryRankDiffIconColor);
-                    if (theme.CountryRankDiffIconColor.Length > 7) options.CountryRankDiffIconColorAlpha = true;
+                    options.CountryRankDiffIconColor = Color.ParseHex(
+                        theme.CountryRankDiffIconColor
+                    );
+                    if (theme.CountryRankDiffIconColor.Length > 7)
+                        options.CountryRankDiffIconColorAlpha = true;
                 }
-                if (theme.RankLineChartColor != null) options.RankLineChartColor = Color.ParseHex(theme.RankLineChartColor);
-                if (theme.RankLineChartTextColor != null) options.RankLineChartTextColor = Color.ParseHex(theme.RankLineChartTextColor);
-                if (theme.RankLineChartDotColor != null) options.RankLineChartDotColor = Color.ParseHex(theme.RankLineChartDotColor);
-                if (theme.RankLineChartDotStrokeColor != null) options.RankLineChartDotStrokeColor = Color.ParseHex(theme.RankLineChartDotStrokeColor);
-                if (theme.RankLineChartDashColor != null) options.RankLineChartDashColor = Color.ParseHex(theme.RankLineChartDashColor);
-                if (theme.RankLineChartDateTextColor != null) options.RankLineChartDateTextColor = Color.ParseHex(theme.RankLineChartDateTextColor);
-                if (theme.ppMainColor != null) options.ppMainColor = Color.ParseHex(theme.ppMainColor);
-                if (theme.ppDiffColor != null) options.ppDiffColor = Color.ParseHex(theme.ppDiffColor);
+                if (theme.RankLineChartColor != null)
+                    options.RankLineChartColor = Color.ParseHex(theme.RankLineChartColor);
+                if (theme.RankLineChartTextColor != null)
+                    options.RankLineChartTextColor = Color.ParseHex(theme.RankLineChartTextColor);
+                if (theme.RankLineChartDotColor != null)
+                    options.RankLineChartDotColor = Color.ParseHex(theme.RankLineChartDotColor);
+                if (theme.RankLineChartDotStrokeColor != null)
+                    options.RankLineChartDotStrokeColor = Color.ParseHex(
+                        theme.RankLineChartDotStrokeColor
+                    );
+                if (theme.RankLineChartDashColor != null)
+                    options.RankLineChartDashColor = Color.ParseHex(theme.RankLineChartDashColor);
+                if (theme.RankLineChartDateTextColor != null)
+                    options.RankLineChartDateTextColor = Color.ParseHex(
+                        theme.RankLineChartDateTextColor
+                    );
+                if (theme.ppMainColor != null)
+                    options.ppMainColor = Color.ParseHex(theme.ppMainColor);
+                if (theme.ppDiffColor != null)
+                    options.ppDiffColor = Color.ParseHex(theme.ppDiffColor);
                 if (theme.ppDiffIconColor != null)
                 {
                     options.ppDiffIconColor = Color.ParseHex(theme.ppDiffIconColor);
-                    if (theme.ppDiffIconColor.Length > 7) options.ppDiffIconColorAlpha = true;
+                    if (theme.ppDiffIconColor.Length > 7)
+                        options.ppDiffIconColorAlpha = true;
                 }
-                if (theme.ppProgressBarColorTextColor != null) options.ppProgressBarColorTextColor = Color.ParseHex(theme.ppProgressBarColorTextColor);
-                if (theme.ppProgressBarColor != null) options.ppProgressBarColor = Color.ParseHex(theme.ppProgressBarColor);
-                if (theme.ppProgressBarBackgroundColor != null) options.ppProgressBarBackgroundColor = Color.ParseHex(theme.ppProgressBarBackgroundColor);
-                if (theme.accMainColor != null) options.accMainColor = Color.ParseHex(theme.accMainColor);
-                if (theme.accDiffColor != null) options.accDiffColor = Color.ParseHex(theme.accDiffColor);
+                if (theme.ppProgressBarColorTextColor != null)
+                    options.ppProgressBarColorTextColor = Color.ParseHex(
+                        theme.ppProgressBarColorTextColor
+                    );
+                if (theme.ppProgressBarColor != null)
+                    options.ppProgressBarColor = Color.ParseHex(theme.ppProgressBarColor);
+                if (theme.ppProgressBarBackgroundColor != null)
+                    options.ppProgressBarBackgroundColor = Color.ParseHex(
+                        theme.ppProgressBarBackgroundColor
+                    );
+                if (theme.accMainColor != null)
+                    options.accMainColor = Color.ParseHex(theme.accMainColor);
+                if (theme.accDiffColor != null)
+                    options.accDiffColor = Color.ParseHex(theme.accDiffColor);
                 if (theme.accDiffIconColor != null)
                 {
                     options.accDiffIconColor = Color.ParseHex(theme.accDiffIconColor);
-                    if (theme.accDiffIconColor.Length > 7) options.accDiffIconColorAlpha = true;
+                    if (theme.accDiffIconColor.Length > 7)
+                        options.accDiffIconColorAlpha = true;
                 }
-                if (theme.accProgressBarColorTextColor != null) options.accProgressBarColorTextColor = Color.ParseHex(theme.accProgressBarColorTextColor);
-                if (theme.accProgressBarColor != null) options.accProgressBarColor = Color.ParseHex(theme.accProgressBarColor);
-                if (theme.accProgressBarBackgroundColor != null) options.accProgressBarBackgroundColor = Color.ParseHex(theme.accProgressBarBackgroundColor);
-                if (theme.GradeStatisticsColor_XH != null) options.GradeStatisticsColor_XH = Color.ParseHex(theme.GradeStatisticsColor_XH);
-                if (theme.GradeStatisticsColor_X != null) options.GradeStatisticsColor_X = Color.ParseHex(theme.GradeStatisticsColor_X);
-                if (theme.GradeStatisticsColor_SH != null) options.GradeStatisticsColor_SH = Color.ParseHex(theme.GradeStatisticsColor_SH);
-                if (theme.GradeStatisticsColor_S != null) options.GradeStatisticsColor_S = Color.ParseHex(theme.GradeStatisticsColor_S);
-                if (theme.GradeStatisticsColor_A != null) options.GradeStatisticsColor_A = Color.ParseHex(theme.GradeStatisticsColor_A);
-                if (theme.Details_PlayTimeColor != null) options.Details_PlayTimeColor = Color.ParseHex(theme.Details_PlayTimeColor);
-                if (theme.Details_TotalHitsColor != null) options.Details_TotalHitsColor = Color.ParseHex(theme.Details_TotalHitsColor);
-                if (theme.Details_PlayCountColor != null) options.Details_PlayCountColor = Color.ParseHex(theme.Details_PlayCountColor);
-                if (theme.Details_RankedScoreColor != null) options.Details_RankedScoreColor = Color.ParseHex(theme.Details_RankedScoreColor);
-                if (theme.DetailsDiff_PlayTimeColor != null) options.DetailsDiff_PlayTimeColor = Color.ParseHex(theme.DetailsDiff_PlayTimeColor);
-                if (theme.DetailsDiff_TotalHitsColor != null) options.DetailsDiff_TotalHitsColor = Color.ParseHex(theme.DetailsDiff_TotalHitsColor);
-                if (theme.DetailsDiff_PlayCountColor != null) options.DetailsDiff_PlayCountColor = Color.ParseHex(theme.DetailsDiff_PlayCountColor);
-                if (theme.DetailsDiff_RankedScoreColor != null) options.DetailsDiff_RankedScoreColor = Color.ParseHex(theme.DetailsDiff_RankedScoreColor);
+                if (theme.accProgressBarColorTextColor != null)
+                    options.accProgressBarColorTextColor = Color.ParseHex(
+                        theme.accProgressBarColorTextColor
+                    );
+                if (theme.accProgressBarColor != null)
+                    options.accProgressBarColor = Color.ParseHex(theme.accProgressBarColor);
+                if (theme.accProgressBarBackgroundColor != null)
+                    options.accProgressBarBackgroundColor = Color.ParseHex(
+                        theme.accProgressBarBackgroundColor
+                    );
+                if (theme.GradeStatisticsColor_XH != null)
+                    options.GradeStatisticsColor_XH = Color.ParseHex(theme.GradeStatisticsColor_XH);
+                if (theme.GradeStatisticsColor_X != null)
+                    options.GradeStatisticsColor_X = Color.ParseHex(theme.GradeStatisticsColor_X);
+                if (theme.GradeStatisticsColor_SH != null)
+                    options.GradeStatisticsColor_SH = Color.ParseHex(theme.GradeStatisticsColor_SH);
+                if (theme.GradeStatisticsColor_S != null)
+                    options.GradeStatisticsColor_S = Color.ParseHex(theme.GradeStatisticsColor_S);
+                if (theme.GradeStatisticsColor_A != null)
+                    options.GradeStatisticsColor_A = Color.ParseHex(theme.GradeStatisticsColor_A);
+                if (theme.Details_PlayTimeColor != null)
+                    options.Details_PlayTimeColor = Color.ParseHex(theme.Details_PlayTimeColor);
+                if (theme.Details_TotalHitsColor != null)
+                    options.Details_TotalHitsColor = Color.ParseHex(theme.Details_TotalHitsColor);
+                if (theme.Details_PlayCountColor != null)
+                    options.Details_PlayCountColor = Color.ParseHex(theme.Details_PlayCountColor);
+                if (theme.Details_RankedScoreColor != null)
+                    options.Details_RankedScoreColor = Color.ParseHex(
+                        theme.Details_RankedScoreColor
+                    );
+                if (theme.DetailsDiff_PlayTimeColor != null)
+                    options.DetailsDiff_PlayTimeColor = Color.ParseHex(
+                        theme.DetailsDiff_PlayTimeColor
+                    );
+                if (theme.DetailsDiff_TotalHitsColor != null)
+                    options.DetailsDiff_TotalHitsColor = Color.ParseHex(
+                        theme.DetailsDiff_TotalHitsColor
+                    );
+                if (theme.DetailsDiff_PlayCountColor != null)
+                    options.DetailsDiff_PlayCountColor = Color.ParseHex(
+                        theme.DetailsDiff_PlayCountColor
+                    );
+                if (theme.DetailsDiff_RankedScoreColor != null)
+                    options.DetailsDiff_RankedScoreColor = Color.ParseHex(
+                        theme.DetailsDiff_RankedScoreColor
+                    );
                 if (theme.DetailsDiff_PlayTimeIconColor != null)
                 {
-                    options.DetailsDiff_PlayTimeIconColor = Color.ParseHex(theme.DetailsDiff_PlayTimeIconColor);
-                    if (theme.DetailsDiff_PlayTimeIconColor.Length > 7) options.DetailsPlaytimeIconAlpha = true;
+                    options.DetailsDiff_PlayTimeIconColor = Color.ParseHex(
+                        theme.DetailsDiff_PlayTimeIconColor
+                    );
+                    if (theme.DetailsDiff_PlayTimeIconColor.Length > 7)
+                        options.DetailsPlaytimeIconAlpha = true;
                 }
                 if (theme.DetailsDiff_TotalHitsIconColor != null)
                 {
-                    options.DetailsDiff_TotalHitsIconColor = Color.ParseHex(theme.DetailsDiff_TotalHitsIconColor);
-                    if (theme.DetailsDiff_TotalHitsIconColor.Length > 7) options.DetailsTotalHitIconAlpha = true;
+                    options.DetailsDiff_TotalHitsIconColor = Color.ParseHex(
+                        theme.DetailsDiff_TotalHitsIconColor
+                    );
+                    if (theme.DetailsDiff_TotalHitsIconColor.Length > 7)
+                        options.DetailsTotalHitIconAlpha = true;
                 }
                 if (theme.DetailsDiff_PlayCountIconColor != null)
                 {
-                    options.DetailsDiff_PlayCountIconColor = Color.ParseHex(theme.DetailsDiff_PlayCountIconColor);
-                    if (theme.DetailsDiff_PlayCountIconColor.Length > 7) options.DetailsPlayCountIconAlpha = true;
+                    options.DetailsDiff_PlayCountIconColor = Color.ParseHex(
+                        theme.DetailsDiff_PlayCountIconColor
+                    );
+                    if (theme.DetailsDiff_PlayCountIconColor.Length > 7)
+                        options.DetailsPlayCountIconAlpha = true;
                 }
                 if (theme.DetailsDiff_RankedScoreIconColor != null)
                 {
-                    options.DetailsDiff_RankedScoreIconColor = Color.ParseHex(theme.DetailsDiff_RankedScoreIconColor);
-                    if (theme.DetailsDiff_RankedScoreIconColor.Length > 7) options.DetailsRankedScoreIconAlpha = true;
+                    options.DetailsDiff_RankedScoreIconColor = Color.ParseHex(
+                        theme.DetailsDiff_RankedScoreIconColor
+                    );
+                    if (theme.DetailsDiff_RankedScoreIconColor.Length > 7)
+                        options.DetailsRankedScoreIconAlpha = true;
                 }
-                if (theme.LevelTitleColor != null) options.LevelTitleColor = Color.ParseHex(theme.LevelTitleColor);
-                if (theme.LevelProgressBarColor != null) options.LevelProgressBarColor = Color.ParseHex(theme.LevelProgressBarColor);
-                if (theme.LevelProgressBarBackgroundColor != null) options.LevelProgressBarBackgroundColor = Color.ParseHex(theme.LevelProgressBarBackgroundColor);
-                if (theme.MainBPTitleColor != null) options.MainBPTitleColor = Color.ParseHex(theme.MainBPTitleColor);
-                if (theme.MainBPArtistColor != null) options.MainBPArtistColor = Color.ParseHex(theme.MainBPArtistColor);
-                if (theme.MainBPMapperColor != null) options.MainBPMapperColor = Color.ParseHex(theme.MainBPMapperColor);
-                if (theme.MainBPBIDColor != null) options.MainBPBIDColor = Color.ParseHex(theme.MainBPBIDColor);
-                if (theme.MainBPStarsColor != null) options.MainBPStarsColor = Color.ParseHex(theme.MainBPStarsColor);
-                if (theme.MainBPAccColor != null) options.MainBPAccColor = Color.ParseHex(theme.MainBPAccColor);
-                if (theme.MainBPRankColor != null) options.MainBPRankColor = Color.ParseHex(theme.MainBPRankColor);
-                if (theme.MainBPppMainColor != null) options.MainBPppMainColor = Color.ParseHex(theme.MainBPppMainColor);
-                if (theme.MainBPppTitleColor != null) options.MainBPppTitleColor = Color.ParseHex(theme.MainBPppTitleColor);
+                if (theme.LevelTitleColor != null)
+                    options.LevelTitleColor = Color.ParseHex(theme.LevelTitleColor);
+                if (theme.LevelProgressBarColor != null)
+                    options.LevelProgressBarColor = Color.ParseHex(theme.LevelProgressBarColor);
+                if (theme.LevelProgressBarBackgroundColor != null)
+                    options.LevelProgressBarBackgroundColor = Color.ParseHex(
+                        theme.LevelProgressBarBackgroundColor
+                    );
+                if (theme.MainBPTitleColor != null)
+                    options.MainBPTitleColor = Color.ParseHex(theme.MainBPTitleColor);
+                if (theme.MainBPArtistColor != null)
+                    options.MainBPArtistColor = Color.ParseHex(theme.MainBPArtistColor);
+                if (theme.MainBPMapperColor != null)
+                    options.MainBPMapperColor = Color.ParseHex(theme.MainBPMapperColor);
+                if (theme.MainBPBIDColor != null)
+                    options.MainBPBIDColor = Color.ParseHex(theme.MainBPBIDColor);
+                if (theme.MainBPStarsColor != null)
+                    options.MainBPStarsColor = Color.ParseHex(theme.MainBPStarsColor);
+                if (theme.MainBPAccColor != null)
+                    options.MainBPAccColor = Color.ParseHex(theme.MainBPAccColor);
+                if (theme.MainBPRankColor != null)
+                    options.MainBPRankColor = Color.ParseHex(theme.MainBPRankColor);
+                if (theme.MainBPppMainColor != null)
+                    options.MainBPppMainColor = Color.ParseHex(theme.MainBPppMainColor);
+                if (theme.MainBPppTitleColor != null)
+                    options.MainBPppTitleColor = Color.ParseHex(theme.MainBPppTitleColor);
                 if (theme.SubBp2ndModeColor != null)
                 {
                     options.SubBp2ndModeColor = Color.ParseHex(theme.SubBp2ndModeColor);
-                    if (theme.SubBp2ndModeColor.Length > 7) options.Score1ModeIconAlpha = true;
+                    if (theme.SubBp2ndModeColor.Length > 7)
+                        options.Score1ModeIconAlpha = true;
                 }
-                if (theme.SubBp2ndBPTitleColor != null) options.SubBp2ndBPTitleColor = Color.ParseHex(theme.SubBp2ndBPTitleColor);
-                if (theme.SubBp2ndBPVersionColor != null) options.SubBp2ndBPVersionColor = Color.ParseHex(theme.SubBp2ndBPVersionColor);
-                if (theme.SubBp2ndBPBIDColor != null) options.SubBp2ndBPBIDColor = Color.ParseHex(theme.SubBp2ndBPBIDColor);
-                if (theme.SubBp2ndBPStarsColor != null) options.SubBp2ndBPStarsColor = Color.ParseHex(theme.SubBp2ndBPStarsColor);
-                if (theme.SubBp2ndBPAccColor != null) options.SubBp2ndBPAccColor = Color.ParseHex(theme.SubBp2ndBPAccColor);
-                if (theme.SubBp2ndBPRankColor != null) options.SubBp2ndBPRankColor = Color.ParseHex(theme.SubBp2ndBPRankColor);
-                if (theme.SubBp2ndBPppMainColor != null) options.SubBp2ndBPppMainColor = Color.ParseHex(theme.SubBp2ndBPppMainColor);
+                if (theme.SubBp2ndBPTitleColor != null)
+                    options.SubBp2ndBPTitleColor = Color.ParseHex(theme.SubBp2ndBPTitleColor);
+                if (theme.SubBp2ndBPVersionColor != null)
+                    options.SubBp2ndBPVersionColor = Color.ParseHex(theme.SubBp2ndBPVersionColor);
+                if (theme.SubBp2ndBPBIDColor != null)
+                    options.SubBp2ndBPBIDColor = Color.ParseHex(theme.SubBp2ndBPBIDColor);
+                if (theme.SubBp2ndBPStarsColor != null)
+                    options.SubBp2ndBPStarsColor = Color.ParseHex(theme.SubBp2ndBPStarsColor);
+                if (theme.SubBp2ndBPAccColor != null)
+                    options.SubBp2ndBPAccColor = Color.ParseHex(theme.SubBp2ndBPAccColor);
+                if (theme.SubBp2ndBPRankColor != null)
+                    options.SubBp2ndBPRankColor = Color.ParseHex(theme.SubBp2ndBPRankColor);
+                if (theme.SubBp2ndBPppMainColor != null)
+                    options.SubBp2ndBPppMainColor = Color.ParseHex(theme.SubBp2ndBPppMainColor);
                 if (theme.SubBp3rdModeColor != null)
                 {
                     options.SubBp3rdModeColor = Color.ParseHex(theme.SubBp3rdModeColor);
-                    if (theme.SubBp3rdModeColor.Length > 7) options.Score2ModeIconAlpha = true;
+                    if (theme.SubBp3rdModeColor.Length > 7)
+                        options.Score2ModeIconAlpha = true;
                 }
-                if (theme.SubBp3rdBPTitleColor != null) options.SubBp3rdBPTitleColor = Color.ParseHex(theme.SubBp3rdBPTitleColor);
-                if (theme.SubBp3rdBPVersionColor != null) options.SubBp3rdBPVersionColor = Color.ParseHex(theme.SubBp3rdBPVersionColor);
-                if (theme.SubBp3rdBPBIDColor != null) options.SubBp3rdBPBIDColor = Color.ParseHex(theme.SubBp3rdBPBIDColor);
-                if (theme.SubBp3rdBPStarsColor != null) options.SubBp3rdBPStarsColor = Color.ParseHex(theme.SubBp3rdBPStarsColor);
-                if (theme.SubBp3rdBPAccColor != null) options.SubBp3rdBPAccColor = Color.ParseHex(theme.SubBp3rdBPAccColor);
-                if (theme.SubBp3rdBPRankColor != null) options.SubBp3rdBPRankColor = Color.ParseHex(theme.SubBp3rdBPRankColor);
-                if (theme.SubBp3rdBPppMainColor != null) options.SubBp3rdBPppMainColor = Color.ParseHex(theme.SubBp3rdBPppMainColor);
+                if (theme.SubBp3rdBPTitleColor != null)
+                    options.SubBp3rdBPTitleColor = Color.ParseHex(theme.SubBp3rdBPTitleColor);
+                if (theme.SubBp3rdBPVersionColor != null)
+                    options.SubBp3rdBPVersionColor = Color.ParseHex(theme.SubBp3rdBPVersionColor);
+                if (theme.SubBp3rdBPBIDColor != null)
+                    options.SubBp3rdBPBIDColor = Color.ParseHex(theme.SubBp3rdBPBIDColor);
+                if (theme.SubBp3rdBPStarsColor != null)
+                    options.SubBp3rdBPStarsColor = Color.ParseHex(theme.SubBp3rdBPStarsColor);
+                if (theme.SubBp3rdBPAccColor != null)
+                    options.SubBp3rdBPAccColor = Color.ParseHex(theme.SubBp3rdBPAccColor);
+                if (theme.SubBp3rdBPRankColor != null)
+                    options.SubBp3rdBPRankColor = Color.ParseHex(theme.SubBp3rdBPRankColor);
+                if (theme.SubBp3rdBPppMainColor != null)
+                    options.SubBp3rdBPppMainColor = Color.ParseHex(theme.SubBp3rdBPppMainColor);
                 if (theme.SubBp4thModeColor != null)
                 {
                     options.SubBp4thModeColor = Color.ParseHex(theme.SubBp4thModeColor);
-                    if (theme.SubBp4thModeColor.Length > 7) options.Score3ModeIconAlpha = true;
+                    if (theme.SubBp4thModeColor.Length > 7)
+                        options.Score3ModeIconAlpha = true;
                 }
-                if (theme.SubBp4thBPTitleColor != null) options.SubBp4thBPTitleColor = Color.ParseHex(theme.SubBp4thBPTitleColor);
-                if (theme.SubBp4thBPVersionColor != null) options.SubBp4thBPVersionColor = Color.ParseHex(theme.SubBp4thBPVersionColor);
-                if (theme.SubBp4thBPBIDColor != null) options.SubBp4thBPBIDColor = Color.ParseHex(theme.SubBp4thBPBIDColor);
-                if (theme.SubBp4thBPStarsColor != null) options.SubBp4thBPStarsColor = Color.ParseHex(theme.SubBp4thBPStarsColor);
-                if (theme.SubBp4thBPAccColor != null) options.SubBp4thBPAccColor = Color.ParseHex(theme.SubBp4thBPAccColor);
-                if (theme.SubBp4thBPRankColor != null) options.SubBp4thBPRankColor = Color.ParseHex(theme.SubBp4thBPRankColor);
-                if (theme.SubBp4thBPppMainColor != null) options.SubBp4thBPppMainColor = Color.ParseHex(theme.SubBp4thBPppMainColor);
+                if (theme.SubBp4thBPTitleColor != null)
+                    options.SubBp4thBPTitleColor = Color.ParseHex(theme.SubBp4thBPTitleColor);
+                if (theme.SubBp4thBPVersionColor != null)
+                    options.SubBp4thBPVersionColor = Color.ParseHex(theme.SubBp4thBPVersionColor);
+                if (theme.SubBp4thBPBIDColor != null)
+                    options.SubBp4thBPBIDColor = Color.ParseHex(theme.SubBp4thBPBIDColor);
+                if (theme.SubBp4thBPStarsColor != null)
+                    options.SubBp4thBPStarsColor = Color.ParseHex(theme.SubBp4thBPStarsColor);
+                if (theme.SubBp4thBPAccColor != null)
+                    options.SubBp4thBPAccColor = Color.ParseHex(theme.SubBp4thBPAccColor);
+                if (theme.SubBp4thBPRankColor != null)
+                    options.SubBp4thBPRankColor = Color.ParseHex(theme.SubBp4thBPRankColor);
+                if (theme.SubBp4thBPppMainColor != null)
+                    options.SubBp4thBPppMainColor = Color.ParseHex(theme.SubBp4thBPppMainColor);
                 if (theme.SubBp5thModeColor != null)
                 {
                     options.SubBp5thModeColor = Color.ParseHex(theme.SubBp5thModeColor);
-                    if (theme.SubBp5thModeColor.Length > 7) options.Score4ModeIconAlpha = true;
+                    if (theme.SubBp5thModeColor.Length > 7)
+                        options.Score4ModeIconAlpha = true;
                 }
-                if (theme.SubBp5thBPTitleColor != null) options.SubBp5thBPTitleColor = Color.ParseHex(theme.SubBp5thBPTitleColor);
-                if (theme.SubBp5thBPVersionColor != null) options.SubBp5thBPVersionColor = Color.ParseHex(theme.SubBp5thBPVersionColor);
-                if (theme.SubBp5thBPBIDColor != null) options.SubBp5thBPBIDColor = Color.ParseHex(theme.SubBp5thBPBIDColor);
-                if (theme.SubBp5thBPStarsColor != null) options.SubBp5thBPStarsColor = Color.ParseHex(theme.SubBp5thBPStarsColor);
-                if (theme.SubBp5thBPAccColor != null) options.SubBp5thBPAccColor = Color.ParseHex(theme.SubBp5thBPAccColor);
-                if (theme.SubBp5thBPRankColor != null) options.SubBp5thBPRankColor = Color.ParseHex(theme.SubBp5thBPRankColor);
-                if (theme.SubBp5thBPppMainColor != null) options.SubBp5thBPppMainColor = Color.ParseHex(theme.SubBp5thBPppMainColor);
-                if (theme.SubBpInfoSplitColor != null) options.SubBpInfoSplitColor = Color.ParseHex(theme.SubBpInfoSplitColor);
-                if (theme.footerColor != null) options.footerColor = Color.ParseHex(theme.footerColor);
+                if (theme.SubBp5thBPTitleColor != null)
+                    options.SubBp5thBPTitleColor = Color.ParseHex(theme.SubBp5thBPTitleColor);
+                if (theme.SubBp5thBPVersionColor != null)
+                    options.SubBp5thBPVersionColor = Color.ParseHex(theme.SubBp5thBPVersionColor);
+                if (theme.SubBp5thBPBIDColor != null)
+                    options.SubBp5thBPBIDColor = Color.ParseHex(theme.SubBp5thBPBIDColor);
+                if (theme.SubBp5thBPStarsColor != null)
+                    options.SubBp5thBPStarsColor = Color.ParseHex(theme.SubBp5thBPStarsColor);
+                if (theme.SubBp5thBPAccColor != null)
+                    options.SubBp5thBPAccColor = Color.ParseHex(theme.SubBp5thBPAccColor);
+                if (theme.SubBp5thBPRankColor != null)
+                    options.SubBp5thBPRankColor = Color.ParseHex(theme.SubBp5thBPRankColor);
+                if (theme.SubBp5thBPppMainColor != null)
+                    options.SubBp5thBPppMainColor = Color.ParseHex(theme.SubBp5thBPppMainColor);
+                if (theme.SubBpInfoSplitColor != null)
+                    options.SubBpInfoSplitColor = Color.ParseHex(theme.SubBpInfoSplitColor);
+                if (theme.footerColor != null)
+                    options.footerColor = Color.ParseHex(theme.footerColor);
 
                 // Float fields
-                if (theme.SideImgBrightness != null) options.SideImgBrightness = float.Parse(theme.SideImgBrightness);
-                if (theme.AvatarBrightness != null) options.AvatarBrightness = float.Parse(theme.AvatarBrightness);
-                if (theme.BadgeBrightness != null) options.BadgeBrightness = float.Parse(theme.BadgeBrightness);
-                if (theme.MainBPImgBrightness != null) options.MainBPImgBrightness = float.Parse(theme.MainBPImgBrightness);
-                if (theme.CountryFlagBrightness != null) options.CountryFlagBrightness = float.Parse(theme.CountryFlagBrightness);
-                if (theme.ModeCaptionBrightness != null) options.ModeCaptionBrightness = float.Parse(theme.ModeCaptionBrightness);
-                if (theme.ModIconBrightness != null) options.ModIconBrightness = float.Parse(theme.ModIconBrightness);
-                if (theme.ScoreModeIconBrightness != null) options.ScoreModeIconBrightness = float.Parse(theme.ScoreModeIconBrightness);
-                if (theme.OsuSupporterIconBrightness != null) options.OsuSupporterIconBrightness = float.Parse(theme.OsuSupporterIconBrightness);
-                if (theme.CountryFlagAlpha != null) options.CountryFlagAlpha = float.Parse(theme.CountryFlagAlpha);
-                if (theme.OsuSupporterIconAlpha != null) options.OsuSupporterIconAlpha = float.Parse(theme.OsuSupporterIconAlpha);
-                if (theme.BadgeAlpha != null) options.BadgeAlpha = float.Parse(theme.BadgeAlpha);
-                if (theme.AvatarAlpha != null) options.AvatarAlpha = float.Parse(theme.AvatarAlpha);
-                if (theme.ModIconAlpha != null) options.ModIconAlpha = float.Parse(theme.ModIconAlpha);
+                if (theme.SideImgBrightness != null)
+                    options.SideImgBrightness = float.Parse(theme.SideImgBrightness);
+                if (theme.AvatarBrightness != null)
+                    options.AvatarBrightness = float.Parse(theme.AvatarBrightness);
+                if (theme.BadgeBrightness != null)
+                    options.BadgeBrightness = float.Parse(theme.BadgeBrightness);
+                if (theme.MainBPImgBrightness != null)
+                    options.MainBPImgBrightness = float.Parse(theme.MainBPImgBrightness);
+                if (theme.CountryFlagBrightness != null)
+                    options.CountryFlagBrightness = float.Parse(theme.CountryFlagBrightness);
+                if (theme.ModeCaptionBrightness != null)
+                    options.ModeCaptionBrightness = float.Parse(theme.ModeCaptionBrightness);
+                if (theme.ModIconBrightness != null)
+                    options.ModIconBrightness = float.Parse(theme.ModIconBrightness);
+                if (theme.ScoreModeIconBrightness != null)
+                    options.ScoreModeIconBrightness = float.Parse(theme.ScoreModeIconBrightness);
+                if (theme.OsuSupporterIconBrightness != null)
+                    options.OsuSupporterIconBrightness = float.Parse(
+                        theme.OsuSupporterIconBrightness
+                    );
+                if (theme.CountryFlagAlpha != null)
+                    options.CountryFlagAlpha = float.Parse(theme.CountryFlagAlpha);
+                if (theme.OsuSupporterIconAlpha != null)
+                    options.OsuSupporterIconAlpha = float.Parse(theme.OsuSupporterIconAlpha);
+                if (theme.BadgeAlpha != null)
+                    options.BadgeAlpha = float.Parse(theme.BadgeAlpha);
+                if (theme.AvatarAlpha != null)
+                    options.AvatarAlpha = float.Parse(theme.AvatarAlpha);
+                if (theme.ModIconAlpha != null)
+                    options.ModIconAlpha = float.Parse(theme.ModIconAlpha);
 
                 // Bool fields
-                if (theme.FixedScoreModeIconColor != null) options.FixedScoreModeIconColor = bool.Parse(theme.FixedScoreModeIconColor);
-                if (theme.DisplaySupporterStatus != null) options.DisplaySupporterStatus = bool.Parse(theme.DisplaySupporterStatus);
+                if (theme.FixedScoreModeIconColor != null)
+                    options.FixedScoreModeIconColor = bool.Parse(theme.FixedScoreModeIconColor);
+                if (theme.DisplaySupporterStatus != null)
+                    options.DisplaySupporterStatus = bool.Parse(theme.DisplaySupporterStatus);
 
                 return options;
             }
@@ -1071,7 +1213,7 @@ public static class OsuInfoPanelV2
         {
             VerticalAlignment = VerticalAlignment.Bottom,
             HorizontalAlignment = HorizontalAlignment.Left,
-            FallbackFontFamilies = [HarmonySans, HarmonySansArabic]
+            FallbackFontFamilies =  [ HarmonySans, HarmonySansArabic ]
         };
 
         //自定义侧图 - try URL from Kagami first, then local file
@@ -1152,14 +1294,15 @@ public static class OsuInfoPanelV2
             acc_front_length = 1443;
         using var acc_300 = new Image<Rgba32>(acc_front_length, 68);
         acc_300.Mutate(x => x.Fill(accProgressBarColor));
-        acc_300.Mutate(x =>
-            x.RoundCornerParts(
-                new Size((int)(1443.00 * (data.userInfo.Statistics.HitAccuracy / 100.0)), 68),
-                10,
-                10,
-                20,
-                20
-            )
+        acc_300.Mutate(
+            x =>
+                x.RoundCornerParts(
+                    new Size((int)(1443.00 * (data.userInfo.Statistics.HitAccuracy / 100.0)), 68),
+                    10,
+                    10,
+                    20,
+                    20
+                )
         );
         info.Mutate(x => x.DrawImage(acc_300, new Point(2358, 611), 1));
 
@@ -1167,11 +1310,15 @@ public static class OsuInfoPanelV2
         //download background image
         if (allBP!.Length > 0)
         {
-            var bp1bg = await Utils.LoadOrDownloadBackground(allBP![0].Beatmap!.BeatmapsetId, allBP![0].Beatmap!.BeatmapId);
+            var bp1bg = await Utils.LoadOrDownloadBackground(
+                allBP![0].Beatmap!.BeatmapsetId,
+                allBP![0].Beatmap!.BeatmapId
+            );
             bp1bg ??= await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
             //bp1bg.Mutate(x => x.Resize(355, 200));
-            bp1bg.Mutate(x =>
-                x.Resize(new ResizeOptions() { Size = new Size(355, 0), Mode = ResizeMode.Max })
+            bp1bg.Mutate(
+                x =>
+                    x.Resize(new ResizeOptions() { Size = new Size(355, 0), Mode = ResizeMode.Max })
             ); //355x200
             bp1bg.Mutate(x => x.Brightness(MainBPImgBrightness));
             info.Mutate(x => x.DrawImage(bp1bg, new Point(1566, 1550), 1));
@@ -1209,8 +1356,8 @@ public static class OsuInfoPanelV2
             using var levelprogress_front = new Image<Rgba32>(levelprogressFrontPos, 6);
             levelprogress_front.Mutate(x => x.Fill(LevelProgressBarColor));
             levelprogress_front.Mutate(x => x.RoundCorner(new Size(levelprogressFrontPos, 12), 8));
-            levelprogress_background.Mutate(x =>
-                x.DrawImage(levelprogress_front, new Point(0, 0), 1)
+            levelprogress_background.Mutate(
+                x => x.DrawImage(levelprogress_front, new Point(0, 0), 1)
             );
         }
         levelprogress_background.Mutate(x => x.Rotate(-90));
@@ -1248,47 +1395,64 @@ public static class OsuInfoPanelV2
         textOptions.Font = TorusRegular.Get(60);
         textOptions.Origin = new PointF(1972, 481);
         textOptions.VerticalAlignment = VerticalAlignment.Center;
-        info.Mutate(x =>
-            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.GlobalRank), RankColor)
+        info.Mutate(
+            x =>
+                x.DrawText(
+                    textOptions,
+                    string.Format("{0:N0}", data.userInfo.Statistics.GlobalRank),
+                    RankColor
+                )
         );
 
         //country_flag
         using var flags = await Img.LoadAsync($"./work/flags/{data.userInfo.Country!.Code}.png");
         flags.Mutate(x => x.Resize(100, 67).Brightness(CountryFlagBrightness));
-        flags.Mutate(x =>
-            x.ProcessPixelRowsAsVector4(row =>
-            {
-                for (int p = 0; p < row.Length; p++)
-                    if (row[p].W > 0.2f)
-                        row[p].W = CountryFlagAlpha;
-            })
+        flags.Mutate(
+            x =>
+                x.ProcessPixelRowsAsVector4(row =>
+                {
+                    for (int p = 0; p < row.Length; p++)
+                        if (row[p].W > 0.2f)
+                            row[p].W = CountryFlagAlpha;
+                })
         );
         info.Mutate(x => x.DrawImage(flags, new Point(1577, 600), 1));
 
         //country_rank
         textOptions.HorizontalAlignment = HorizontalAlignment.Left;
         textOptions.Origin = new PointF(1687, 629);
-        info.Mutate(x =>
-            x.DrawText(textOptions, string.Format("#{0:N0}", data.userInfo.Statistics.CountryRank), CountryRankColor)
+        info.Mutate(
+            x =>
+                x.DrawText(
+                    textOptions,
+                    string.Format("#{0:N0}", data.userInfo.Statistics.CountryRank),
+                    CountryRankColor
+                )
         );
         if (isBonded)
         {
-            if (Math.Abs(data.userInfo.Statistics.CountryRank - prevStatistics.CountryRank) >= 1)
+            if (
+                Math.Abs(
+                    (data.userInfo.Statistics.CountryRank ?? 0) - (prevStatistics.CountryRank ?? 0)
+                ) >= 1
+            )
             {
                 textOptions.HorizontalAlignment = HorizontalAlignment.Right;
                 textOptions.Origin = new PointF(2250, 629);
                 textOptions.Font = TorusRegular.Get(44);
-                info.Mutate(x =>
-                    x.DrawText(
-                        textOptions,
-                        string.Format(
-                            "{0:N0}",
-                            Math.Abs(
-                                data.userInfo.Statistics.CountryRank - prevStatistics.CountryRank
-                            )
-                        ),
-                        CountryRankDiffColor
-                    )
+                info.Mutate(
+                    x =>
+                        x.DrawText(
+                            textOptions,
+                            string.Format(
+                                "{0:N0}",
+                                Math.Abs(
+                                    (data.userInfo.Statistics.CountryRank ?? 0)
+                                        - (prevStatistics.CountryRank ?? 0)
+                                )
+                            ),
+                            CountryRankDiffColor
+                        )
                 );
                 using var cr_indicator_icon_increase = await Utils.ReadImageRgba(
                     $"./work/panelv2/icons/indicator.png"
@@ -1296,19 +1460,20 @@ public static class OsuInfoPanelV2
                 cr_indicator_icon_increase.Mutate(x => x.Resize(36, 36));
                 if ((data.userInfo.Statistics.CountryRank - prevStatistics.CountryRank) > 0)
                     cr_indicator_icon_increase.Mutate(x => x.Rotate(180));
-                cr_indicator_icon_increase.Mutate(x =>
-                    x.ProcessPixelRowsAsVector4(row =>
-                    {
-                        for (int p = 0; p < row.Length; p++)
+                cr_indicator_icon_increase.Mutate(
+                    x =>
+                        x.ProcessPixelRowsAsVector4(row =>
                         {
-                            row[p].X = ((Vector4)CountryRankDiffIconColor).X;
-                            row[p].Y = ((Vector4)CountryRankDiffIconColor).Y;
-                            row[p].Z = ((Vector4)CountryRankDiffIconColor).Z;
-                            if (CountryRankDiffIconColorAlpha)
-                                if (row[p].W > 0.2f)
-                                    row[p].W = row[p].W * ((Vector4)CountryRankDiffIconColor).W;
-                        }
-                    })
+                            for (int p = 0; p < row.Length; p++)
+                            {
+                                row[p].X = ((Vector4)CountryRankDiffIconColor).X;
+                                row[p].Y = ((Vector4)CountryRankDiffIconColor).Y;
+                                row[p].Z = ((Vector4)CountryRankDiffIconColor).Z;
+                                if (CountryRankDiffIconColorAlpha)
+                                    if (row[p].W > 0.2f)
+                                        row[p].W = row[p].W * ((Vector4)CountryRankDiffIconColor).W;
+                            }
+                        })
                 );
                 info.Mutate(x => x.DrawImage(cr_indicator_icon_increase, new Point(2255, 616), 1));
             }
@@ -1318,8 +1483,13 @@ public static class OsuInfoPanelV2
         textOptions.HorizontalAlignment = HorizontalAlignment.Left;
         textOptions.Origin = new PointF(3120, 350);
         textOptions.Font = TorusRegular.Get(60);
-        info.Mutate(x =>
-            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.PP), ppMainColor)
+        info.Mutate(
+            x =>
+                x.DrawText(
+                    textOptions,
+                    string.Format("{0:N0}", data.userInfo.Statistics.PP),
+                    ppMainColor
+                )
         );
         if (isBonded)
         {
@@ -1328,15 +1498,16 @@ public static class OsuInfoPanelV2
                 textOptions.HorizontalAlignment = HorizontalAlignment.Right;
                 textOptions.Origin = new PointF(3735, 350);
                 textOptions.Font = TorusRegular.Get(40);
-                info.Mutate(x =>
-                    x.DrawText(
-                        textOptions,
-                        string.Format(
-                            "{0:N0}",
-                            Math.Abs(data.userInfo.Statistics.PP - prevStatistics.PP)
-                        ),
-                        ppDiffColor
-                    )
+                info.Mutate(
+                    x =>
+                        x.DrawText(
+                            textOptions,
+                            string.Format(
+                                "{0:N0}",
+                                Math.Abs(data.userInfo.Statistics.PP - prevStatistics.PP)
+                            ),
+                            ppDiffColor
+                        )
                 );
                 using var pp_indicator_icon_increase = await Utils.ReadImageRgba(
                     $"./work/panelv2/icons/indicator.png"
@@ -1344,19 +1515,20 @@ public static class OsuInfoPanelV2
                 pp_indicator_icon_increase.Mutate(x => x.Resize(36, 36));
                 if ((data.userInfo.Statistics.PP - prevStatistics.PP) < 0)
                     pp_indicator_icon_increase.Mutate(x => x.Rotate(180));
-                pp_indicator_icon_increase.Mutate(x =>
-                    x.ProcessPixelRowsAsVector4(row =>
-                    {
-                        for (int p = 0; p < row.Length; p++)
+                pp_indicator_icon_increase.Mutate(
+                    x =>
+                        x.ProcessPixelRowsAsVector4(row =>
                         {
-                            row[p].X = ((Vector4)ppDiffIconColor).X;
-                            row[p].Y = ((Vector4)ppDiffIconColor).Y;
-                            row[p].Z = ((Vector4)ppDiffIconColor).Z;
-                            if (ppDiffIconColorAlpha)
-                                if (row[p].W > 0.2f)
-                                    row[p].W = row[p].W * ((Vector4)ppDiffIconColor).W;
-                        }
-                    })
+                            for (int p = 0; p < row.Length; p++)
+                            {
+                                row[p].X = ((Vector4)ppDiffIconColor).X;
+                                row[p].Y = ((Vector4)ppDiffIconColor).Y;
+                                row[p].Z = ((Vector4)ppDiffIconColor).Z;
+                                if (ppDiffIconColorAlpha)
+                                    if (row[p].W > 0.2f)
+                                        row[p].W = row[p].W * ((Vector4)ppDiffIconColor).W;
+                            }
+                        })
                 );
                 info.Mutate(x => x.DrawImage(pp_indicator_icon_increase, new Point(3740, 335), 1));
             }
@@ -1366,8 +1538,13 @@ public static class OsuInfoPanelV2
         textOptions.HorizontalAlignment = HorizontalAlignment.Left;
         textOptions.Origin = new PointF(3120, 551);
         textOptions.Font = TorusRegular.Get(60);
-        info.Mutate(x =>
-            x.DrawText(textOptions, string.Format("{0:0.##}%", data.userInfo.Statistics.HitAccuracy), accMainColor)
+        info.Mutate(
+            x =>
+                x.DrawText(
+                    textOptions,
+                    string.Format("{0:0.##}%", data.userInfo.Statistics.HitAccuracy),
+                    accMainColor
+                )
         );
         if (isBonded)
         {
@@ -1376,15 +1553,16 @@ public static class OsuInfoPanelV2
                 textOptions.HorizontalAlignment = HorizontalAlignment.Right;
                 textOptions.Origin = new PointF(3735, 551);
                 textOptions.Font = TorusRegular.Get(40);
-                info.Mutate(x =>
-                    x.DrawText(
-                        textOptions,
-                        string.Format(
-                            "{0:0.##}%",
-                            data.userInfo.Statistics.HitAccuracy - prevStatistics.HitAccuracy
-                        ),
-                        accDiffColor
-                    )
+                info.Mutate(
+                    x =>
+                        x.DrawText(
+                            textOptions,
+                            string.Format(
+                                "{0:0.##}%",
+                                data.userInfo.Statistics.HitAccuracy - prevStatistics.HitAccuracy
+                            ),
+                            accDiffColor
+                        )
                 );
                 using var acc_indicator_icon_increase = await Utils.ReadImageRgba(
                     $"./work/panelv2/icons/indicator.png"
@@ -1392,19 +1570,20 @@ public static class OsuInfoPanelV2
                 acc_indicator_icon_increase.Mutate(x => x.Resize(36, 36));
                 if ((data.userInfo.Statistics.HitAccuracy - prevStatistics.HitAccuracy) < 0.0)
                     acc_indicator_icon_increase.Mutate(x => x.Rotate(180));
-                acc_indicator_icon_increase.Mutate(x =>
-                    x.ProcessPixelRowsAsVector4(row =>
-                    {
-                        for (int p = 0; p < row.Length; p++)
+                acc_indicator_icon_increase.Mutate(
+                    x =>
+                        x.ProcessPixelRowsAsVector4(row =>
                         {
-                            row[p].X = ((Vector4)accDiffIconColor).X;
-                            row[p].Y = ((Vector4)accDiffIconColor).Y;
-                            row[p].Z = ((Vector4)accDiffIconColor).Z;
-                            if (accDiffIconColorAlpha)
-                                if (row[p].W > 0.2f)
-                                    row[p].W = row[p].W * ((Vector4)accDiffIconColor).W;
-                        }
-                    })
+                            for (int p = 0; p < row.Length; p++)
+                            {
+                                row[p].X = ((Vector4)accDiffIconColor).X;
+                                row[p].Y = ((Vector4)accDiffIconColor).Y;
+                                row[p].Z = ((Vector4)accDiffIconColor).Z;
+                                if (accDiffIconColorAlpha)
+                                    if (row[p].W > 0.2f)
+                                        row[p].W = row[p].W * ((Vector4)accDiffIconColor).W;
+                            }
+                        })
                 );
                 info.Mutate(x => x.DrawImage(acc_indicator_icon_increase, new Point(3740, 536), 1));
             }
@@ -1416,8 +1595,13 @@ public static class OsuInfoPanelV2
             textOptions.Font = TorusRegular.Get(40);
             var ppsub_point = 2374 + pp_front_length - 40;
             textOptions.Origin = new PointF(ppsub_point, 440);
-            info.Mutate(x =>
-                x.DrawText(textOptions, string.Format("{0:N0}", scorePP), ppProgressBarColorTextColor)
+            info.Mutate(
+                x =>
+                    x.DrawText(
+                        textOptions,
+                        string.Format("{0:N0}", scorePP),
+                        ppProgressBarColorTextColor
+                    )
             );
         }
 
@@ -1429,79 +1613,130 @@ public static class OsuInfoPanelV2
             var percent = 100d / 100d;
             var accsub_point = 2374 + (percent * 1443.00) - 40;
             textOptions.Origin = new PointF((float)accsub_point, 641f);
-            info.Mutate(x =>
-                x.DrawText(textOptions, "300", accProgressBarColorTextColor)
-            );
+            info.Mutate(x => x.DrawText(textOptions, "300", accProgressBarColorTextColor));
         }
 
         //grades
         textOptions.Font = TorusRegular.Get(38);
         textOptions.HorizontalAlignment = HorizontalAlignment.Center;
         textOptions.Origin = new PointF(2646, 988);
-        info.Mutate(x =>
-            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.SSH), GradeStatisticsColor_XH)
+        info.Mutate(
+            x =>
+                x.DrawText(
+                    textOptions,
+                    string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.SSH),
+                    GradeStatisticsColor_XH
+                )
         );
         textOptions.Origin = new PointF(2646 + 218, 988);
-        info.Mutate(x =>
-            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.SS), GradeStatisticsColor_X)
+        info.Mutate(
+            x =>
+                x.DrawText(
+                    textOptions,
+                    string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.SS),
+                    GradeStatisticsColor_X
+                )
         );
         textOptions.Origin = new PointF(2646 + 218 * 2, 988);
-        info.Mutate(x =>
-            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.SH), GradeStatisticsColor_SH)
+        info.Mutate(
+            x =>
+                x.DrawText(
+                    textOptions,
+                    string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.SH),
+                    GradeStatisticsColor_SH
+                )
         );
         textOptions.Origin = new PointF(2646 + 218 * 3, 988);
-        info.Mutate(x =>
-            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.S), GradeStatisticsColor_S)
+        info.Mutate(
+            x =>
+                x.DrawText(
+                    textOptions,
+                    string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.S),
+                    GradeStatisticsColor_S
+                )
         );
         textOptions.Origin = new PointF(2646 + 218 * 4, 988);
-        info.Mutate(x =>
-            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.A), GradeStatisticsColor_A)
+        info.Mutate(
+            x =>
+                x.DrawText(
+                    textOptions,
+                    string.Format("{0:N0}", data.userInfo.Statistics.GradeCounts.A),
+                    GradeStatisticsColor_A
+                )
         );
 
         //level main
         textOptions.Origin = new PointF(3906, 2470);
         textOptions.Font = TorusRegular.Get(48);
-        info.Mutate(x =>
-            x.DrawText(textOptions, data.userInfo.Statistics.Level.Current.ToString(), LevelTitleColor)
+        info.Mutate(
+            x =>
+                x.DrawText(
+                    textOptions,
+                    data.userInfo.Statistics.Level.Current.ToString(),
+                    LevelTitleColor
+                )
         );
 
         //update time
         textOptions.Origin = new PointF(3955, 2582);
         textOptions.HorizontalAlignment = HorizontalAlignment.Right;
         textOptions.Font = TorusRegular.Get(40);
-        info.Mutate(x =>
-            x.DrawText(textOptions, $"Update at {DateTime.Now:yyyy/MM/dd HH:mm:ss}", footerColor)
+        info.Mutate(
+            x =>
+                x.DrawText(
+                    textOptions,
+                    $"Update at {DateTime.Now:yyyy/MM/dd HH:mm:ss}",
+                    footerColor
+                )
         );
 
         //desu.life
         textOptions.HorizontalAlignment = HorizontalAlignment.Left;
         textOptions.Origin = new PointF(90, 2582);
-        info.Mutate(x =>
-            x.DrawText(textOptions, $"Kanonbot - desu.life", footerColor)
-        );
+        info.Mutate(x => x.DrawText(textOptions, $"Kanonbot - desu.life", footerColor));
 
         //details
         textOptions.Font = TorusRegular.Get(50);
 
         //play time
         textOptions.Origin = new PointF(1705, 1217);
-        info.Mutate(x =>
-            x.DrawText(textOptions, Utils.Duration2StringWithoutSec(data.userInfo.Statistics.PlayTime), Details_PlayTimeColor)
+        info.Mutate(
+            x =>
+                x.DrawText(
+                    textOptions,
+                    Utils.Duration2StringWithoutSec(data.userInfo.Statistics.PlayTime),
+                    Details_PlayTimeColor
+                )
         );
         //total hits
         textOptions.Origin = new PointF(2285, 1217);
-        info.Mutate(x =>
-            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.TotalHits), Details_TotalHitsColor)
+        info.Mutate(
+            x =>
+                x.DrawText(
+                    textOptions,
+                    string.Format("{0:N0}", data.userInfo.Statistics.TotalHits),
+                    Details_TotalHitsColor
+                )
         );
         //play count
         textOptions.Origin = new PointF(2853, 1217);
-        info.Mutate(x =>
-            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.PlayCount), Details_PlayCountColor)
+        info.Mutate(
+            x =>
+                x.DrawText(
+                    textOptions,
+                    string.Format("{0:N0}", data.userInfo.Statistics.PlayCount),
+                    Details_PlayCountColor
+                )
         );
         //ranked scores
         textOptions.Origin = new PointF(3420, 1217);
-        info.Mutate(x =>
-            x.DrawText(textOptions, string.Format("{0:N0}", data.userInfo.Statistics.RankedScore), Details_RankedScoreColor)
+        info.Mutate(
+            x =>
+                x.DrawText(
+                    textOptions,
+                    string.Format("{0:N0}", data.userInfo.Statistics.RankedScore),
+                    Details_RankedScoreColor
+                )
         );
 
         //details diff
@@ -1520,26 +1755,31 @@ public static class OsuInfoPanelV2
             text = Utils.Duration2StringWithoutSec(
                 data.userInfo.Statistics.PlayTime - prevStatistics.PlayTime
             );
-            info.Mutate(x =>
-                x.DrawText(textOptions, text, DetailsDiff_PlayTimeColor)
-            );
+            info.Mutate(x => x.DrawText(textOptions, text, DetailsDiff_PlayTimeColor));
             var m = TextMeasurer.MeasureSize(text, textOptions);
-            indicator_icon_increase.Mutate(x =>
-                x.ProcessPixelRowsAsVector4(row =>
-                {
-                    for (int p = 0; p < row.Length; p++)
+            indicator_icon_increase.Mutate(
+                x =>
+                    x.ProcessPixelRowsAsVector4(row =>
                     {
-                        row[p].X = ((Vector4)DetailsDiff_PlayTimeIconColor).X;
-                        row[p].Y = ((Vector4)DetailsDiff_PlayTimeIconColor).Y;
-                        row[p].Z = ((Vector4)DetailsDiff_PlayTimeIconColor).Z;
-                        if (DetailsPlaytimeIconAlpha)
-                            if (row[p].W > 0.2f)
-                                row[p].W = row[p].W * ((Vector4)DetailsDiff_PlayTimeIconColor).W;
-                    }
-                })
+                        for (int p = 0; p < row.Length; p++)
+                        {
+                            row[p].X = ((Vector4)DetailsDiff_PlayTimeIconColor).X;
+                            row[p].Y = ((Vector4)DetailsDiff_PlayTimeIconColor).Y;
+                            row[p].Z = ((Vector4)DetailsDiff_PlayTimeIconColor).Z;
+                            if (DetailsPlaytimeIconAlpha)
+                                if (row[p].W > 0.2f)
+                                    row[p].W =
+                                        row[p].W * ((Vector4)DetailsDiff_PlayTimeIconColor).W;
+                        }
+                    })
             );
-            info.Mutate(x =>
-                x.DrawImage(indicator_icon_increase, new Point(1705 + (int)m.Width + 10, 1247), 1)
+            info.Mutate(
+                x =>
+                    x.DrawImage(
+                        indicator_icon_increase,
+                        new Point(1705 + (int)m.Width + 10, 1247),
+                        1
+                    )
             );
 
             //total hits
@@ -1548,26 +1788,31 @@ public static class OsuInfoPanelV2
                 "{0:N0}",
                 data.userInfo.Statistics.TotalHits - prevStatistics.TotalHits
             );
-            info.Mutate(x =>
-                x.DrawText(textOptions, text, DetailsDiff_TotalHitsColor)
-            );
+            info.Mutate(x => x.DrawText(textOptions, text, DetailsDiff_TotalHitsColor));
             m = TextMeasurer.MeasureSize(text, textOptions);
-            indicator_icon_increase.Mutate(x =>
-                x.ProcessPixelRowsAsVector4(row =>
-                {
-                    for (int p = 0; p < row.Length; p++)
+            indicator_icon_increase.Mutate(
+                x =>
+                    x.ProcessPixelRowsAsVector4(row =>
                     {
-                        row[p].X = ((Vector4)DetailsDiff_TotalHitsIconColor).X;
-                        row[p].Y = ((Vector4)DetailsDiff_TotalHitsIconColor).Y;
-                        row[p].Z = ((Vector4)DetailsDiff_TotalHitsIconColor).Z;
-                        if (DetailsTotalHitIconAlpha)
-                            if (row[p].W > 0.2f)
-                                row[p].W = row[p].W * ((Vector4)DetailsDiff_TotalHitsIconColor).W;
-                    }
-                })
+                        for (int p = 0; p < row.Length; p++)
+                        {
+                            row[p].X = ((Vector4)DetailsDiff_TotalHitsIconColor).X;
+                            row[p].Y = ((Vector4)DetailsDiff_TotalHitsIconColor).Y;
+                            row[p].Z = ((Vector4)DetailsDiff_TotalHitsIconColor).Z;
+                            if (DetailsTotalHitIconAlpha)
+                                if (row[p].W > 0.2f)
+                                    row[p].W =
+                                        row[p].W * ((Vector4)DetailsDiff_TotalHitsIconColor).W;
+                        }
+                    })
             );
-            info.Mutate(x =>
-                x.DrawImage(indicator_icon_increase, new Point(2285 + (int)m.Width + 10, 1247), 1)
+            info.Mutate(
+                x =>
+                    x.DrawImage(
+                        indicator_icon_increase,
+                        new Point(2285 + (int)m.Width + 10, 1247),
+                        1
+                    )
             );
 
             //play count
@@ -1576,26 +1821,31 @@ public static class OsuInfoPanelV2
                 "{0:N0}",
                 data.userInfo.Statistics.PlayCount - prevStatistics.PlayCount
             );
-            info.Mutate(x =>
-                x.DrawText(textOptions, text, DetailsDiff_PlayCountColor)
-            );
+            info.Mutate(x => x.DrawText(textOptions, text, DetailsDiff_PlayCountColor));
             m = TextMeasurer.MeasureSize(text, textOptions);
-            indicator_icon_increase.Mutate(x =>
-                x.ProcessPixelRowsAsVector4(row =>
-                {
-                    for (int p = 0; p < row.Length; p++)
+            indicator_icon_increase.Mutate(
+                x =>
+                    x.ProcessPixelRowsAsVector4(row =>
                     {
-                        row[p].X = ((Vector4)DetailsDiff_PlayCountIconColor).X;
-                        row[p].Y = ((Vector4)DetailsDiff_PlayCountIconColor).Y;
-                        row[p].Z = ((Vector4)DetailsDiff_PlayCountIconColor).Z;
-                        if (DetailsPlayCountIconAlpha)
-                            if (row[p].W > 0.2f)
-                                row[p].W = row[p].W * ((Vector4)DetailsDiff_PlayCountIconColor).W;
-                    }
-                })
+                        for (int p = 0; p < row.Length; p++)
+                        {
+                            row[p].X = ((Vector4)DetailsDiff_PlayCountIconColor).X;
+                            row[p].Y = ((Vector4)DetailsDiff_PlayCountIconColor).Y;
+                            row[p].Z = ((Vector4)DetailsDiff_PlayCountIconColor).Z;
+                            if (DetailsPlayCountIconAlpha)
+                                if (row[p].W > 0.2f)
+                                    row[p].W =
+                                        row[p].W * ((Vector4)DetailsDiff_PlayCountIconColor).W;
+                        }
+                    })
             );
-            info.Mutate(x =>
-                x.DrawImage(indicator_icon_increase, new Point(2853 + (int)m.Width + 10, 1247), 1)
+            info.Mutate(
+                x =>
+                    x.DrawImage(
+                        indicator_icon_increase,
+                        new Point(2853 + (int)m.Width + 10, 1247),
+                        1
+                    )
             );
 
             //ranked scores
@@ -1604,30 +1854,35 @@ public static class OsuInfoPanelV2
                 "{0:N0}",
                 data.userInfo.Statistics.RankedScore - prevStatistics.RankedScore
             );
-            info.Mutate(x =>
-                x.DrawText(textOptions, text, DetailsDiff_RankedScoreColor)
-            );
+            info.Mutate(x => x.DrawText(textOptions, text, DetailsDiff_RankedScoreColor));
             m = TextMeasurer.MeasureSize(text, textOptions);
-            indicator_icon_increase.Mutate(x =>
-                x.ProcessPixelRowsAsVector4(row =>
-                {
-                    for (int p = 0; p < row.Length; p++)
+            indicator_icon_increase.Mutate(
+                x =>
+                    x.ProcessPixelRowsAsVector4(row =>
                     {
-                        row[p].X = ((Vector4)DetailsDiff_RankedScoreIconColor).X;
-                        row[p].Y = ((Vector4)DetailsDiff_RankedScoreIconColor).Y;
-                        row[p].Z = ((Vector4)DetailsDiff_RankedScoreIconColor).Z;
-                        if (DetailsRankedScoreIconAlpha)
-                            if (row[p].W > 0.2f)
-                                row[p].W = row[p].W * ((Vector4)DetailsDiff_RankedScoreIconColor).W;
-                    }
-                })
+                        for (int p = 0; p < row.Length; p++)
+                        {
+                            row[p].X = ((Vector4)DetailsDiff_RankedScoreIconColor).X;
+                            row[p].Y = ((Vector4)DetailsDiff_RankedScoreIconColor).Y;
+                            row[p].Z = ((Vector4)DetailsDiff_RankedScoreIconColor).Z;
+                            if (DetailsRankedScoreIconAlpha)
+                                if (row[p].W > 0.2f)
+                                    row[p].W =
+                                        row[p].W * ((Vector4)DetailsDiff_RankedScoreIconColor).W;
+                        }
+                    })
             );
-            info.Mutate(x =>
-                x.DrawImage(indicator_icon_increase, new Point(3420 + (int)m.Width + 10, 1247), 1)
+            info.Mutate(
+                x =>
+                    x.DrawImage(
+                        indicator_icon_increase,
+                        new Point(3420 + (int)m.Width + 10, 1247),
+                        1
+                    )
             );
         }
 
-        List<PPInfo> ppinfos = [];
+        List<PPInfo> ppinfos =  [ ];
         for (int i = 0; i < Math.Min(5, allBP.Length); i++)
         {
             PPInfo ppinfo;
@@ -1654,9 +1909,7 @@ public static class OsuInfoPanelV2
                 }
             }
 
-            info.Mutate(x =>
-                x.DrawText(textOptions,  title, MainBPTitleColor)
-            );
+            info.Mutate(x => x.DrawText(textOptions, title, MainBPTitleColor));
 
             //mods
             OSU.Models.Mod[] firstbpmods;
@@ -1681,8 +1934,13 @@ public static class OsuInfoPanelV2
                 {
                     mainscoremods += $"{x.Acronym}, ";
                 }
-                info.Mutate(x =>
-                    x.DrawText(textOptions, mainscoremods[..mainscoremods.LastIndexOf(",")], MainBPTitleColor)
+                info.Mutate(
+                    x =>
+                        x.DrawText(
+                            textOptions,
+                            mainscoremods[..mainscoremods.LastIndexOf(",")],
+                            MainBPTitleColor
+                        )
                 );
             }
 
@@ -1700,9 +1958,7 @@ public static class OsuInfoPanelV2
                     break;
                 }
             }
-            info.Mutate(x =>
-                x.DrawText(textOptions, artist, MainBPArtistColor)
-            );
+            info.Mutate(x => x.DrawText(textOptions, artist, MainBPArtistColor));
 
             //creator
             textOptions.Origin = new PointF(2231, 1668);
@@ -1717,75 +1973,58 @@ public static class OsuInfoPanelV2
                     break;
                 }
             }
-            info.Mutate(x =>
-                x.DrawText(textOptions, creator, MainBPMapperColor)
-            );
+            info.Mutate(x => x.DrawText(textOptions, creator, MainBPMapperColor));
 
             //bid
             textOptions.Origin = new PointF(2447, 1668);
-            info.Mutate(x =>
-                x.DrawText(textOptions, allBP![0].Beatmap!.BeatmapId.ToString(), MainBPBIDColor)
+            info.Mutate(
+                x =>
+                    x.DrawText(textOptions, allBP![0].Beatmap!.BeatmapId.ToString(), MainBPBIDColor)
             );
 
             textOptions.Origin = new PointF(2657, 1668);
-            info.Mutate(x =>
-                x.DrawText(textOptions, ppinfos[0].star.ToString("0.##*"), MainBPStarsColor)
+            info.Mutate(
+                x => x.DrawText(textOptions, ppinfos[0].star.ToString("0.##*"), MainBPStarsColor)
             );
 
             //acc
             textOptions.Origin = new PointF(2813, 1668);
-            info.Mutate(x =>
-                x.DrawText(textOptions, allBP![0].AccAuto.ToString("0.##%"), MainBPAccColor)
+            info.Mutate(
+                x => x.DrawText(textOptions, allBP![0].AccAuto.ToString("0.##%"), MainBPAccColor)
             );
 
             //rank
             textOptions.Origin = new PointF(2988, 1668);
-            info.Mutate(x =>
-                x.DrawText(textOptions, allBP![0].RankAuto, MainBPRankColor)
-            );
+            info.Mutate(x => x.DrawText(textOptions, allBP![0].RankAuto, MainBPRankColor));
         }
         else
         {
-            info.Mutate(x =>
-                x.DrawText(textOptions,  "-", MainBPTitleColor)
-            );
+            info.Mutate(x => x.DrawText(textOptions, "-", MainBPTitleColor));
 
             //artist
             textOptions.Font = TorusRegular.Get(42);
             textOptions.Origin = new PointF(1956, 1668);
-            info.Mutate(x =>
-                x.DrawText(textOptions,  "-", MainBPArtistColor)
-            );
+            info.Mutate(x => x.DrawText(textOptions, "-", MainBPArtistColor));
 
             //creator
             textOptions.Origin = new PointF(2231, 1668);
-            info.Mutate(x =>
-                x.DrawText(textOptions,  "-", MainBPMapperColor)
-            );
+            info.Mutate(x => x.DrawText(textOptions, "-", MainBPMapperColor));
 
             //bid
             textOptions.Origin = new PointF(2447, 1668);
-            info.Mutate(x =>
-                x.DrawText(textOptions,  "-", MainBPBIDColor)
-            );
+            info.Mutate(x => x.DrawText(textOptions, "-", MainBPBIDColor));
 
             //star
             textOptions.Origin = new PointF(2657, 1668);
-            info.Mutate(x =>
-                x.DrawText(textOptions,  "-", MainBPStarsColor)
-            );
+            info.Mutate(x => x.DrawText(textOptions, "-", MainBPStarsColor));
 
             //acc
             textOptions.Origin = new PointF(2813, 1668);
-            info.Mutate(x =>
-                x.DrawText(textOptions,  "-", MainBPAccColor)
-            );
+            info.Mutate(x => x.DrawText(textOptions, "-", MainBPAccColor));
 
             //rank
             textOptions.Origin = new PointF(2988, 1668);
-            info.Mutate(x =>
-                x.DrawText(textOptions,  "-", MainBPRankColor)
-            );
+            info.Mutate(x => x.DrawText(textOptions, "-", MainBPRankColor));
         }
 
         var bound = allBP.GetUpperBound(0);
@@ -1818,24 +2057,16 @@ public static class OsuInfoPanelV2
                 switch (i)
                 {
                     case 1:
-                        info.Mutate(x =>
-                            x.DrawText(textOptions, title, SubBp2ndBPTitleColor)
-                        );
+                        info.Mutate(x => x.DrawText(textOptions, title, SubBp2ndBPTitleColor));
                         break;
                     case 2:
-                        info.Mutate(x =>
-                            x.DrawText(textOptions, title, SubBp3rdBPTitleColor)
-                        );
+                        info.Mutate(x => x.DrawText(textOptions, title, SubBp3rdBPTitleColor));
                         break;
                     case 3:
-                        info.Mutate(x =>
-                            x.DrawText(textOptions, title, SubBp4thBPTitleColor)
-                        );
+                        info.Mutate(x => x.DrawText(textOptions, title, SubBp4thBPTitleColor));
                         break;
                     case 4:
-                        info.Mutate(x =>
-                            x.DrawText(textOptions, title, SubBp5thBPTitleColor)
-                        );
+                        info.Mutate(x => x.DrawText(textOptions, title, SubBp5thBPTitleColor));
                         break;
                     default:
                         break;
@@ -1850,24 +2081,16 @@ public static class OsuInfoPanelV2
                 switch (i)
                 {
                     case 1:
-                        info.Mutate(x =>
-                            x.DrawText(textOptions, "-", SubBp2ndBPTitleColor)
-                        );
+                        info.Mutate(x => x.DrawText(textOptions, "-", SubBp2ndBPTitleColor));
                         break;
                     case 2:
-                        info.Mutate(x =>
-                            x.DrawText(textOptions, "-", SubBp3rdBPTitleColor)
-                        );
+                        info.Mutate(x => x.DrawText(textOptions, "-", SubBp3rdBPTitleColor));
                         break;
                     case 3:
-                        info.Mutate(x =>
-                            x.DrawText(textOptions, "-", SubBp4thBPTitleColor)
-                        );
+                        info.Mutate(x => x.DrawText(textOptions, "-", SubBp4thBPTitleColor));
                         break;
                     case 4:
-                        info.Mutate(x =>
-                            x.DrawText(textOptions, "-", SubBp5thBPTitleColor)
-                        );
+                        info.Mutate(x => x.DrawText(textOptions, "-", SubBp5thBPTitleColor));
                         break;
                     default:
                         break;
@@ -1943,25 +2166,21 @@ public static class OsuInfoPanelV2
                     MainTitleAndDifficultyTitlePos_X,
                     1925 + 186 * (i - 1)
                 );
-                info.Mutate(x =>
-                    x.DrawText(textOptions,  title, versionC)
-                );
+                info.Mutate(x => x.DrawText(textOptions, title, versionC));
                 var textMeasurePos =
                     MainTitleAndDifficultyTitlePos_X
                     + TextMeasurer.MeasureSize(title, textOptions).Width
                     + 5;
                 //split
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
-                info.Mutate(x =>
-                    x.DrawText(textOptions,  " | ", splitC)
-                );
+                info.Mutate(x => x.DrawText(textOptions, " | ", splitC));
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
 
                 //bid
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
-                info.Mutate(x =>
-                    x.DrawText(textOptions, allBP![i].Beatmap!.BeatmapId.ToString(), bidC)
+                info.Mutate(
+                    x => x.DrawText(textOptions, allBP![i].Beatmap!.BeatmapId.ToString(), bidC)
                 );
                 textMeasurePos =
                     textMeasurePos
@@ -1972,17 +2191,13 @@ public static class OsuInfoPanelV2
 
                 //split
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
-                info.Mutate(x =>
-                    x.DrawText(textOptions,  " | ", splitC)
-                );
+                info.Mutate(x => x.DrawText(textOptions, " | ", splitC));
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
 
                 //star
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
-                info.Mutate(x =>
-                    x.DrawText(textOptions, ppinfos[i].star.ToString("0.##*"), starC)
-                );
+                info.Mutate(x => x.DrawText(textOptions, ppinfos[i].star.ToString("0.##*"), starC));
                 textMeasurePos =
                     textMeasurePos
                     + TextMeasurer.MeasureSize(ppinfos[i].star.ToString("0.##*"), textOptions).Width
@@ -1990,16 +2205,14 @@ public static class OsuInfoPanelV2
 
                 //split
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
-                info.Mutate(x =>
-                    x.DrawText(textOptions,  " | ", splitC)
-                );
+                info.Mutate(x => x.DrawText(textOptions, " | ", splitC));
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
 
                 //acc
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
-                info.Mutate(x =>
-                    x.DrawText(textOptions, allBP![i].AccAuto.ToString("0.##%"), accC)
+                info.Mutate(
+                    x => x.DrawText(textOptions, allBP![i].AccAuto.ToString("0.##%"), accC)
                 );
                 textMeasurePos =
                     textMeasurePos
@@ -2010,17 +2223,13 @@ public static class OsuInfoPanelV2
 
                 //split
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
-                info.Mutate(x =>
-                    x.DrawText(textOptions,  " | ", splitC)
-                );
+                info.Mutate(x => x.DrawText(textOptions, " | ", splitC));
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
 
                 //ranking
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
-                info.Mutate(x =>
-                    x.DrawText(textOptions, allBP![i].RankAuto, rankC)
-                );
+                info.Mutate(x => x.DrawText(textOptions, allBP![i].RankAuto, rankC));
                 //shdklahdksadkjkcna5hoacsporjasldjlksakdlsa
 
                 OSU.Models.Mod[] bpmods;
@@ -2040,7 +2249,9 @@ public static class OsuInfoPanelV2
                         .Where(mod => File.Exists($"./work/mods_v2/2x/{mod.Acronym}.png"))
                         .Select(async mod =>
                         {
-                            var icon = await Img.LoadAsync<Rgba32>($"./work/mods_v2/2x/{mod.Acronym}.png");
+                            var icon = await Img.LoadAsync<Rgba32>(
+                                $"./work/mods_v2/2x/{mod.Acronym}.png"
+                            );
                             return (Mod: mod, Icon: icon);
                         })
                         .ToArray();
@@ -2051,20 +2262,22 @@ public static class OsuInfoPanelV2
                         using (modicon)
                         {
                             modicon.Mutate(x => x.Resize(90, 90).Brightness(ModIconBrightness));
-                            modicon.Mutate(x =>
-                                x.ProcessPixelRowsAsVector4(row =>
-                                {
-                                    for (int p = 0; p < row.Length; p++)
-                                        if (row[p].W > 0.2f)
-                                            row[p].W = ModIconAlpha;
-                                })
+                            modicon.Mutate(
+                                x =>
+                                    x.ProcessPixelRowsAsVector4(row =>
+                                    {
+                                        for (int p = 0; p < row.Length; p++)
+                                            if (row[p].W > 0.2f)
+                                                row[p].W = ModIconAlpha;
+                                    })
                             );
-                            info.Mutate(x =>
-                                x.DrawImage(
-                                    modicon,
-                                    new Point(otherbp_mods_pos_x, otherbp_mods_pos_y),
-                                    1
-                                )
+                            info.Mutate(
+                                x =>
+                                    x.DrawImage(
+                                        modicon,
+                                        new Point(otherbp_mods_pos_x, otherbp_mods_pos_y),
+                                        1
+                                    )
                             );
                             otherbp_mods_pos_x += 105;
                         }
@@ -2080,63 +2293,65 @@ public static class OsuInfoPanelV2
                 if (FixedScoreModeIconColor)
                 {
                     //固定
-                    osuscoremode_icon.Mutate(x =>
-                        x.ProcessPixelRowsAsVector4(row =>
-                        {
-                            for (int p = 0; p < row.Length; p++)
+                    osuscoremode_icon.Mutate(
+                        x =>
+                            x.ProcessPixelRowsAsVector4(row =>
                             {
-                                row[p].X = ((Vector4)modeC).X;
-                                row[p].Y = ((Vector4)modeC).Y;
-                                row[p].Z = ((Vector4)modeC).Z;
-                                switch (i)
+                                for (int p = 0; p < row.Length; p++)
                                 {
-                                    case 1:
-                                        if (Score1ModeIconAlpha)
-                                            if (row[p].W > 0.0f)
-                                                row[p].W =
-                                                    row[p].W * ((Vector4)SubBp2ndModeColor).W;
-                                        break;
-                                    case 2:
-                                        if (Score2ModeIconAlpha)
-                                            if (row[p].W > 0.0f)
-                                                row[p].W =
-                                                    row[p].W * ((Vector4)SubBp3rdModeColor).W;
-                                        break;
-                                    case 3:
-                                        if (Score3ModeIconAlpha)
-                                            if (row[p].W > 0.0f)
-                                                row[p].W =
-                                                    row[p].W * ((Vector4)SubBp4thModeColor).W;
-                                        break;
-                                    case 4:
-                                        if (Score4ModeIconAlpha)
-                                            if (row[p].W > 0.0f)
-                                                row[p].W =
-                                                    row[p].W * ((Vector4)SubBp5thModeColor).W;
-                                        break;
+                                    row[p].X = ((Vector4)modeC).X;
+                                    row[p].Y = ((Vector4)modeC).Y;
+                                    row[p].Z = ((Vector4)modeC).Z;
+                                    switch (i)
+                                    {
+                                        case 1:
+                                            if (Score1ModeIconAlpha)
+                                                if (row[p].W > 0.0f)
+                                                    row[p].W =
+                                                        row[p].W * ((Vector4)SubBp2ndModeColor).W;
+                                            break;
+                                        case 2:
+                                            if (Score2ModeIconAlpha)
+                                                if (row[p].W > 0.0f)
+                                                    row[p].W =
+                                                        row[p].W * ((Vector4)SubBp3rdModeColor).W;
+                                            break;
+                                        case 3:
+                                            if (Score3ModeIconAlpha)
+                                                if (row[p].W > 0.0f)
+                                                    row[p].W =
+                                                        row[p].W * ((Vector4)SubBp4thModeColor).W;
+                                            break;
+                                        case 4:
+                                            if (Score4ModeIconAlpha)
+                                                if (row[p].W > 0.0f)
+                                                    row[p].W =
+                                                        row[p].W * ((Vector4)SubBp5thModeColor).W;
+                                            break;
+                                    }
                                 }
-                            }
-                        })
+                            })
                     );
                 }
                 else
                 {
                     //随难度渐变
                     modeC = Utils.ForStarDifficulty(ppinfos[i].star);
-                    osuscoremode_icon.Mutate(x =>
-                        x.ProcessPixelRowsAsVector4(row =>
-                        {
-                            for (int p = 0; p < row.Length; p++)
+                    osuscoremode_icon.Mutate(
+                        x =>
+                            x.ProcessPixelRowsAsVector4(row =>
                             {
-                                row[p].X = ((Vector4)modeC).X;
-                                row[p].Y = ((Vector4)modeC).Y;
-                                row[p].Z = ((Vector4)modeC).Z;
-                            }
-                        })
+                                for (int p = 0; p < row.Length; p++)
+                                {
+                                    row[p].X = ((Vector4)modeC).X;
+                                    row[p].Y = ((Vector4)modeC).Y;
+                                    row[p].Z = ((Vector4)modeC).Z;
+                                }
+                            })
                     );
                 }
-                info.Mutate(x =>
-                    x.DrawImage(osuscoremode_icon, new Point(1558, score_mode_iconpos_y), 1)
+                info.Mutate(
+                    x => x.DrawImage(osuscoremode_icon, new Point(1558, score_mode_iconpos_y), 1)
                 );
                 score_mode_iconpos_y += 186;
             }
@@ -2192,74 +2407,56 @@ public static class OsuInfoPanelV2
                     MainTitleAndDifficultyTitlePos_X,
                     1925 + 186 * (i - 1)
                 );
-                info.Mutate(x =>
-                    x.DrawText(textOptions,  "-", versionC)
-                );
+                info.Mutate(x => x.DrawText(textOptions, "-", versionC));
                 var textMeasurePos =
                     MainTitleAndDifficultyTitlePos_X
                     + TextMeasurer.MeasureSize("-", textOptions).Width
                     + 5;
                 //split
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
-                info.Mutate(x =>
-                    x.DrawText(textOptions,  " | ", splitC)
-                );
+                info.Mutate(x => x.DrawText(textOptions, " | ", splitC));
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
 
                 //bid
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
-                info.Mutate(x =>
-                    x.DrawText(textOptions,  "-", bidC)
-                );
+                info.Mutate(x => x.DrawText(textOptions, "-", bidC));
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize("-", textOptions).Width + 5;
 
                 //split
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
-                info.Mutate(x =>
-                    x.DrawText(textOptions,  " | ", splitC)
-                );
+                info.Mutate(x => x.DrawText(textOptions, " | ", splitC));
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
 
                 //star
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
-                info.Mutate(x =>
-                    x.DrawText(textOptions,  "-", starC)
-                );
+                info.Mutate(x => x.DrawText(textOptions, "-", starC));
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize("-", textOptions).Width + 5;
 
                 //split
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
-                info.Mutate(x =>
-                    x.DrawText(textOptions,  " | ", splitC)
-                );
+                info.Mutate(x => x.DrawText(textOptions, " | ", splitC));
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
 
                 //acc
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
-                info.Mutate(x =>
-                    x.DrawText(textOptions,  "-", accC)
-                );
+                info.Mutate(x => x.DrawText(textOptions, "-", accC));
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize("-", textOptions).Width + 5;
 
                 //split
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
-                info.Mutate(x =>
-                    x.DrawText(textOptions,  " | ", splitC)
-                );
+                info.Mutate(x => x.DrawText(textOptions, " | ", splitC));
                 textMeasurePos =
                     textMeasurePos + TextMeasurer.MeasureSize(" | ", textOptions).Width + 5;
 
                 //ranking
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
-                info.Mutate(x =>
-                    x.DrawText(textOptions,  "-", rankC)
-                );
+                info.Mutate(x => x.DrawText(textOptions, "-", rankC));
                 otherbp_mods_pos_y += 186;
             }
         }
@@ -2282,17 +2479,13 @@ public static class OsuInfoPanelV2
             pp_text = "-";
         }
 
-        info.Mutate(x =>
-            x.DrawText(textOptions,  pp_text, MainBPppMainColor)
-        );
+        info.Mutate(x => x.DrawText(textOptions, pp_text, MainBPppMainColor));
         var bp1pptextMeasure = TextMeasurer.MeasureSize(pp_text, textOptions);
         int bp1pptextpos = 3642 - (int)bp1pptextMeasure.Width / 2;
         textOptions.Font = TorusRegular.Get(40);
         textOptions.Origin = new PointF(bp1pptextpos, 1610);
         textOptions.HorizontalAlignment = HorizontalAlignment.Left;
-        info.Mutate(x =>
-            x.DrawText(textOptions,  "pp", MainBPppTitleColor)
-        );
+        info.Mutate(x => x.DrawText(textOptions, "pp", MainBPppTitleColor));
 
         textOptions.HorizontalAlignment = HorizontalAlignment.Center;
         textOptions.Font = TorusRegular.Get(70);
@@ -2307,9 +2500,7 @@ public static class OsuInfoPanelV2
             pp_text = "-";
         }
 
-        info.Mutate(x =>
-            x.DrawText(textOptions, pp_text, SubBp2ndBPppMainColor)
-        );
+        info.Mutate(x => x.DrawText(textOptions, pp_text, SubBp2ndBPppMainColor));
         textOptions.Origin = new PointF(3642, 2081);
 
         if (2 <= bound)
@@ -2321,9 +2512,7 @@ public static class OsuInfoPanelV2
             pp_text = "-";
         }
 
-        info.Mutate(x =>
-            x.DrawText(textOptions, pp_text, SubBp3rdBPppMainColor)
-        );
+        info.Mutate(x => x.DrawText(textOptions, pp_text, SubBp3rdBPppMainColor));
         textOptions.Origin = new PointF(3642, 2266);
 
         if (3 <= bound)
@@ -2335,9 +2524,7 @@ public static class OsuInfoPanelV2
             pp_text = "-";
         }
 
-        info.Mutate(x =>
-            x.DrawText(textOptions, pp_text, SubBp4thBPppMainColor)
-        );
+        info.Mutate(x => x.DrawText(textOptions, pp_text, SubBp4thBPppMainColor));
         textOptions.Origin = new PointF(3642, 2450);
 
         if (4 <= bound)
@@ -2349,16 +2536,13 @@ public static class OsuInfoPanelV2
             pp_text = "-";
         }
 
-        info.Mutate(x =>
-            x.DrawText(textOptions, pp_text, SubBp5thBPppMainColor)
-        );
+        info.Mutate(x => x.DrawText(textOptions, pp_text, SubBp5thBPppMainColor));
 
         //badges
         // Prefer badge image URLs from Kagami
         if (data.badgeImageUrls != null && data.badgeImageUrls.Count > 0)
         {
-            var badgeSources = data
-                .badgeImageUrls
+            var badgeSources = data.badgeImageUrls
                 .Rev()
                 .Index()
                 .Where(x => !string.IsNullOrEmpty(x.Item2))
@@ -2382,65 +2566,61 @@ public static class OsuInfoPanelV2
                     {
                         //top
                         badge.Mutate(x => x.Resize(236, 110).Brightness(BadgeBrightness));
-                        badge.Mutate(x =>
-                            x.ProcessPixelRowsAsVector4(row =>
-                            {
-                                for (int p = 0; p < row.Length; p++)
-                                    if (row[p].W > 0.2f)
-                                        row[p].W = BadgeAlpha;
-                            })
+                        badge.Mutate(
+                            x =>
+                                x.ProcessPixelRowsAsVector4(row =>
+                                {
+                                    for (int p = 0; p < row.Length; p++)
+                                        if (row[p].W > 0.2f)
+                                            row[p].W = BadgeAlpha;
+                                })
                         );
                         badge.Mutate(x => x.RoundCorner(16));
                         if (data.userInfo.IsSupporter && DisplaySupporterStatus)
-                            info.Mutate(x =>
-                                x.DrawImage(badge, new Point(3420 - i * 276, 93), 1)
-                            );
+                            info.Mutate(x => x.DrawImage(badge, new Point(3420 - i * 276, 93), 1));
                         else
-                            info.Mutate(x =>
-                                x.DrawImage(badge, new Point(3566 - i * 276, 93), 1)
-                            );
+                            info.Mutate(x => x.DrawImage(badge, new Point(3566 - i * 276, 93), 1));
                     }
                     else
                     {
                         //bottom
-                        badge.Mutate(x =>
-                            x.Brightness(BadgeBrightness).Resize(108, 50)
-                        );
-                        badge.Mutate(x =>
-                            x.ProcessPixelRowsAsVector4(row =>
-                            {
-                                for (int p = 0; p < row.Length; p++)
-                                    if (row[p].W > 0.2f)
-                                        row[p].W = BadgeAlpha;
-                            })
+                        badge.Mutate(x => x.Brightness(BadgeBrightness).Resize(108, 50));
+                        badge.Mutate(
+                            x =>
+                                x.ProcessPixelRowsAsVector4(row =>
+                                {
+                                    for (int p = 0; p < row.Length; p++)
+                                        if (row[p].W > 0.2f)
+                                            row[p].W = BadgeAlpha;
+                                })
                         );
                         badge.Mutate(x => x.RoundCorner(8));
                         if (data.userInfo.IsSupporter && DisplaySupporterStatus)
-                            info.Mutate(x =>
-                                x.DrawImage(badge, new Point(3414 - (i - 6) * 132, 223), 1)
+                            info.Mutate(
+                                x => x.DrawImage(badge, new Point(3414 - (i - 6) * 132, 223), 1)
                             );
                         else
-                            info.Mutate(x =>
-                                x.DrawImage(badge, new Point(3560 - (i - 6) * 132, 223), 1)
+                            info.Mutate(
+                                x => x.DrawImage(badge, new Point(3560 - (i - 6) * 132, 223), 1)
                             );
                     }
                 }
             }
         }
-  
 
         //osu!supporter
         if (data.userInfo.IsSupporter && DisplaySupporterStatus)
         {
             using var temp = await supporterIconTask!;
             temp.Mutate(x => x.Resize(110, 110).Brightness(OsuSupporterIconBrightness));
-            temp.Mutate(x =>
-                x.ProcessPixelRowsAsVector4(row =>
-                {
-                    for (int p = 0; p < row.Length; p++)
-                        if (row[p].W > 0.2f)
-                            row[p].W = OsuSupporterIconAlpha;
-                })
+            temp.Mutate(
+                x =>
+                    x.ProcessPixelRowsAsVector4(row =>
+                    {
+                        for (int p = 0; p < row.Length; p++)
+                            if (row[p].W > 0.2f)
+                                row[p].W = OsuSupporterIconAlpha;
+                    })
             );
             info.Mutate(x => x.DrawImage(temp, new Point(3692, 93), 1));
         }
@@ -2451,13 +2631,14 @@ public static class OsuInfoPanelV2
         // 亮度
         avatar.Mutate(x => x.Brightness(AvatarBrightness));
         avatar.Mutate(x => x.Resize(200, 200).RoundCorner(new Size(200, 200), 25));
-        avatar.Mutate(x =>
-            x.ProcessPixelRowsAsVector4(row =>
-            {
-                for (int p = 0; p < row.Length; p++)
-                    if (row[p].W > 0.2f)
-                        row[p].W = AvatarAlpha;
-            })
+        avatar.Mutate(
+            x =>
+                x.ProcessPixelRowsAsVector4(row =>
+                {
+                    for (int p = 0; p < row.Length; p++)
+                        if (row[p].W > 0.2f)
+                            row[p].W = AvatarAlpha;
+                })
         );
         info.Mutate(x => x.DrawImage(avatar, new Point(1531, 72), 1));
 
@@ -2466,9 +2647,7 @@ public static class OsuInfoPanelV2
         textOptions.VerticalAlignment = VerticalAlignment.Bottom;
         textOptions.HorizontalAlignment = HorizontalAlignment.Left;
         textOptions.Origin = new PointF(1780, 230);
-        info.Mutate(x =>
-            x.DrawText(textOptions, data.userInfo.Username, UsernameColor)
-        );
+        info.Mutate(x => x.DrawText(textOptions, data.userInfo.Username, UsernameColor));
 
         //osu!mode
         using var osuprofilemode_icon = await profileModeIconTask;
@@ -2495,23 +2674,22 @@ public static class OsuInfoPanelV2
         osuprofilemode_icon.Mutate(x => x.Resize(60, 60));
         osuprofilemode.Mutate(x => x.DrawImage(osuprofilemode_icon, new Point(0, 21), 1));
         textOptions.Origin = new PointF(70, 48);
-        osuprofilemode.Mutate(x =>
-            x.DrawText(textOptions, osuprofilemode_text, footerColor)
-        );
-        osuprofilemode.Mutate(x =>
-            x.ProcessPixelRowsAsVector4(row =>
-            {
-                for (int p = 0; p < row.Length; p++)
+        osuprofilemode.Mutate(x => x.DrawText(textOptions, osuprofilemode_text, footerColor));
+        osuprofilemode.Mutate(
+            x =>
+                x.ProcessPixelRowsAsVector4(row =>
                 {
-                    //X、Y、Z和W字段分别映射 RGBA 通道。
-                    row[p].X = ((Vector4)ModeIconColor).X;
-                    row[p].Y = ((Vector4)ModeIconColor).Y;
-                    row[p].Z = ((Vector4)ModeIconColor).Z;
-                    if (ModeIconAlpha)
-                        if (row[p].W > 0.0f)
-                            row[p].W = row[p].W * ((Vector4)ModeIconColor).W;
-                }
-            })
+                    for (int p = 0; p < row.Length; p++)
+                    {
+                        //X、Y、Z和W字段分别映射 RGBA 通道。
+                        row[p].X = ((Vector4)ModeIconColor).X;
+                        row[p].Y = ((Vector4)ModeIconColor).Y;
+                        row[p].Z = ((Vector4)ModeIconColor).Z;
+                        if (ModeIconAlpha)
+                            if (row[p].W > 0.0f)
+                                row[p].W = row[p].W * ((Vector4)ModeIconColor).W;
+                    }
+                })
         );
 
         var osuprofilemode_x_pos = 1531 + (804 / 2) - (osuprofilemode.Width / 2);
@@ -2525,7 +2703,7 @@ public static class OsuInfoPanelV2
         }
         else
         {
-            RankHistory = [0, 0, 0, 0, 0, 0, 0, 0];
+            RankHistory =  [ 0, 0, 0, 0, 0, 0, 0, 0 ];
         }
         using var rankChart = LineChart.Draw(
             714,
@@ -2551,14 +2729,20 @@ public static class OsuInfoPanelV2
         for (int i = 0; i < 7; i++)
         {
             textOptions.Origin = new PointF(DateXPos, 960);
-            info.Mutate(x =>
-                x.DrawText(textOptions, $"{DateValue.Month}.{DateValue.Day}", RankLineChartDateTextColor)
+            info.Mutate(
+                x =>
+                    x.DrawText(
+                        textOptions,
+                        $"{DateValue.Month}.{DateValue.Day}",
+                        RankLineChartDateTextColor
+                    )
             );
             DateXPos -= 100;
             DateValue = DateValue.AddDays(-1);
         }
 
-        if (!hasSidePic && !isBonded) {
+        if (!hasSidePic && !isBonded)
+        {
             info.Mutate(x => x.Crop(new(1500, 0, 2500, 2640)));
             var originalWidth = info.Width;
             var originalHeight = info.Height;
@@ -2567,7 +2751,7 @@ public static class OsuInfoPanelV2
             {
                 // 将原图像绘制到右侧（偏移100px）
                 newImage.Mutate(x => x.DrawImage(info, new Point(100, 0), 1f));
-                
+
                 // 获取最左边缘的像素列并重复填充到左侧扩展区域
                 for (int x = 0; x < 100; x++)
                 {
@@ -2577,7 +2761,7 @@ public static class OsuInfoPanelV2
                         newImage[x, y] = edgeColor;
                     }
                 }
-                
+
                 // 替换原图像
                 info = newImage.Clone();
             }
@@ -2585,16 +2769,16 @@ public static class OsuInfoPanelV2
             //desu.life
             textOptions.HorizontalAlignment = HorizontalAlignment.Left;
             textOptions.Origin = new PointF(90, 2582);
-            info.Mutate(x =>
-                x.DrawText(textOptions, $"Kanonbot - desu.life", footerColor)
-            );
+            info.Mutate(x => x.DrawText(textOptions, $"Kanonbot - desu.life", footerColor));
         }
-
 
         //resize to 1920x?
         if (!output4k)
-            info.Mutate(x =>
-                x.Resize(new ResizeOptions() { Size = new Size(1920, 0), Mode = ResizeMode.Max })
+            info.Mutate(
+                x =>
+                    x.Resize(
+                        new ResizeOptions() { Size = new Size(1920, 0), Mode = ResizeMode.Max }
+                    )
             );
 
         // 不知道为啥更新了imagesharp后对比度(亮度)变了
@@ -2602,6 +2786,4 @@ public static class OsuInfoPanelV2
 
         return info;
     }
-
-   
 }

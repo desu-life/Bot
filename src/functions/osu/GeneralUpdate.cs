@@ -139,8 +139,8 @@ namespace KanonBot.Functions.OSU
                         count_S = userInfo.Statistics.GradeCounts.S,
                         count_A = userInfo.Statistics.GradeCounts.A,
                         playtime = (int)userInfo.Statistics.PlayTime,
-                        country_rank = (int)userInfo.Statistics.CountryRank,
-                        global_rank = (int)userInfo.Statistics.GlobalRank,
+                        country_rank = (int)(userInfo.Statistics.CountryRank ?? 0),
+                        global_rank = (int)(userInfo.Statistics.GlobalRank ?? 0),
                         gamemode = mode.ToStr()
                     };
                 await Database.Client.InsertOsuUserData(rec, false);

@@ -15,7 +15,7 @@ public static class Json
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
             NumberHandling = JsonNumberHandling.AllowReadingFromString,
             AllowTrailingCommas = true,
-            Converters = { new FlexibleDateTimeOffsetConverter(), },
+            Converters = { new FlexibleDateTimeOffsetConverter(), new AnyBoolConverter() },
         };
 
     public static string Serialize<T>(T self) => JsonSerializer.Serialize(self, Options);

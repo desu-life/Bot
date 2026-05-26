@@ -329,7 +329,7 @@ public partial class Models
         public UserLevel Level { get; set; }
 
         [JsonPropertyName("global_rank")]
-        public long GlobalRank { get; set; }
+        public long? GlobalRank { get; set; }
 
         [JsonPropertyName("pp")]
         public double PP { get; set; }
@@ -365,7 +365,7 @@ public partial class Models
         public UserGradeCounts GradeCounts { get; set; }
 
         [JsonPropertyName("country_rank")]
-        public long CountryRank { get; set; }
+        public long? CountryRank { get; set; }
 
         [JsonPropertyName("rank")]
         public UserRank Rank { get; set; }
@@ -439,7 +439,7 @@ public partial class Models
     public class UserRank
     {
         [JsonPropertyName("country")]
-        public int Country { get; set; }
+        public long? Country { get; set; }
     }
 
     public class UserAchievement

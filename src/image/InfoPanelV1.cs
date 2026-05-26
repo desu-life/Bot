@@ -313,7 +313,7 @@ public static class InfoV1
                 countryRank = string.Format(
                     "#{0:N0}(+{1:N0})",
                     Statistics.CountryRank,
-                    Math.Abs(diff)
+                    Math.Abs(diff ?? 0)
                 );
             else
                 countryRank = string.Format("#{0:N0}", Statistics.CountryRank);
@@ -335,7 +335,7 @@ public static class InfoV1
             if (diff > 0)
                 diffStr = string.Format("↓ {0:N0}", diff);
             else if (diff < 0)
-                diffStr = string.Format("↑ {0:N0}", Math.Abs(diff));
+                diffStr = string.Format("↑ {0:N0}", Math.Abs(diff ?? 0));
             else
                 diffStr = "↑ -";
         }

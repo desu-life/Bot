@@ -1,20 +1,22 @@
 #pragma warning disable CS8618 // 非null 字段未初始化
 using System.ComponentModel;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using KanonBot.Serializer;
-using System.Text.Json.Serialization;
-using System.Text.Json.Nodes;
 
 namespace KanonBot.API.PPYSB;
 
 public partial class Models
 {
-    public class ScoreResponseV2 : ApiResponseV2 {
+    public class ScoreResponseV2 : ApiResponseV2
+    {
         [JsonPropertyName("data")]
         public Score[] Data { get; set; }
     }
 
-    public class PlayerScoreResponse : ApiResponse {
+    public class PlayerScoreResponse : ApiResponse
+    {
         [JsonPropertyName("scores")]
         public Score[] Scores { get; set; }
 
@@ -22,13 +24,14 @@ public partial class Models
         public ScoreUser Player { get; set; }
     }
 
-    public class ScoreResponse : ApiResponse {
+    public class ScoreResponse : ApiResponse
+    {
         [JsonPropertyName("score")]
         public Score Score { get; set; }
     }
 
-
-    public class Score {
+    public class Score
+    {
         [JsonPropertyName("id")]
         public long Id { get; set; }
 
@@ -81,14 +84,15 @@ public partial class Models
         public int TimeElapsed { get; set; }
 
         [JsonPropertyName("perfect")]
-        public uint Perfect { get; set; }
+        [JsonConverter(typeof(AnyBoolConverter))]
+        public bool Perfect { get; set; }
 
         [JsonPropertyName("beatmap")]
         public Beatmap Beatmap { get; set; }
     }
 
-    public class ScoreUser {
-
+    public class ScoreUser
+    {
         [JsonPropertyName("id")]
         public uint Id { get; set; }
 
@@ -97,9 +101,7 @@ public partial class Models
 
         [JsonPropertyName("clan")]
         public object? Clan { get; set; }
-
     }
-   
 }
 
 // {
