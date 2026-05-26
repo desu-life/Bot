@@ -2,11 +2,11 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Destructurama;
-using KanonBot.I18n;
 using KanonBot.Command;
 using KanonBot.Drivers;
 using KanonBot.Event;
 using KanonBot.Functions.OSU;
+using KanonBot.I18n;
 using KanonBot.Serializer;
 using LanguageExt.ClassInstances.Pred;
 using LanguageExt.UnsafeValueAccess;
@@ -29,13 +29,16 @@ else
 }
 
 FlurlHttp
-    .Clients.WithDefaults(c =>
+    .Clients
+    .WithDefaults(c =>
     {
         c.Settings.Redirects.Enabled = true;
         c.Settings.Redirects.MaxAutoRedirects = 10;
         c.Settings.Redirects.ForwardAuthorizationHeader = true;
         c.Settings.Redirects.AllowSecureToInsecure = true;
-        c.Settings.JsonSerializer = new Flurl.Http.Configuration.DefaultJsonSerializer(Json.Options);
+        c.Settings.JsonSerializer = new Flurl.Http.Configuration.DefaultJsonSerializer(
+            Json.Options
+        );
     });
 
 var config = Config.inner;
@@ -49,9 +52,12 @@ if (config.dev)
 else
 {
     var log = new LoggerConfiguration()
-        .Destructure.UsingAttributes()
-        .WriteTo.Async(a => a.Console())
-        .WriteTo.Async(a => a.File("logs/log-.log", rollingInterval: RollingInterval.Day));
+        .Destructure
+        .UsingAttributes()
+        .WriteTo
+        .Async(a => a.Console())
+        .WriteTo
+        .Async(a => a.File("logs/log-.log", rollingInterval: RollingInterval.Day));
     if (config.debug)
     {
         log = log.MinimumLevel.Debug();
@@ -62,10 +68,13 @@ else
     }
     Log.Logger = log.CreateLogger();
 }
+
 // 初始化 i18n 本地化
 KanonBot.I18n.Localizer.Initialize();
-Log.Information("i18n initialized, loaded locales: {Locales}",
-    string.Join(", ", KanonBot.I18n.Localizer.Instance.Store.LoadedLocales.Select(l => l.ToCode())));
+Log.Information(
+    "i18n initialized, loaded locales: {Locales}",
+    string.Join(", ", KanonBot.I18n.Localizer.Instance.Store.LoadedLocales.Select(l => l.ToCode()))
+);
 
 Log.Information("初始化成功 {@config}", config);
 
@@ -143,7 +152,7 @@ foreach (var driverConfig in config.drivers)
                                     target.sender,
                                     target.msg
                                 );
-                                
+
                                 // 丢弃消息，考虑到时间不同步，暂时不搞
                                 // Log.Warning("{0}", (DateTimeOffset.Now - target.time) > TimeSpan.FromSeconds(5));
 
@@ -229,7 +238,9 @@ foreach (var driverConfig in config.drivers)
                                 switch (e)
                                 {
                                     case RawEvent r:
-                                        var data = (r.value as QQGuild.Models.PayloadBase<JsonNode>)!;
+                                        var data = (
+                                            r.value as QQGuild.Models.PayloadBase<JsonNode>
+                                        )!;
                                         Log.Debug(
                                             "收到QQ Guild事件: {@0} 数据: {1}",
                                             data,

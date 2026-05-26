@@ -1,10 +1,9 @@
-using System.Text.Json.Serialization;
 using System.Text.Json.Nodes;
-using KanonBot.Message;
 using KanonBot.API;
-using KanonBot.Serializer;
-using Serilog;
+using KanonBot.Message;
+
 namespace KanonBot.Drivers;
+
 public partial class OneBot
 {
     public class Message
@@ -56,6 +55,7 @@ public partial class OneBot
             var chain = new Chain();
             foreach (var obj in MessageList)
             {
+                ArgumentNullException.ThrowIfNull(obj.rawData);
                 chain.Add(
                     obj.msgType switch {
                         Enums.SegmentType.Text => new TextSegment(obj.rawData["text"]!.ToString()),
@@ -68,6 +68,5 @@ public partial class OneBot
             }
             return chain;
         }
-
     }
 }

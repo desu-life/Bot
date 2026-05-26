@@ -1,22 +1,20 @@
 using System.Collections.Concurrent;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using DotNext.Threading;
 using KanonBot.Message;
 using KanonBot.Serializer;
 using LanguageExt.UnsafeValueAccess;
-using System.Text.Json.Serialization;
-using System.Text.Json.Nodes;
 using Serilog;
+
 namespace KanonBot.Drivers;
+
 public partial class OneBot
 {
     // API 部分 * 包装 Driver
-    public class API
+    public class API(ISocket socket)
     {
-        readonly ISocket socket;
-        public API(ISocket socket)
-        {
-            this.socket = socket;
-        }
+        readonly ISocket socket = socket;
 
         #region 消息收发
         public class RetCallback
@@ -27,17 +25,19 @@ public partial class OneBot
 
         private AsyncExclusiveLock l = new();
         public ConcurrentDictionary<Guid, RetCallback> CallbackList = new();
+
         public async Task Echo(Models.CQResponse res)
         {
-            using(await l.AcquireLockAsync(CancellationToken.None))
+            using (await l.AcquireLockAsync(CancellationToken.None))
             {
                 this.CallbackList[res.Echo].Data = res;
                 this.CallbackList[res.Echo].ResetEvent.Set();
             }
         }
-        private async Task<Models.CQResponse> Send(Models.CQRequest req)
+
+        private async Task<Models.CQResponse> Send<T>(Models.CQRequest<T> req)
         {
-            using(await l.AcquireLockAsync(CancellationToken.None))
+            using (await l.AcquireLockAsync(CancellationToken.None))
             {
                 // 创建回调
                 this.CallbackList[req.Echo] = new RetCallback();
@@ -48,19 +48,21 @@ public partial class OneBot
             await this.CallbackList[req.Echo].ResetEvent.WaitAsync();
 
             RetCallback ret;
-            using(await l.AcquireLockAsync(CancellationToken.None)) {
+            using (await l.AcquireLockAsync(CancellationToken.None))
+            {
                 // 获取并移除回调
                 this.CallbackList.Remove(req.Echo, out ret!);
             }
             return ret.Data!;
         }
+
         #endregion
 
         // 发送群消息
         public async Task<long?> SendGroupMessage(long groupId, Chain msgChain)
         {
             var message = Message.Build(msgChain);
-            var req = new Models.CQRequest
+            var req = new Models.CQRequest<Models.SendMessage>
             {
                 action = Enums.Actions.SendMsg,
                 Params = new Models.SendMessage
@@ -83,7 +85,7 @@ public partial class OneBot
         public async Task<long?> SendPrivateMessage(long userId, Chain msgChain)
         {
             var message = Message.Build(msgChain);
-            var req = new Models.CQRequest
+            var req = new Models.CQRequest<Models.SendMessage>
             {
                 action = Enums.Actions.SendMsg,
                 Params = new Models.SendMessage
@@ -101,6 +103,5 @@ public partial class OneBot
             else
                 return null;
         }
-
     }
 }

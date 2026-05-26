@@ -674,7 +674,7 @@ namespace KanonBot.Functions.OSUBot
                         await target.Treply(
                             "get.occ_cost_result",
                             OnlineOsuInfo.Username,
-                            occost(OnlineOsuInfo, pppData.Performances)
+                            occost(OnlineOsuInfo, pppData!.Performances)
                         );
                     }
                     catch

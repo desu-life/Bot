@@ -1,19 +1,19 @@
 #pragma warning disable CS8618 // 非null 字段未初始化
 
 using System.ComponentModel;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using KanonBot.Message;
 using KanonBot.Serializer;
-using System.Text.Json.Serialization;
-using System.Text.Json.Nodes;
 
 // 部分参考 https://github.com/DeepOceanSoft/Sora
 
 namespace KanonBot.Drivers;
+
 public partial class OneBot
 {
     public class Models
     {
-
         public class Anonymous
         {
             /// <summary>
@@ -47,26 +47,29 @@ public partial class OneBot
             /// 消息段JSON
             /// </summary>
             [JsonPropertyName("data")]
-            public JsonObject rawData { get; init; }
+            public JsonObject? rawData { get; init; }
         }
 
         public struct SendMessage
         {
             [JsonPropertyName("message_type")]
             public Enums.MessageType MessageType { get; set; }
+
             [JsonPropertyName("user_id")]
             public long? UserId { get; set; }
+
             [JsonPropertyName("group_id")]
             public long? GroupId { get; set; }
+
             [JsonPropertyName("message")]
             public List<Segment> Message { get; set; }
+
             [JsonPropertyName("auto_escape")]
             public bool AutoEscape { get; set; }
         }
 
-        public class CQRequest
+        public class CQRequest<T>
         {
-
             [JsonPropertyName("action")]
             public Enums.Actions action { get; init; }
 
@@ -74,27 +77,29 @@ public partial class OneBot
             public Guid Echo { get; } = Guid.NewGuid();
 
             [JsonPropertyName("params")]
-            public dynamic Params { get; init; }
+            public T Params { get; init; }
         }
+
         public class CQResponse
         {
-
             [JsonPropertyName("status")]
             public string Status { get; init; }
+
             [JsonPropertyName("retcode")]
             public int RetCode { get; init; }
+
             [JsonPropertyName("echo")]
             public Guid Echo { get; init; }
+
             [JsonPropertyName("data")]
             public JsonObject Data { get; init; }
-
         }
 
-        public class CQGroupAddRequest
+        public class CQAddRequest
         {
-
             [JsonPropertyName("sub_type")]
             public Enums.GroupRequestType RequestType { get; init; }
+
             [JsonPropertyName("approve")]
             public bool Approve { get; set; }
 
@@ -104,22 +109,34 @@ public partial class OneBot
 
         public class Sender
         {
-            [JsonPropertyName("role")]
-            public Enums.GroupRole Role { get; set; }
             [JsonPropertyName("user_id")]
             public long UserId { get; set; }
-            [JsonPropertyName("area")]
-            public string Area { get; set; }
-            [JsonPropertyName("card")]
-            public string Aard { get; set; }
-            [JsonPropertyName("level")]
-            public string Level { get; set; }
+
             [JsonPropertyName("nickname")]
             public string NickName { get; set; }
+
             [JsonPropertyName("sex")]
             public string Sex { get; set; }
+
             [JsonPropertyName("age")]
             public int Age { get; set; }
+
+            // 群消息 sender 中存在，私聊时为 null
+
+            [JsonPropertyName("card")]
+            public string? Card { get; set; }
+
+            [JsonPropertyName("area")]
+            public string? Area { get; set; }
+
+            [JsonPropertyName("level")]
+            public string? Level { get; set; }
+
+            [JsonPropertyName("role")]
+            public Enums.GroupRole? Role { get; set; }
+
+            [JsonPropertyName("title")]
+            public string? Title { get; set; }
         }
 
         public class CQEventBase
@@ -140,7 +157,13 @@ public partial class OneBot
             /// 事件类型
             /// </summary>
             [JsonPropertyName("post_type")]
-            public string? PostType { get; set; }
+            public Enums.PostType? PostType { get; set; }
+        }
+
+        public class CQMetaEventBase : CQEventBase
+        {
+            [JsonPropertyName("meta_event_type")]
+            public Enums.MetaEventType MetaEventType { get; set; }
         }
 
         public class CQMessageEventBase : CQEventBase
@@ -149,7 +172,7 @@ public partial class OneBot
             /// 消息类型
             /// </summary>
             [JsonPropertyName("message_type")]
-            public string MessageType { get; set; }
+            public Enums.MessageType MessageType { get; set; }
 
             /// <summary>
             /// 消息子类型

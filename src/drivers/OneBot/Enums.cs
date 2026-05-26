@@ -1,7 +1,8 @@
-using System.Text.Json.Serialization;
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace KanonBot.Drivers;
+
 public partial class OneBot
 {
     public class Enums
@@ -505,10 +506,10 @@ public partial class OneBot
             [JsonStringEnumMemberName("video")]
             Video,
 
-            /// <summary>	
-            /// <para>音乐分享</para>	
-            /// <para>只能发送</para>	
-            /// </summary>	
+            /// <summary>
+            /// <para>音乐分享</para>
+            /// <para>只能发送</para>
+            /// </summary>
             [JsonStringEnumMemberName("music")]
             Music,
 
@@ -578,6 +579,33 @@ public partial class OneBot
             TTS
 
             #endregion
+        }
+
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public enum PostType
+        {
+            [JsonStringEnumMemberName("message")]
+            Message,
+
+            [JsonStringEnumMemberName("notice")]
+            Notice,
+
+            [JsonStringEnumMemberName("request")]
+            Request,
+
+            [JsonStringEnumMemberName("meta_event")]
+            MetaEvent
+        }
+
+        public enum MetaEventType
+        {
+            Unknown,
+
+            [JsonStringEnumMemberName("heartbeat")]
+            Heartbeat,
+
+            [JsonStringEnumMemberName("lifecycle")]
+            Lifecycle
         }
     }
 }

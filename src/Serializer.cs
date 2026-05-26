@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -30,7 +31,27 @@ public static class Json
         return JsonSerializer.Serialize(self, opts);
     }
 
-    public static T? Deserialize<T>(string json) => JsonSerializer.Deserialize<T>(json, Options);
+    public static T? TryDeserialize<T>(string json)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<T>(json, Options);
+        }
+        catch (JsonException ex)
+        {
+            Log.Error("反序列化失败，输入: {0}\n异常: {1}", json, ex);
+            return default;
+        }
+        catch (Exception ex)
+        {
+            Log.Error("未捕获的异常 ↓\n输入: {0}\n异常: {1}", json, ex);
+            return default;
+        }
+    }
+
+    public static T Deserialize<T>(string json) =>
+        JsonSerializer.Deserialize<T>(json, Options)
+        ?? throw new JsonException("Deserialize returned null");
 
     public static JsonNode? ToLinq(string json) => JsonNode.Parse(json);
 }
