@@ -12,13 +12,10 @@ public class HistoryBeatmapMapper
     }
 
     private static ConcurrentDictionary<MessageSource, CacheItem> _beatmapCache = new();
+
     public static void Map(MessageSource source, long beatmapID)
     {
-        _beatmapCache[source] = new CacheItem
-        {
-            BeatmapID = beatmapID,
-            CachedAt = DateTime.Now
-        };
+        _beatmapCache[source] = new CacheItem { BeatmapID = beatmapID, CachedAt = DateTime.Now };
     }
 
     public static long? Get(MessageSource source)

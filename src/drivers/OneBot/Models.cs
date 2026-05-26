@@ -1,38 +1,37 @@
 #pragma warning disable CS8618 // 非null 字段未初始化
 
 using System.ComponentModel;
+using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using KanonBot.Message;
 using KanonBot.Serializer;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NullValueHandling = Newtonsoft.Json.NullValueHandling;
 
 // 部分参考 https://github.com/DeepOceanSoft/Sora
 
 namespace KanonBot.Drivers;
+
 public partial class OneBot
 {
     public class Models
     {
-
         public class Anonymous
         {
             /// <summary>
             /// 匿名用户 flag
             /// </summary>
-            [JsonProperty(PropertyName = "flag")]
+            [JsonPropertyName("flag")]
             public string Flag { get; init; }
 
             /// <summary>
             /// 匿名用户 ID
             /// </summary>
-            [JsonProperty(PropertyName = "id")]
+            [JsonPropertyName("id")]
             public long Id { get; init; }
 
             /// <summary>
             /// 匿名用户名称
             /// </summary>
-            [JsonProperty(PropertyName = "name")]
+            [JsonPropertyName("name")]
             public string Name { get; init; }
         }
 
@@ -41,91 +40,103 @@ public partial class OneBot
             /// <summary>
             /// 消息段类型
             /// </summary>
-            [JsonProperty(PropertyName = "type")]
-            [JsonConverter(typeof(JsonEnumConverter))]
+            [JsonPropertyName("type")]
             public Enums.SegmentType msgType { get; init; }
 
             /// <summary>
             /// 消息段JSON
             /// </summary>
-            [JsonProperty(PropertyName = "data")]
-            public JObject rawData { get; init; }
+            [JsonPropertyName("data")]
+            public JsonObject? rawData { get; init; }
         }
 
         public struct SendMessage
         {
-            [JsonProperty(PropertyName = "message_type")]
-            [JsonConverter(typeof(JsonEnumConverter))]
+            [JsonPropertyName("message_type")]
             public Enums.MessageType MessageType { get; set; }
-            [JsonProperty(PropertyName = "user_id")]
+
+            [JsonPropertyName("user_id")]
             public long? UserId { get; set; }
-            [JsonProperty(PropertyName = "group_id")]
+
+            [JsonPropertyName("group_id")]
             public long? GroupId { get; set; }
-            [JsonProperty(PropertyName = "message")]
+
+            [JsonPropertyName("message")]
             public List<Segment> Message { get; set; }
-            [JsonProperty(PropertyName = "auto_escape")]
+
+            [JsonPropertyName("auto_escape")]
             public bool AutoEscape { get; set; }
         }
 
-        public class CQRequest
+        public class CQRequest<T>
         {
-
-            [JsonProperty(PropertyName = "action")]
-            [JsonConverter(typeof(JsonEnumConverter))]
+            [JsonPropertyName("action")]
             public Enums.Actions action { get; init; }
 
-            [JsonProperty(PropertyName = "echo")]
+            [JsonPropertyName("echo")]
             public Guid Echo { get; } = Guid.NewGuid();
 
-            [JsonProperty(PropertyName = "params")]
-            public dynamic Params { get; init; }
+            [JsonPropertyName("params")]
+            public T Params { get; init; }
         }
+
         public class CQResponse
         {
-
-            [JsonProperty(PropertyName = "status")]
+            [JsonPropertyName("status")]
             public string Status { get; init; }
-            [JsonProperty(PropertyName = "retcode")]
-            public int RetCode { get; init; }
-            [JsonProperty(PropertyName = "echo")]
-            public Guid Echo { get; init; }
-            [JsonProperty(PropertyName = "data")]
-            public JObject Data { get; init; }
 
+            [JsonPropertyName("retcode")]
+            public int RetCode { get; init; }
+
+            [JsonPropertyName("echo")]
+            public Guid Echo { get; init; }
+
+            [JsonPropertyName("data")]
+            public JsonObject Data { get; init; }
         }
 
-        public class CQGroupAddRequest
+        public class CQAddRequest
         {
-
-            [JsonProperty(PropertyName = "sub_type")]
-            [JsonConverter(typeof(JsonEnumConverter))]
+            [JsonPropertyName("sub_type")]
             public Enums.GroupRequestType RequestType { get; init; }
-            [JsonProperty(PropertyName = "approve")]
+
+            [JsonPropertyName("approve")]
             public bool Approve { get; set; }
 
-            [JsonProperty(PropertyName = "reason")]
+            [JsonPropertyName("reason")]
             public string Reason { set; get; }
         }
 
         public class Sender
         {
-            [JsonProperty(PropertyName = "role")]
-            [JsonConverter(typeof(JsonEnumConverter))]
-            public Enums.GroupRole Role { get; set; }
-            [JsonProperty(PropertyName = "user_id")]
+            [JsonPropertyName("user_id")]
             public long UserId { get; set; }
-            [JsonProperty(PropertyName = "area")]
-            public string Area { get; set; }
-            [JsonProperty(PropertyName = "card")]
-            public string Aard { get; set; }
-            [JsonProperty(PropertyName = "level")]
-            public string Level { get; set; }
-            [JsonProperty(PropertyName = "nickname")]
+
+            [JsonPropertyName("nickname")]
             public string NickName { get; set; }
-            [JsonProperty(PropertyName = "sex")]
+
+            [JsonPropertyName("sex")]
             public string Sex { get; set; }
-            [JsonProperty(PropertyName = "age")]
+
+            [JsonPropertyName("age")]
             public int Age { get; set; }
+
+            // 群消息 sender 中存在，私聊时为 null
+
+            [JsonPropertyName("card")]
+            public string? Card { get; set; }
+
+            [JsonPropertyName("area")]
+            public string? Area { get; set; }
+
+            [JsonPropertyName("level")]
+            public string? Level { get; set; }
+
+            [JsonPropertyName("role")]
+            public Enums.GroupRole? Role { get; set; }
+
+            [JsonPropertyName("title")]
+            public string? Title { get; set; }
         }
 
         public class CQEventBase
@@ -133,20 +144,26 @@ public partial class OneBot
             /// <summary>
             /// 事件发生的时间戳
             /// </summary>
-            [JsonProperty(PropertyName = "time", NullValueHandling = NullValueHandling.Ignore)]
+            [JsonPropertyName("time")]
             public long Time { get; set; }
 
             /// <summary>
             /// 收到事件的机器人 QQ 号
             /// </summary>
-            [JsonProperty(PropertyName = "self_id", NullValueHandling = NullValueHandling.Ignore)]
+            [JsonPropertyName("self_id")]
             public long? SelfId { get; set; }
 
             /// <summary>
             /// 事件类型
             /// </summary>
-            [JsonProperty(PropertyName = "post_type", NullValueHandling = NullValueHandling.Ignore)]
-            public string? PostType { get; set; }
+            [JsonPropertyName("post_type")]
+            public Enums.PostType? PostType { get; set; }
+        }
+
+        public class CQMetaEventBase : CQEventBase
+        {
+            [JsonPropertyName("meta_event_type")]
+            public Enums.MetaEventType MetaEventType { get; set; }
         }
 
         public class CQMessageEventBase : CQEventBase
@@ -154,43 +171,43 @@ public partial class OneBot
             /// <summary>
             /// 消息类型
             /// </summary>
-            [JsonProperty(PropertyName = "message_type")]
-            public string MessageType { get; set; }
+            [JsonPropertyName("message_type")]
+            public Enums.MessageType MessageType { get; set; }
 
             /// <summary>
             /// 消息子类型
             /// </summary>
-            [JsonProperty(PropertyName = "sub_type")]
+            [JsonPropertyName("sub_type")]
             public string SubType { get; set; }
 
             /// <summary>
             /// 消息 ID
             /// </summary>
-            [JsonProperty(PropertyName = "message_id")]
+            [JsonPropertyName("message_id")]
             public int MessageId { get; set; }
 
             /// <summary>
             /// 发送者 QQ 号
             /// </summary>
-            [JsonProperty(PropertyName = "user_id")]
+            [JsonPropertyName("user_id")]
             public long UserId { get; set; }
 
             /// <summary>
             /// 消息内容
             /// </summary>
-            [JsonProperty(PropertyName = "message")]
+            [JsonPropertyName("message")]
             public List<Segment> MessageList { get; set; }
 
             /// <summary>
             /// 原始消息内容
             /// </summary>
-            [JsonProperty(PropertyName = "raw_message")]
+            [JsonPropertyName("raw_message")]
             public string RawMessage { get; set; }
 
             /// <summary>
             /// 字体
             /// </summary>
-            [JsonProperty(PropertyName = "font")]
+            [JsonPropertyName("font")]
             public int Font { get; set; }
         }
 
@@ -199,25 +216,25 @@ public partial class OneBot
             /// <summary>
             /// 群号
             /// </summary>
-            [JsonProperty(PropertyName = "group_id")]
+            [JsonPropertyName("group_id")]
             public long GroupId { get; set; }
 
             /// <summary>
             /// 匿名信息
             /// </summary>
-            [JsonProperty(PropertyName = "anonymous", NullValueHandling = NullValueHandling.Ignore)]
+            [JsonPropertyName("anonymous")]
             public Anonymous? Anonymous { get; set; }
 
             /// <summary>
             /// 发送人信息
             /// </summary>
-            [JsonProperty(PropertyName = "sender")]
+            [JsonPropertyName("sender")]
             public Sender SenderInfo { get; set; }
 
             /// <summary>
             /// 消息序号
             /// </summary>
-            [JsonProperty(PropertyName = "message_seq")]
+            [JsonPropertyName("message_seq")]
             public long MessageSequence { get; set; }
         }
 
@@ -226,7 +243,7 @@ public partial class OneBot
             /// <summary>
             /// 发送人信息
             /// </summary>
-            [JsonProperty(PropertyName = "sender")]
+            [JsonPropertyName("sender")]
             public Sender SenderInfo { get; set; }
         }
     }

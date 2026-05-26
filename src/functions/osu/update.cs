@@ -40,13 +40,13 @@ namespace KanonBot.Functions.OSUBot
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID, mode!.Value);
             if (OnlineOsuInfo == null)
             {
-                await target.reply("猫猫没有找到此用户。");
+                await target.Treply("error.user_not_found");
                 return;
             }
             OnlineOsuInfo.Mode = mode!.Value;
             #endregion
 
-            await target.reply("少女祈祷中...");
+            await target.Treply("osu.update_in_progress");
 
             if (resolved.IamUserId is not null)
             {
@@ -76,7 +76,7 @@ namespace KanonBot.Functions.OSUBot
                 File.Delete($"./work/legacy/v1_cover/osu!web/{OnlineOsuInfo!.Id}.png");
             }
             catch { }
-            await target.reply("主要数据已更新完毕，pp+数据正在后台更新，请稍后使用info功能查看结果。");
+            await target.Treply("osu.update_done");
 
             _ = Task.Run(async () =>
             {

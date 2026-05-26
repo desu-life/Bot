@@ -19,64 +19,13 @@ namespace KanonBot.Functions.OSUBot
             var index = Math.Max(0, cmd.Get<int>("order_number") - 1);
             var isBid = int.TryParse(searchArg, out var bid);
 
-            bool beatmapFound = true;
-            API.OSU.Models.BeatmapSearchResult? beatmaps = null;
-            API.OSU.Models.Beatmapset? beatmapset = null;
+            var beatmapset =
+                await SearchAndValidate(searchArg, isBid, bid, index, hasLeaderboard: true)
+                ?? await SearchAndValidate(searchArg, isBid, bid, index, hasLeaderboard: false);
 
-            beatmaps = await API.OSU.Client.SearchBeatmap(searchArg, null);
-            if (beatmaps != null && isBid)
+            if (beatmapset is not { Beatmaps.Length: > 0 })
             {
-                beatmaps.Beatmapsets = beatmaps
-                    .Beatmapsets
-                    .OrderByDescending(x => x.Beatmaps.Find(y => y.BeatmapId == bid) != null)
-                    .ToList();
-            }
-            beatmapset = beatmaps?.Beatmapsets.Skip(index).FirstOrDefault();
-
-            if (beatmapset == null)
-            {
-                beatmapFound = false;
-            }
-            else if (beatmapset.Beatmaps == null)
-            {
-                beatmapFound = false;
-            }
-            else if (beatmapset.Beatmaps.Length == 0)
-            {
-                beatmapFound = false;
-            }
-
-            if (!beatmapFound)
-            {
-                beatmaps = await API.OSU.Client.SearchBeatmap(searchArg, null, false);
-                beatmapFound = true;
-            }
-
-            if (beatmaps != null && isBid)
-            {
-                beatmaps.Beatmapsets = beatmaps
-                    .Beatmapsets
-                    .OrderByDescending(x => x.Beatmaps.Find(y => y.BeatmapId == bid) != null)
-                    .ToList();
-            }
-            beatmapset = beatmaps?.Beatmapsets.Skip(index).FirstOrDefault();
-
-            if (beatmapset == null)
-            {
-                beatmapFound = false;
-            }
-            else if (beatmapset.Beatmaps == null)
-            {
-                beatmapFound = false;
-            }
-            else if (beatmapset.Beatmaps.Length == 0)
-            {
-                beatmapFound = false;
-            }
-
-            if (!beatmapFound)
-            {
-                await target.reply("未找到谱面。");
+                await target.Treply("osu.beatmap_not_found");
                 return;
             }
 
@@ -102,6 +51,30 @@ namespace KanonBot.Functions.OSUBot
             await target.reply(
                 $"https://assets.ppy.sh/beatmaps/{beatmapset!.Id}/covers/fullsize.jpg"
             );
+        }
+
+        private static async Task<API.OSU.Models.Beatmapset?> SearchAndValidate(
+            string searchArg,
+            bool isBid,
+            int bid,
+            int index,
+            bool hasLeaderboard
+        )
+        {
+            var beatmaps = await API.OSU.Client.SearchBeatmap(searchArg, null, hasLeaderboard);
+            if (beatmaps == null)
+                return null;
+
+            if (isBid)
+            {
+                beatmaps.Beatmapsets = beatmaps
+                    .Beatmapsets
+                    .OrderByDescending(x => x.Beatmaps!.Any(y => y.BeatmapId == bid))
+                    .ToList();
+            }
+
+            var beatmapset = beatmaps.Beatmapsets.Skip(index).FirstOrDefault();
+            return beatmapset is { Beatmaps.Length: > 0 } ? beatmapset : null;
         }
     }
 }

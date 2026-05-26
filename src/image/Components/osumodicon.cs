@@ -25,7 +25,7 @@ public static class OsuModIcon
 
             if (showCustomSettings)
             {
-                var speedChange = (double?)mod.Settings?.GetValue("speed_change");
+                var speedChange = (double?)mod.Settings?["speed_change"];
 
                 if (speedChange is not null)
                 {

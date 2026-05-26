@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using KanonBot;
 using KanonBot.Event;
 using KanonBot.Message;
 using KanonBot.Serializer;
-using Newtonsoft.Json;
 using Serilog;
 using WatsonWebsocket;
 
@@ -72,95 +73,112 @@ public partial class OneBot
 
         async Task Parse(string msg)
         {
-            var m = Json.ToLinq(msg);
-            if (m != null)
+            using var doc = JsonDocument.Parse(msg);
+            var root = doc.RootElement;
+
+            if (root.TryGetProperty("echo", out _) && root.TryGetProperty("retcode", out _))
             {
-                if (m["post_type"] != null)
+                var res = Json.TryDeserialize<Models.CQResponse>(msg);
+
+                if (res is not null)
+                    await this.api.Echo(res);
+
+                return;
+            }
+
+            if (!root.TryGetProperty("post_type", out var postTypeProp))
+                return;
+
+            var postType = postTypeProp.GetString();
+            switch (postType)
+            {
+                case "message":
                 {
-                    switch ((string?)m["post_type"])
+                    if (msgAction is null)
+                        return;
+
+                    var messageType = root.GetProperty("message_type").GetString();
+                    Models.CQMessageEventBase obj;
+                    try
                     {
-                        case "message":
+                        switch (messageType)
                         {
-                            if (msgAction is not null)
-                            {
-                                Models.CQMessageEventBase obj;
-                                try
-                                {
-                                    var msgType = (string?)m["message_type"];
-                                    switch (msgType)
-                                    {
-                                        case "private":
-                                            obj = m.ToObject<Models.PrivateMessage>()!;
-                                            break;
-                                        case "group":
-                                            obj = m.ToObject<Models.GroupMessage>()!;
-                                            break;
-                                        default:
-                                            Log.Error("未知消息格式, {0}", msgType);
-                                            return;
-                                    }
-                                }
-                                catch (JsonSerializationException)
-                                {
-                                    Log.Error("不支持的消息格式，请使用数组消息格式，连接断开");
-                                    await this.Stop();
-                                    return;
-                                }
-                                var source = MessageSource.FromOneBot(obj);
-                                var target = new Target
-                                {
-                                    time = DateTimeOffset.FromUnixTimeSeconds(obj.Time),
-                                    platform = Platform.OneBot,
-                                    sender = obj.UserId.ToString(),
-                                    selfAccount = this.selfID,
-                                    msg = Message.Parse(obj.MessageList),
-                                    raw = obj,
-                                    source = source,
-                                    socket = this
-                                };
-                                await msgAction.Invoke(target);
-                            }
-                            break;
+                            case "private":
+                                obj = root.Deserialize<Models.PrivateMessage>(Json.Options)!;
+                                break;
+                            case "group":
+                                obj = root.Deserialize<Models.GroupMessage>(Json.Options)!;
+                                break;
+                            default:
+                                Log.Error("未知消息类型: {0}", messageType);
+                                return;
                         }
-                        case "meta_event":
+                    }
+                    catch (JsonException)
+                    {
+                        Log.Error("不支持的消息格式，请使用数组消息格式，连接断开");
+                        await this.Stop();
+                        return;
+                    }
+
+                    var source = MessageSource.FromOneBot(obj);
+
+                    await msgAction.Invoke(
+                        new Target
                         {
-                            if (eventAction is not null)
-                            {
-                                var metaEventType = (string?)m["meta_event_type"];
-                                if (metaEventType == "heartbeat")
-                                {
-                                    await this.eventAction.Invoke(
-                                        this,
-                                        new HeartBeat((long)m["time"]!)
-                                    );
-                                }
-                                else if (metaEventType == "lifecycle")
-                                {
-                                    this.selfID = (string)m["self_id"]!;
-                                    await this.eventAction.Invoke(
-                                        this,
-                                        new Ready(this.selfID, Platform.OneBot)
-                                    );
-                                }
-                                else
-                                {
-                                    await this.eventAction.Invoke(this, new RawEvent(m));
-                                }
-                            }
-                            break;
+                            time = DateTimeOffset.FromUnixTimeSeconds(obj.Time),
+                            platform = Platform.OneBot,
+                            sender = obj.UserId.ToString(),
+                            selfAccount = this.selfID,
+                            msg = Message.Parse(obj.MessageList),
+                            raw = obj,
+                            source = source,
+                            socket = this
                         }
+                    );
+                    return;
+                }
+
+                case "meta_event":
+                {
+                    if (eventAction is null)
+                        return;
+
+                    var metaType = root.TryGetProperty("meta_event_type", out var t)
+                        ? t.GetString()
+                        : null;
+
+                    switch (metaType)
+                    {
+                        case "heartbeat":
+                        {
+                            var time = root.GetProperty("time").GetInt64();
+                            await eventAction.Invoke(this, new HeartBeat(time));
+                            return;
+                        }
+
+                        case "lifecycle":
+                        {
+                            this.selfID = root.GetProperty("self_id").GetRawText();
+                            await eventAction.Invoke(this, new Ready(this.selfID, Platform.OneBot));
+                            return;
+                        }
+
                         default:
-                            if (eventAction is not null)
-                            {
-                                await this.eventAction.Invoke(this, new RawEvent(m));
-                            }
-                            break;
+                        {
+                            await eventAction.Invoke(this, new RawEvent(root.Clone()));
+                            return;
+                        }
                     }
                 }
-                // 处理回执消息
-                if (m["echo"] != null)
+
+                default:
                 {
-                    await this.api.Echo(m.ToObject<Models.CQResponse>()!);
+                    if (eventAction is not null)
+                    {
+                        await eventAction.Invoke(this, new RawEvent(root.Clone()));
+                    }
+                    return;
                 }
             }
         }

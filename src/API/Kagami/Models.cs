@@ -1,5 +1,5 @@
 using KanonBot.Serializer;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace KanonBot.API.Kagami;
 

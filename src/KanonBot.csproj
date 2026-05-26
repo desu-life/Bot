@@ -27,8 +27,6 @@
 		<PackageReference Include="CommandLineParser" Version="2.9.1" />
 
 		<PackageReference Include="Flurl.Http" Version="4.0.2" />
-		<PackageReference Include="Flurl.Http.Newtonsoft" Version="0.9.1" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="Samboy063.Tomlet" Version="6.2.0" />
 
 		<PackageReference Include="OpenAI" Version="1.11.0" />
@@ -61,7 +59,14 @@
 		<!-- <PackageReference Include="Svg.Skia" Version="3.0.4" /> -->
 	</ItemGroup>
 
-	<!-- RosuPP -->
+	<!-- Source Generator -->
+	 <ItemGroup>
+	  <ProjectReference Include="../generators/KanonBot.Generators/KanonBot.Generators.csproj"
+	    OutputItemType="Analyzer"
+	    ReferenceOutputAssembly="false" />
+	</ItemGroup>
+
+	<!-- ProjectReference -->
 	<ItemGroup>
 	  <ProjectReference Include="../dependencies/takumi-html-ffi/bindings/takumi-render-uniffi/csharp/Takumi.Render.UniFFI/Takumi.Render.UniFFI.csproj" />
 	  <ProjectReference Include="../dependencies/rosu-pp-ffi/SharpRosuPP/RosuPP/RosuPP.csproj" />

@@ -1,8 +1,7 @@
 #pragma warning disable CS8618 // 非null 字段未初始化
 using KanonBot.Serializer;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NullValueHandling = Newtonsoft.Json.NullValueHandling;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 
 namespace KanonBot.API.OSU;
 
@@ -12,39 +11,39 @@ public partial class Models
 
     public class BeatmapSearchResult
     {
-        [JsonProperty("beatmapsets")]
+        [JsonPropertyName("beatmapsets")]
         public List<Beatmapset> Beatmapsets { get; set; }
 
-        [JsonProperty("search")]
+        [JsonPropertyName("search")]
         public SearchResult Search { get; set; }
 
-        [JsonProperty("recommended_difficulty")]
+        [JsonPropertyName("recommended_difficulty")]
         public object? RecommendedDifficulty { get; set; }
 
-        [JsonProperty("error")]
+        [JsonPropertyName("error")]
         public object? Error { get; set; }
 
-        [JsonProperty("total")]
+        [JsonPropertyName("total")]
         public long Total { get; set; }
 
-        [JsonProperty("cursor")]
+        [JsonPropertyName("cursor")]
         public CursorResult Cursor { get; set; }
 
-        [JsonProperty("cursor_string")]
+        [JsonPropertyName("cursor_string")]
         public string CursorString { get; set; }
 
         public class SearchResult
         {
-            [JsonProperty("sort")]
+            [JsonPropertyName("sort")]
             public string sort { get; set; }
         }
 
         public class CursorResult
         {
-            [JsonProperty("approved_date")]
+            [JsonPropertyName("approved_date")]
             public long approved_date { get; set; }
 
-            [JsonProperty("id")]
+            [JsonPropertyName("id")]
             public int id { get; set; }
         }
     }

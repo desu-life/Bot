@@ -33,7 +33,7 @@ public static class PPYSBExtensions
             _ => throw new ArgumentOutOfRangeException(),
         };
     }
-    
+
     public static int ToNum(this Mode mode)
     {
         return mode switch
@@ -123,7 +123,7 @@ public static class PPYSBExtensions
             "1" or "taiko" or "tko" => Mode.Taiko,
             "2" or "fruits" or "catch" or "ctb" => Mode.Fruits,
             "3" or "mania" or "m" => Mode.Mania,
-            "4" or "rx0" or "rxosu" or "rxstd" => Mode.RelaxOsu,
+            "4" or "rx" or "rx0" or "rxosu" or "rxstd" => Mode.RelaxOsu,
             "5" or "rx1" or "rxtaiko" or "rxtko" => Mode.RelaxTaiko,
             "6" or "rx2" or "rxfruits" or "rxcatch" or "rxctb" => Mode.RelaxFruits,
             "7" or "rx3" or "rxmania" or "rxm" => Mode.RelaxMania,
@@ -137,7 +137,7 @@ public static class PPYSBExtensions
 
     public static Mode? ToPpysbMode(this int value)
     {
-         return value switch
+        return value switch
         {
             0 => Mode.OSU,
             1 => Mode.Taiko,

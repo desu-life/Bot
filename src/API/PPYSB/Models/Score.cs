@@ -2,101 +2,100 @@
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using KanonBot.Serializer;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NullValueHandling = Newtonsoft.Json.NullValueHandling;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 
 namespace KanonBot.API.PPYSB;
 
 public partial class Models
 {
     public class ScoreResponseV2 : ApiResponseV2 {
-        [JsonProperty("data")]
+        [JsonPropertyName("data")]
         public Score[] Data { get; set; }
     }
 
     public class PlayerScoreResponse : ApiResponse {
-        [JsonProperty("scores")]
+        [JsonPropertyName("scores")]
         public Score[] Scores { get; set; }
 
-        [JsonProperty("player")]
+        [JsonPropertyName("player")]
         public ScoreUser Player { get; set; }
     }
 
     public class ScoreResponse : ApiResponse {
-        [JsonProperty("score")]
+        [JsonPropertyName("score")]
         public Score Score { get; set; }
     }
 
 
     public class Score {
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public long Id { get; set; }
 
-        [JsonProperty("score")]
+        [JsonPropertyName("score")]
         public uint Scores { get; set; }
 
-        [JsonProperty("pp")]
+        [JsonPropertyName("pp")]
         public double PP { get; set; }
 
-        [JsonProperty("acc")]
+        [JsonPropertyName("acc")]
         public double Acc { get; set; }
 
-        [JsonProperty("max_combo")]
+        [JsonPropertyName("max_combo")]
         public uint MaxCombo { get; set; }
 
-        [JsonProperty("mods")]
+        [JsonPropertyName("mods")]
         public uint Mods { get; set; }
 
-        [JsonProperty("n300")]
+        [JsonPropertyName("n300")]
         public uint Count300 { get; set; }
 
-        [JsonProperty("n100")]
+        [JsonPropertyName("n100")]
         public uint Count100 { get; set; }
 
-        [JsonProperty("n50")]
+        [JsonPropertyName("n50")]
         public uint Count50 { get; set; }
 
-        [JsonProperty("nmiss")]
+        [JsonPropertyName("nmiss")]
         public uint CountMiss { get; set; }
 
-        [JsonProperty("ngeki")]
+        [JsonPropertyName("ngeki")]
         public uint CountGeki { get; set; }
 
-        [JsonProperty("nkatu")]
+        [JsonPropertyName("nkatu")]
         public uint CountKatu { get; set; }
 
-        [JsonProperty("grade")]
+        [JsonPropertyName("grade")]
         public string Rank { get; set; }
 
-        [JsonProperty("status")]
+        [JsonPropertyName("status")]
         public uint Status { get; set; }
 
-        [JsonProperty("mode")]
+        [JsonPropertyName("mode")]
         public Mode Mode { get; set; }
 
-        [JsonProperty("play_time")]
+        [JsonPropertyName("play_time")]
         public DateTimeOffset PlayTime { get; set; }
 
-        [JsonProperty("time_elapsed")]
-        public string TimeElapsed { get; set; }
+        [JsonPropertyName("time_elapsed")]
+        public int TimeElapsed { get; set; }
 
-        [JsonProperty("perfect")]
+        [JsonPropertyName("perfect")]
         public uint Perfect { get; set; }
 
-        [JsonProperty("beatmap")]
+        [JsonPropertyName("beatmap")]
         public Beatmap Beatmap { get; set; }
     }
 
     public class ScoreUser {
 
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public uint Id { get; set; }
 
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Username { get; set; }
 
-        [JsonProperty("clan")]
+        [JsonPropertyName("clan")]
         public object? Clan { get; set; }
 
     }

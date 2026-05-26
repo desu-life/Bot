@@ -9,49 +9,53 @@ public static partial class Utils
    
     [GeneratedRegex(@"([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,5})+")]
     private static partial Regex EmailRegex();
-    public static bool IsMailAddr(string str)
-    {
-        if (EmailRegex().IsMatch(str))
-            return true;
-        return false;
-    }
-
+    public static bool IsMailAddr(string str) => EmailRegex().IsMatch(str);
 
     public static string HideMailAddr(string mailAddr)
     {
         try
         {
-            var t1 = mailAddr.Split('@');
-            string[] t2 = new string[t1[0].Length];
-            for (int i = 0; i < t1[0].Length; i++)
-            {
-                t2[i] = "*";
-            }
-            t2[0] = t1[0][0].ToString();
-            t2[t1[0].Length - 1] = t1[0][^1].ToString();
-            string ret = "";
-            foreach (string s in t2)
-            {
-                ret += s;
-            }
-            ret += "@";
-            t2 = new string[t1[1].Length];
-            for (int i = 0; i < t1[1].Length; i++)
-            {
-                t2[i] = "*";
-            }
-            t2[0] = t1[1][0].ToString();
-            t2[t1[1].Length - 1] = t1[1][^1].ToString();
-            t2[t1[1].IndexOf(".")] = ".";
-            foreach (string s in t2)
-            {
-                ret += s;
-            }
-            return ret;
+            var parts = mailAddr.Split('@');
+            if (parts.Length != 2) return mailAddr;
+
+            var local = parts[0];
+            var domain = parts[1];
+
+            var maskedLocal = MaskPart(local);
+            var dotIdx = domain.IndexOf('.');
+            var maskedDomain = MaskPartWithDot(domain, dotIdx);
+
+            return $"{maskedLocal}@{maskedDomain}";
         }
         catch
         {
             return mailAddr;
+        }
+
+        static string MaskPart(ReadOnlySpan<char> part)
+        {
+            if (part.Length <= 2)
+                return part.ToString();
+            return string.Create(part.Length, part.ToString(), static (span, src) =>
+            {
+                span.Fill('*');
+                span[0] = src[0];
+                span[^1] = src[^1];
+            });
+        }
+
+        static string MaskPartWithDot(ReadOnlySpan<char> part, int dotIdx)
+        {
+            if (part.Length <= 2)
+                return part.ToString();
+            return string.Create(part.Length, (part.ToString(), dotIdx), static (span, state) =>
+            {
+                span.Fill('*');
+                span[0] = state.Item1[0];
+                span[^1] = state.Item1[^1];
+                if (state.dotIdx >= 0 && state.dotIdx < span.Length)
+                    span[state.dotIdx] = '.';
+            });
         }
     }
 

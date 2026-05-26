@@ -1,8 +1,7 @@
 #pragma warning disable CS8618 // 非null 字段未初始化
 using System.ComponentModel;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NullValueHandling = Newtonsoft.Json.NullValueHandling;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 
 namespace KanonBot.API.OSU;
 
@@ -10,11 +9,11 @@ public partial class Models
 {
     public class Mod
     {
-        [JsonProperty("acronym")]
+        [JsonPropertyName("acronym")]
         public string Acronym { get; set; }
 
-        [JsonProperty("settings", NullValueHandling = NullValueHandling.Ignore)]
-        public JObject? Settings { get; set; }
+        [JsonPropertyName("settings")]
+        public JsonObject? Settings { get; set; }
 
         [JsonIgnore]
         public bool IsClassic => Acronym == "CL";

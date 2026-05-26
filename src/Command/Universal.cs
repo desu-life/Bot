@@ -73,11 +73,11 @@ namespace KanonBot.Command
             }
             catch (Flurl.Http.FlurlHttpTimeoutException)
             {
-                await target.reply("获取数据超时，请稍后重试吧");
+                await target.Treply("error.timeout");
             }
             catch (Flurl.Http.FlurlHttpException ex)
             {
-                await target.reply("获取数据时出错，之后再试试吧");
+                await target.Treply("error.network");
                 var rtmp = $"""
                     网络异常
                     Target Platform: {target.platform}
@@ -97,7 +97,7 @@ namespace KanonBot.Command
                 }
                 else
                 {
-                    await target.reply("文件操作异常，错误内容已自动上报");
+                    await target.Treply("error.file_io");
                     var rtmp = $"""
                         文件操作异常
                         Target Platform: {target.platform}
@@ -115,18 +115,18 @@ namespace KanonBot.Command
                 {
                     if (e is Flurl.Http.FlurlHttpTimeoutException)
                     {
-                        await target.reply("获取数据超时，请稍后重试吧");
+                        await target.Treply("error.timeout");
                         return;
                     }
                     else if (e is Flurl.Http.FlurlHttpException)
                     {
-                        await target.reply("获取数据时出错，之后再试试吧");
+                        await target.Treply("error.network");
                         Log.Error("获取数据异常 ↓\n{ex}", e);
                         return;
                     }
                 }
 
-                await target.reply("出现了未知错误，错误内容已自动上报");
+                await target.Treply("error.unknown");
                 var rtmp = $"""
                     未知异常
                     Target Platform: {target.platform}
@@ -139,7 +139,7 @@ namespace KanonBot.Command
             }
             catch (Exception ex)
             {
-                await target.reply("出现了未知错误，错误内容已自动上报");
+                await target.Treply("error.unknown");
                 var rtmp = $"""
                     未知异常
                     Target Platform: {target.platform}

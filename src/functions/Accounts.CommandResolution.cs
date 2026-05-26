@@ -35,7 +35,7 @@ namespace KanonBot.Functions
             var accInfo = GetAccInfo(target);
             if (accInfo.platform == Platform.Unknown)
             {
-                await target.reply("无法获取您的平台信息。");
+                await target.Treply("account.platform_unknown");
                 return null;
             }
 
@@ -47,21 +47,21 @@ namespace KanonBot.Functions
             }
             catch (NotSupportedException)
             {
-                await target.reply("当前平台暂不支持此功能。");
+                await target.Treply("account.platform_unsupported");
                 return null;
             }
 
             var iamUserId = await API.IAM.Client.GetIamUserIdByExternalId(provider, accInfo.uid);
             if (iamUserId == null)
             {
-                await target.reply("你还没有绑定 desu.life 账户，请使用 !bind 进行绑定。");
+                await target.Treply("account.not_bound");
                 return null;
             }
 
             var bindings = await API.IAM.Client.GetUserBindings(iamUserId);
             if (bindings == null)
             {
-                await target.reply("获取账户信息失败，请稍后再试。");
+                await target.Treply("account.fetch_failed");
                 return null;
             }
 
@@ -73,7 +73,7 @@ namespace KanonBot.Functions
                 var ppysbUid = API.IAM.Client.ExtractPpysbUid(bindings);
                 if (!ppysbUid.HasValue)
                 {
-                    await target.reply("你还没有绑定 ppy.sb 账户，请前往 https://iam.neonprizma.com/ 绑定。");
+                    await target.Treply("account.ppysb_not_bound");
                     return null;
                 }
 
@@ -103,7 +103,7 @@ namespace KanonBot.Functions
                 var osuUid = API.IAM.Client.ExtractOsuUid(bindings);
                 if (!osuUid.HasValue)
                 {
-                    await target.reply("你还没有绑定 osu! 账户，请前往 https://iam.neonprizma.com/ 绑定。");
+                    await target.Treply("account.osu_not_bound");
                     return null;
                 }
 
@@ -161,9 +161,9 @@ namespace KanonBot.Functions
             {
                 // User registered but osu not available
                 if (!hasOsuBinding)
-                    await target.reply("ta还没有绑定osu账户呢。");
+                    await target.Treply("account.other_osu_not_bound");
                 else
-                    await target.reply("被办了。");
+                    await target.Treply("account.banned");
                 return null;
             }
             else if (!atOSU.IsNone && iamUserId == null)
@@ -201,7 +201,7 @@ namespace KanonBot.Functions
                     .GetUser(username, osuMode ?? API.OSU.Mode.OSU);
                 if (onlineUser == null)
                 {
-                    await target.reply("猫猫没有找到此用户。");
+                    await target.Treply("error.user_not_found");
                     return null;
                 }
 
@@ -243,9 +243,9 @@ namespace KanonBot.Functions
             if (atOSU.IsNone && iamUserId != null)
             {
                 if (!hasPpysbBinding)
-                    await target.reply("ta还没有绑定ppy.sb账户呢。");
+                    await target.Treply("account.other_ppysb_not_bound");
                 else
-                    await target.reply("被办了。");
+                    await target.Treply("account.banned");
                 return null;
             }
             else if (!atOSU.IsNone && iamUserId == null)
@@ -282,7 +282,7 @@ namespace KanonBot.Functions
                 var onlineUser = await API.PPYSB.Client.GetUser(username);
                 if (onlineUser == null)
                 {
-                    await target.reply("猫猫没有找到此用户。");
+                    await target.Treply("error.user_not_found");
                     return null;
                 }
 

@@ -1,0 +1,299 @@
+// 尺寸
+$panel-width: 1950px;
+$panel-height: 1088px;
+$bg-left: 1px;
+$bg-width: 1948px;
+$border-radius-panel: 20px;
+$border-radius-circle: 50%;
+
+// 字体栈
+$font-fredoka: "Fredoka", "Resource Han Rounded CN VF", "Noto Sans Arabic", sans-serif;
+$font-mizolet: "Mizolet", "Resource Han Rounded CN VF", "Noto Sans Arabic", sans-serif;
+
+// z-index 层级表（Map）
+$z-layers: (
+  bg-blur: 1,
+  bg-shade: 2,
+  panel-main: 3,
+  small-bg: 4,
+  ranking-blur: 4,
+  ranking: 5,
+  status: 5,
+  diff_ring: 4,
+  avatar: 4,
+  mods: 4,
+  text: 4
+);
+
+@function z($key) {
+  @return map-get($z-layers, $key);
+}
+
+// Mixin：绝对定位
+@mixin absolute($left: auto, $top: auto, $right: auto, $bottom: auto) {
+  position: absolute;
+  @if $left != auto {
+    left: $left;
+  }
+  @if $top != auto {
+    top: $top;
+  }
+  @if $right != auto {
+    right: $right;
+  }
+  @if $bottom != auto {
+    bottom: $bottom;
+  }
+}
+
+// Mixin：全尺寸覆盖（配合背景层）
+@mixin full-cover($left: $bg-left, $top: 0, $w: $bg-width, $h: $panel-height) {
+  @include absolute($left, $top);
+  width: $w;
+  height: $h;
+  border-radius: $border-radius-panel;
+}
+
+// Mixin：圆形元素
+@mixin circle($size) {
+  width: $size;
+  height: $size;
+  border-radius: $border-radius-circle;
+}
+
+// 占位符：通用 inset 覆盖
+%inset-fill {
+  position: absolute;
+  inset: 0;
+}
+
+// 基础重置
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #000;
+}
+
+body {
+  display: flex;
+  width: $panel-width;
+  height: $panel-height;
+  overflow: hidden;
+  border-radius: $border-radius-panel;
+}
+
+// 背景层
+#backgroundBlur {
+  @include full-cover;
+  object-fit: cover;
+  filter: blur(5px);
+  transform: scale(1.06);
+  transform-origin: center;
+  z-index: z(bg-blur);
+}
+
+#backgroundShade {
+  @include full-cover;
+  background: rgba(0, 0, 0, 0.33);
+  z-index: z(bg-shade);
+}
+
+// 主面板
+#panelMain {
+  @include absolute(0, 0);
+  width: $panel-width;
+  height: $panel-height;
+  z-index: z(panel-main);
+}
+
+// 小背景图壳
+#smallBgShell {
+  @include absolute(27px, 34px);
+  width: 433px;
+  height: 296px;
+  overflow: hidden;
+  border-radius: $border-radius-panel;
+  z-index: z(small-bg);
+
+  #smallBgImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+// 服务器文字
+#serverText {
+  @include absolute($right: 37px, $bottom: 27px);
+  z-index: z(text);
+  font-family: $font-fredoka;
+  font-size: 60px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: rgba(150, 150, 150, 0.25);
+  mix-blend-mode: lighten;
+}
+
+// 难度环
+#difficultyRingCompose {
+  @include absolute(512px, 257px);
+  @include circle(65px);
+  z-index: z(diff_ring);
+  overflow: hidden;
+  
+  // 难度环内部子元素共用 %inset-fill
+  %ring-layer {
+    @extend %inset-fill;
+  }
+  
+  .difficulty-ring-fill {
+    @extend %ring-layer;
+    inset: 8%;
+    border-radius: $border-radius-circle;
+    background: var(--ring-color, #000000);
+    overflow: hidden;
+  }
+  
+  .difficulty-ring-cover {
+    @extend %ring-layer;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.5;
+  }
+  
+  .difficulty-ring-frame {
+    @extend %ring-layer;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    mix-blend-mode: lighten;
+  }
+}
+
+// 状态图标
+#statusIcon {
+  @include absolute(415px, 16px);
+  width: 71px;
+  height: 71px;
+  z-index: z(status);
+}
+
+// 排名（模糊光晕 + 图片）
+#rankingBlur {
+  @include absolute(825px, 755px);
+  width: 300px;
+  height: 300px;
+  object-fit: contain;
+  filter: blur(40px);
+  opacity: 0.2;
+  z-index: z(ranking-blur);
+}
+
+#rankingImage {
+  @include absolute(913px, 874px);
+  width: 124px;
+  height: 62px;
+  object-fit: contain;
+  z-index: z(ranking);
+}
+
+// Mods 层
+.mods-layer {
+  @include absolute(0, 0);
+  width: $panel-width;
+  height: $panel-height;
+  z-index: z(mods);
+}
+
+.mod-slot {
+  position: absolute;
+  width: 200px;
+  height: 90px;
+
+  .mod-image {
+    @include absolute(0, 0);
+    width: 200px;
+    height: auto;
+    display: block;
+  }
+
+  .mod-fallback-text {
+    @include absolute(125px, 31px);
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    font-family: $font-mizolet;
+    font-size: 40px;
+    line-height: 0.82;
+    color: #ffffff;
+    text-transform: uppercase;
+    white-space: nowrap;
+    text-shadow: 0 3px 0 #000000;
+  }
+
+  .mod-setting-bar {
+    @include absolute(35px, 50px);
+    width: 130px;
+    height: 10px;
+    border-radius: 7px;
+    background: var(--overlay-color, #666);
+    opacity: 0.7;
+    mix-blend-mode: multiply;
+  }
+
+  .mod-setting-text {
+    @include absolute(100px, 54px);
+    transform: translate(-50%, -50%);
+    font-family: $font-mizolet;
+    font-size: 8px;
+    line-height: 0.82;
+    color: #d3d3d3;
+    white-space: nowrap;
+  }
+}
+
+// 头像
+#avatarImage {
+  @include absolute(40px, 425px);
+  @include circle(80px);
+  object-fit: cover;
+  border: 2px solid #f5f5f5;
+  z-index: z(avatar);
+  background-color: #f5f5f5;
+}
+
+// 共用基础样式
+%macro-base {
+  position: absolute;
+  z-index: z(text);
+  line-height: 0.82;
+  white-space: nowrap;
+}
+
+.duo {
+  @extend %macro-base;
+  color: var(--text-color, #fff);
+  filter: var(--main-filter, none);
+  text-shadow: 0 var(--shadow-y, 3px) 0 var(--shadow-color, #000);
+}
+
+.single {
+  @extend %macro-base;
+}
+
+.unit-pair {
+  @extend %macro-base;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--gap, 0px);
+
+  .value {
+    color: var(--value-color, #fff);
+  }
+
+  .unit {
+    color: var(--unit-color, #ccc);
+  }
+}

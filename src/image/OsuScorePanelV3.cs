@@ -6,9 +6,9 @@ using SixLabors.ImageSharp.Drawing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using static KanonBot.Image.Fonts;
 using Img = SixLabors.ImageSharp.Image;
 using OSU = KanonBot.API.OSU;
-using static KanonBot.Image.Fonts;
 
 namespace KanonBot.Image
 {
@@ -24,20 +24,24 @@ namespace KanonBot.Image
             using var avatar = await Utils.LoadOrDownloadAvatar(data.scoreInfo.User!);
 
             //panel
-            using var panel = data.scoreInfo.Passed ?
-                await Img.LoadAsync("./work/panelv2/score_panel/Score_v3_Passed_Panel.png") :
-                await Img.LoadAsync("./work/panelv2/score_panel/Score_v3_Failed_Panel.png");
+            using var panel = data.scoreInfo.Passed
+                ? await Img.LoadAsync("./work/panelv2/score_panel/Score_v3_Passed_Panel.png")
+                : await Img.LoadAsync("./work/panelv2/score_panel/Score_v3_Failed_Panel.png");
             if (data.scoreInfo.Passed)
                 scoreimg.Mutate(x => x.DrawImage(panel, 1));
             else
                 scoreimg.Mutate(x => x.DrawImage(panel, 1));
 
-
-            var bg = await Utils.LoadOrDownloadBackground(data.scoreInfo.Beatmap!.BeatmapsetId, data.scoreInfo.Beatmap.BeatmapId);
+            var bg = await Utils.LoadOrDownloadBackground(
+                data.scoreInfo.Beatmap!.BeatmapsetId,
+                data.scoreInfo.Beatmap.BeatmapId
+            );
             bg ??= await Img.LoadAsync<Rgba32>("./work/legacy/load-failed-img.png");
 
             using var bgarea = new Image<Rgba32>(631, 444);
-            bgarea.Mutate(x => x.Fill(Color.ParseHex("#f2f2f2")).RoundCorner(new Size(631, 444), 20));
+            bgarea.Mutate(
+                x => x.Fill(Color.ParseHex("#f2f2f2")).RoundCorner(new Size(631, 444), 20)
+            );
 
             //beatmap status
             using var bgstatus = new Image<Rgba32>(619, 80);
@@ -61,7 +65,7 @@ namespace KanonBot.Image
 
             //beatmap difficulty icon
             using var osuscoremode_icon = await Utils.ReadImageRgba(
-                        $"./work/panelv2/icons/mode_icon/score/{data.scoreInfo.Mode.ToStr()}.png"
+                $"./work/panelv2/icons/mode_icon/score/{data.scoreInfo.Mode.ToStr()}.png"
             );
             osuscoremode_icon.Mutate(x => x.Resize(110, 110));
             var modeC = Utils.ForStarDifficulty(data.ppInfo!.star);
@@ -77,18 +81,16 @@ namespace KanonBot.Image
                         }
                     })
             );
-            scoreimg.Mutate(
-                        x =>
-                            x.DrawImage(osuscoremode_icon, new Point(794, 381), 1)
-                    );
+            scoreimg.Mutate(x => x.DrawImage(osuscoremode_icon, new Point(794, 381), 1));
 
             // avatar
             avatar.Mutate(x => x.Resize(100, 100).RoundCorner(new Size(100, 100), 50));
             // 批处理 avatar 相关的操作：填充+绘制
-            scoreimg.Mutate(x => x
-                .Fill(Color.White, new EllipsePolygon(140, 618, 105, 105))
-                .DrawImage(avatar, new Point(90, 568), 1));
-
+            scoreimg.Mutate(
+                x =>
+                    x.Fill(Color.White, new EllipsePolygon(140, 618, 105, 105))
+                        .DrawImage(avatar, new Point(90, 568), 1)
+            );
 
             //设定textOption/drawOption
             var textOptions = new RichTextOptions(TorusSemiBold.Get(120))
@@ -98,35 +100,50 @@ namespace KanonBot.Image
             };
 
             //Beatmap infos
-            var temp_string = Utils.TruncateTextByWidth(data.scoreInfo.Beatmapset!.Title, textOptions, 1130);
+            var temp_string = Utils.TruncateTextByWidth(
+                data.scoreInfo.Beatmapset!.Title,
+                textOptions,
+                1130
+            );
             textOptions.Font = TorusSemiBold.Get(100);
             textOptions.Origin = new PointF(769, 160);
             // 批处理标题的两层绘制（阴影+主文本）
-            scoreimg.Mutate(x => x
-                .DrawText(textOptions, temp_string, Color.ParseHex("#404040"))
-            );
+            scoreimg.Mutate(x => x.DrawText(textOptions, temp_string, Color.ParseHex("#404040")));
             textOptions.Origin = new PointF(769, 158);
-            scoreimg.Mutate(x => x
-                .DrawText(textOptions, temp_string, Color.ParseHex("#4d4d4d"))
-            );
+            scoreimg.Mutate(x => x.DrawText(textOptions, temp_string, Color.ParseHex("#4d4d4d")));
 
             //creator
-            temp_string = Utils.TruncateTextByWidth(data.scoreInfo.Beatmapset.Creator, textOptions, 810);
+            temp_string = Utils.TruncateTextByWidth(
+                data.scoreInfo.Beatmapset.Creator,
+                textOptions,
+                810
+            );
             textOptions.Font = TorusRegular.Get(60);
             textOptions.Origin = new PointF(1070, 234);
             scoreimg.Mutate(x => x.DrawText(textOptions, temp_string, Color.ParseHex("#e36a79")));
 
             // artist
-            temp_string = Utils.TruncateTextByWidth(data.scoreInfo.Beatmapset.Artist, textOptions, 450);
+            temp_string = Utils.TruncateTextByWidth(
+                data.scoreInfo.Beatmapset.Artist,
+                textOptions,
+                450
+            );
             textOptions.Origin = new PointF(1005, 322);
             scoreimg.Mutate(x => x.DrawText(textOptions, temp_string, Color.ParseHex("#6cac9c")));
             // beatmap_id
             textOptions.HorizontalAlignment = HorizontalAlignment.Right;
             textOptions.Font = TorusRegular.Get(50);
             textOptions.Origin = new PointF(1770, 322);
-            scoreimg.Mutate(x => x.DrawText(textOptions, data.scoreInfo.Beatmap.BeatmapId.ToString(), Color.ParseHex("#5872df")));
+            scoreimg.Mutate(
+                x =>
+                    x.DrawText(
+                        textOptions,
+                        data.scoreInfo.Beatmap.BeatmapId.ToString(),
+                        Color.ParseHex("#5872df")
+                    )
+            );
 
-            //stars 
+            //stars
             textOptions.HorizontalAlignment = HorizontalAlignment.Left;
             textOptions.Font = TorusSemiBold.Get(50);
 
@@ -136,7 +153,7 @@ namespace KanonBot.Image
             // 批处理 stars 的两层绘制（阴影+主文本）
             textOptions.Origin = new PointF(924, 442);
             scoreimg.Mutate(x => x.DrawText(textOptions, stars, Color.ParseHex("#3a3b3c")));
-            
+
             textOptions.Origin = new PointF(924, 441);
             scoreimg.Mutate(x => x.DrawText(textOptions, stars, Color.ParseHex("#f1c959")));
 
@@ -146,17 +163,14 @@ namespace KanonBot.Image
             var stars_d = data.ppInfo.star - Math.Truncate(data.ppInfo.star);
             int stars_pos = 924 + (int)stars_measure.Width + 10;
             using var stars_icon = await Utils.ReadImageRgba(
-                    $"./work/panelv2/score_panel/Star.png"
+                $"./work/panelv2/score_panel/Star.png"
             );
             stars_icon.Mutate(x => x.Resize(30, 30));
             if (stars_i < 19)
             {
                 while (stars_i > 0)
                 {
-                    scoreimg.Mutate(
-                            x =>
-                                x.DrawImage(stars_icon, new Point(stars_pos, 401), 1)
-                        );
+                    scoreimg.Mutate(x => x.DrawImage(stars_icon, new Point(stars_pos, 401), 1));
                     stars_pos += 34;
                     stars_i--;
                 }
@@ -165,112 +179,151 @@ namespace KanonBot.Image
             var stars_d_t_1 = ((30 - stars_d_t) / 2);
             stars_icon.Mutate(x => x.Resize(stars_d_t, stars_d_t));
             scoreimg.Mutate(
-                        x =>
-                            x.DrawImage(stars_icon, new Point(stars_pos + stars_d_t_1, 401 + stars_d_t_1), 1)
-                    );
+                x =>
+                    x.DrawImage(
+                        stars_icon,
+                        new Point(stars_pos + stars_d_t_1, 401 + stars_d_t_1),
+                        1
+                    )
+            );
 
             //version
             textOptions.Font = TorusRegular.Get(40);
 
-            temp_string = Utils.TruncateTextByWidth(data.scoreInfo.Beatmap.Version, textOptions, 740);
+            temp_string = Utils.TruncateTextByWidth(
+                data.scoreInfo.Beatmap.Version,
+                textOptions,
+                740
+            );
 
             // 批处理版本号的两层绘制（阴影+主文本）
             textOptions.Origin = new PointF(924, 480);
-            scoreimg.Mutate(x => x.DrawText(textOptions, $"Version: {temp_string}", Color.ParseHex("#3a3b3c")));
+            scoreimg.Mutate(
+                x => x.DrawText(textOptions, $"Version: {temp_string}", Color.ParseHex("#3a3b3c"))
+            );
 
             textOptions.Origin = new PointF(924, 478);
-            scoreimg.Mutate(x => x.DrawText(textOptions, $"Version: {temp_string}", Color.ParseHex("#333333")));
+            scoreimg.Mutate(
+                x => x.DrawText(textOptions, $"Version: {temp_string}", Color.ParseHex("#333333"))
+            );
 
-            //username 
+            //username
             textOptions.Font = TorusSemiBold.Get(50);
             textOptions.Origin = new PointF(235, 630);
-            scoreimg.Mutate(x => x.DrawText(textOptions, data.scoreInfo.User!.Username, Color.ParseHex("#333333")));
+            scoreimg.Mutate(
+                x =>
+                    x.DrawText(
+                        textOptions,
+                        data.scoreInfo.User!.Username,
+                        Color.ParseHex("#333333")
+                    )
+            );
 
             //archived at
             textOptions.Font = TorusRegular.Get(36);
             textOptions.Origin = new PointF(235, 664);
             scoreimg.Mutate(
                 x =>
-                    x.DrawText(textOptions, data.scoreInfo.EndedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm"), Color.ParseHex("#333333"))
+                    x.DrawText(
+                        textOptions,
+                        data.scoreInfo.EndedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm"),
+                        Color.ParseHex("#333333")
+                    )
             );
 
             //draw mods
             if (data.scoreInfo.Mods.Length > 0)
             {
-                var username_measure = TextMeasurer.MeasureSize(data.scoreInfo.User!.Username, textOptions);
-                var archived_time_measure = TextMeasurer.MeasureSize(data.scoreInfo.EndedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm"), textOptions);
-                var ModAreaStartPos = 90 + 198 + (int)Math.Max(username_measure.Width, archived_time_measure.Width);
+                var username_measure = TextMeasurer.MeasureSize(
+                    data.scoreInfo.User!.Username,
+                    textOptions
+                );
+                var archived_time_measure = TextMeasurer.MeasureSize(
+                    data.scoreInfo.EndedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm"),
+                    textOptions
+                );
+                var ModAreaStartPos =
+                    90 + 198 + (int)Math.Max(username_measure.Width, archived_time_measure.Width);
                 foreach (var x in data.scoreInfo.Mods)
                 {
-                    if (!File.Exists($"./work/mods_v2/2x/{x.Acronym}.png")) continue;
+                    if (!File.Exists($"./work/mods_v2/2x/{x.Acronym}.png"))
+                        continue;
                     using var modicon = await Img.LoadAsync($"./work/mods_v2/2x/{x.Acronym}.png");
                     modicon.Mutate(x => x.Resize(90, 90));
-                    scoreimg.Mutate(
-                                x =>
-                                    x.DrawImage(
-                                        modicon,
-                                        new Point(ModAreaStartPos, 573),
-                                        1
-                                    )
-                            );
+                    scoreimg.Mutate(x => x.DrawImage(modicon, new Point(ModAreaStartPos, 573), 1));
                     ModAreaStartPos += 110;
                 }
             }
 
-            //main pp 
+            //main pp
             textOptions.HorizontalAlignment = HorizontalAlignment.Right;
             textOptions.Font = TorusSemiBold.Get(80);
             textOptions.Origin = new PointF(2745, 655);
-            scoreimg.Mutate(
-                x =>
-                    x.DrawText(textOptions, "pp", Color.ParseHex("#cf93ae"))
-            );
+            scoreimg.Mutate(x => x.DrawText(textOptions, "pp", Color.ParseHex("#cf93ae")));
             var pp_measure = TextMeasurer.MeasureSize("pp", textOptions);
             textOptions.Origin = new PointF(2745 - pp_measure.Width, 655);
             scoreimg.Mutate(
                 x =>
-                    x.DrawText(textOptions, ((int)data.ppInfo.ppStat.total).ToString(), Color.ParseHex("#fc65a9"))
+                    x.DrawText(
+                        textOptions,
+                        ((int)data.ppInfo.ppStat.total).ToString(),
+                        Color.ParseHex("#fc65a9")
+                    )
             );
-
 
             //length graph 70x? -50    max 2708
             textOptions.Font = TorusRegular.Get(30);
             textOptions.Origin = new PointF(2750, 747);
-            var beatmap_length_text = Utils.Duration2TimeStringForScoreV3(data.scoreInfo.Beatmap.TotalLength);
-            var beatmap_length_text_measure = TextMeasurer.MeasureSize(beatmap_length_text, textOptions);
+            var beatmap_length_text = Utils.Duration2TimeStringForScoreV3(
+                data.scoreInfo.Beatmap.TotalLength
+            );
+            var beatmap_length_text_measure = TextMeasurer.MeasureSize(
+                beatmap_length_text,
+                textOptions
+            );
             var length_graph_length = 2708;
 
             if (!data.scoreInfo.Passed)
             {
                 if (ppInfo.maxCombo != null)
                 {
-                    double online_obj_count = (double)(data.scoreInfo.Beatmap.CountCircles + data.scoreInfo.Beatmap.CountSliders + data.scoreInfo.Beatmap.CountSpinners);
+                    double online_obj_count = (double)(
+                        data.scoreInfo.Beatmap.CountCircles
+                        + data.scoreInfo.Beatmap.CountSliders
+                        + data.scoreInfo.Beatmap.CountSpinners
+                    );
                     double score_obj_count = 0;
 
                     if (data.scoreInfo.Mode == OSU.Mode.Mania)
                     {
-                        score_obj_count = (int)(data.scoreInfo.Statistics.CountGeki
+                        score_obj_count = (int)(
+                            data.scoreInfo.Statistics.CountGeki
                             + data.scoreInfo.Statistics.CountKatu
                             + data.scoreInfo.Statistics.CountOk
                             + data.scoreInfo.Statistics.CountMiss
                             + data.scoreInfo.Statistics.CountMeh
-                            + data.scoreInfo.Statistics.CountGreat);
+                            + data.scoreInfo.Statistics.CountGreat
+                        );
                     }
                     else
                     {
-                        score_obj_count = (int)(data.scoreInfo.Statistics.CountOk
+                        score_obj_count = (int)(
+                            data.scoreInfo.Statistics.CountOk
                             + data.scoreInfo.Statistics.CountMiss
                             + data.scoreInfo.Statistics.CountMeh
-                            + data.scoreInfo.Statistics.CountGreat);
+                            + data.scoreInfo.Statistics.CountGreat
+                        );
                     }
 
-                    length_graph_length = (int)((2708.0 - (double)beatmap_length_text_measure.Width - 60.0) * (score_obj_count / online_obj_count));
+                    length_graph_length = (int)(
+                        (2708.0 - (double)beatmap_length_text_measure.Width - 60.0)
+                        * (score_obj_count / online_obj_count)
+                    );
                 }
                 else
                 {
                     length_graph_length = 2708 - (int)beatmap_length_text_measure.Width - 60;
                 }
-
             }
             length_graph_length = Math.Max(85, length_graph_length);
 
@@ -278,45 +331,72 @@ namespace KanonBot.Image
 
             if (data.scoreInfo.Passed)
             {
-                length_graph_area.Mutate(x => x.Fill(Color.ParseHex("#c5e8f7")).RoundCorner(new Size(length_graph_length, 50), 26));
+                length_graph_area.Mutate(
+                    x =>
+                        x.Fill(Color.ParseHex("#c5e8f7"))
+                            .RoundCorner(new Size(length_graph_length, 50), 26)
+                );
             }
             else
             {
-                length_graph_area.Mutate(x => x.Fill(Color.ParseHex("#cc4e53")).RoundCorner(new Size(length_graph_length, 50), 26));
+                length_graph_area.Mutate(
+                    x =>
+                        x.Fill(Color.ParseHex("#cc4e53"))
+                            .RoundCorner(new Size(length_graph_length, 50), 26)
+                );
             }
 
             scoreimg.Mutate(x => x.DrawImage(length_graph_area, new Point(70, 706), 1));
 
             scoreimg.Mutate(
                 x =>
-                    x.DrawText(textOptions, beatmap_length_text, data.scoreInfo.Passed ? Color.ParseHex("#311314") : Color.ParseHex("#3d3d3d"))
+                    x.DrawText(
+                        textOptions,
+                        beatmap_length_text,
+                        data.scoreInfo.Passed
+                            ? Color.ParseHex("#311314")
+                            : Color.ParseHex("#3d3d3d")
+                    )
             );
             textOptions.Origin = new PointF(2750, 746);
             scoreimg.Mutate(
                 x =>
-                    x.DrawText(textOptions, beatmap_length_text, data.scoreInfo.Passed ? Color.ParseHex("#585858") : Color.ParseHex("#333333"))
+                    x.DrawText(
+                        textOptions,
+                        beatmap_length_text,
+                        data.scoreInfo.Passed
+                            ? Color.ParseHex("#585858")
+                            : Color.ParseHex("#333333")
+                    )
             );
             if (!data.scoreInfo.Passed)
             {
                 textOptions.Font = TorusSemiBold.Get(80);
                 textOptions.Origin = new PointF(length_graph_length + 120, 770);
-                scoreimg.Mutate(
-                    x =>
-                        x.DrawText(textOptions, "×", Color.ParseHex("#cc4e53"))
-                );
+                scoreimg.Mutate(x => x.DrawText(textOptions, "×", Color.ParseHex("#cc4e53")));
             }
             textOptions.HorizontalAlignment = HorizontalAlignment.Left;
             textOptions.Font = TorusRegular.Get(30);
             textOptions.Origin = new PointF(90, 747);
             scoreimg.Mutate(
                 x =>
-                    x.DrawText(textOptions, data.scoreInfo.Passed ? "Finish" : "Fail", Color.ParseHex("#311314"))
+                    x.DrawText(
+                        textOptions,
+                        data.scoreInfo.Passed ? "Finish" : "Fail",
+                        Color.ParseHex("#311314")
+                    )
             );
 
             textOptions.Origin = new PointF(90, 746);
             scoreimg.Mutate(
                 x =>
-                    x.DrawText(textOptions, data.scoreInfo.Passed ? "Finish" : "Fail", data.scoreInfo.Passed ? Color.ParseHex("#585858") : Color.ParseHex("#e6e6e6"))
+                    x.DrawText(
+                        textOptions,
+                        data.scoreInfo.Passed ? "Finish" : "Fail",
+                        data.scoreInfo.Passed
+                            ? Color.ParseHex("#585858")
+                            : Color.ParseHex("#e6e6e6")
+                    )
             );
 
             //main pp details
@@ -326,49 +406,40 @@ namespace KanonBot.Image
             textOptions.Origin = new PointF(mainpp_details_pos_base, pp_details_posy_base);
             //aim
             var mainpp_text = ((int)data.ppInfo.ppStat.aim!).ToString();
-            scoreimg.Mutate(
-                x =>
-                    x.DrawText(textOptions, mainpp_text, Color.ParseHex("#fc65a9"))
-            );
+            scoreimg.Mutate(x => x.DrawText(textOptions, mainpp_text, Color.ParseHex("#fc65a9")));
 
             pp_measure = TextMeasurer.MeasureSize(mainpp_text, textOptions);
-            textOptions.Origin = new PointF(mainpp_details_pos_base + pp_measure.Width, pp_details_posy_base);
-            scoreimg.Mutate(
-                x =>
-                    x.DrawText(textOptions, "pp", Color.ParseHex("#cf93ae"))
+            textOptions.Origin = new PointF(
+                mainpp_details_pos_base + pp_measure.Width,
+                pp_details_posy_base
             );
+            scoreimg.Mutate(x => x.DrawText(textOptions, "pp", Color.ParseHex("#cf93ae")));
 
             //spd
             mainpp_details_pos_base = 2401;
             mainpp_text = ((int)data.ppInfo.ppStat.speed!).ToString();
             textOptions.Origin = new PointF(mainpp_details_pos_base, pp_details_posy_base);
-            scoreimg.Mutate(
-                x =>
-                    x.DrawText(textOptions, mainpp_text, Color.ParseHex("#fc65a9"))
-            );
+            scoreimg.Mutate(x => x.DrawText(textOptions, mainpp_text, Color.ParseHex("#fc65a9")));
 
             pp_measure = TextMeasurer.MeasureSize(mainpp_text, textOptions);
-            textOptions.Origin = new PointF(mainpp_details_pos_base + pp_measure.Width, pp_details_posy_base);
-            scoreimg.Mutate(
-                x =>
-                    x.DrawText(textOptions, "pp", Color.ParseHex("#cf93ae"))
+            textOptions.Origin = new PointF(
+                mainpp_details_pos_base + pp_measure.Width,
+                pp_details_posy_base
             );
+            scoreimg.Mutate(x => x.DrawText(textOptions, "pp", Color.ParseHex("#cf93ae")));
 
             //spd
             mainpp_details_pos_base = 2596;
             mainpp_text = ((int)data.ppInfo.ppStat.acc!).ToString();
             textOptions.Origin = new PointF(mainpp_details_pos_base, pp_details_posy_base);
-            scoreimg.Mutate(
-                x =>
-                    x.DrawText(textOptions, mainpp_text, Color.ParseHex("#fc65a9"))
-            );
+            scoreimg.Mutate(x => x.DrawText(textOptions, mainpp_text, Color.ParseHex("#fc65a9")));
 
             pp_measure = TextMeasurer.MeasureSize(mainpp_text, textOptions);
-            textOptions.Origin = new PointF(mainpp_details_pos_base + pp_measure.Width, pp_details_posy_base);
-            scoreimg.Mutate(
-                x =>
-                    x.DrawText(textOptions, "pp", Color.ParseHex("#cf93ae"))
+            textOptions.Origin = new PointF(
+                mainpp_details_pos_base + pp_measure.Width,
+                pp_details_posy_base
             );
+            scoreimg.Mutate(x => x.DrawText(textOptions, "pp", Color.ParseHex("#cf93ae")));
 
             //prediction pps
             mainpp_details_pos_base = 108;
@@ -378,16 +449,15 @@ namespace KanonBot.Image
                 mainpp_text = ((int)data.ppInfo.ppStats![4 - i].total).ToString();
                 textOptions.Origin = new PointF(mainpp_details_pos_base, pp_details_posy_base);
                 scoreimg.Mutate(
-                    x =>
-                        x.DrawText(textOptions, mainpp_text, Color.ParseHex("#fc65a9"))
+                    x => x.DrawText(textOptions, mainpp_text, Color.ParseHex("#fc65a9"))
                 );
 
                 pp_measure = TextMeasurer.MeasureSize(mainpp_text, textOptions);
-                textOptions.Origin = new PointF(mainpp_details_pos_base + pp_measure.Width, pp_details_posy_base);
-                scoreimg.Mutate(
-                    x =>
-                        x.DrawText(textOptions, "pp", Color.ParseHex("#cf93ae"))
+                textOptions.Origin = new PointF(
+                    mainpp_details_pos_base + pp_measure.Width,
+                    pp_details_posy_base
                 );
+                scoreimg.Mutate(x => x.DrawText(textOptions, "pp", Color.ParseHex("#cf93ae")));
                 mainpp_details_pos_base += 204;
             }
 
@@ -397,43 +467,25 @@ namespace KanonBot.Image
             pp_details_posy_base = 831;
             mainpp_text = ((int)data.ppInfo.ppStats![5].total).ToString();
             textOptions.Origin = new PointF(mainpp_details_pos_base, pp_details_posy_base);
-            scoreimg.Mutate(
-                x =>
-                    x.DrawText(textOptions, mainpp_text, Color.ParseHex("#3b3b3b"))
-            );
+            scoreimg.Mutate(x => x.DrawText(textOptions, mainpp_text, Color.ParseHex("#3b3b3b")));
 
             pp_measure = TextMeasurer.MeasureSize(mainpp_text, textOptions);
-            textOptions.Origin = new PointF(mainpp_details_pos_base + pp_measure.Width, pp_details_posy_base);
-            scoreimg.Mutate(
-                x =>
-                    x.DrawText(textOptions, "pp", Color.ParseHex("#3b3b3b"))
+            textOptions.Origin = new PointF(
+                mainpp_details_pos_base + pp_measure.Width,
+                pp_details_posy_base
             );
+            scoreimg.Mutate(x => x.DrawText(textOptions, "pp", Color.ParseHex("#3b3b3b")));
             pp_details_posy_base = 830;
             mainpp_text = ((int)data.ppInfo.ppStats![5].total).ToString();
             textOptions.Origin = new PointF(mainpp_details_pos_base, pp_details_posy_base);
-            scoreimg.Mutate(
-                x =>
-                    x.DrawText(textOptions, mainpp_text, Color.ParseHex("#fc65a9"))
-            );
+            scoreimg.Mutate(x => x.DrawText(textOptions, mainpp_text, Color.ParseHex("#fc65a9")));
 
             pp_measure = TextMeasurer.MeasureSize(mainpp_text, textOptions);
-            textOptions.Origin = new PointF(mainpp_details_pos_base + pp_measure.Width, pp_details_posy_base);
-            scoreimg.Mutate(
-                x =>
-                    x.DrawText(textOptions, "pp", Color.ParseHex("#cf93ae"))
+            textOptions.Origin = new PointF(
+                mainpp_details_pos_base + pp_measure.Width,
+                pp_details_posy_base
             );
-
-
-
-
-
-
-
-
-            
-
-
-
+            scoreimg.Mutate(x => x.DrawText(textOptions, "pp", Color.ParseHex("#cf93ae")));
 
             return scoreimg;
         }

@@ -1,49 +1,61 @@
+using System;
 using System.Globalization;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace KanonBot.Serializer;
 
-public sealed class FlexibleDateTimeOffsetConverter : JsonConverter<DateTimeOffset?>
+/// <summary>
+/// 日期时间转换器（支持秒/毫秒时间戳、字符串时间戳、ISO日期）
+/// 只需声明为 DateTimeOffset，框架会自动完美支持 DateTimeOffset?
+/// </summary>
+public sealed class FlexibleDateTimeOffsetConverter : JsonConverter<DateTimeOffset>
 {
-    public override DateTimeOffset? ReadJson(
-        JsonReader reader,
-        Type objectType,
-        DateTimeOffset? existingValue,
-        bool hasExistingValue,
-        JsonSerializer serializer
+    public override DateTimeOffset Read(
+        ref Utf8JsonReader reader,
+        Type typeToConvert,
+        JsonSerializerOptions options
     )
     {
         return reader.TokenType switch
         {
-            JsonToken.Null => null,
-            JsonToken.Integer => ParseUnixTimestamp(Convert.ToInt64(reader.Value, CultureInfo.InvariantCulture)),
-            JsonToken.String => ParseString(reader.Value?.ToString()),
-            JsonToken.Date => ParseDateToken(reader.Value),
-            _ => throw new JsonSerializationException(
-                $"Unsupported date token {reader.TokenType} for timestamp field."
-            )
+            JsonTokenType.Number => ParseUnixTimestamp(reader.GetInt64()),
+            JsonTokenType.String => ParseString(reader.GetString()),
+            JsonTokenType.Null => default,
+
+            _
+                => throw new JsonException(
+                    $"Unsupported date token {reader.TokenType} for timestamp field."
+                )
         };
     }
 
-    public override void WriteJson(JsonWriter writer, DateTimeOffset? value, JsonSerializer serializer)
+    public override void Write(
+        Utf8JsonWriter writer,
+        DateTimeOffset value,
+        JsonSerializerOptions options
+    )
     {
-        if (value == null)
-        {
-            writer.WriteNull();
-            return;
-        }
-
-        writer.WriteValue(value.Value.UtcDateTime);
+        writer.WriteStringValue(value.ToUniversalTime());
     }
 
-    private static DateTimeOffset? ParseString(string? value)
+    private static DateTimeOffset ParseString(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))
-            return null;
+            return default;
 
-        if (long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var unixTimestamp))
+        // 1. 尝试将字符串形式的时间戳（例如 "1716336000"）转化为 long
+        if (
+            long.TryParse(
+                value,
+                NumberStyles.Integer,
+                CultureInfo.InvariantCulture,
+                out var unixTimestamp
+            )
+        )
             return ParseUnixTimestamp(unixTimestamp);
 
+        // 2. 尝试解析标准的 ISO 字符串日期
         if (
             DateTimeOffset.TryParse(
                 value,
@@ -52,24 +64,11 @@ public sealed class FlexibleDateTimeOffsetConverter : JsonConverter<DateTimeOffs
                 out var parsed
             )
         )
-            return parsed;
-
-        throw new JsonSerializationException($"Invalid timestamp value '{value}'.");
-    }
-
-    private static DateTimeOffset? ParseDateToken(object? value)
-    {
-        return value switch
         {
-            null => null,
-            DateTimeOffset dateTimeOffset => dateTimeOffset.ToUniversalTime(),
-            DateTime dateTime => new DateTimeOffset(
-                dateTime.Kind == DateTimeKind.Unspecified
-                    ? DateTime.SpecifyKind(dateTime, DateTimeKind.Utc)
-                    : dateTime
-            ).ToUniversalTime(),
-            _ => throw new JsonSerializationException($"Invalid date token value '{value}'.")
-        };
+            return parsed;
+        }
+
+        throw new JsonException($"Invalid timestamp value '{value}'.");
     }
 
     private static DateTimeOffset ParseUnixTimestamp(long value)

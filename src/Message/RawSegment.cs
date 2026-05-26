@@ -1,37 +1,20 @@
-using KanonBot.Drivers;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 
 namespace KanonBot.Message;
 
-public class RawSegment : IMsgSegment, IEquatable<RawSegment>
+public record RawSegment(string type, Object value) : IMsgSegment
 {
-    public Object value { get; set; }
-    public string type { get; set; }
-    public RawSegment(string type, Object value)
+    public string Build() => value switch
     {
-        this.type = type;
-        this.value = value;
-    }
+        JsonObject j => $"<raw;{type}={j.ToJsonString()}>",
+        _ => $"<raw;{type}={value}>",
+    };
 
-    public string Build()
-    {
-        return value switch {
-            JObject j => $"<raw;{type}={j.ToString(Formatting.None)}>",
-            _ => $"<raw;{type}={value}>",
-        };
-    }
+    public virtual bool Equals(RawSegment? other) =>
+        other is not null && type == other.type && Equals(value, other.value);
 
-    public bool Equals(RawSegment? other)
-    {
-        return other != null && this.type == other.type && this.value == other.value;
-    }
+    public override int GetHashCode() => HashCode.Combine(type, value);
 
-    public bool Equals(IMsgSegment? other)
-    {
-        if (other is RawSegment r)
-            return this.Equals(r);
-        else
-            return false;
-    }
+    public bool Equals(IMsgSegment? other) => other is RawSegment r && Equals(r);
 }

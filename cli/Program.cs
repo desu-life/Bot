@@ -1,7 +1,7 @@
 
 using cli;
-using Flurl.Http.Newtonsoft;
 using KanonBot;
+using KanonBot.Serializer;
 
 Console.WriteLine("---KanonBot---");
 var configPath = "config.toml";
@@ -16,13 +16,13 @@ else
 }
 
 FlurlHttp
-    .Clients.UseNewtonsoft()
-    .WithDefaults(c =>
+    .Clients.WithDefaults(c =>
     {
         c.Settings.Redirects.Enabled = true;
         c.Settings.Redirects.MaxAutoRedirects = 10;
         c.Settings.Redirects.ForwardAuthorizationHeader = true;
         c.Settings.Redirects.AllowSecureToInsecure = true;
+        c.Settings.JsonSerializer = new Flurl.Http.Configuration.DefaultJsonSerializer(Json.Options);
     });
 
 var config = Config.inner;

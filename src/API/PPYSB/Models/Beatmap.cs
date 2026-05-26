@@ -2,78 +2,77 @@
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using KanonBot.Serializer;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NullValueHandling = Newtonsoft.Json.NullValueHandling;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 
 namespace KanonBot.API.PPYSB;
 
 public partial class Models
 {
     public class MapResponseV2 : ApiResponseV2 {
-        [JsonProperty("data")]
+        [JsonPropertyName("data")]
         public Beatmap Data { get; set; }
     }
 
     public class Beatmap {
-        [JsonProperty("md5")]
+        [JsonPropertyName("md5")]
         public string Md5 { get; set; }
 
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public long BeatmapId { get; set; }
 
-        [JsonProperty("set_id")]
+        [JsonPropertyName("set_id")]
         public long BeatmapsetId { get; set; }
 
-        [JsonProperty("artist")]
+        [JsonPropertyName("artist")]
         public string Artist { get; set; }
 
-        [JsonProperty("title")]
+        [JsonPropertyName("title")]
         public string Title { get; set; }
 
-        [JsonProperty("version")]
+        [JsonPropertyName("version")]
         public string Version { get; set; }
 
-        [JsonProperty("creator")]
+        [JsonPropertyName("creator")]
         public string Creator { get; set; }
 
-        [JsonProperty("last_update")]
+        [JsonPropertyName("last_update")]
         public DateTimeOffset LastUpdate { get; set; }
 
-        [JsonProperty("total_length")]
+        [JsonPropertyName("total_length")]
         public uint TotalLength { get; set; }
 
-        [JsonProperty("max_combo")]
+        [JsonPropertyName("max_combo")]
         public long MaxCombo { get; set; }
 
-        [JsonProperty("status")]
+        [JsonPropertyName("status")]
         public Status Status { get; set; }
 
-        [JsonProperty("plays")]
+        [JsonPropertyName("plays")]
         public long Plays { get; set; }
 
-        [JsonProperty("passes")]
+        [JsonPropertyName("passes")]
         public long Passes { get; set; }
 
-        [JsonProperty("mode")]
+        [JsonPropertyName("mode")]
         public Mode Mode { get; set; }
 
-        [JsonProperty("bpm")]
+        [JsonPropertyName("bpm")]
         public double BPM { get; set; }
 
-        [JsonProperty("cs")]
+        [JsonPropertyName("cs")]
         public double CS { get; set; }
 
-        [JsonProperty("od")]
+        [JsonPropertyName("od")]
         public double OD { get; set; }
 
-        [JsonProperty("ar")]
+        [JsonPropertyName("ar")]
         public double AR { get; set; }
 
-        [JsonProperty("hp")]
+        [JsonPropertyName("hp")]
         public double HP { get; set; }
 
-        [JsonProperty("diff")]
+        [JsonPropertyName("diff")]
         public double DifficultyRating { get; set; }
     }
 

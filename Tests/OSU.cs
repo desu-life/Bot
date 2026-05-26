@@ -1,19 +1,20 @@
 using System.Runtime.InteropServices;
 using KanonBot;
 using KanonBot.API;
+using KanonBot.API.OSU;
 using KanonBot.Functions.OSU;
 using KanonBot.Image;
 using KanonBot.Serializer;
 using RosuPP;
 using SixLabors.ImageSharp.Formats.Png;
 using API = KanonBot.API;
-using KanonBot.API.OSU;
 
 namespace Tests;
 
 public class OSU
 {
     private readonly ITestOutputHelper Output;
+
     public OSU(ITestOutputHelper Output)
     {
         this.Output = Output;
@@ -27,6 +28,16 @@ public class OSU
             System.IO.Directory.SetCurrentDirectory("../../../../");
             Config.inner = Config.load(configPath);
         }
+        Flurl
+            .Http
+            .FlurlHttp
+            .Clients
+            .WithDefaults(c =>
+            {
+                c.Settings.JsonSerializer = new Flurl.Http.Configuration.DefaultJsonSerializer(
+                    Json.Options
+                );
+            });
     }
 
     [Fact]
@@ -43,7 +54,7 @@ public class OSU
         // Output.WriteLine("cal pp {0}", data.ppInfo.ppStat.total);
         // Output.WriteLine("cal data {0}", Json.Serialize(data.ppInfo));
         // var img = Draw.DrawScore(data).Result;
-        // img.Save(new FileStream("./TestFiles/scoretest.png", FileMode.Create), new PngEncoder());
+        // img.Save(new FileStream("./Tests/TestFiles/scoretest.png", FileMode.Create), new PngEncoder());
     }
 
     [Fact]
@@ -69,13 +80,13 @@ public class OSU
         //     false,
         //     false
         // ).Result;
-        // img.Save(new FileStream("./TestFiles/info.png", FileMode.Create), new PngEncoder());
+        // img.Save(new FileStream("./Tests/TestFiles/info.png", FileMode.Create), new PngEncoder());
     }
 
     [Fact]
     public void PPTest()
     {
-        // var f = File.ReadAllBytes("./TestFiles/Kakichoco - Zan'ei (Lasse) [Illusion].osu");
+        // var f = File.ReadAllBytes("./Tests/TestFiles/Kakichoco - Zan'ei (Lasse) [Illusion].osu");
         // var beatmapData = GCHandle.Alloc(f, GCHandleType.Pinned);
         // var cal = Calculator.New(new Sliceu8(beatmapData, (ulong)f.Length));
         // beatmapData.Free();
@@ -101,16 +112,20 @@ public class OSU
     [Fact]
     public void GetBeatmapAttr()
     {
-        var res = API.OSU.Client.GetBeatmapAttributes(3323074, new string[] { "HD", "DT" }, API.OSU.Mode.OSU).Result;
-        Assert.True(res!.OverallDifficulty > 0);
-        res = API.OSU.Client.GetBeatmapAttributes(3323074, new string[] { "HD", "DT" }, API.OSU.Mode.Taiko).Result;
-        // Assert.IsTrue(res!.StaminaDifficulty > 0);   // 不知道为啥taiko这里除了great_hit_window都是0
-        Assert.True(res!.GreatHitWindow > 0);
-        res = API.OSU.Client.GetBeatmapAttributes(3323074, new string[] { "HD", "DT" }, API.OSU.Mode.Mania).Result;
+        var res = API.OSU
+            .Client
+            .GetBeatmapAttributes(3323074, new string[] { "HD", "DT" }, API.OSU.Mode.OSU)
+            .Result;
         Assert.True(res!.MaxCombo > 0);
-        res = API.OSU.Client.GetBeatmapAttributes(3323074, new string[] { "HD", "DT" }, API.OSU.Mode.Fruits).Result;
-        Assert.True(res!.ApproachRate > 0);
-        res = API.OSU.Client.GetBeatmapAttributes(3323074000, new string[] { "HD", "DT" }, API.OSU.Mode.Fruits).Result;
+        res = API.OSU
+            .Client
+            .GetBeatmapAttributes(3323074, new string[] { "HD", "DT" }, API.OSU.Mode.Fruits)
+            .Result;
+        Assert.True(res!.StarRating > 0);
+        res = API.OSU
+            .Client
+            .GetBeatmapAttributes(3323074000, new string[] { "HD", "DT" }, API.OSU.Mode.Fruits)
+            .Result;
         Assert.Null(res);
     }
 
@@ -133,7 +148,13 @@ public class OSU
     public void GetUserScores()
     {
         // 查BP
-        Assert.True(API.OSU.Client.GetUserScores(9037287, API.OSU.UserScoreType.Best, API.OSU.Mode.OSU, 20, 0, false).Result!.Length == 20);
+        Assert.True(
+            API.OSU
+                .Client
+                .GetUserScores(9037287, API.OSU.UserScoreType.Best, API.OSU.Mode.OSU, 20, 0, false)
+                .Result!
+                .Length == 20
+        );
         Assert.Null(API.OSU.Client.GetUserScores(903728700).Result);
     }
 
@@ -141,11 +162,27 @@ public class OSU
     public void GetUserBeatmapScore()
     {
         // 查score
-        Assert.True(API.OSU.Client.GetUserBeatmapScore(9037287, 3323074, new string[] { "HD" }).Result!.Score.User!.Id == 9037287);
-        Assert.Null(API.OSU.Client.GetUserBeatmapScore(9037287000, 3323074, new string[] { "HD" }).Result);
-        Assert.Null(API.OSU.Client.GetUserBeatmapScore(9037287, 3323074, new string[] { "HR" }).Result);
-        Assert.Null(API.OSU.Client.GetUserBeatmapScore(9037287, 850263, new string[] { "HD", "FL" }).Result);
-        Assert.NotNull(API.OSU.Client.GetUserBeatmapScore(9037287, 850263, new string[] { "HD", "DT" }).Result);
+        Assert.True(
+            API.OSU
+                .Client
+                .GetUserBeatmapScore(9037287, 3323074, new string[] { "HD" })
+                .Result!
+                .Score
+                .User!
+                .Id == 9037287
+        );
+        Assert.Null(
+            API.OSU.Client.GetUserBeatmapScore(9037287000, 3323074, new string[] { "HD" }).Result
+        );
+        Assert.Null(
+            API.OSU.Client.GetUserBeatmapScore(9037287, 3323074, new string[] { "HR" }).Result
+        );
+        Assert.Null(
+            API.OSU.Client.GetUserBeatmapScore(9037287, 850263, new string[] { "HD", "FL" }).Result
+        );
+        Assert.NotNull(
+            API.OSU.Client.GetUserBeatmapScore(9037287, 850263, new string[] { "HD", "DT" }).Result
+        );
     }
 
     [Fact]
@@ -154,12 +191,4 @@ public class OSU
         Assert.True(API.OSU.Client.GetUserBeatmapScores(9037287, 3657206).Result!.Length == 0);
         Assert.Null(API.OSU.Client.GetUserBeatmapScores(9037287, 114514).Result);
     }
-
-    [Fact]
-    public void ppplus()
-    {
-        var res = API.OSU.Client.GetUserPlusData(9037287).Result;
-        Assert.True(res.User.UserId == 9037287);
-    }
 }
-

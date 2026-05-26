@@ -56,7 +56,7 @@ namespace KanonBot.Functions.OSUBot
             var (tempOsuInfo, sbinfo) = await Utils.ResolveOsuUser(resolved);
             if (tempOsuInfo == null)
             {
-                await target.reply("猫猫没有找到此用户。");
+                await target.Treply("error.user_not_found");
                 return;
             }
 
@@ -99,7 +99,7 @@ namespace KanonBot.Functions.OSUBot
 
             if (scores == null)
             {
-                await target.reply("查询成绩时出错。");
+                await target.Treply("error.query_scores_failed");
                 return;
             }
             if (scores!.Length > 0)
@@ -139,7 +139,7 @@ namespace KanonBot.Functions.OSUBot
             }
             else
             {
-                await target.reply("猫猫找不到该BP。");
+                await target.Treply("osu.bp_not_found");
                 return;
             }
         }

@@ -1,6 +1,5 @@
 #pragma warning disable CS8618 // 非null 字段未初始化
-using Newtonsoft.Json;
-using NullValueHandling = Newtonsoft.Json.NullValueHandling;
+using System.Text.Json.Serialization;
 
 namespace KanonBot.API.OSU;
 
@@ -8,135 +7,135 @@ public partial class Models
 {
     public class BeatmapScoreLazer // 只是比score多了个当前bid的排名
     {
-        [JsonProperty("position")]
+        [JsonPropertyName("position")]
         public int Position { get; set; }
 
-        [JsonProperty("score")]
+        [JsonPropertyName("score")]
         public ScoreLazer Score { get; set; }
     }
 
     public class ScoreLazer
     {
-        [JsonProperty("accuracy")]
+        [JsonPropertyName("accuracy")]
         public double Accuracy { get; set; }
 
-        [JsonProperty("beatmap_id")]
+        [JsonPropertyName("beatmap_id")]
         public long BeatmapId { get; set; }
 
-        [JsonProperty("best_id", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("best_id")]
         public long? BestId { get; set; }
 
-        [JsonProperty("build_id", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("build_id")]
         public long? BuildId { get; set; }
 
-        [JsonProperty("classic_total_score")]
+        [JsonPropertyName("classic_total_score")]
         public long ClassicTotalScore { get; set; }
 
-        [JsonProperty("ended_at")]
+        [JsonPropertyName("ended_at")]
         public DateTimeOffset EndedAt { get; set; }
 
-        [JsonProperty("has_replay")]
+        [JsonPropertyName("has_replay")]
         public bool HasReplay { get; set; }
 
-        [JsonProperty("id")]
+        [JsonPropertyName("id")]
         public long Id { get; set; }
 
-        [JsonProperty("is_perfect_combo")]
+        [JsonPropertyName("is_perfect_combo")]
         public bool IsPerfectCombo { get; set; }
 
-        [JsonProperty("legacy_perfect")]
+        [JsonPropertyName("legacy_perfect")]
         public bool LegacyPerfect { get; set; }
 
-        [JsonProperty("legacy_score_id", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("legacy_score_id")]
         public long? LegacyScoreId { get; set; }
 
-        [JsonProperty("legacy_total_score")]
+        [JsonPropertyName("legacy_total_score")]
         public uint LegacyTotalScore { get; set; }
 
-        [JsonProperty("max_combo")]
+        [JsonPropertyName("max_combo")]
         public uint MaxCombo { get; set; }
 
-        [JsonProperty("maximum_statistics")]
+        [JsonPropertyName("maximum_statistics")]
         public ScoreStatisticsLazer? MaximumStatistics { get; set; }
 
-        [JsonProperty("mods")]
+        [JsonPropertyName("mods")]
         public Mod[] Mods { get; set; }
 
-        [JsonProperty("passed")]
+        [JsonPropertyName("passed")]
         public bool Passed { get; set; }
 
-        [JsonProperty("pp", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("pp")]
         public double? pp { get; set; }
 
-        [JsonProperty("preserve")]
+        [JsonPropertyName("preserve")]
         public bool Preserve { get; set; }
 
-        [JsonProperty("processed")]
+        [JsonPropertyName("processed")]
         public bool Processed { get; set; }
 
-        [JsonProperty("rank")]
+        [JsonPropertyName("rank")]
         public string Rank { get; set; }
 
-        [JsonProperty("ranked")]
+        [JsonPropertyName("ranked")]
         public bool Ranked { get; set; }
 
-        [JsonProperty("ruleset_id")]
+        [JsonPropertyName("ruleset_id")]
         public int ModeInt { get; set; }
 
-        [JsonProperty("started_at", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("started_at")]
         public DateTimeOffset? StartedAt { get; set; }
 
-        [JsonProperty("statistics")]
+        [JsonPropertyName("statistics")]
         public ScoreStatisticsLazer Statistics { get; set; }
 
-        [JsonProperty("total_score")]
+        [JsonPropertyName("total_score")]
         public uint Score { get; set; }
 
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public string Kind { get; set; }
 
-        [JsonProperty("user_id")]
+        [JsonPropertyName("user_id")]
         public long UserId { get; set; }
 
         // 下面是可选内容
 
         // SoloScoreJsonAttributesMultiplayer
 
-        [JsonProperty("playlist_item_id", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("playlist_item_id")]
         public long? PlaylistItemId { get; set; }
 
-        [JsonProperty("room_id", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("room_id")]
         public long? RoomId { get; set; }
 
-        [JsonProperty("solo_score_id", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("solo_score_id")]
         public long? SoloScoreId { get; set; }
 
         // ScoreJsonAvailableIncludes
 
-        [JsonProperty("beatmap", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("beatmap")]
         public Beatmap? Beatmap { get; set; }
 
-        [JsonProperty("beatmapset", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("beatmapset")]
         public Beatmapset? Beatmapset { get; set; }
 
-        [JsonProperty("user", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("user")]
         public User? User { get; set; }
 
-        [JsonProperty("weight", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("weight")]
         public ScoreWeight? Weight { get; set; }
 
-        [JsonProperty("match", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("match")]
         public Match? Match { get; set; }
 
-        [JsonProperty("rank_country", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("rank_country")]
         public long? RankCountry { get; set; }
 
-        [JsonProperty("rank_global", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("rank_global")]
         public long? RankGlobal { get; set; }
 
         // ScoreJsonDefaultIncludes
 
-        [JsonProperty("current_user_attributes", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("current_user_attributes")]
         public CurrentUserAttributes? CurrentUserAttributes { get; set; }
 
         // tool
@@ -401,83 +400,83 @@ public partial class Models
 
     public class Match
     {
-        [JsonProperty("pass")]
+        [JsonPropertyName("pass")]
         public bool Pass { get; set; }
 
-        [JsonProperty("slot")]
+        [JsonPropertyName("slot")]
         public uint Slot { get; set; }
 
-        [JsonProperty("team")]
+        [JsonPropertyName("team")]
         public uint Team { get; set; }
     }
 
     public class CurrentUserAttributes
     {
-        [JsonProperty("pin", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("pin")]
         public CurrentUserPin? Pin { get; set; }
     }
 
     public class CurrentUserPin
     {
-        [JsonProperty("is_pinned")]
+        [JsonPropertyName("is_pinned")]
         public bool IsPinned { get; set; }
 
-        [JsonProperty("score_id")]
+        [JsonPropertyName("score_id")]
         public long ScoreId { get; set; }
     }
 
 
     public class ScoreStatisticsLazer
     {
-        [JsonProperty("ok", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("ok")]
         public uint CountOk { get; set; }
 
-        [JsonProperty("great", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("great")]
         public uint CountGreat { get; set; }
 
-        [JsonProperty("meh", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("meh")]
         public uint CountMeh { get; set; }
 
-        [JsonProperty("perfect", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("perfect")]
         public uint CountGeki { get; set; }
 
-        [JsonProperty("good", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("good")]
         public uint CountKatu { get; set; }
 
-        [JsonProperty("miss", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("miss")]
         public uint CountMiss { get; set; }
 
-        [JsonProperty("large_tick_hit", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("large_tick_hit")]
         public uint LargeTickHit { get; set; }
 
-        [JsonProperty("large_tick_miss", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("large_tick_miss")]
         public uint LargeTickMiss { get; set; }
 
-        [JsonProperty("small_tick_hit", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("small_tick_hit")]
         public uint SmallTickHit { get; set; }
 
-        [JsonProperty("small_tick_miss", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("small_tick_miss")]
         public uint SmallTickMiss { get; set; }
 
-        [JsonProperty("ignore_hit", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("ignore_hit")]
         public uint IgnoreHit { get; set; }
 
-        [JsonProperty("ignore_miss", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("ignore_miss")]
         public uint IgnoreMiss { get; set; }
 
-        [JsonProperty("large_bonus", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("large_bonus")]
         public uint LargeBonus { get; set; }
 
-        [JsonProperty("small_bonus", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("small_bonus")]
         public uint SmallBonus { get; set; }
 
-        [JsonProperty("slider_tail_hit", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("slider_tail_hit")]
         public uint SliderTailHit { get; set; }
 
-        [JsonProperty("combo_break", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("combo_break")]
         public uint ComboBreak { get; set; }
 
-        [JsonProperty("legacy_combo_increase", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("legacy_combo_increase")]
         public uint LegacyComboIncrease { get; set; }
 
         public uint PassedObjects(Mode mode)

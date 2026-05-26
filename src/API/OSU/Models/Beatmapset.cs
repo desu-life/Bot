@@ -1,8 +1,7 @@
 #pragma warning disable CS8618 // 非null 字段未初始化
 using KanonBot.Serializer;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NullValueHandling = Newtonsoft.Json.NullValueHandling;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 
 namespace KanonBot.API.OSU;
 
@@ -10,174 +9,165 @@ public partial class Models
 {
     public class Beatmapset
     {
-        [JsonProperty(PropertyName = "artist")]
+        [JsonPropertyName("artist")]
         public string Artist { get; set; }
 
-        [JsonProperty(PropertyName = "artist_unicode")]
+        [JsonPropertyName("artist_unicode")]
         public string ArtistUnicode { get; set; }
 
-        [JsonProperty(PropertyName = "covers")]
+        [JsonPropertyName("covers")]
         public BeatmapCovers Covers { get; set; }
 
-        [JsonProperty(PropertyName = "creator")]
+        [JsonPropertyName("creator")]
         public string Creator { get; set; }
 
-        [JsonProperty(PropertyName = "favourite_count")]
+        [JsonPropertyName("favourite_count")]
         public long FavouriteCount { get; set; }
 
-        [JsonProperty(PropertyName = "hype", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("hype")]
         public BeatmapHype? Hype { get; set; }
 
-        [JsonProperty(PropertyName = "id")]
+        [JsonPropertyName("id")]
         public long Id { get; set; }
 
-        [JsonProperty(PropertyName = "nsfw")]
+        [JsonPropertyName("nsfw")]
         public bool IsNsfw { get; set; }
 
-        [JsonProperty(PropertyName = "offset")]
+        [JsonPropertyName("offset")]
         public long Offset { get; set; }
 
-        [JsonProperty(PropertyName = "play_count")]
+        [JsonPropertyName("play_count")]
         public long PlayCount { get; set; }
 
-        [JsonProperty(PropertyName = "preview_url")]
+        [JsonPropertyName("preview_url")]
         public string PreviewUrl { get; set; }
 
-        [JsonProperty(PropertyName = "source")]
+        [JsonPropertyName("source")]
         public string Source { get; set; }
 
-        [JsonProperty(PropertyName = "spotlight")]
+        [JsonPropertyName("spotlight")]
         public bool Spotlight { get; set; }
 
-        [JsonProperty(PropertyName = "status")]
+        [JsonPropertyName("status")]
         public string Status { get; set; }
 
-        [JsonProperty(PropertyName = "title")]
+        [JsonPropertyName("title")]
         public string Title { get; set; }
 
-        [JsonProperty(PropertyName = "title_unicode")]
+        [JsonPropertyName("title_unicode")]
         public string TitleUnicode { get; set; }
 
-        [JsonProperty(PropertyName = "user_id")]
+        [JsonPropertyName("user_id")]
         public long UserId { get; set; }
 
-        [JsonProperty(PropertyName = "video")]
+        [JsonPropertyName("video")]
         public bool Video { get; set; }
 
-        [JsonProperty(PropertyName = "availability")]
+        [JsonPropertyName("availability")]
         public BeatmapAvailability Availability { get; set; }
 
-        [JsonProperty(PropertyName = "bpm")]
+        [JsonPropertyName("bpm")]
         public long BPM { get; set; }
 
-        [JsonProperty(PropertyName = "can_be_hyped")]
+        [JsonPropertyName("can_be_hyped")]
         public bool CanBeHyped { get; set; }
 
-        [JsonProperty(PropertyName = "discussion_enabled")]
+        [JsonPropertyName("discussion_enabled")]
         public bool DiscussionEnabled { get; set; }
 
-        [JsonProperty(PropertyName = "discussion_locked")]
+        [JsonPropertyName("discussion_locked")]
         public bool DiscussionLocked { get; set; }
 
-        [JsonProperty(PropertyName = "is_scoreable")]
+        [JsonPropertyName("is_scoreable")]
         public bool IsScoreable { get; set; }
 
-        [JsonProperty(PropertyName = "last_updated")]
+        [JsonPropertyName("last_updated")]
         public DateTimeOffset LastUpdated { get; set; }
 
-        [JsonProperty(
-            PropertyName = "legacy_thread_url",
-            NullValueHandling = NullValueHandling.Ignore
-        )]
+        [JsonPropertyName("legacy_thread_url")]
         public Uri? LegacyThreadUrl { get; set; }
 
-        [JsonProperty(PropertyName = "nominations_summary")]
+        [JsonPropertyName("nominations_summary")]
         public NominationsSummary NominationsSummary { get; set; }
 
-        [JsonProperty(PropertyName = "ranked")]
+        [JsonPropertyName("ranked")]
         public long Ranked { get; set; }
 
-        [JsonProperty(PropertyName = "ranked_date", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("ranked_date")]
         public DateTimeOffset? RankedDate { get; set; }
 
-        [JsonProperty(PropertyName = "storyboard")]
+        [JsonPropertyName("storyboard")]
         public bool Storyboard { get; set; }
 
-        [JsonProperty(
-            PropertyName = "submitted_date",
-            NullValueHandling = NullValueHandling.Ignore
-        )]
+        [JsonPropertyName("submitted_date")]
         public DateTimeOffset? SubmittedDate { get; set; }
 
-        [JsonProperty(PropertyName = "tags")]
+        [JsonPropertyName("tags")]
         public string Tags { get; set; }
 
-        [JsonProperty(PropertyName = "ratings")]
+        [JsonPropertyName("ratings")]
         public long[] Ratings { get; set; }
 
-        [JsonProperty(PropertyName = "beatmaps", NullValueHandling = NullValueHandling.Ignore)]
+        [JsonPropertyName("beatmaps")]
         public Beatmap[]? Beatmaps { get; set; }
 
-        // [JsonProperty(PropertyName = "track_id")]
-        // public JObject TrackId { get; set; }
+        // [JsonPropertyName("track_id")]
+        // public JsonObject TrackId { get; set; }
     }
 
     public class BeatmapAvailability
     {
-        [JsonProperty(PropertyName = "download_disabled")]
+        [JsonPropertyName("download_disabled")]
         public bool DownloadDisabled { get; set; }
 
-        [JsonProperty(
-            PropertyName = "more_information",
-            NullValueHandling = NullValueHandling.Ignore
-        )]
+        [JsonPropertyName("more_information")]
         public string? MoreInformation { get; set; }
     }
 
     
     public class BeatmapCovers
     {
-        [JsonProperty(PropertyName = "cover")]
+        [JsonPropertyName("cover")]
         public string Cover { get; set; }
 
-        [JsonProperty(PropertyName = "cover@2x")]
+        [JsonPropertyName("cover@2x")]
         public string Cover2x { get; set; }
 
-        [JsonProperty(PropertyName = "card")]
+        [JsonPropertyName("card")]
         public string Card { get; set; }
 
-        [JsonProperty(PropertyName = "card@2x")]
+        [JsonPropertyName("card@2x")]
         public string Card2x { get; set; }
 
-        [JsonProperty(PropertyName = "list")]
+        [JsonPropertyName("list")]
         public string List { get; set; }
 
-        [JsonProperty(PropertyName = "list@2x")]
+        [JsonPropertyName("list@2x")]
         public string List2x { get; set; }
 
-        [JsonProperty(PropertyName = "slimcover")]
+        [JsonPropertyName("slimcover")]
         public string SlimCover { get; set; }
 
-        [JsonProperty(PropertyName = "slimcover@2x")]
+        [JsonPropertyName("slimcover@2x")]
         public string SlimCover2x { get; set; }
     }
 
 
     public class BeatmapHype
     {
-        [JsonProperty(PropertyName = "current")]
+        [JsonPropertyName("current")]
         public int DownloadDisabled { get; set; }
 
-        [JsonProperty(PropertyName = "required")]
+        [JsonPropertyName("required")]
         public int MoreInformation { get; set; }
     }
 
     public class NominationsSummary
     {
-        [JsonProperty(PropertyName = "current")]
+        [JsonPropertyName("current")]
         public int Current { get; set; }
 
-        [JsonProperty(PropertyName = "required")]
+        [JsonPropertyName("required")]
         public int NominationsSummaryRequired { get; set; }
     }
 

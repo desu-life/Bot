@@ -3,7 +3,7 @@ using System.IO;
 using System.Net;
 using KanonBot.Database;
 using KanonBot.Serializer;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 
 namespace KanonBot.API.PPYSB
 {

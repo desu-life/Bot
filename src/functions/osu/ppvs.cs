@@ -31,7 +31,7 @@ namespace KanonBot.Functions.OSUBot
             {
                 if (cmds[0].Length == 0)
                 {
-                    await target.reply("!ppvs 要对比的用户");
+                    await target.Treply("osu.ppvs_usage_self");
                     return;
                 }
 
@@ -44,7 +44,7 @@ namespace KanonBot.Functions.OSUBot
                 }
                 catch (NotSupportedException)
                 {
-                    await target.reply("当前平台暂不支持此功能。");
+                    await target.Treply("account.platform_unsupported");
                     return;
                 }
 
@@ -53,21 +53,21 @@ namespace KanonBot.Functions.OSUBot
                     .GetIamUserIdByExternalId(provider, accInfo.uid);
                 if (iamUserId == null)
                 {
-                    await target.reply("你还没有绑定 desu.life 账户，请使用 !bind 进行绑定。");
+                    await target.Treply("account.not_bound");
                     return;
                 }
 
                 var bindings = await API.IAM.Client.GetUserBindings(iamUserId);
                 if (bindings == null)
                 {
-                    await target.reply("获取账户信息失败，请稍后再试。");
+                    await target.Treply("account.fetch_failed");
                     return;
                 }
 
                 var osuUid = API.IAM.Client.ExtractOsuUid(bindings);
                 if (!osuUid.HasValue)
                 {
-                    await target.reply("你还没有绑定 osu! 账户，请前往 https://iam.neonprizma.com/ 绑定。");
+                    await target.Treply("account.osu_not_bound");
                     return;
                 }
 
@@ -75,55 +75,25 @@ namespace KanonBot.Functions.OSUBot
                 var userSelf = await API.OSU.Client.GetUser(osuUid.Value);
                 if (userSelf == null)
                 {
-                    await target.reply("被办了。");
+                    await target.Treply("account.banned");
                     return;
                 }
 
                 var user2 = await API.OSU.Client.GetUser(cmds[0]);
                 if (user2 == null)
                 {
-                    await target.reply("猫猫没有找到此用户。");
+                    await target.Treply("error.user_not_found");
                     return;
                 }
 
-                await target.reply("正在获取pp+数据，请稍等。。");
+                await target.Treply("osu.ppvs_loading");
 
                 Image.PPVS.PPVSPanelData data = new();
-
-                // var d1 = await Database.Client.GetOsuPPlusDataNext(userSelf.Id);
-                // if (d1 == null)
-                // {
-                //     var d1temp = await API.OSU.Client.GetUserPlusDataNext(userSelf.Id);
-                //     if (d1temp == null)
-                //     {
-                //         await target.reply("获取pp+数据时出错，等会儿再试试吧");
-                //         return;
-                //     }
-                //     d1 = d1temp;
-                //     await Database.Client.UpdateOsuPPlusDataNext(d1);
-                // }
-                // data.u2Name = userSelf.Username;
-                // data.u2 = d1.Performances;
-
-                // var d2 = await Database.Client.GetOsuPPlusDataNext(user2.Id);
-                // if (d2 == null)
-                // {
-                //     var d2temp = await API.OSU.Client.GetUserPlusDataNext(user2.Id);
-                //     if (d2temp == null)
-                //     {
-                //         await target.reply("获取pp+数据时出错，等会儿再试试吧");
-                //         return;
-                //     }
-                //     d2 = d2temp;
-                //     await Database.Client.UpdateOsuPPlusDataNext(d2);
-                // }
-                // data.u1Name = user2.Username;
-                // data.u1 = d2.Performances;
 
                 var d1 = await API.OSU.Client.PPlus.GetUserPlusDataNext(userSelf.Id);
                 if (d1 == null)
                 {
-                    await target.reply("获取pp+数据时出错，等会儿再试试吧");
+                    await target.Treply("osu.ppvs_error");
                     return;
                 }
                 data.u2Name = userSelf.Username;
@@ -132,7 +102,7 @@ namespace KanonBot.Functions.OSUBot
                 var d2 = await API.OSU.Client.PPlus.GetUserPlusDataNext(user2.Id);
                 if (d2 == null)
                 {
-                    await target.reply("获取pp+数据时出错，等会儿再试试吧");
+                    await target.Treply("osu.ppvs_error");
                     return;
                 }
                 data.u1Name = user2.Username;
@@ -145,7 +115,7 @@ namespace KanonBot.Functions.OSUBot
             {
                 if (cmds[0].Length == 0 || cmds[1].Length == 0)
                 {
-                    await target.reply("!ppvs 用户1#用户2");
+                    await target.Treply("osu.ppvs_usage_dual");
                     return;
                 }
 
@@ -153,25 +123,25 @@ namespace KanonBot.Functions.OSUBot
                 var user1 = await API.OSU.Client.GetUser(cmds[0]);
                 if (user1 == null)
                 {
-                    await target.reply($"猫猫没有找到叫 {cmds[0]} 用户。");
+                    await target.Treply("osu.ppvs_user_not_found", cmds[0]);
                     return;
                 }
 
                 var user2 = await API.OSU.Client.GetUser(cmds[1]);
                 if (user2 == null)
                 {
-                    await target.reply($"猫猫没有找到叫 {cmds[1]} 用户。");
+                    await target.Treply("osu.ppvs_user_not_found", cmds[1]);
                     return;
                 }
 
-                await target.reply("正在获取pp+数据，请稍等。。");
+                await target.Treply("osu.ppvs_loading");
 
                 Image.PPVS.PPVSPanelData data = new();
 
                 var d1 = await API.OSU.Client.PPlus.GetUserPlusDataNext(user1.Id);
                 if (d1 == null)
                 {
-                    await target.reply("获取pp+数据时出错，等会儿再试试吧");
+                    await target.Treply("osu.ppvs_error");
                     return;
                 }
                 data.u2Name = user1.Username;
@@ -180,7 +150,7 @@ namespace KanonBot.Functions.OSUBot
                 var d2 = await API.OSU.Client.PPlus.GetUserPlusDataNext(user2.Id);
                 if (d2 == null)
                 {
-                    await target.reply("获取pp+数据时出错，等会儿再试试吧");
+                    await target.Treply("osu.ppvs_error");
                     return;
                 }
                 data.u1Name = user2.Username;
@@ -191,7 +161,7 @@ namespace KanonBot.Functions.OSUBot
             }
             else
             {
-                await target.reply("!ppvs 用户1#用户2/!ppvs 要对比的用户");
+                await target.Treply("osu.ppvs_usage_full");
             }
         }
     }
