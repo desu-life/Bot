@@ -27,15 +27,12 @@ namespace KanonBot.Functions.OSUBot
                     new() { Name = "osu_mode", Description = "osu! game mode", Prefix = ArgPrefix.Colon },
                     new() { Name = "order_number", Description = "Score list position", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
                 ],
-                Flags =  [ new() { Name = "sb_server", Description = "Use the ppysb server", Value = "sb", SlashName = "is_sb" }, ]
+                Flags = [ new() { Name = "sb_server", Description = "Use the ppysb server", Value = "sb", SlashName = "is_sb" }, ]
             };
 
-        public Task Execute(Target target, ParsedCommand cmd) => TodayBP.Execute(target, cmd);
-    }
+        public Task Execute(Target target, ParsedCommand cmd) => ExecuteTodayBP(target, cmd);
 
-    public class TodayBP
-    {
-        public static async Task Execute(
+        public static async Task ExecuteTodayBP(
             Target target,
             ParsedCommand cmd,
             bool includeFails = false
@@ -96,7 +93,7 @@ namespace KanonBot.Functions.OSUBot
             // 正常是找不到玩家，但是上面有验证，这里做保险
             if (scoreInfos.Length > 0)
             {
-                List<Image.ScoreList.ScoreRank> scores =  [ ];
+                List<Image.ScoreList.ScoreRank> scores = [ ];
                 var now = DateTime.Now;
                 var t = now.Hour < 4 ? now.Date.AddDays(-1).AddHours(4) : now.Date.AddHours(4);
 
@@ -161,5 +158,24 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
         }
+    }
+
+    public class GetTodayBpCommand : ICommand
+    {
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "get todaybp",
+                Description = "Show an osu! today's best performance",
+                Args =
+                [
+                    new() { Name = "username", Description = "osu! username or user ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                    new() { Name = "order_number", Description = "Score list position", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                    new() { Name = "osu_mode", Description = "osu! game mode", Prefix = ArgPrefix.Colon },
+                ],
+                Flags = [ new() { Name = "sb_server", Description = "Use the ppysb server", Value = "sb", SlashName = "is_sb" } ]
+            };
+
+        public Task Execute(Target target, ParsedCommand cmd) => TodayBpCommand.ExecuteTodayBP(target, cmd);
     }
 }

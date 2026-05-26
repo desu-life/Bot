@@ -8,6 +8,34 @@ using static KanonBot.Functions.Accounts;
 
 namespace KanonBot.Functions.OSU
 {
+    public class SuHelpCommand : ICommand
+    {
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "su",
+                Description = "Show superuser commands",
+                Args = [ ],
+                Flags = [ ]
+            };
+
+        public Task Execute(Target target, ParsedCommand cmd) => Task.CompletedTask;
+    }
+
+    public class SuUpdateAllCommand : ICommand
+    {
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "su updateall",
+                Description = "Run the administrator daily update task",
+                Args = [ ],
+                Flags = [ ]
+            };
+
+        public Task Execute(Target target, ParsedCommand cmd) => Su.Execute(target, "updateall");
+    }
+
     // ── Su internal router ────────────────────────────────
 
     public static class Su

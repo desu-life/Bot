@@ -35,12 +35,9 @@ namespace KanonBot.Functions.OSUBot
                 ]
             };
 
-        public Task Execute(Target target, ParsedCommand cmd) => BPList.Execute(target, cmd);
-    }
+        public Task Execute(Target target, ParsedCommand cmd) => ExecuteBPList(target, cmd);
 
-    public class BPList
-    {
-        public static async Task Execute(
+        public static async Task ExecuteBPList(
             Target target,
             ParsedCommand cmd,
             bool includeFails = false
@@ -130,7 +127,7 @@ namespace KanonBot.Functions.OSUBot
             // 正常是找不到玩家，但是上面有验证，这里做保险
             if (scoreInfos.Length > 0)
             {
-                List<Image.ScoreList.ScoreRank> scores =  [ ];
+                List<Image.ScoreList.ScoreRank> scores = [ ];
                 for (
                     int i = StartAt - 1;
                     i < (scoreInfos.Length > EndAt ? EndAt : scoreInfos.Length);
@@ -183,5 +180,25 @@ namespace KanonBot.Functions.OSUBot
                 return;
             }
         }
+    }
+
+    public class GetBpListCommand : ICommand
+    {
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "get bplist",
+                Description = "Show an osu! best performance list",
+                Args =
+                [
+                    new() { Name = "username", Description = "osu! username or user ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous },
+                    new() { Name = "range", Description = "Score rank range", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseRange(s) },
+                    new() { Name = "range", Description = "Score rank range", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseRange(s) },
+                    new() { Name = "osu_mode", Description = "osu! game mode", Prefix = ArgPrefix.Colon },
+                ],
+                Flags = [ new() { Name = "sb_server", Description = "Use the ppysb server", Value = "sb", SlashName = "is_sb" } ]
+            };
+
+        public Task Execute(Target target, ParsedCommand cmd) => BpListCommand.ExecuteBPList(target, cmd);
     }
 }

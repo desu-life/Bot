@@ -1,9 +1,6 @@
 <Solution>
-  <Project Path="src\KanonBot.csproj" />
-  <Project Path="Tests\Tests.csproj" />
-  <Folder Name="/generators/">
-    <Project Path="generators/KanonBot.Generators.Attributes/KanonBot.Generators.Attributes.csproj" />
-    <Project Path="generators/KanonBot.Generators/KanonBot.Generators.csproj" />
-  </Folder>
-  <Project Path="cli\cli.csproj" />
+  <Project Path="src/KanonBot.csproj" />
+  <Project Path="Tests/Tests.csproj" />
+  <Project Path="generators/KanonBot.Generators/KanonBot.Generators.csproj" />
+  <Project Path="cli/cli.csproj" />
 </Solution>

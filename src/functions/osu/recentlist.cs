@@ -14,6 +14,53 @@ using SixLabors.ImageSharp.Formats.Png;
 
 namespace KanonBot.Functions.OSUBot
 {
+    public class RecentListCommand : ICommand
+    {
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "recentlist",
+                Description = "Show a user's recent osu! plays as a list",
+                Aliases = [ "rl" ],
+                Args =
+                [
+                    new() { Name = "username", Description = "osu! username or user ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                    new() { Name = "osu_mode", Description = "osu! game mode", Prefix = ArgPrefix.Colon },
+                ],
+                Flags =
+                [
+                    new() { Name = "special_pp", Description = "Use special pp panel", Value = "", SlashName = "is_special_pp" },
+                    new() { Name = "sb_server", Description = "Use the ppysb server", Value = "sb", SlashName = "is_sb" },
+                ]
+            };
+
+        public Task Execute(Target target, ParsedCommand cmd) =>
+            RecentList.Execute(target, cmd, includeFails: true);
+    }
+
+    public class PassRecentListCommand : ICommand
+    {
+        public CommandDef Definition =>
+            new()
+            {
+                Name = "prl",
+                Description = "Show a user's recent passed osu! plays as a list",
+                Args =
+                [
+                    new() { Name = "username", Description = "osu! username or user ID", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
+                    new() { Name = "osu_mode", Description = "osu! game mode", Prefix = ArgPrefix.Colon },
+                ],
+                Flags =
+                [
+                    new() { Name = "special_pp", Description = "Use special pp panel", Value = "", SlashName = "is_special_pp" },
+                    new() { Name = "sb_server", Description = "Use the ppysb server", Value = "sb", SlashName = "is_sb" },
+                ]
+            };
+
+        public Task Execute(Target target, ParsedCommand cmd) =>
+            RecentList.Execute(target, cmd, includeFails: false);
+    }
+
     public class RecentList
     {
         public static async Task Execute(
@@ -78,7 +125,7 @@ namespace KanonBot.Functions.OSUBot
             if (scoreInfos.Length > 0)
             {
                 bool special_version_pp = cmd.Flag("special_pp");
-                List<Image.ScoreList.ScoreRank> scores =  [ ];
+                List<Image.ScoreList.ScoreRank> scores = [ ];
                 for (int i = 0; i < scoreInfos.Length; ++i)
                 {
                     scores.Add(
