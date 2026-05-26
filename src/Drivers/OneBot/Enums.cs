@@ -474,8 +474,6 @@ public partial class OneBot
             /// </summary>
             Ignore,
 
-            #region 基础消息段
-
             /// <summary>
             /// 纯文本
             /// </summary>
@@ -487,6 +485,24 @@ public partial class OneBot
             /// </summary>
             [JsonStringEnumMemberName("face")]
             Face,
+
+            /// <summary>
+            /// 商城表情
+            /// </summary>
+            [JsonStringEnumMemberName("mface")]
+            MFace,
+
+            /// <summary>
+            /// 骰子
+            /// </summary>
+            [JsonStringEnumMemberName("dice")]
+            Dice,
+
+            /// <summary>
+            /// 石头剪刀布
+            /// </summary>
+            [JsonStringEnumMemberName("rps")]
+            Rps,
 
             /// <summary>
             /// 图片
@@ -501,7 +517,7 @@ public partial class OneBot
             Record,
 
             /// <summary>
-            /// 短视频
+            /// 视频
             /// </summary>
             [JsonStringEnumMemberName("video")]
             Video,
@@ -532,15 +548,10 @@ public partial class OneBot
             Reply,
 
             /// <summary>
-            /// <para>合并转发</para>
-            /// <para>只能接收</para>
+            /// 合并转发
             /// </summary>
             [JsonStringEnumMemberName("forward")]
             Forward,
-
-            #endregion
-
-            #region GoCQ扩展消息段
 
             /// <summary>
             /// 群戳一戳
@@ -576,9 +587,13 @@ public partial class OneBot
             /// 文本转语音
             /// </summary>
             [JsonStringEnumMemberName("tts")]
-            TTS
+            TTS,
 
-            #endregion
+            /// <summary>
+            /// 文件
+            /// </summary>
+            [JsonStringEnumMemberName("file")]
+            File
         }
 
         [JsonConverter(typeof(JsonStringEnumConverter))]
