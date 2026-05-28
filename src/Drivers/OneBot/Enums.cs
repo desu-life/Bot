@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Text.Json.Serialization;
+using KanonBot.Serializer;
 
 namespace KanonBot.Drivers;
 
@@ -436,7 +437,7 @@ public partial class OneBot
         /// 消息类型
         /// </summary>
         [DefaultValue(Unknown)]
-        [JsonConverter(typeof(JsonStringEnumConverter<MessageType>))]
+        [JsonConverter(typeof(SafeJsonStringEnumConverter<MessageType>))]
         public enum MessageType
         {
             /// <summary>

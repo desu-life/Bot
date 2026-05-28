@@ -62,6 +62,7 @@ public partial class OneBot
                         Enums.SegmentType.Image => obj.rawData.ContainsKey("url") ? new ImageSegment(obj.rawData["url"]!.ToString(), ImageSegment.Type.Url) : new ImageSegment(obj.rawData["file"]!.ToString(), ImageSegment.Type.File),
                         Enums.SegmentType.At => new AtSegment(obj.rawData["qq"]!.ToString(), Platform.OneBot),
                         Enums.SegmentType.Face => new EmojiSegment(obj.rawData["id"]!.ToString()),
+                        Enums.SegmentType.Reply => new ReplySegment(obj.rawData["id"]!.ToString()),
                         _ => new RawSegment(obj.msgType.ToString(), obj.rawData)
                     }
                 );

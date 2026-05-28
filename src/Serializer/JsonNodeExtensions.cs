@@ -10,7 +10,8 @@ public static class JsonNodeExtensions
     /// </summary>
     public static T? ToObject<T>(this JsonNode? node)
     {
-        if (node is null) return default;
+        if (node is null)
+            return default;
         return node.Deserialize<T>(Json.Options);
     }
 
@@ -20,7 +21,8 @@ public static class JsonNodeExtensions
     /// </summary>
     public static JsonNode? SelectToken(this JsonNode? node, string path)
     {
-        if (node is null) return null;
+        if (node is null)
+            return null;
         var parts = path.Split('.');
         JsonNode? current = node;
         foreach (var part in parts)
@@ -40,7 +42,8 @@ public static class JsonNodeExtensions
     /// </summary>
     public static T? Value<T>(this JsonNode? node)
     {
-        if (node is null) return default;
+        if (node is null)
+            return default;
         return node.GetValue<T>();
     }
 }

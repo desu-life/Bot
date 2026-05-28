@@ -1,15 +1,16 @@
-using System.Text.Json.Serialization;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 
 namespace KanonBot.Message;
 
-public record RawSegment(string type, Object value) : IMsgSegment
+public record RawSegment(string type, object value) : IMsgSegment
 {
-    public string Build() => value switch
-    {
-        JsonObject j => $"<raw;{type}={j.ToJsonString()}>",
-        _ => $"<raw;{type}={value}>",
-    };
+    public string Build() =>
+        value switch
+        {
+            JsonObject j => $"<raw;{type}={j.ToJsonString()}>",
+            _ => $"<raw;{type}={value}>",
+        };
 
     public virtual bool Equals(RawSegment? other) =>
         other is not null && type == other.type && Equals(value, other.value);
