@@ -437,7 +437,7 @@ public partial class OneBot
         /// 消息类型
         /// </summary>
         [DefaultValue(Unknown)]
-        [JsonConverter(typeof(SafeJsonStringEnumConverter<MessageType>))]
+        [JsonConverter(typeof(JsonStringEnumConverter<MessageType>))]
         public enum MessageType
         {
             /// <summary>
@@ -462,7 +462,7 @@ public partial class OneBot
         /// 消息段类型
         /// </summary>
         [DefaultValue(Unknown)]
-        [JsonConverter(typeof(JsonStringEnumConverter<SegmentType>))]
+        [JsonConverter(typeof(FallbackJsonStringEnumConverter<SegmentType>))]
         public enum SegmentType
         {
             /// <summary>
