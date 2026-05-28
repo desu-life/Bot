@@ -2,12 +2,13 @@ using KanonBot.Drivers;
 
 namespace KanonBot.Message;
 
-public class Chain: IEquatable<Chain>
+public class Chain : IEquatable<Chain>
 {
     List<IMsgSegment> msgList { get; set; }
+
     public Chain()
     {
-        this.msgList = new();
+        this.msgList =  [ ];
     }
 
     public static Chain FromList(List<IMsgSegment> list)
@@ -25,11 +26,13 @@ public class Chain: IEquatable<Chain>
         this.Add(new TextSegment(v));
         return this;
     }
+
     public Chain at(string v, Platform p)
     {
         this.Add(new AtSegment(v, p));
         return this;
     }
+
     public Chain image(string v, ImageSegment.Type t)
     {
         this.Add(new ImageSegment(v, t));
@@ -41,7 +44,6 @@ public class Chain: IEquatable<Chain>
         return this.msgList.AsEnumerable();
     }
 
-
     public string Build() => string.Concat(this.msgList.Select(item => item.Build()));
 
     public override string ToString()
@@ -50,6 +52,7 @@ public class Chain: IEquatable<Chain>
     }
 
     public int Length() => this.msgList.Count;
+
     public bool StartsWith(string s)
     {
         if (this.msgList.Count == 0)
@@ -57,28 +60,41 @@ public class Chain: IEquatable<Chain>
         else
             return this.msgList[0] is TextSegment t && t.value.StartsWith(s);
     }
+
     public bool StartsWith(AtSegment at)
     {
         if (this.msgList.Count == 0)
             return false;
         else
-            return this.msgList[0] is AtSegment t && t.value == at.value && t.platform == at.platform;
+            return this.msgList[0] is AtSegment t
+                && t.value == at.value
+                && t.platform == at.platform;
     }
 
-    public T? Find<T>() where T : class, IMsgSegment =>
-        this.msgList.Find(t => t is T) as T;
+    public T? Find<T>()
+        where T : class, IMsgSegment => this.msgList.Find(t => t is T) as T;
 
     public bool Equals(Chain? other)
     {
-        if (other == null)
+        if (other is null)
             return false;
-        if (this.msgList.Count != other.msgList.Count)
-            return false;
-        for (int i = 0; i < this.msgList.Count; i++)
-        {
-            if (!this.msgList[i].Equals(other.msgList[i]))
-                return false;
-        }
-        return true;
+        if (ReferenceEquals(this, other))
+            return true;
+
+        return this.msgList.SequenceEqual(other.msgList);
     }
+
+    public override bool Equals(object? obj) => obj is Chain other && Equals(other);
+
+    public override int GetHashCode() =>
+        msgList
+            .Aggregate(
+                new HashCode(),
+                (hash, msg) =>
+                {
+                    hash.Add(msg);
+                    return hash;
+                }
+            )
+            .ToHashCode();
 }

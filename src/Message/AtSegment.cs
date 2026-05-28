@@ -9,7 +9,7 @@ public record AtSegment(string value, Platform platform) : IMsgSegment
         var p = platform switch
         {
             Platform.OneBot => "qq",
-            Platform.Guild => "gulid",
+            Platform.Guild => "guild",
             Platform.Discord => "discord",
             _ => "unknown",
         };
