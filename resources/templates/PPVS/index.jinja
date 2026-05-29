@@ -1,0 +1,65 @@
+{% macro text(value, x, y, size, color="#999999") -%}
+  <div
+    class="text{% if color == '#ffcd22' %} diff{% endif %}"
+    style="
+      left: {{ x }}px;
+      top: {{ y }}px;
+      font-size: {{ size }}px;
+      {% if color != '#ffcd22' %}color: {{ color }};{% endif %}
+    ">
+    {{ value }}
+  </div>
+{%- endmacro %}
+
+{% macro hex(points, fill, stroke) -%}
+  <svg class="hex" viewBox="0 0 1134 1134" width="1134" height="1134">
+    <polygon
+      points="{{ points }}"
+      fill="{{ fill }}"
+      stroke="{{ stroke }}"
+      stroke-width="6" />
+  </svg>
+{%- endmacro %}
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="styles.scss" />
+</head>
+
+<body>
+  <img id="background" src="{{ background_src }}" />
+
+  {% if u1_draw_first %}
+    {{ hex(u1_svg_points, u1_fill_color, u1_stroke_color) }}
+    {{ hex(u2_svg_points, u2_fill_color, u2_stroke_color) }}
+  {% else %}
+    {{ hex(u2_svg_points, u2_fill_color, u2_stroke_color) }}
+    {{ hex(u1_svg_points, u1_fill_color, u1_stroke_color) }}
+  {% endif %}
+
+  {{ text(u1_name, 808, 840, 36) }}
+  {{ text(u2_name, 264, 840, 36) }}
+
+  {{ text(u1_total, 664, 936, 32) }}
+  {{ text(u2_total, 424, 936, 32) }}
+  {{ text(diff_total, 960, 936, 32, "#ffcd22") }}
+
+  {% set y_offsets = [1442, 1105, 1021, 1189, 1273, 1360] %}
+
+  {% for value in u1_values %}
+    {{ text(value, 664, y_offsets[loop.index0], 32) }}
+  {% endfor %}
+
+  {% for value in u2_values %}
+    {{ text(value, 424, y_offsets[loop.index0], 32) }}
+  {% endfor %}
+
+  {% for value in diff_values %}
+    {{ text(value, 960, y_offsets[loop.index0], 32, "#ffcd22") }}
+  {% endfor %}
+
+  <img id="title" src="{{ title_src }}" />
+</body>
+</html>

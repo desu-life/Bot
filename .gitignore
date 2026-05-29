@@ -374,3 +374,4 @@ work.bak/
 mail_desu_life_mailaddr_verify_template.txt
 work/*
 !work/templates/
+TestOutput/

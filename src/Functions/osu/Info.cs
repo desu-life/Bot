@@ -224,7 +224,6 @@ namespace KanonBot.Functions
                 custominfoengineVer = custominfoengineVer == 1 ? 2 : 1;
 
             //info默认输出高质量图片？
-            SixLabors.ImageSharp.Image img;
             API.OSU.Models.ScoreLazer[]? allBP =  [ ];
             switch (custominfoengineVer) //0=null 1=v1 2=v2
             {
@@ -274,9 +273,11 @@ namespace KanonBot.Functions
                         data.userInfo.Statistics.PP = nextPP;
                     }
 
-                    img = await Image
-                        .InfoV1
-                        .DrawInfo(data, resolved.IsRegistered, isDataOfDayAvaiavle);
+                    var rendered = await Image
+                        .Takumi
+                        .InfoV1Takumi
+                        .Draw(data, resolved.IsRegistered, isDataOfDayAvaiavle);
+                    await target.reply(rendered);
                     break;
                 case 2:
                     var v2Options = data.customMode switch
@@ -354,7 +355,7 @@ namespace KanonBot.Functions
                         }
                     }
 
-                    img = await Image
+                    using (var img = await Image
                         .OsuInfoPanelV2
                         .Draw(
                             data,
@@ -368,16 +369,15 @@ namespace KanonBot.Functions
                                 is_ppysb,
                                 special_version_pp
                             )
-                        );
+                        ))
+                    {
+                        await target.reply(img, new PngEncoder());
+                    }
 
                     break;
                 default:
                     return;
             }
-
-            // 关闭流
-            using (img)
-                await target.reply(img, new PngEncoder());
 
             if (Config.inner!.dev)
                 return;

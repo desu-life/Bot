@@ -1,0 +1,61 @@
+$panel-width: 1134px;
+$panel-height: 1553px;
+$font: "Torus", sans-serif;
+
+html,
+body {
+  display: block;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+
+body {
+  position: relative;
+  width: $panel-width;
+  height: $panel-height;
+  overflow: hidden;
+}
+
+img,
+svg,
+div {
+  position: absolute;
+  box-sizing: border-box;
+}
+
+#background {
+  left: 0;
+  top: 0;
+  width: $panel-width;
+  height: $panel-height;
+  z-index: 1;
+}
+
+.hex {
+  left: 0;
+  top: -120px;
+  z-index: 2;
+  overflow: visible;
+}
+
+.text {
+  z-index: 3;
+  font-family: $font;
+  font-weight: 300;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: 0;
+}
+
+.text.diff {
+  color: #ffcd22;
+}
+
+#title {
+  left: 0;
+  top: 0;
+  width: $panel-width;
+  height: $panel-height;
+  z-index: 4;
+}

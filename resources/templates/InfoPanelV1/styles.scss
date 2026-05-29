@@ -1,0 +1,131 @@
+$panel-width: 1200px;
+$panel-height: 857px;
+$border-radius: 24px;
+$font-exo2: "Exo 2", "HarmonyOS Sans SC", "HarmonyOS Sans Naskh Arabic", sans-serif;
+$font-harmony: "HarmonyOS Sans SC", "HarmonyOS Sans Naskh Arabic", sans-serif;
+
+html,
+body {
+  display: block;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+
+body {
+  position: relative;
+  width: $panel-width;
+  height: $panel-height;
+  overflow: hidden;
+  border-radius: $border-radius;
+  filter: brightness(0.998);
+}
+
+img,
+svg,
+div {
+  position: absolute;
+  box-sizing: border-box;
+}
+
+#cover {
+  left: 0;
+  top: 0;
+  width: $panel-width;
+  height: 350px;
+  object-fit: cover;
+  z-index: 1;
+}
+
+#panel {
+  left: 0;
+  top: 0;
+  width: $panel-width;
+  height: $panel-height;
+  z-index: 2;
+}
+
+#avatar {
+  left: 39px;
+  top: 55px;
+  width: 190px;
+  height: 190px;
+  object-fit: cover;
+  border-radius: 40px;
+  z-index: 3;
+}
+
+.badge {
+  top: 152px;
+  width: 86px;
+  height: 40px;
+  object-fit: fill;
+  border-radius: 6px;
+  z-index: 4;
+}
+
+#flag {
+  left: 272px;
+  top: 212px;
+  z-index: 4;
+}
+
+#modeIcon {
+  left: 1125px;
+  top: 10px;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  z-index: 4;
+}
+
+.pp-layer {
+  left: 0;
+  top: 0;
+  width: $panel-width;
+  height: $panel-height;
+  z-index: 5;
+}
+
+#ppHex {
+  left: 132px;
+  top: 626px;
+  z-index: 6;
+  overflow: visible;
+}
+
+#levelProgress {
+  left: 662px;
+  top: 370px;
+  height: 7px;
+  border-radius: 5px;
+  background: #ff66ab;
+  z-index: 7;
+}
+
+.text {
+  z-index: 8;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: 0;
+  color: #fff;
+  font-family: $font-exo2;
+  transform: translateY(-100%);
+}
+
+.text.harmony {
+  font-family: $font-harmony;
+}
+
+.text.center {
+  transform: translate(-50%, -100%);
+}
+
+.text.right {
+  transform: translate(-100%, -100%);
+}
+
+.text.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -151,8 +151,8 @@ namespace KanonBot.Functions
             data.u1Name = rightUser.Username;
             data.u1 = d2.Performances;
 
-            using var img = await Image.PPVS.DrawPPVS(data);
-            await target.reply(img, new JpegEncoder());
+            var rendered = await Image.Takumi.PPVSTakumi.Draw(data);
+            await target.reply(rendered);
         }
     }
 }

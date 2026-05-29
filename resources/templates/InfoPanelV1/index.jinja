@@ -1,0 +1,91 @@
+{% macro text(value, x, y, size, family="exo", weight="400", anchor="left", color="#ffffff", max_width=none) -%}
+  <div
+    class="text{% if family == 'harmony' %} harmony{% endif %}{% if anchor != 'left' %} {{ anchor }}{% endif %}{% if max_width %} ellipsis{% endif %}"
+    style="
+      left: {{ x }}px;
+      top: {{ y }}px;
+      font-size: {{ size }}px;
+      font-weight: {{ weight }};
+      color: {{ color }};
+      {% if max_width %}max-width: {{ max_width }}px;{% endif %}
+    ">
+    {{ value }}
+  </div>
+{%- endmacro %}
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="styles.scss" />
+</head>
+
+<body>
+  <img id="cover" src="{{ cover_src }}" />
+  <img id="panel" src="{{ panel_src }}" />
+  <img id="avatar" src="{{ avatar_src }}" />
+
+  {% if badges %}
+    {% for badge in badges %}
+      <img
+        class="badge"
+        src="{{ badge.src }}"
+        style="left: {{ 272 + loop.index0 * 100 }}px;" />
+    {% endfor %}
+  {% endif %}
+
+  <img id="flag" src="{{ flag_src }}" />
+  <img id="modeIcon" src="{{ mode_icon_src }}" />
+
+  {% if pp_plus_panel_src %}
+    <img class="pp-layer" src="{{ pp_plus_panel_src }}" />
+
+    <svg id="ppHex" viewBox="0 0 200 200" width="200" height="200">
+      <polygon
+        points="{{ hex_svg_points }}"
+        fill="{{ hex_fill_color }}"
+        stroke="{{ hex_stroke_color }}"
+        stroke-width="2" />
+    </svg>
+
+    {% for label in pp_plus_labels %}
+      {{ text(label.value, label.x, label.y, 18, "exo", "400", "left", "#ffcc33") }}
+    {% endfor %}
+  {% else %}
+    <img class="pp-layer" src="{{ no_pp_plus_panel_src }}" />
+  {% endif %}
+
+  {{ text(update_time_display, 15, 25, 20) }}
+
+  {% if days_before_display %}
+    {{ text(days_before_display, 300, 25, 20, "harmony") }}
+  {% endif %}
+
+  {{ text(username_display, 268, 140, 60, "exo", "600", "left", "#ffffff", 720) }}
+  {{ text(country_rank_display, 350, 260, 20, "exo", "600") }}
+
+  {{ text(global_rank_display, 40, 410, 40) }}
+  {{ text(rank_diff_display, 40, 430, 14, "harmony") }}
+
+  {{ text(pp_display, 246, 410, 40) }}
+  {{ text(pp_diff_display, 246, 430, 14, "harmony") }}
+
+  {{ text(ssh_display, 80, 540, 30, "exo", "400", "center") }}
+  {{ text(ss_display, 191, 540, 30, "exo", "400", "center") }}
+  {{ text(sh_display, 301, 540, 30, "exo", "400", "center") }}
+  {{ text(s_display, 412, 540, 30, "exo", "400", "center") }}
+  {{ text(a_display, 522, 540, 30, "exo", "400", "center") }}
+
+  <div id="levelProgress" style="width: {{ level_progress * 4 }}px;"></div>
+
+  {{ text(level_display, 1115, 385, 34, "exo", "600", "center") }}
+  {{ text(level_percent_display, 1060, 400, 20, "exo", "600", "right") }}
+
+  {{ text(ranked_score_display, 1180, 625, 36, "exo", "400", "right") }}
+  {{ text(accuracy_display, 1180, 665, 36, "exo", "400", "right") }}
+  {{ text(play_count_display, 1180, 705, 36, "exo", "400", "right") }}
+  {{ text(total_score_display, 1180, 745, 36, "exo", "400", "right") }}
+  {{ text(total_hits_display, 1180, 785, 36, "exo", "400", "right") }}
+  {{ text(play_time_display, 1180, 825, 36, "exo", "400", "right") }}
+</body>
+</html>
