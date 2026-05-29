@@ -1,6 +1,7 @@
 using System.IO;
 using System.Numerics;
 using System.Security.Cryptography;
+using System.Text;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.PixelFormats;
@@ -123,22 +124,24 @@ public static partial class Utils
     ];
 
     public static Color ForStarDifficulty(double starDifficulty) =>
-        memo<double, Color>(static starDifficulty =>
-                SampleFromLinearGradient(
-                        GradientMap,
-                        (float)Math.Round(starDifficulty, 2, MidpointRounding.AwayFromZero)
-                    )
-                    .ToColor()
+        memo<double, Color>(
+                static starDifficulty =>
+                    SampleFromLinearGradient(
+                            GradientMap,
+                            (float)Math.Round(starDifficulty, 2, MidpointRounding.AwayFromZero)
+                        )
+                        .ToColor()
             )
             .Invoke(starDifficulty);
 
     public static Color ForStarDifficultyScore(double starDifficulty) =>
-        memo<double, Color>(static starDifficulty =>
-                SampleFromLinearGradient(
-                        GradientMapScore,
-                        (float)Math.Round(starDifficulty, 2, MidpointRounding.AwayFromZero)
-                    )
-                    .ToColor()
+        memo<double, Color>(
+                static starDifficulty =>
+                    SampleFromLinearGradient(
+                            GradientMapScore,
+                            (float)Math.Round(starDifficulty, 2, MidpointRounding.AwayFromZero)
+                        )
+                        .ToColor()
             )
             .Invoke(starDifficulty);
 
@@ -223,5 +226,10 @@ public static partial class Utils
             Current = baseLevel,
             Progress = (int)Math.Round(progress * 100)
         };
+    }
+
+    public static string Hash(string value)
+    {
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)))[..16];
     }
 }

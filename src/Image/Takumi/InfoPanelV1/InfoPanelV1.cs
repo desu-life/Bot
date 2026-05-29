@@ -3,58 +3,45 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using global::Takumi.Render.UniFFI;
 using KanonBot.API.OSU;
 using KanonBot.Functions;
-using global::Takumi.Render.UniFFI;
 using SixLabors.ImageSharp.Formats.Png;
-using Img = SixLabors.ImageSharp.Image;
+using static KanonBot.Image.Takumi.TakumiHelper;
 using IOPath = System.IO.Path;
 
 namespace KanonBot.Image.Takumi;
 
 public static class InfoV1Takumi
 {
-    private const int PanelWidth = 1200;
-    private const int PanelHeight = 857;
-
     private static readonly string templateRoot = IOPath.Combine(
         AppContext.BaseDirectory,
         "resources",
         "templates",
         "InfoPanelV1"
     );
-    private static readonly string workingRoot = IOPath.Combine(
-        Directory.GetCurrentDirectory(),
-        "work"
-    );
-    private static readonly string cacheRoot = IOPath.Combine(
-        workingRoot,
-        "cache",
-        "takumi",
-        "infov1"
-    );
-    private static readonly JsonSerializerOptions TemplateJsonOptions =
-        new() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
 
     private static readonly string[] TemplateFontPaths =
     [
         IOPath.Combine(workingRoot, "fonts", "Exo2", "Exo2-Regular.ttf"),
         IOPath.Combine(workingRoot, "fonts", "Exo2", "Exo2-SemiBold.ttf"),
-        IOPath.Combine(workingRoot, "fonts", "rhr", "ResourceHanRoundedCN-VF.otf"),
-        IOPath.Combine(workingRoot, "fonts", "noto_arabic", "NotoSansArabic-Regular.ttf"),
-        IOPath.Combine(workingRoot, "fonts", "noto_arabic", "NotoSansArabic-SemiBold.ttf"),
         IOPath.Combine(workingRoot, "fonts", "HarmonyOS_Sans_SC", "HarmonyOS_Sans_SC_Regular.ttf"),
         IOPath.Combine(workingRoot, "fonts", "HarmonyOS_Sans_SC", "HarmonyOS_Sans_SC_Medium.ttf"),
         IOPath.Combine(workingRoot, "fonts", "HarmonyOS_Sans_SC", "HarmonyOS_Sans_SC_Bold.ttf"),
         IOPath.Combine(workingRoot, "fonts", "HarmonyOS_Sans_Naskh_Arabic", "HarmonyOS_Sans_Naskh_Arabic_Regular.ttf"),
     ];
 
-    private static readonly Renderer Renderer = CreateTemplateRenderer();
+    private static readonly TemplateEngine TemplateEngine = CreateTemplateEngine(templateRoot);
+    private static readonly Renderer Renderer = CreateTemplateRenderer(
+        templateRoot,
+        TemplateFontPaths
+    );
 
     public static async Task<RenderedImage> Draw(
         KanonBot.Image.InfoV1.UserPanelData data,
         bool isBonded = false,
-        bool isDataOfDayAvailable = true)
+        bool isDataOfDayAvailable = true
+    )
     {
         ArgumentNullException.ThrowIfNull(data);
         ArgumentNullException.ThrowIfNull(data.userInfo);
@@ -62,44 +49,32 @@ public static class InfoV1Takumi
         var templatePath = IOPath.Combine(templateRoot, "index.jinja");
         var context = await BuildTemplateContext(data, isBonded, isDataOfDayAvailable);
 
+        var html = TemplateEngine.Render(
+            new TemplateRequest
+            {
+                Input = TemplateInput.File(templatePath),
+                ContextJson = JsonSerializer.Serialize(context, TemplateJsonOptions),
+                ContentKind = TemplateContentKind.JinjaHtml,
+            }
+        );
+
         return Renderer.Render(
             new RenderRequest
             {
-                Input = RenderInput.File(RenderContentKind.JinjaHtml, templatePath),
-                ContextJson = JsonSerializer.Serialize(context, TemplateJsonOptions),
-                Viewport = new RenderSize((uint)PanelWidth, (uint)PanelHeight),
+                Input = RenderInput.Inline(html),
+                Viewport = new RenderSize(),
                 Format = ImageFormat.Png,
-                LoadLinkedStylesheets = true,
-                ResolveLocalAssets = true
             }
         );
-    }
-
-    private static Renderer CreateTemplateRenderer()
-    {
-        var renderer = new Renderer();
-        renderer.AddSearchPath(workingRoot);
-        renderer.AddSearchPath(templateRoot);
-
-        foreach (var path in TemplateFontPaths)
-        {
-            renderer.AddFontFile(path);
-        }
-
-        return renderer;
     }
 
     private static async Task<InfoPanelV1Context> BuildTemplateContext(
         KanonBot.Image.InfoV1.UserPanelData data,
         bool isBonded,
-        bool isDataOfDayAvailable)
+        bool isDataOfDayAvailable
+    )
     {
-        Directory.CreateDirectory(cacheRoot);
-
-        using (await Utils.LoadOrDownloadAvatar(data.userInfo))
-        {
-        }
-
+        var avatarPath = await LoadOrDownloadAvatar(data.userInfo);
         var statistics = data.userInfo.Statistics;
         var prevStatistics = data.prevUserInfo?.Statistics ?? data.userInfo.Statistics;
         var pplusValues = GetPpPlusValues(data);
@@ -137,7 +112,7 @@ public static class InfoV1Takumi
         {
             CoverSrc = await ResolveCoverAsset(data),
             PanelSrc = await ResolvePanelAsset(data),
-            AvatarSrc = GetAvatarAssetPath(data.userInfo),
+            AvatarSrc = avatarPath,
             FlagSrc = AssetPath("flags", $"{data.userInfo.Country!.Code}.png"),
             ModeIconSrc = AssetPath("legacy", "mode_icon", $"{data.userInfo.Mode.ToStr()}.png"),
             PpPlusPanelSrc = hexPoints is not null ? AssetPath("legacy", "pp+-v1.png") : null,
@@ -172,8 +147,8 @@ public static class InfoV1Takumi
         };
     }
 
-    private static readonly double[] PpPlusMulti = [14.1, 69.7, 1.92, 19.8, 0.588, 3.06];
-    private static readonly double[] PpPlusExp = [0.769, 0.596, 0.953, 0.8, 1.175, 0.993];
+    private static readonly double[] PpPlusMulti =  [ 14.1, 69.7, 1.92, 19.8, 0.588, 3.06 ];
+    private static readonly double[] PpPlusExp =  [ 0.769, 0.596, 0.953, 0.8, 1.175, 0.993 ];
 
     private static double[] GetPpPlusValues(KanonBot.Image.InfoV1.UserPanelData data)
     {
@@ -224,7 +199,10 @@ public static class InfoV1Takumi
         {
             if (data.userInfo.Cover.CustomUrl is not null)
             {
-                var path = await CacheRemoteImage(data.userInfo.Cover.CustomUrl.ToString(), $"osu-cover-{data.osuId}");
+                var path = await CacheRemoteImage(
+                    data.userInfo.Cover.CustomUrl.ToString(),
+                    $"osu-cover-{data.osuId}"
+                );
                 if (path is not null)
                     return path;
             }
@@ -248,7 +226,9 @@ public static class InfoV1Takumi
         return AssetPath("legacy", "v1_cover", "default", $"default_{n}.png");
     }
 
-    private static async Task<List<BadgeModel>?> BuildBadges(KanonBot.Image.InfoV1.UserPanelData data)
+    private static async Task<List<BadgeModel>?> BuildBadges(
+        KanonBot.Image.InfoV1.UserPanelData data
+    )
     {
         if (data.badgeImageUrls.Count == 0)
             return null;
@@ -256,7 +236,7 @@ public static class InfoV1Takumi
         var badges = new List<BadgeModel>(5);
         foreach (var url in data.badgeImageUrls.Where(url => !string.IsNullOrEmpty(url)).Take(5))
         {
-            var path = await CacheRemoteImage(url, $"badge-{Hash(url)}");
+            var path = await CacheRemoteImage(url, $"badge-{Utils.Hash(url)}");
             if (path is not null)
                 badges.Add(new BadgeModel { Src = path });
         }
@@ -264,29 +244,10 @@ public static class InfoV1Takumi
         return badges.Count > 0 ? badges : null;
     }
 
-    private static async Task<string?> CacheRemoteImage(string url, string key)
-    {
-        try
-        {
-            var output = IOPath.Combine(cacheRoot, $"{SanitizeFileName(key)}.png");
-            if (File.Exists(output))
-                return output;
-
-            using var stream = await url.GetStreamAsync();
-            using var image = await Img.LoadAsync(stream);
-            await using var outputStream = File.Create(output);
-            await image.SaveAsync(outputStream, new PngEncoder());
-            return output;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
     private static string? BuildDaysBeforeDisplay(
         KanonBot.Image.InfoV1.UserPanelData data,
-        bool isDataOfDayAvailable)
+        bool isDataOfDayAvailable
+    )
     {
         if (data.daysBefore <= 1)
             return null;
@@ -299,7 +260,8 @@ public static class InfoV1Takumi
     private static string BuildCountryRankDisplay(
         Models.UserStatistics statistics,
         Models.UserStatistics prevStatistics,
-        bool isBonded)
+        bool isBonded
+    )
     {
         if (!isBonded)
             return string.Format("#{0:N0}", statistics.CountryRank);
@@ -316,7 +278,8 @@ public static class InfoV1Takumi
     private static string BuildGlobalRankDiffDisplay(
         Models.UserStatistics statistics,
         Models.UserStatistics prevStatistics,
-        bool isBonded)
+        bool isBonded
+    )
     {
         if (!isBonded)
             return "↑ -";
@@ -333,7 +296,8 @@ public static class InfoV1Takumi
     private static string BuildPpDiffDisplay(
         Models.UserStatistics statistics,
         Models.UserStatistics prevStatistics,
-        bool isBonded)
+        bool isBonded
+    )
     {
         if (!isBonded)
             return "↑ -";
@@ -350,7 +314,8 @@ public static class InfoV1Takumi
     private static string BuildAccuracyDisplay(
         Models.UserStatistics statistics,
         Models.UserStatistics prevStatistics,
-        bool isBonded)
+        bool isBonded
+    )
     {
         if (!isBonded)
             return string.Format("{0:0.##}%", statistics.HitAccuracy);
@@ -367,7 +332,8 @@ public static class InfoV1Takumi
     private static string BuildPlayCountDisplay(
         Models.UserStatistics statistics,
         Models.UserStatistics prevStatistics,
-        bool isBonded)
+        bool isBonded
+    )
     {
         if (!isBonded)
             return string.Format("{0:N0}", statistics.PlayCount);
@@ -384,7 +350,8 @@ public static class InfoV1Takumi
     private static string BuildTotalHitsDisplay(
         Models.UserStatistics statistics,
         Models.UserStatistics prevStatistics,
-        bool isBonded)
+        bool isBonded
+    )
     {
         if (!isBonded)
             return string.Format("{0:N0}", statistics.TotalHits);
@@ -396,34 +363,5 @@ public static class InfoV1Takumi
             return string.Format("{0:N0}({1:N0})", statistics.TotalHits, diff);
 
         return string.Format("{0:N0}", statistics.TotalHits);
-    }
-
-    private static string GetAvatarAssetPath(Models.User user)
-    {
-        var fileName = user.AvatarUrl.Host == "a.ppy.sb" ? $"sb-{user.Id}.png" : $"{user.Id}.png";
-        return AssetPath("avatar", fileName);
-    }
-
-    private static string AssetPath(params string[] parts)
-    {
-        return IOPath.GetFullPath(IOPath.Combine(workingRoot, IOPath.Combine(parts)))
-            .Replace('\\', '/');
-    }
-
-    private static string Hash(string value)
-    {
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)))[..16];
-    }
-
-    private static string SanitizeFileName(string value)
-    {
-        var invalid = IOPath.GetInvalidFileNameChars();
-        var builder = new StringBuilder(value.Length);
-        foreach (var c in value)
-        {
-            builder.Append(invalid.Contains(c) ? '_' : c);
-        }
-
-        return builder.ToString();
     }
 }

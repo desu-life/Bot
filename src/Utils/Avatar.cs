@@ -10,7 +10,8 @@ public static partial class Utils
     public static async Task<Image<Rgba32>> LoadOrDownloadAvatar(API.OSU.Models.User userInfo)
     {
         var filename = $"{userInfo.Id}.png";
-        if (userInfo.AvatarUrl.Host == "a.ppy.sb") {
+        if (userInfo.AvatarUrl.Host == "a.ppy.sb")
+        {
             filename = $"sb-{userInfo.Id}.png";
         }
         var avatarPath = $"./work/avatar/{filename}";
@@ -19,10 +20,9 @@ public static partial class Utils
             {
                 try
                 {
-                    avatarPath = await userInfo.AvatarUrl.DownloadFileAsync(
-                        "./work/avatar/",
-                        filename
-                    );
+                    avatarPath = await userInfo
+                        .AvatarUrl
+                        .DownloadFileAsync("./work/avatar/", filename);
                 }
                 catch (Exception ex)
                 {

@@ -1,11 +1,11 @@
 using System.IO;
 using System.Security.Cryptography;
-using static KanonBot.API.OSU.OSUExtensions;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using static KanonBot.API.OSU.OSUExtensions;
 using Img = SixLabors.ImageSharp.Image;
-using SixLabors.ImageSharp.Formats;
 
 namespace KanonBot;
 
@@ -24,13 +24,12 @@ public static partial class Utils
         }
     }
 
-    
-    async public static Task<Image<Rgba32>> ReadImageRgba(string path)
+    public static async Task<Image<Rgba32>> ReadImageRgba(string path)
     {
         return await Img.LoadAsync<Rgba32>(path);
     }
 
-    async public static Task<Image<Rgba32>?> TryReadImageRgba(string path)
+    public static async Task<Image<Rgba32>?> TryReadImageRgba(string path)
     {
         try
         {
@@ -42,7 +41,7 @@ public static partial class Utils
         }
     }
 
-    async public static Task<(Image<Rgba32>, IImageFormat)> ReadImageRgbaWithFormat(string path)
+    public static async Task<(Image<Rgba32>, IImageFormat)> ReadImageRgbaWithFormat(string path)
     {
         using var s = Utils.LoadFile2ReadStream(path);
         var img = await Img.LoadAsync<Rgba32>(s);

@@ -519,6 +519,27 @@ namespace KanonBot.API.OSU
         }
 
         // 小夜api版（备选方案）
+        public static async Task<string?> SayoGetBeatmapBackgroundUrl(long sid, long bid)
+        {
+            var apiUrl = $"https://api.sayobot.cn/v2/beatmapinfo?K={sid}";
+            var response = await apiUrl.GetJsonAsync<JsonObject>();
+            if (response?.SelectToken("data.bid_data") is not JsonArray bidDataArray)
+                return null;
+
+            foreach (var beatmap in bidDataArray)
+            {
+                if (beatmap.SelectToken("bid")?.Value<long>() == bid)
+                {
+                    var bgFileName = beatmap.SelectToken("bg")?.Value<string>();
+                    if (string.IsNullOrEmpty(bgFileName))
+                        return null;
+
+                    return $"https://dl.sayobot.cn/beatmaps/files/{sid}/{bgFileName}";
+                }
+            }
+            return null;
+        }
+
         public static async Task<string?> SayoDownloadBeatmapBackgroundImg(
             long sid,
             long bid,
@@ -528,32 +549,12 @@ namespace KanonBot.API.OSU
         {
             try
             {
-                // 获取谱面信息
-                var apiUrl = $"https://api.sayobot.cn/v2/beatmapinfo?K={sid}";
-                var response = await apiUrl.GetJsonAsync<JsonObject>();
-
-                if (response?.SelectToken("data.bid_data") is not JsonArray bidDataArray)
+                var downloadUrl = await SayoGetBeatmapBackgroundUrl(sid, bid);
+                if (downloadUrl is null)
                     return null;
 
-                // 查找目标谱面并获取背景图片文件名
-                foreach (var beatmap in bidDataArray)
-                {
-                    if (beatmap.SelectToken("bid")?.Value<long>() == bid)
-                    {
-                        var bgFileName = beatmap.SelectToken("bg")?.Value<string>();
-                        if (string.IsNullOrEmpty(bgFileName))
-                            return null;
-
-                        // 下载背景图片
-                        var downloadUrl =
-                            $"https://dl.sayobot.cn/beatmaps/files/{sid}/{bgFileName}";
-                        var finalFileName = fileName ?? $"{bid}.png";
-
-                        return await downloadUrl.DownloadFileAsync(folderPath, finalFileName);
-                    }
-                }
-
-                return null;
+                var finalFileName = fileName ?? $"{bid}.png";
+                return await downloadUrl.DownloadFileAsync(folderPath, finalFileName);
             }
             catch (Exception ex)
             {
@@ -564,7 +565,7 @@ namespace KanonBot.API.OSU
         }
 
         // 搜索用户数量 未使用
-        async public static Task<JsonObject?> SearchUser(string userName)
+        public static async Task<JsonObject?> SearchUser(string userName)
         {
             var body = await http()
                 .AppendPathSegment("search")
@@ -575,7 +576,7 @@ namespace KanonBot.API.OSU
 
         // 获取pp+数据
         [Obsolete("可以使用新方法，本API已废弃")]
-        async public static Task<Models.PPlusData> GetUserPlusData(long uid)
+        public static async Task<Models.PPlusData> GetUserPlusData(long uid)
         {
             var res = await $"https://syrin.me/pp+/api/user/{uid}/".GetJsonAsync<JsonObject>();
             var data = new Models.PPlusData()

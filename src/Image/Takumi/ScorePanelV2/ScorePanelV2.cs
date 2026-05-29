@@ -9,6 +9,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using static KanonBot.Image.Fonts;
+using static KanonBot.Image.Takumi.TakumiHelper;
 using Img = SixLabors.ImageSharp.Image;
 using IOPath = System.IO.Path;
 using OSU = KanonBot.API.OSU;
@@ -21,12 +22,6 @@ public static class ScoreV2
         "templates",
         "ScorePanelV2"
     );
-    private static readonly string workingRoot = IOPath.Combine(
-        Directory.GetCurrentDirectory(),
-        "work"
-    );
-    private static readonly JsonSerializerOptions TemplateJsonOptions =
-        new() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
 
     private static readonly string[] TemplateFontPaths =
     [
@@ -40,7 +35,11 @@ public static class ScoreV2
         IOPath.Combine(workingRoot, "fonts", "noto_arabic", "NotoSansArabic-SemiBold.ttf"),
     ];
 
-    private static readonly Renderer Renderer = CreateTemplateRenderer(workingRoot);
+    private static readonly TemplateEngine TemplateEngine = CreateTemplateEngine(templateRoot);
+    private static readonly Renderer Renderer = CreateTemplateRenderer(
+        templateRoot,
+        TemplateFontPaths
+    );
 
     public static async Task<RenderedImage> DrawScore(
         ScorePanelData data,
@@ -57,31 +56,23 @@ public static class ScoreV2
         var templatePath = IOPath.Combine(templateRoot, "index.jinja");
         var context = await BuildTemplateContext(data, workingRoot);
 
+        var html = TemplateEngine.Render(
+            new TemplateRequest
+            {
+                Input = TemplateInput.File(templatePath),
+                ContextJson = JsonSerializer.Serialize(context, TemplateJsonOptions),
+                ContentKind = TemplateContentKind.JinjaHtml,
+            }
+        );
+
         return Renderer.Render(
             new RenderRequest
             {
-                Input = RenderInput.File(RenderContentKind.JinjaHtml, templatePath),
-                ContextJson = JsonSerializer.Serialize(context, TemplateJsonOptions),
-                Viewport = new RenderSize(1950u, 1088u),
-                Format = ImageFormat.Png,
-                LoadLinkedStylesheets = true,
-                ResolveLocalAssets = true
+                Input = RenderInput.Inline(html),
+                Viewport = new RenderSize(),
+                Format = format,
             }
         );
-    }
-
-    private static Renderer CreateTemplateRenderer(string workingRoot)
-    {
-        var renderer = new Renderer();
-        renderer.AddSearchPath(workingRoot);
-        renderer.AddSearchPath(templateRoot);
-
-        foreach (var p in TemplateFontPaths)
-        {
-            renderer.AddFontFile(p);
-        }
-
-        return renderer;
     }
 
     private static async Task<ScorePanelContext> BuildTemplateContext(
@@ -95,25 +86,18 @@ public static class ScoreV2
         var beatmapset = score.Beatmapset!;
         var user = score.User!;
 
-        using var _ = await Utils.LoadOrDownloadAvatar(user);
-        using var background = await Utils.LoadOrDownloadBackground(
-            beatmap.BeatmapsetId,
-            beatmap.BeatmapId
-        );
-
-        var backgroundSrc =
-            background is not null
-            && File.Exists(AssetPath("background", $"{beatmap.BeatmapId}.png"))
-                ? AssetPath("background", $"{beatmap.BeatmapId}.png")
-                : AssetPath("legacy", "load-failed-img.png");
+        var avatarPath = await LoadOrDownloadAvatar(user);
+        var backgroundPath =
+            await LoadOrDownloadBackground(beatmap.BeatmapsetId, beatmap.BeatmapId)
+            ?? AssetPath("legacy", "load-failed-img.png");
 
         var accuracyPercent = score.AccAuto * 100f;
 
         return new ScorePanelContext
         {
             Mode = GetTemplateMode(data.mode),
-            MapBgSrc = backgroundSrc,
-            AvatarSrc = GetAvatarAssetPath(user),
+            MapBgSrc = backgroundPath,
+            AvatarSrc = avatarPath,
             PanelSrc = GetPanelAssetPath(data.mode),
             RankingSrc = AssetPath(
                 "ranking",
@@ -231,17 +215,6 @@ public static class ScoreV2
         return models.Count > 0 ? models : null;
     }
 
-    private static async Task<string?> GetOverlayColorAsync(string iconAbsolutePath)
-    {
-        using var icon = await Utils.TryReadImageRgba(iconAbsolutePath);
-        if (icon is null)
-        {
-            return null;
-        }
-
-        return Utils.GetDominantColor(icon).ToCssColor();
-    }
-
     private static List<JudgementModel> BuildJudgements(ScorePanelData data)
     {
         var score = data.scoreInfo!;
@@ -292,16 +265,6 @@ public static class ScoreV2
         }
 
         return songTime;
-    }
-
-    private static RichTextOptions CreateTextOptions(Font font)
-    {
-        return new RichTextOptions(font)
-        {
-            VerticalAlignment = VerticalAlignment.Bottom,
-            HorizontalAlignment = HorizontalAlignment.Left,
-            FallbackFontFamilies =  [ HarmonySans, HarmonySansArabic ]
-        };
     }
 
     private static string GetForecastValue(List<OsuPerformance.PPInfo.PPStat>? stats, int index)
@@ -373,22 +336,5 @@ public static class ScoreV2
             OSU.Models.Status.Loved => AssetPath("icons", "loved.png"),
             _ => null
         };
-    }
-
-    private static string GetAvatarAssetPath(OSU.Models.User user)
-    {
-        var fileName = user.AvatarUrl.Host == "a.ppy.sb" ? $"sb-{user.Id}.png" : $"{user.Id}.png";
-
-        return AssetPath("avatar", fileName);
-    }
-
-    private static string AssetPath(params string[] parts)
-    {
-        return IOPath.Combine(workingRoot, IOPath.Combine(parts));
-    }
-
-    private static string ToCssColor(this Color color)
-    {
-        return $"#{color.ToHex()}";
     }
 }

@@ -11,16 +11,14 @@ public static class HexagramHelper
         int nodeCount,
         int size,
         int nodeMaxValue,
-        int mode)
+        int mode
+    )
     {
         return string.Join(
             " ",
             CalculatePoints(ppd, multi, exp, nodeCount, size, nodeMaxValue, mode)
-                .Select(p =>
-                    string.Create(
-                        CultureInfo.InvariantCulture,
-                        $"{p.X:0.###},{p.Y:0.###}"
-                    )
+                .Select(
+                    p => string.Create(CultureInfo.InvariantCulture, $"{p.X:0.###},{p.Y:0.###}")
                 )
         );
     }
@@ -32,7 +30,8 @@ public static class HexagramHelper
         int nodeCount,
         int size,
         int nodeMaxValue,
-        int mode)
+        int mode
+    )
     {
         ArgumentNullException.ThrowIfNull(ppd);
         ArgumentNullException.ThrowIfNull(multi);
@@ -45,9 +44,7 @@ public static class HexagramHelper
         for (var i = 0; i < nodeCount; i++)
         {
             var r =
-                Math.Pow((multi[i] * Math.Pow(ppd[i], exp[i]) / nodeMaxValue), 0.8)
-                * size
-                / 2.0;
+                Math.Pow((multi[i] * Math.Pow(ppd[i], exp[i]) / nodeMaxValue), 0.8) * size / 2.0;
 
             if (mode == 1 && r > 100.00)
                 r = 100.00;

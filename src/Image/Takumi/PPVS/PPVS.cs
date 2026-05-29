@@ -3,27 +3,19 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using global::Takumi.Render.UniFFI;
 using SixLabors.ImageSharp.Formats.Png;
+using static KanonBot.Image.Takumi.TakumiHelper;
 using IOPath = System.IO.Path;
 
 namespace KanonBot.Image.Takumi;
 
 public static class PPVSTakumi
 {
-    private const int PanelWidth = 1134;
-    private const int PanelHeight = 1553;
-
     private static readonly string templateRoot = IOPath.Combine(
         AppContext.BaseDirectory,
         "resources",
         "templates",
         "PPVS"
     );
-    private static readonly string workingRoot = IOPath.Combine(
-        Directory.GetCurrentDirectory(),
-        "work"
-    );
-    private static readonly JsonSerializerOptions TemplateJsonOptions =
-        new() { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
 
     private static readonly string[] TemplateFontPaths =
     [
@@ -31,7 +23,11 @@ public static class PPVSTakumi
         IOPath.Combine(workingRoot, "fonts", "Torus-SemiBold.ttf"),
     ];
 
-    private static readonly Renderer Renderer = CreateTemplateRenderer();
+    private static readonly TemplateEngine TemplateEngine = CreateTemplateEngine(templateRoot);
+    private static readonly Renderer Renderer = CreateTemplateRenderer(
+        templateRoot,
+        TemplateFontPaths
+    );
 
     public static Task<RenderedImage> Draw(KanonBot.Image.PPVS.PPVSPanelData data)
     {
@@ -42,31 +38,25 @@ public static class PPVSTakumi
         var templatePath = IOPath.Combine(templateRoot, "index.jinja");
         var context = BuildTemplateContext(data);
 
-        return Task.FromResult(Renderer.Render(
-            new RenderRequest
+        var html = TemplateEngine.Render(
+            new TemplateRequest
             {
-                Input = RenderInput.File(RenderContentKind.JinjaHtml, templatePath),
+                Input = TemplateInput.File(templatePath),
                 ContextJson = JsonSerializer.Serialize(context, TemplateJsonOptions),
-                Viewport = new RenderSize((uint)PanelWidth, (uint)PanelHeight),
-                Format = ImageFormat.Png,
-                LoadLinkedStylesheets = true,
-                ResolveLocalAssets = true
+                ContentKind = TemplateContentKind.JinjaHtml,
             }
-        ));
-    }
+        );
 
-    private static Renderer CreateTemplateRenderer()
-    {
-        var renderer = new Renderer();
-        renderer.AddSearchPath(workingRoot);
-        renderer.AddSearchPath(templateRoot);
-
-        foreach (var path in TemplateFontPaths)
-        {
-            renderer.AddFontFile(path);
-        }
-
-        return renderer;
+        return Task.FromResult(
+            Renderer.Render(
+                new RenderRequest
+                {
+                    Input = RenderInput.Inline(html),
+                    Viewport = new RenderSize(),
+                    Format = ImageFormat.Jpeg,
+                }
+            )
+        );
     }
 
     private static PPVSContext BuildTemplateContext(KanonBot.Image.PPVS.PPVSPanelData data)
@@ -78,8 +68,24 @@ public static class PPVSTakumi
         {
             BackgroundSrc = AssetPath("legacy", "ppvs.png"),
             TitleSrc = AssetPath("legacy", "ppvs_title.png"),
-            U1SvgPoints = HexagramHelper.ToSvgPoints(u1Values, PpPlusMulti, PpPlusExp, 6, 1134, 12000, 2),
-            U2SvgPoints = HexagramHelper.ToSvgPoints(u2Values, PpPlusMulti, PpPlusExp, 6, 1134, 12000, 2),
+            U1SvgPoints = HexagramHelper.ToSvgPoints(
+                u1Values,
+                PpPlusMulti,
+                PpPlusExp,
+                6,
+                1134,
+                12000,
+                2
+            ),
+            U2SvgPoints = HexagramHelper.ToSvgPoints(
+                u2Values,
+                PpPlusMulti,
+                PpPlusExp,
+                6,
+                1134,
+                12000,
+                2
+            ),
             U1FillColor = "rgba(255, 123, 172, 0.196)",
             U1StrokeColor = "rgba(255, 123, 172, 1)",
             U2FillColor = "rgba(41, 171, 226, 0.196)",
@@ -104,13 +110,12 @@ public static class PPVSTakumi
         };
     }
 
-    private static readonly double[] PpPlusMulti = [14.1, 69.7, 1.92, 19.8, 0.588, 3.06];
-    private static readonly double[] PpPlusExp = [0.769, 0.596, 0.953, 0.8, 1.175, 0.993];
+    private static readonly double[] PpPlusMulti =  [ 14.1, 69.7, 1.92, 19.8, 0.588, 3.06 ];
+    private static readonly double[] PpPlusExp =  [ 0.769, 0.596, 0.953, 0.8, 1.175, 0.993 ];
 
     private static double[] GetPpPlusValues(API.OSU.Models.PPlusData.UserPerformancesNext data)
     {
-        return
-        [
+        return [
             data.AccuracyTotal,
             data.FlowAimTotal,
             data.JumpAimTotal,
@@ -118,11 +123,5 @@ public static class PPVSTakumi
             data.SpeedTotal,
             data.StaminaTotal
         ];
-    }
-
-    private static string AssetPath(params string[] parts)
-    {
-        return IOPath.GetFullPath(IOPath.Combine(workingRoot, IOPath.Combine(parts)))
-            .Replace('\\', '/');
     }
 }

@@ -61,9 +61,7 @@
 
 	<!-- Source Generator -->
 	 <ItemGroup>
-	  <ProjectReference Include="../generators/KanonBot.Generators/KanonBot.Generators.csproj"
-	    OutputItemType="Analyzer"
-	    ReferenceOutputAssembly="false" />
+	  <ProjectReference Include="../generators/KanonBot.Generators/KanonBot.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
 	</ItemGroup>
 
 	<!-- ProjectReference -->
