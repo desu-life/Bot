@@ -29,16 +29,16 @@ public static class InfoV1
         public OSU.Models.PPlusData.UserPerformancesNext? pplusInfo;
         public required long osuId; // 官方服务器的id
         public int daysBefore = 0;
-        public List<string> badgeImageUrls = [];
+        public List<string> badgeImageUrls =  [ ];
         public CustomMode customMode = CustomMode.Dark; //0=custom 1=light 2=dark
         public API.Kagami.InfoPanelV2CustomTheme? CustomTheme;
         public string? modeString;
 
         // Kagami image URLs (loaded from kanon-images API)
-        public string? v1PanelUrl;      // V1 panel overlay (replaces v1_infopanel/{osuId}.png)
-        public string? v1CoverUrl;      // V1 cover/background (replaces v1_cover/custom/{osuId}.png)
-        public string? v2SideImageUrl;  // V2 side image (replaces user_customimg/{osuId}.png)
-        public string? v2PanelUrl;      // V2 panel overlay (replaces user_infopanel/{osuId}.png)
+        public string? v1PanelUrl; // V1 panel overlay (replaces v1_infopanel/{osuId}.png)
+        public string? v1CoverUrl; // V1 cover/background (replaces v1_cover/custom/{osuId}.png)
+        public string? v2SideImageUrl; // V2 side image (replaces user_customimg/{osuId}.png)
+        public string? v2PanelUrl; // V2 panel overlay (replaces user_infopanel/{osuId}.png)
 
         public enum CustomMode
         {
@@ -98,10 +98,13 @@ public static class InfoV1
                 {
                     if (data.userInfo.Cover.CustomUrl is not null)
                     {
-                        coverPath = await data.userInfo.Cover.CustomUrl.DownloadFileAsync(
-                            "./work/legacy/v1_cover/osu!web/",
-                            $"{data.osuId}.png"
-                        );
+                        coverPath = await data.userInfo
+                            .Cover
+                            .CustomUrl
+                            .DownloadFileAsync(
+                                "./work/legacy/v1_cover/osu!web/",
+                                $"{data.osuId}.png"
+                            );
                     }
                     else
                     {
@@ -109,10 +112,13 @@ public static class InfoV1
                         coverPath = $"./work/legacy/v1_cover/osu!web/default_{cover_id}.png";
                         if (!File.Exists(coverPath))
                         {
-                            coverPath = await data.userInfo.Cover.Url.DownloadFileAsync(
-                                "./work/legacy/v1_cover/osu!web/",
-                                $"default_{cover_id}.png"
-                            );
+                            coverPath = await data.userInfo
+                                .Cover
+                                .Url
+                                .DownloadFileAsync(
+                                    "./work/legacy/v1_cover/osu!web/",
+                                    $"default_{cover_id}.png"
+                                );
                         }
                     }
                 }
@@ -135,9 +141,7 @@ public static class InfoV1
         cover.Mutate(x => x.Resize(resizeOptions));
         // cover.Mutate(x => x.RoundCorner(new Size(1200, 350), 20));
         // 批处理 cover 和 panel 绘制
-        info.Mutate(x => x
-            .DrawImage(cover, 1)
-            .DrawImage(panel, 1));
+        info.Mutate(x => x.DrawImage(cover, 1).DrawImage(panel, 1));
         cover.Dispose();
         panel.Dispose();
 
@@ -153,8 +157,7 @@ public static class InfoV1
             // Prefer badge image URLs from Kagami
             if (data.badgeImageUrls.Count > 0)
             {
-                var candidateUrls = data
-                    .badgeImageUrls
+                var candidateUrls = data.badgeImageUrls
                     .Where(url => !string.IsNullOrEmpty(url))
                     .Take(5)
                     .ToArray();
@@ -170,8 +173,8 @@ public static class InfoV1
                     using (badge)
                     {
                         badge.Mutate(x => x.Resize(86, 40).RoundCorner(6));
-                        info.Mutate(x =>
-                            x.DrawImage(badge, new Point(272 + (dbcountl * 100), 152), 1)
+                        info.Mutate(
+                            x => x.DrawImage(badge, new Point(272 + (dbcountl * 100), 152), 1)
                         );
                         ++dbcountl;
                         if (dbcountl > 4)
@@ -194,9 +197,11 @@ public static class InfoV1
         using var modeicon = await modeiconTask;
         modeicon.Mutate(x => x.Resize(64, 64));
         // 批处理 flags 和 modeicon 绘制
-        info.Mutate(x => x
-            .DrawImage(flags, new Point(272, 212), 1)
-            .DrawImage(modeicon, new Point(1125, 10), 1));
+        info.Mutate(
+            x =>
+                x.DrawImage(flags, new Point(272, 212), 1)
+                    .DrawImage(modeicon, new Point(1125, 10), 1)
+        );
 
         // pp+
         if (data.userInfo.Mode is OSU.Mode.OSU && data.pplusInfo is not null)
@@ -248,9 +253,7 @@ public static class InfoV1
             for (var i = 0; i < hi.nodeCount; i++)
             {
                 pppto.Origin = new Vector2(x_offset[i], (i % 3 != 0) ? (i < 3 ? 640 : 829) : 734);
-                info.Mutate(x =>
-                    x.DrawText(pppto, $"({Math.Round(ppd[i])})", color)
-                );
+                info.Mutate(x => x.DrawText(pppto, $"({Math.Round(ppd[i])})", color));
             }
         }
         else
@@ -265,10 +268,10 @@ public static class InfoV1
             VerticalAlignment = VerticalAlignment.Bottom,
             HorizontalAlignment = HorizontalAlignment.Left,
             Origin = new PointF(15, 25),
-            FallbackFontFamilies = [HarmonySans, HarmonySansArabic]
+            FallbackFontFamilies =  [ HarmonySans, HarmonySansArabic ]
         };
-        info.Mutate(x =>
-            x.DrawText(textOptions, $"update: {DateTime.Now:yyyy/MM/dd HH:mm:ss}", Color.White)
+        info.Mutate(
+            x => x.DrawText(textOptions, $"update: {DateTime.Now:yyyy/MM/dd HH:mm:ss}", Color.White)
         );
         if (data.daysBefore > 1)
         {
@@ -280,24 +283,25 @@ public static class InfoV1
             if (isDataOfDayAvaiavle)
             {
                 textOptions.Origin = new PointF(300, 25);
-                info.Mutate(x =>
-                    x.DrawText(textOptions, $"对比自{data.daysBefore}天前", Color.White)
-                );
+                info.Mutate(x => x.DrawText(textOptions, $"对比自{data.daysBefore}天前", Color.White));
             }
             else
             {
                 textOptions.Origin = new PointF(300, 25);
-                info.Mutate(x =>
-                    x.DrawText(textOptions, $" 请求的日期没有数据.." + $"当前数据对比自{data.daysBefore}天前", Color.White)
+                info.Mutate(
+                    x =>
+                        x.DrawText(
+                            textOptions,
+                            $" 请求的日期没有数据.." + $"当前数据对比自{data.daysBefore}天前",
+                            Color.White
+                        )
                 );
             }
         }
         // username
         textOptions.Font = Exo2SemiBold.Get(60);
         textOptions.Origin = new PointF(268, 140);
-        info.Mutate(x =>
-            x.DrawText(textOptions, data.userInfo.Username, Color.White)
-        );
+        info.Mutate(x => x.DrawText(textOptions, data.userInfo.Username, Color.White));
 
         var Statistics = data.userInfo.Statistics;
         var prevStatistics = data.prevUserInfo?.Statistics ?? data.userInfo.Statistics; // 没有就为当前数据
@@ -324,9 +328,7 @@ public static class InfoV1
         }
         textOptions.Font = Exo2SemiBold.Get(20);
         textOptions.Origin = new PointF(350, 260);
-        info.Mutate(x =>
-            x.DrawText(textOptions,  countryRank, Color.White)
-        );
+        info.Mutate(x => x.DrawText(textOptions, countryRank, Color.White));
         // global_rank
         string diffStr;
         if (isBonded)
@@ -345,14 +347,13 @@ public static class InfoV1
         }
         textOptions.Font = Exo2Regular.Get(40);
         textOptions.Origin = new PointF(40, 410);
-        info.Mutate(x =>
-            x.DrawText(textOptions, string.Format("{0:N0}", Statistics.GlobalRank), Color.White)
+        info.Mutate(
+            x =>
+                x.DrawText(textOptions, string.Format("{0:N0}", Statistics.GlobalRank), Color.White)
         );
         textOptions.Font = HarmonySans.Get(14);
         textOptions.Origin = new PointF(40, 430);
-        info.Mutate(x =>
-            x.DrawText(textOptions,  diffStr, Color.White)
-        );
+        info.Mutate(x => x.DrawText(textOptions, diffStr, Color.White));
         // pp
         if (isBonded)
         {
@@ -370,56 +371,46 @@ public static class InfoV1
         }
         textOptions.Font = Exo2Regular.Get(40);
         textOptions.Origin = new PointF(246, 410);
-        info.Mutate(x =>
-            x.DrawText(textOptions, string.Format("{0:0.##}", Statistics.PP), Color.White)
+        info.Mutate(
+            x => x.DrawText(textOptions, string.Format("{0:0.##}", Statistics.PP), Color.White)
         );
         textOptions.Font = HarmonySans.Get(14);
         textOptions.Origin = new PointF(246, 430);
-        info.Mutate(x =>
-            x.DrawText(textOptions,  diffStr, Color.White)
-        );
+        info.Mutate(x => x.DrawText(textOptions, diffStr, Color.White));
         // ssh ss
         textOptions.Font = Exo2Regular.Get(30);
         textOptions.HorizontalAlignment = HorizontalAlignment.Center;
         textOptions.Origin = new PointF(80, 540);
-        info.Mutate(x =>
-            x.DrawText(textOptions, Statistics.GradeCounts.SSH.ToString(), Color.White)
+        info.Mutate(
+            x => x.DrawText(textOptions, Statistics.GradeCounts.SSH.ToString(), Color.White)
         );
         textOptions.Origin = new PointF(191, 540);
-        info.Mutate(x =>
-            x.DrawText(textOptions, Statistics.GradeCounts.SS.ToString(), Color.White)
+        info.Mutate(
+            x => x.DrawText(textOptions, Statistics.GradeCounts.SS.ToString(), Color.White)
         );
         textOptions.Origin = new PointF(301, 540);
-        info.Mutate(x =>
-            x.DrawText(textOptions, Statistics.GradeCounts.SH.ToString(), Color.White)
+        info.Mutate(
+            x => x.DrawText(textOptions, Statistics.GradeCounts.SH.ToString(), Color.White)
         );
         textOptions.Origin = new PointF(412, 540);
-        info.Mutate(x =>
-            x.DrawText(textOptions, Statistics.GradeCounts.S.ToString(), Color.White)
-        );
+        info.Mutate(x => x.DrawText(textOptions, Statistics.GradeCounts.S.ToString(), Color.White));
         textOptions.Origin = new PointF(522, 540);
-        info.Mutate(x =>
-            x.DrawText(textOptions, Statistics.GradeCounts.A.ToString(), Color.White)
-        );
+        info.Mutate(x => x.DrawText(textOptions, Statistics.GradeCounts.A.ToString(), Color.White));
         // level
         textOptions.Font = Exo2SemiBold.Get(34);
         textOptions.Origin = new PointF(1115, 385);
-        info.Mutate(x =>
-            x.DrawText(textOptions, Statistics.Level.Current.ToString(), Color.White)
-        );
+        info.Mutate(x => x.DrawText(textOptions, Statistics.Level.Current.ToString(), Color.White));
         // Level%
         var levelper = Statistics.Level.Progress;
         textOptions.HorizontalAlignment = HorizontalAlignment.Right;
         textOptions.Font = Exo2SemiBold.Get(20);
         textOptions.Origin = new PointF(1060, 400);
-        info.Mutate(x =>
-            x.DrawText(textOptions,  $"{levelper}%", Color.White)
-        );
+        info.Mutate(x => x.DrawText(textOptions, $"{levelper}%", Color.White));
         try
         {
             using var levelRoundrect = new Image<Rgba32>(4 * levelper, 7);
-            levelRoundrect.Mutate(x =>
-                x.Fill(Color.ParseHex("#FF66AB")).RoundCorner(new Size(4 * levelper, 7), 5)
+            levelRoundrect.Mutate(
+                x => x.Fill(Color.ParseHex("#FF66AB")).RoundCorner(new Size(4 * levelper, 7), 5)
             );
             info.Mutate(x => x.DrawImage(levelRoundrect, new Point(662, 370), 1));
         }
@@ -437,9 +428,7 @@ public static class InfoV1
         // }
         rankedScore = string.Format("{0:N0}", Statistics.RankedScore);
         textOptions.Origin = new PointF(1180, 625);
-        info.Mutate(x =>
-            x.DrawText(textOptions,  rankedScore, Color.White)
-        );
+        info.Mutate(x => x.DrawText(textOptions, rankedScore, Color.White));
         string acc;
         if (isBonded)
         {
@@ -456,9 +445,7 @@ public static class InfoV1
             acc = string.Format("{0:0.##}%", Statistics.HitAccuracy);
         }
         textOptions.Origin = new PointF(1180, 665);
-        info.Mutate(x =>
-            x.DrawText(textOptions,  acc, Color.White)
-        );
+        info.Mutate(x => x.DrawText(textOptions, acc, Color.White));
         string playCount;
         if (isBonded)
         {
@@ -475,9 +462,7 @@ public static class InfoV1
             playCount = string.Format("{0:N0}", Statistics.PlayCount);
         }
         textOptions.Origin = new PointF(1180, 705);
-        info.Mutate(x =>
-            x.DrawText(textOptions,  playCount, Color.White)
-        );
+        info.Mutate(x => x.DrawText(textOptions, playCount, Color.White));
         string totalScore;
         // if (isBonded){
         //     var diff = data.userInfo.totalScore - data.prevUserInfo.totalScore;
@@ -489,9 +474,7 @@ public static class InfoV1
         // }
         totalScore = string.Format("{0:N0}", Statistics.TotalScore);
         textOptions.Origin = new PointF(1180, 745);
-        info.Mutate(x =>
-            x.DrawText(textOptions,  totalScore, Color.White)
-        );
+        info.Mutate(x => x.DrawText(textOptions, totalScore, Color.White));
         string totalHits;
         if (isBonded)
         {
@@ -508,12 +491,15 @@ public static class InfoV1
             totalHits = string.Format("{0:N0}", Statistics.TotalHits);
         }
         textOptions.Origin = new PointF(1180, 785);
-        info.Mutate(x =>
-            x.DrawText(textOptions,  totalHits, Color.White)
-        );
+        info.Mutate(x => x.DrawText(textOptions, totalHits, Color.White));
         textOptions.Origin = new PointF(1180, 825);
-        info.Mutate(x =>
-            x.DrawText(textOptions, Utils.Duration2StringWithoutSec(Statistics.PlayTime), Color.White)
+        info.Mutate(
+            x =>
+                x.DrawText(
+                    textOptions,
+                    Utils.Duration2StringWithoutSec(Statistics.PlayTime),
+                    Color.White
+                )
         );
         info.Mutate(x => x.RoundCorner(new Size(1200, 857), 24));
 

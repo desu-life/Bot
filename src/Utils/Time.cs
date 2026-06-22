@@ -31,16 +31,17 @@ public static partial class Utils
         rem %= 3600;
         long minute = rem / 60;
         long second = rem % 60;
+        long totalHour = totalSeconds / 3600;
 
         return format switch
         {
             DurationFormat.DayFull => $"{day}d {hour}h {minute}m {second}s",
             DurationFormat.DayNoSec => $"{day}d {hour}h {minute}m",
-            DurationFormat.HourFull => hour > 0 ? $"{hour}h {minute}m {second}s" : $"{minute}m {second}s",
-            DurationFormat.HourNoSec => hour > 0 ? $"{hour}h {minute}m" : $"{minute}m",
-            DurationFormat.TimeColon => hour > 0 ? $"{hour}:{minute:00}:{second:00}" : $"{minute}:{second:00}",
-            DurationFormat.TimeScoreV3 => hour > 0 ? $"{hour}H,{minute:00}M,{second:00}S" : $"{minute}M,{second:00}S",
-            _ => $"{hour}h {minute}m {second}s"
+            DurationFormat.HourFull => hour > 0 ? $"{totalHour}h {minute}m {second}s" : $"{minute}m {second}s",
+            DurationFormat.HourNoSec => hour > 0 ? $"{totalHour}h {minute}m" : $"{minute}m",
+            DurationFormat.TimeColon => hour > 0 ? $"{totalHour}:{minute:00}:{second:00}" : $"{minute}:{second:00}",
+            DurationFormat.TimeScoreV3 => hour > 0 ? $"{totalHour}H,{minute:00}M,{second:00}S" : $"{minute}M,{second:00}S",
+            _ => $"{totalHour}h {minute}m {second}s"
         };
     }
 
