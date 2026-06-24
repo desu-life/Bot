@@ -3,6 +3,7 @@ namespace KanonBot.Image.Takumi;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using global::Takumi.Template.UniFFI;
 using global::Takumi.Render.UniFFI;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;

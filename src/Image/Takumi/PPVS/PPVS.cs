@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using global::Takumi.Template.UniFFI;
 using global::Takumi.Render.UniFFI;
 using SixLabors.ImageSharp.Formats.Png;
 using static KanonBot.Image.Takumi.TakumiHelper;

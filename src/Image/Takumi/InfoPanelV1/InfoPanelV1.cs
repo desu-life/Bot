@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using global::Takumi.Template.UniFFI;
 using global::Takumi.Render.UniFFI;
 using KanonBot.API.OSU;
 using KanonBot.Functions;
