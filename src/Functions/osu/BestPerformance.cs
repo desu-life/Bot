@@ -32,10 +32,11 @@ namespace KanonBot.Functions
                     new() { Name = "order_number", Description = "Score index", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseInt(s) },
                     new() { Name = "order_number", Description = "Score index", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
                     new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
+                    new() { Name = "pp_version", LegacyName = "pp", Description = "PP algorithm version", Prefix = ArgPrefix.And },
                 ],
                 Flags =
                 [
-                    new() { Name = "special_pp", Description = "Alternative pp calculater", Value = "", SlashName = "is_special_pp" },
+                    new() { Name = "special_pp", Description = "Use osu! current PP (legacy alias)", Value = "", SlashName = "is_special_pp" },
                     new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" },
                     new() { Name = "dev_panel", Description = "Use the Dev panel", Value = "dev", SlashName = "is_dev" },
                 ]
@@ -67,7 +68,6 @@ namespace KanonBot.Functions
             var orderNumber = cmd.Get<int>("order_number");
             if (orderNumber < 1)
                 orderNumber = 1;
-            bool special_version_pp = cmd.Flag("special_pp");
             bool dev_panel = cmd.Flag("dev_panel");
 
             API.OSU.Models.ScoreLazer[]? scores = null;
@@ -114,11 +114,17 @@ namespace KanonBot.Functions
 
                 score.User ??= tempOsuInfo;
 
-                Image.ScorePanelData data;
-                data = await UniversalCalculator.CalculatePanelData(
-                    score,
-                    UniversalCalculator.GetCalculatorKind(is_ppysb, special_version_pp)
+                var calculatorId = await PerformanceCommandOptions.Resolve(
+                    target,
+                    cmd,
+                    score.Mode,
+                    is_ppysb
                 );
+                if (calculatorId is null)
+                    return;
+
+                Image.ScorePanelData data;
+                data = await UniversalCalculator.CalculatePanelData(score, calculatorId);
 
                 if (dev_panel)
                 {
@@ -163,15 +169,16 @@ namespace KanonBot.Functions
                         .Client
                         .InsertOsuStandardBeatmapTechData(
                             score.Beatmap!.BeatmapId,
-                            data.ppInfo!.star,
-                            (int)data.ppInfo.ppStats![0].total,
-                            (int)data.ppInfo.ppStats![0].acc!,
-                            (int)data.ppInfo.ppStats![0].speed!,
-                            (int)data.ppInfo.ppStats![0].aim!,
-                            (int)data.ppInfo.ppStats![1].total,
-                            (int)data.ppInfo.ppStats![2].total,
-                            (int)data.ppInfo.ppStats![3].total,
-                            (int)data.ppInfo.ppStats![4].total,
+                            data.performance!.Difficulty.Stars,
+                            (int)data.performance.GetForecast(PerformanceForecast.Perfect)!.Total,
+                            (int)(data.performance.GetForecast(PerformanceForecast.Perfect)!.Get(PerformanceComponent.Accuracy) ?? 0),
+                            (int)(data.performance.GetForecast(PerformanceForecast.Perfect)!.Get(PerformanceComponent.Speed) ?? 0),
+                            (int)(data.performance.GetForecast(PerformanceForecast.Perfect)!.Get(PerformanceComponent.Aim) ?? 0),
+                            (int)data.performance.GetForecast(PerformanceForecast.Accuracy99)!.Total,
+                            (int)data.performance.GetForecast(PerformanceForecast.Accuracy98)!.Total,
+                            (int)data.performance.GetForecast(PerformanceForecast.Accuracy97)!.Total,
+                            (int)data.performance.GetForecast(PerformanceForecast.Accuracy95)!.Total,
+                            data.performance.CalculatorId,
                             score.Mods.Map(m => m.Acronym).ToArray()
                         );
                 }

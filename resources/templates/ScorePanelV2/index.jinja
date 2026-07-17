@@ -148,13 +148,14 @@
 
   {# 旧版 PP 对比 #}
   {% if old_pp_value %}
-    {{ single('(oldpp)', 1825 - total_pp_est_width - 150, 447, 20, '#cf93ae', 'right') }}
+    {{ single('(' ~ old_pp_label ~ ')', 1825 - total_pp_est_width - 150, 447, 16, '#cf93ae', 'right') }}
     {{ single(old_pp_value, 1825 - total_pp_est_width - 175, 497, 61, '#fc65a9', 'right') }}
     {{ single('pp →', 1899 - total_pp_est_width - 100, 497, 61, '#cf93ae', 'right') }}
   {% endif %}
 
   {{ single(total_pp_value, 1825, 497, 61, '#fc65a9', 'right') }}
   {{ single('pp', 1899, 497, 61, '#cf93ae', 'right') }}
+  {{ single(calculator_id, 1899, 447, 16, '#cf93ae', 'right') }}
 
   {# 分数与判定 #}
   {{ single(score_display, 980, 742, 40, '#ffffff', 'center') }}

@@ -67,7 +67,10 @@ public class SlashParser
             if (!options.TryGetValue(argDef.Name, out var value) || string.IsNullOrWhiteSpace(value))
                 continue;
 
-            AppendRawArg(raw, argDef.Prefix, value);
+            var rawValue = argDef.Prefix == ArgPrefix.And
+                ? $"{argDef.LegacyName}={value}"
+                : value;
+            AppendRawArg(raw, argDef.Prefix, rawValue);
         }
 
         foreach (var flagDef in def.Flags)

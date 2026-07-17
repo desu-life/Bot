@@ -12,7 +12,7 @@ using OSU = KanonBot.API.OSU;
 
 namespace KanonBot.OsuPerformance;
 
-public static class SBRosuCalculator
+internal static class SBRosuCalculatorExtensions
 {
     public static SBRosuPP.Mode ToSBRosu(this API.OSU.Mode mode) =>
         mode switch
@@ -37,21 +37,35 @@ public static class SBRosuCalculator
     public static uint GetLargeTicks(this DifficultyAttributes dattr) {
         return dattr.osu.ToNullable()?.n_large_ticks ?? 0;
     }
+}
 
-    public static ScorePanelData CalculatePanelSSData(
+public sealed class SBRosuCalculator : IPerformanceCalculator
+{
+    public PerformanceCalculatorDescriptor Descriptor { get; } =
+        new(
+            PerformanceCalculatorIds.PpySb,
+            "rosu! ppy.sb",
+            Enum.GetValues<API.OSU.Mode>().ToHashSet()
+        );
+
+    public ScorePanelData CalculatePerfectPanelData(
         byte[] b,
         API.OSU.Models.Beatmap map,
         API.OSU.Models.Mod[] rawMods
     )
     {
-        var is_lazer = true;
+        var is_lazer = !rawMods.Any(mod => mod.IsClassic);
         using var beatmap = Beatmap.FromBytes(b);
+        var mode = map.Mode.ToSBRosu();
+        using var rmods = Mods.FromJson(Serializer.Json.Serialize(rawMods), mode);
+        beatmap.Convert(mode, rmods);
         using var builder = BeatmapAttributesBuilder.New();
+        builder.Mode(mode);
+        builder.Mods(rmods);
         var bmAttr = builder.Build(beatmap);
         var bpm = bmAttr.clock_rate * beatmap.Bpm();
-        using var rmods = Mods.FromJson(Serializer.Json.Serialize(rawMods), beatmap.Mode());
 
-        using var js = RosuPP.OwnedString.Empty();
+        using var js = SBRosuPP.OwnedString.Empty();
         rmods.Json(js.Context);
         var mods = Json.Deserialize<OSU.Models.Mod[]>(js.ToCstr())!;
 
@@ -72,7 +86,7 @@ public static class SBRosuCalculator
                 ConvertFromOld = true,
                 Accuracy = 1.0,
                 Beatmap = map,
-                MaxCombo = (uint?)map.MaxCombo ?? 0,
+                MaxCombo = pstate.max_combo,
                 Statistics = new API.OSU.Models.ScoreStatisticsLazer
                 {
                     CountGeki = pstate.n_geki,
@@ -89,31 +103,44 @@ public static class SBRosuCalculator
                 Mods = mods,
                 ModeInt = map.Mode.ToNum(),
                 Score = 1000000,
+                LegacyTotalScore = 1000000,
                 Passed = true,
                 Rank = "X",
             },
             server = "ppy.sb",
         };
         var statistics = data.scoreInfo.Statistics;
-        data.ppInfo = PPInfo.New(res, bmAttr, bpm);
+        data.performance = PerformanceResult.FromSbRosu(
+            res,
+            bmAttr,
+            bpm,
+            PerformanceCalculatorIds.PpySb,
+            map.Mode
+        );
 
         double[] accs = [100.00, 99.00, 98.00, 97.00, 95.00, data.scoreInfo.Accuracy * 100.00];
-        data.ppInfo.ppStats = accs.Select(acc =>
+        data.performance = data.performance.WithForecasts(accs.Select(acc =>
             {
                 using var p = Performance.New();
                 p.Lazer(is_lazer);
                 p.Mods(rmods);
                 p.Accuracy(acc);
-                return PPInfo.New(p.Calculate(beatmap), bmAttr, bpm).ppStat;
+                return PerformanceResult.FromSbRosu(
+                    p.Calculate(beatmap),
+                    bmAttr,
+                    bpm,
+                    PerformanceCalculatorIds.PpySb,
+                    map.Mode
+                ).Score;
             })
-            .ToList();
+        );
 
         data.mode = map.Mode.ToRosu();
 
         return data;
     }
 
-    public static ScorePanelData CalculatePanelData(byte[] b, API.OSU.Models.ScoreLazer score)
+    public ScorePanelData CalculatePanelData(byte[] b, API.OSU.Models.ScoreLazer score)
     {
         var data = new ScorePanelData { scoreInfo = score, server = "ppy.sb" };
         var statistics = data.scoreInfo.ConvertStatistics;
@@ -131,11 +158,13 @@ public static class SBRosuCalculator
         var passedObjects = statistics.PassedObjects(data.scoreInfo.Mode);
 
         if (score.Passed == false) {
-            using var hitobjects = HitObjects.New(beatmap);
-            var obj = hitobjects.Get(passedObjects - 1).ToNullable();
-            if (obj.HasValue) {
-                var endTime = obj.Value.data.duration + obj.Value.start_time;
-                data.playtime = endTime / 1000.0;
+            if (passedObjects > 0) {
+                using var hitobjects = HitObjects.New(beatmap);
+                var obj = hitobjects.Get(passedObjects - 1).ToNullable();
+                if (obj.HasValue) {
+                    var endTime = obj.Value.data.duration + obj.Value.start_time;
+                    data.playtime = endTime / 1000.0;
+                }
             }
         }
 
@@ -149,6 +178,7 @@ public static class SBRosuCalculator
         p.Mode(rmode);
         p.Mods(mods);
         p.Combo(data.scoreInfo.MaxCombo);
+        p.LegacyTotalScore(data.scoreInfo.LegacyTotalScore);
         p.N50(statistics.CountMeh);
         p.N100(statistics.CountOk);
         p.N300(statistics.CountGreat);
@@ -161,27 +191,40 @@ public static class SBRosuCalculator
         p.PassedObjects(passedObjects);
 
         // 开始计算
-        data.ppInfo = PPInfo.New(p.Calculate(beatmap), bmAttr, bpm, dattr);
+        data.performance = PerformanceResult.FromSbRosu(
+            p.Calculate(beatmap),
+            bmAttr,
+            bpm,
+            Descriptor.Id,
+            score.Mode,
+            dattr
+        );
 
         // 5种acc + 全连
         double[] accs = [100.00, 99.00, 98.00, 97.00, 95.00, data.scoreInfo.AccAuto * 100.00];
 
-        data.ppInfo.ppStats = [.. accs.Select(acc =>
+        data.performance = data.performance.WithForecasts(accs.Select(acc =>
             {
                 using var p = Performance.New();
                 p.Lazer(score.IsLazer);
                 p.Mode(rmode);
                 p.Mods(mods);
                 p.Accuracy(acc);
-                return PPInfo.New(p.CalculateFromDifficulty(dattr), bmAttr, bpm).ppStat;
-            })];
+                return PerformanceResult.FromSbRosu(
+                    p.CalculateFromDifficulty(dattr),
+                    bmAttr,
+                    bpm,
+                    Descriptor.Id,
+                    score.Mode
+                ).Score;
+            }));
 
         data.mode = rmode.ToRosu();
 
         return data;
     }
 
-    public static PPInfo CalculateData(byte[] b, API.OSU.Models.ScoreLazer score)
+    public PerformanceResult CalculateData(byte[] b, API.OSU.Models.ScoreLazer score)
     {
         var statistics = score.ConvertStatistics;
 
@@ -202,6 +245,7 @@ public static class SBRosuCalculator
         p.Mode(rmode);
         p.Mods(mods);
         p.Combo(score.MaxCombo);
+        p.LegacyTotalScore(score.LegacyTotalScore);
         p.N50(statistics.CountMeh);
         p.N100(statistics.CountOk);
         p.N300(statistics.CountGreat);
@@ -213,16 +257,18 @@ public static class SBRosuCalculator
         p.SliderEndHits(statistics.SliderTailHit);
         var pattr = p.Calculate(beatmap);
 
-        return PPInfo.New(pattr, bmAttr, bpm);
+        return PerformanceResult.FromSbRosu(pattr, bmAttr, bpm, Descriptor.Id, score.Mode);
     }
 }
 
-public partial class PPInfo
+public sealed partial record PerformanceResult
 {
-    public static PPInfo New(
+    public static PerformanceResult FromSbRosu(
         SBRosuPP.PerformanceAttributes result,
         SBRosuPP.BeatmapAttributes bmAttr,
         double bpm,
+        string calculatorId,
+        API.OSU.Mode mode,
         SBRosuPP.DifficultyAttributes? dresult = null
     )
     {
@@ -232,109 +278,44 @@ public partial class PPInfo
             {
                 var attr = result.osu.Unwrap();
                 var dattr = dresult is not null ? dresult!.Value.osu.Unwrap() : attr.difficulty;
-                return new PPInfo()
-                {
-                    star = dattr.stars,
-                    CS = bmAttr.cs,
-                    HP = bmAttr.hp,
-                    AR = bmAttr.ar,
-                    OD = bmAttr.od,
-                    accuracy = attr.pp_acc,
-                    maxCombo = dattr.max_combo,
-                    bpm = bpm,
-                    clockrate = bmAttr.clock_rate,
-                    ppStat = new PPInfo.PPStat()
-                    {
-                        total = attr.pp,
-                        aim = attr.pp_aim,
-                        speed = attr.pp_speed,
-                        acc = attr.pp_acc,
-                        strain = null,
-                        flashlight = attr.pp_flashlight,
-                    },
-                    ppStats = null
-                };
+                return Create(
+                    calculatorId, mode, dattr.stars, bmAttr.cs, bmAttr.hp, bmAttr.ar, bmAttr.od,
+                    bpm, bmAttr.clock_rate, dattr.max_combo, attr.pp,
+                    (PerformanceComponent.Aim, attr.pp_aim),
+                    (PerformanceComponent.Speed, attr.pp_speed),
+                    (PerformanceComponent.Accuracy, attr.pp_acc),
+                    (PerformanceComponent.Flashlight, attr.pp_flashlight)
+                );
             }
             case SBRosuPP.Mode.Taiko:
             {
                 var attr = result.taiko.Unwrap();
                 var dattr = dresult is not null ? dresult!.Value.taiko.Unwrap() : attr.difficulty;
-                return new PPInfo()
-                {
-                    star = dattr.stars,
-                    CS = bmAttr.cs,
-                    HP = bmAttr.hp,
-                    AR = bmAttr.ar,
-                    OD = bmAttr.od,
-                    accuracy = attr.pp_acc,
-                    maxCombo = dattr.max_combo,
-                    bpm = bpm,
-                    clockrate = bmAttr.clock_rate,
-                    ppStat = new PPInfo.PPStat()
-                    {
-                        total = attr.pp,
-                        aim = null,
-                        speed = null,
-                        acc = attr.pp_acc,
-                        strain = attr.pp_difficulty,
-                        flashlight = null,
-                    },
-                    ppStats = null
-                };
+                return Create(
+                    calculatorId, mode, dattr.stars, bmAttr.cs, bmAttr.hp, bmAttr.ar, bmAttr.od,
+                    bpm, bmAttr.clock_rate, dattr.max_combo, attr.pp,
+                    (PerformanceComponent.Accuracy, attr.pp_acc),
+                    (PerformanceComponent.Difficulty, attr.pp_difficulty)
+                );
             }
             case SBRosuPP.Mode.Catch:
             {
                 var attr = result.fruit.Unwrap();
                 var dattr = dresult is not null ? dresult!.Value.fruit.Unwrap() : attr.difficulty;
-                return new PPInfo()
-                {
-                    star = dattr.stars,
-                    CS = bmAttr.cs,
-                    HP = bmAttr.hp,
-                    AR = bmAttr.ar,
-                    OD = bmAttr.od,
-                    accuracy = null,
-                    maxCombo = dattr.max_combo,
-                    bpm = bpm,
-                    clockrate = bmAttr.clock_rate,
-                    ppStat = new PPInfo.PPStat()
-                    {
-                        total = attr.pp,
-                        aim = null,
-                        speed = null,
-                        acc = null,
-                        strain = null,
-                        flashlight = null,
-                    },
-                    ppStats = null
-                };
+                return Create(
+                    calculatorId, mode, dattr.stars, bmAttr.cs, bmAttr.hp, bmAttr.ar, bmAttr.od,
+                    bpm, bmAttr.clock_rate, dattr.max_combo, attr.pp
+                );
             }
             case SBRosuPP.Mode.Mania:
             {
                 var attr = result.mania.Unwrap();
                 var dattr = dresult is not null ? dresult!.Value.mania.Unwrap() : attr.difficulty;
-                return new PPInfo()
-                {
-                    star = dattr.stars,
-                    CS = bmAttr.cs,
-                    HP = bmAttr.hp,
-                    AR = bmAttr.ar,
-                    OD = bmAttr.od,
-                    accuracy = null,
-                    maxCombo = dattr.max_combo,
-                    bpm = bpm,
-                    clockrate = bmAttr.clock_rate,
-                    ppStat = new PPInfo.PPStat()
-                    {
-                        total = attr.pp,
-                        aim = null,
-                        speed = null,
-                        acc = null,
-                        strain = attr.pp_difficulty,
-                        flashlight = null,
-                    },
-                    ppStats = null
-                };
+                return Create(
+                    calculatorId, mode, dattr.stars, bmAttr.cs, bmAttr.hp, bmAttr.ar, bmAttr.od,
+                    bpm, bmAttr.clock_rate, dattr.max_combo, attr.pp,
+                    (PerformanceComponent.Difficulty, attr.pp_difficulty)
+                );
             }
             default:
                 throw new ArgumentOutOfRangeException("mode", result.mode, "Unknown mode");

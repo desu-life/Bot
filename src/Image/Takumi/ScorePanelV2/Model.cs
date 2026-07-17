@@ -115,6 +115,13 @@ public record ScorePanelContext
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? OldPpValue { get; init; }
 
+    [JsonPropertyName("old_pp_label")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? OldPpLabel { get; init; }
+
+    [JsonPropertyName("calculator_id")]
+    public required string CalculatorId { get; init; }
+
     [JsonPropertyName("mods")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public List<ModModel>? Mods { get; init; }

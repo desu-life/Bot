@@ -18,6 +18,7 @@ namespace KanonBot.Functions
                     new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
                     new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
                     new() { Name = "osu_mods", Description = "osu! mods", Prefix = ArgPrefix.Plus },
+                    new() { Name = "pp_version", LegacyName = "pp", Description = "PP algorithm version", Prefix = ArgPrefix.And },
                 ],
                 Flags = [ ]
             };
@@ -61,8 +62,17 @@ namespace KanonBot.Functions
 
             //从数据库获取相似的谱面
             var randBP = allBP![new Random().Next(0, 19)];
+            var calculatorId = await PerformanceCommandOptions.Resolve(
+                target,
+                cmd,
+                randBP.Mode,
+                false
+            );
+            if (calculatorId is null)
+                return;
+
             //get stars from rosupp
-            var ppinfo = await UniversalCalculator.CalculatePanelData(randBP);
+            var ppinfo = await UniversalCalculator.CalculatePanelData(randBP, calculatorId);
 
             var data = new List<Database.Model.OsuStandardBeatmapTechData>();
 
@@ -104,9 +114,10 @@ namespace KanonBot.Functions
                 data = await Database
                     .Client
                     .GetOsuStandardBeatmapTechData(
-                        (int)ppinfo.ppInfo!.ppStat.aim!,
-                        (int)ppinfo.ppInfo.ppStat.speed!,
-                        (int)ppinfo.ppInfo.ppStat.acc!,
+                        (int)(ppinfo.performance!.Score.Get(PerformanceComponent.Aim) ?? 0),
+                        (int)(ppinfo.performance.Score.Get(PerformanceComponent.Speed) ?? 0),
+                        (int)(ppinfo.performance.Score.Get(PerformanceComponent.Accuracy) ?? 0),
+                        calculatorId,
                         isDiffReductionMod ? NFEZHT_range : normal_range,
                         dt
                     );
@@ -159,9 +170,10 @@ namespace KanonBot.Functions
                 data = await Database
                     .Client
                     .GetOsuStandardBeatmapTechData(
-                        (int)ppinfo.ppInfo!.ppStat.aim!,
-                        (int)ppinfo.ppInfo.ppStat.speed!,
-                        (int)ppinfo.ppInfo.ppStat.acc!,
+                        (int)(ppinfo.performance!.Score.Get(PerformanceComponent.Aim) ?? 0),
+                        (int)(ppinfo.performance.Score.Get(PerformanceComponent.Speed) ?? 0),
+                        (int)(ppinfo.performance.Score.Get(PerformanceComponent.Accuracy) ?? 0),
+                        calculatorId,
                         isDiffReductionMod ? NFEZHT_range : normal_range,
                         dt
                     );

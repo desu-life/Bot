@@ -34,7 +34,7 @@ namespace KanonBot.Image
         public class ScoreRank {
             public required int Rank;
             public required OSU.Models.ScoreLazer Score;
-            public PPInfo? PPInfo;
+            public PerformanceResult? Performance;
         }
 
 
@@ -47,12 +47,11 @@ namespace KanonBot.Image
             //get pp
        
             // for (int i = 0; i < scoreList.Count; i++) {
-            //     scoreList[i].PPInfo = await UniversalCalculator.CalculateData(scoreList[i], kind);
+            //     scoreList[i].Performance = await UniversalCalculator.CalculateData(scoreList[i], kind);
             // }
 
             
             // scoreList.Sort((a, b) => b.pp > a.pp ? 1 : -1);
-            // ppinfos.Sort((a, b) => b.ppStat.total > a.ppStat.total ? 1 : -1);
             
 
             //设定textOption/drawOption
@@ -103,6 +102,15 @@ namespace KanonBot.Image
             image.Mutate(
                 x =>
                     x.DrawText(textOptions, userInfo.Username, Color.ParseHex("#4d4d4d"))
+            );
+            textOptions.Font = TorusRegular.Get(28);
+            textOptions.Origin = new PointF(256, 235);
+            image.Mutate(x =>
+                x.DrawText(
+                    textOptions,
+                    scoreList[0].Performance!.CalculatorId,
+                    Color.ParseHex("#8a8a8a")
+                )
             );
 
             //绘制页眉
@@ -246,7 +254,7 @@ namespace KanonBot.Image
                 textOptions.Origin = new PointF(1182, mainScoreXPos);
                 image.Mutate(
                     x =>
-                        x.DrawText(textOptions, scoreList[0].PPInfo!.star.ToString("0.##*"), Color.ParseHex("#656b6d"))
+                        x.DrawText(textOptions, scoreList[0].Performance!.Difficulty.Stars.ToString("0.##*"), Color.ParseHex("#656b6d"))
                 );
 
                 //acc
@@ -269,10 +277,10 @@ namespace KanonBot.Image
                 textOptions.Origin = new PointF(1790, 608);
                 image.Mutate(
                     x =>
-                        x.DrawText(textOptions, string.Format("{0:N1}", scoreList[0].PPInfo!.ppStat.total), Color.ParseHex("#364a75"))
+                        x.DrawText(textOptions, string.Format("{0:N1}", scoreList[0].Performance!.Score.Total), Color.ParseHex("#364a75"))
                 );
                 var bp1pptextMeasure = TextMeasurer.MeasureSize(
-                    string.Format("{0:N1}", scoreList[0].PPInfo!.ppStat.total),
+                    string.Format("{0:N1}", scoreList[0].Performance!.Score.Total),
                     textOptions
                 );
                 int bp1pptextpos = 1790 - (int)bp1pptextMeasure.Width / 2;
@@ -317,7 +325,7 @@ namespace KanonBot.Image
                 );
 
                 //Difficulty icon
-                Color modeC = Utils.ForStarDifficulty(scoreList[i].PPInfo!.star);
+                Color modeC = Utils.ForStarDifficulty(scoreList[i].Performance!.Difficulty.Stars);
                 osuscoremode_icon.Mutate(x => x.Resize(92, 92));
                 osuscoremode_icon.Mutate(
                     x =>
@@ -424,11 +432,11 @@ namespace KanonBot.Image
                 textOptions.Origin = new PointF(textMeasurePos, 138);
                 SubPic.Mutate(
                     x =>
-                        x.DrawText(textOptions, scoreList[i].PPInfo!.star.ToString("0.##*"), Color.ParseHex("#656b6d"))
+                        x.DrawText(textOptions, scoreList[i].Performance!.Difficulty.Stars.ToString("0.##*"), Color.ParseHex("#656b6d"))
                 );
                 textMeasurePos =
                     textMeasurePos
-                    + TextMeasurer.MeasureSize(scoreList[i].PPInfo!.star.ToString("0.##*"), textOptions).Width
+                    + TextMeasurer.MeasureSize(scoreList[i].Performance!.Difficulty.Stars.ToString("0.##*"), textOptions).Width
                     + 5;
 
                 //split
@@ -519,7 +527,7 @@ namespace KanonBot.Image
                 textOptions.Origin = new PointF(1790, 128);
                 SubPic.Mutate(
                     x =>
-                        x.DrawText(textOptions, string.Format("{0:N0}pp", scoreList[i].PPInfo!.ppStat.total), Color.ParseHex("#ff7bac"))
+                        x.DrawText(textOptions, string.Format("{0:N0}pp", scoreList[i].Performance!.Score.Total), Color.ParseHex("#ff7bac"))
                 );
 
                 //draw

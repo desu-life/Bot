@@ -29,10 +29,18 @@ namespace KanonBot.Functions
                     new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
                     new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon, Parse = s => s },
                     new() { Name = "order_number", Description = "Score index", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+new() { Name = "pp_version", LegacyName = "pp", Description = "PP algorithm version", Prefix = ArgPrefix.And },
                 ],
                 Flags =
                 [
-                    new() { Name = "special_pp", Description = "Alternative pp calculater", Value = "", SlashName = "is_special_pp" },
+                    new() { Name = "special_pp", Description = "Use osu! current PP (legacy alias)", Value = "", SlashName = "is_special_pp" },
+                    new()
+                    {
+                        Name = "legacy_scores",
+                        Description = "Fetch only legacy osu! scores",
+                        Value = "legacy",
+                        SlashName = "is_legacy_scores",
+                    },
                     new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" },
                     new() { Name = "dev_panel", Description = "Use the Dev panel", Value = "dev", SlashName = "is_dev" },
                     new() { Name = "sp_panel", Description = "Use the v1 panel", Value = "p", SlashName = "is_special_panel" },
@@ -53,6 +61,8 @@ namespace KanonBot.Functions
 
             var orderNumber = cmd.Get<int>("order_number");
             bool special_version_pp = cmd.Flag("special_pp");
+            bool legacyScoresOnly = special_version_pp || cmd.Flag("legacy_scores");
+            bool recalculateTotalPp = special_version_pp || cmd.Has("pp_version");
             bool dev_panel = cmd.Flag("dev_panel");
             bool special_panel = cmd.Flag("sp_panel");
 
@@ -63,6 +73,16 @@ namespace KanonBot.Functions
                 await target.Treply("error.user_not_found");
                 return;
             }
+
+            var calculationMode = is_ppysb ? sbmode!.Value.ToOsu() : mode!.Value;
+            var calculatorId = await PerformanceCommandOptions.Resolve(
+                target,
+                cmd,
+                calculationMode,
+                is_ppysb
+            );
+            if (calculatorId is null)
+                return;
 
             #endregion
 
@@ -228,49 +248,51 @@ namespace KanonBot.Functions
             switch (custominfoengineVer) //0=null 1=v1 2=v2
             {
                 case 1:
-                    if (special_version_pp && !is_ppysb)
+                    if (recalculateTotalPp)
                     {
-                        var allBPList = await Task.WhenAll(
-                            [
-                                API.OSU.Client.GetUserScores(
-                                    data.userInfo.Id,
-                                    API.OSU.UserScoreType.Best,
-                                    mode!.Value,
-                                    100,
-                                    0,
-                                    LegacyOnly: special_version_pp
-                                ),
-                                API.OSU.Client.GetUserScores(
-                                    data.userInfo.Id,
-                                    API.OSU.UserScoreType.Best,
-                                    mode!.Value,
-                                    100,
-                                    100,
-                                    LegacyOnly: special_version_pp
-                                )
-                            ]
-                        );
-                        allBP = allBPList.Flatten();
-                        var ppInfo = Utils.CalculateBonusPP(allBP, data.userInfo);
-                        await Parallel.ForEachAsync(
-                            allBP,
-                            async (s, _) =>
+                        if (is_ppysb)
+                        {
+                            var scores = await API.PPYSB.Client.GetUserScores(
+                                data.userInfo.Id,
+                                API.PPYSB.UserScoreType.Best,
+                                sbmode!.Value,
+                                100,
+                                0
+                            );
+                            if (scores is null)
                             {
-                                var b = await Utils.LoadOrDownloadBeatmap(s.Beatmap!);
-                                s.pp = UniversalCalculator
-                                    .CalculateData(
-                                        b,
-                                        s,
-                                        UniversalCalculator.GetCalculatorKind(false, true)
-                                    )
-                                    .ppStat
-                                    .total;
+                                await target.Treply("error.query_scores_failed");
+                                return;
                             }
-                        );
-                        allBP.Sort((a, b) => b.pp > a.pp ? 1 : -1);
-                        var ppInfoRecalculated = Utils.CalculateBonusPP(allBP, data.userInfo);
-                        var nextPP = ppInfo.bonusPP + ppInfoRecalculated.scorePP;
-                        data.userInfo.Statistics.PP = nextPP;
+                            allBP = scores?.Map(score => score.ToOsu(sbinfo!, sbmode.Value)).ToArray();
+                        }
+                        else
+                        {
+                            var allBPList = await Task.WhenAll(
+                                [
+                                    API.OSU.Client.GetUserScores(
+                                        data.userInfo.Id,
+                                        API.OSU.UserScoreType.Best,
+                                        mode!.Value,
+                                        100,
+                                        0,
+                                        LegacyOnly: legacyScoresOnly
+                                    ),
+                                    API.OSU.Client.GetUserScores(
+                                        data.userInfo.Id,
+                                        API.OSU.UserScoreType.Best,
+                                        mode!.Value,
+                                        100,
+                                        100,
+                                        LegacyOnly: legacyScoresOnly
+                                    )
+                                ]
+                            );
+                            allBP = allBPList.Flatten();
+                        }
+
+                        if (allBP is { Length: > 0 })
+                            await RecalculateTotalPp(allBP, data.userInfo, calculatorId);
                     }
 
                     var rendered = await Image
@@ -305,6 +327,11 @@ namespace KanonBot.Functions
                                 100,
                                 0
                             );
+                        if (ss is null)
+                        {
+                            await target.Treply("error.query_scores_failed");
+                            return;
+                        }
                         allBP = ss?.Map(s => s.ToOsu(sbinfo!, sbmode!.Value)).ToArray();
                     }
                     else
@@ -317,7 +344,7 @@ namespace KanonBot.Functions
                                     mode!.Value,
                                     100,
                                     0,
-                                    LegacyOnly: special_version_pp
+                                    LegacyOnly: legacyScoresOnly
                                 ),
                                 API.OSU.Client.GetUserScores(
                                     data.userInfo.Id,
@@ -325,34 +352,16 @@ namespace KanonBot.Functions
                                     mode!.Value,
                                     100,
                                     100,
-                                    LegacyOnly: special_version_pp
+                                    LegacyOnly: legacyScoresOnly
                                 )
                             ]
                         );
                         allBP = allBPList.Flatten();
-                        if (special_version_pp)
-                        {
-                            var ppInfo = Utils.CalculateBonusPP(allBP, data.userInfo);
-                            await Parallel.ForEachAsync(
-                                allBP,
-                                async (s, _) =>
-                                {
-                                    var b = await Utils.LoadOrDownloadBeatmap(s.Beatmap!);
-                                    s.pp = UniversalCalculator
-                                        .CalculateData(
-                                            b,
-                                            s,
-                                            UniversalCalculator.GetCalculatorKind(false, true)
-                                        )
-                                        .ppStat
-                                        .total;
-                                }
-                            );
-                            allBP.Sort((a, b) => b.pp > a.pp ? 1 : -1);
-                            var ppInfoRecalculated = Utils.CalculateBonusPP(allBP, data.userInfo);
-                            var nextPP = ppInfo.bonusPP + ppInfoRecalculated.scorePP;
-                            data.userInfo.Statistics.PP = nextPP;
-                        }
+                    }
+
+                    if (recalculateTotalPp && allBP is { Length: > 0 })
+                    {
+                        await RecalculateTotalPp(allBP, data.userInfo, calculatorId);
                     }
 
                     using (var img = await Image
@@ -365,10 +374,7 @@ namespace KanonBot.Functions
                             false,
                             isDataOfDayAvaiavle,
                             false,
-                            kind: UniversalCalculator.GetCalculatorKind(
-                                is_ppysb,
-                                special_version_pp
-                            )
+                            calculatorId: calculatorId
                         ))
                     {
                         await target.reply(img, new PngEncoder());
@@ -389,7 +395,7 @@ namespace KanonBot.Functions
                 {
                     if (data.userInfo.Mode == API.OSU.Mode.OSU) //只存std的
                         if (allBP!.Length > 0)
-                            await InsertBeatmapTechInfo(allBP);
+                            await InsertBeatmapTechInfo(allBP, calculatorId);
                         else
                         {
                             allBP = await API.OSU
@@ -402,14 +408,17 @@ namespace KanonBot.Functions
                                     0
                                 );
                             if (allBP!.Length > 0)
-                                await InsertBeatmapTechInfo(allBP);
+                                await InsertBeatmapTechInfo(allBP, calculatorId);
                         }
                 }
                 catch { }
             });
         }
 
-        public static async Task InsertBeatmapTechInfo(API.OSU.Models.ScoreLazer[] allbp)
+        public static async Task InsertBeatmapTechInfo(
+            API.OSU.Models.ScoreLazer[] allbp,
+            string calculatorId
+        )
         {
             foreach (var score in allbp)
             {
@@ -424,20 +433,21 @@ namespace KanonBot.Functions
                         || score.Rank.ToUpper() == "A"
                     )
                     {
-                        var data = await UniversalCalculator.CalculatePanelData(score);
+                        var data = await UniversalCalculator.CalculatePanelData(score, calculatorId);
                         await Database
                             .Client
                             .InsertOsuStandardBeatmapTechData(
                                 score.Beatmap!.BeatmapId,
-                                data.ppInfo!.star,
-                                (int)data.ppInfo.ppStats![0].total,
-                                (int)data.ppInfo.ppStats![0].acc!,
-                                (int)data.ppInfo.ppStats![0].speed!,
-                                (int)data.ppInfo.ppStats![0].aim!,
-                                (int)data.ppInfo.ppStats![1].total,
-                                (int)data.ppInfo.ppStats![2].total,
-                                (int)data.ppInfo.ppStats![3].total,
-                                (int)data.ppInfo.ppStats![4].total,
+                                data.performance!.Difficulty.Stars,
+                                (int)data.performance.GetForecast(PerformanceForecast.Perfect)!.Total,
+                                (int)(data.performance.GetForecast(PerformanceForecast.Perfect)!.Get(PerformanceComponent.Accuracy) ?? 0),
+                                (int)(data.performance.GetForecast(PerformanceForecast.Perfect)!.Get(PerformanceComponent.Speed) ?? 0),
+                                (int)(data.performance.GetForecast(PerformanceForecast.Perfect)!.Get(PerformanceComponent.Aim) ?? 0),
+                                (int)data.performance.GetForecast(PerformanceForecast.Accuracy99)!.Total,
+                                (int)data.performance.GetForecast(PerformanceForecast.Accuracy98)!.Total,
+                                (int)data.performance.GetForecast(PerformanceForecast.Accuracy97)!.Total,
+                                (int)data.performance.GetForecast(PerformanceForecast.Accuracy95)!.Total,
+                                data.performance.CalculatorId,
                                 score.Mods.Map(x => x.Acronym).ToArray()
                             );
                     }
@@ -447,6 +457,31 @@ namespace KanonBot.Functions
                     //无视错误
                 }
             }
+        }
+
+        private static async Task RecalculateTotalPp(
+            API.OSU.Models.ScoreLazer[] scores,
+            API.OSU.Models.UserExtended user,
+            string calculatorId
+        )
+        {
+            var original = Utils.CalculateBonusPP(scores, user);
+            await Parallel.ForEachAsync(
+                scores,
+                async (score, _) =>
+                {
+                    var beatmap = await Utils.LoadOrDownloadBeatmap(score.Beatmap!);
+                    score.pp = UniversalCalculator
+                        .CalculateData(beatmap, score, calculatorId)
+                        .Score
+                        .Total;
+                }
+            );
+            scores.Sort((left, right) =>
+                right.pp.GetValueOrDefault().CompareTo(left.pp.GetValueOrDefault())
+            );
+            var recalculated = Utils.CalculateBonusPP(scores, user);
+            user.Statistics.PP = original.bonusPP + recalculated.scorePP;
         }
     }
 }

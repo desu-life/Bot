@@ -16,12 +16,12 @@ public static class DifficultyRing
 {
     public static async Task<Img> Draw(RosuPP.Mode mode, double star)
     {
-        var ringFile = mode switch
+        var ringFile = (int)mode switch
         {
-            RosuPP.Mode.Osu => "std-expertplus.png",
-            RosuPP.Mode.Taiko => "taiko-expertplus.png",
-            RosuPP.Mode.Catch => "ctb-expertplus.png",
-            RosuPP.Mode.Mania => "mania-expertplus.png",
+            0 => "std-expertplus.png",
+            1 => "taiko-expertplus.png",
+            2 => "ctb-expertplus.png",
+            3 => "mania-expertplus.png",
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
         };
 

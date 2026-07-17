@@ -26,10 +26,11 @@ namespace KanonBot.Functions
                 [
                     new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
                     new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
+                    new() { Name = "pp_version", LegacyName = "pp", Description = "PP algorithm version", Prefix = ArgPrefix.And },
                 ],
                 Flags =
                 [
-                    new() { Name = "special_pp", Description = "Alternative pp calculater", Value = "", SlashName = "is_special_pp" },
+                    new() { Name = "special_pp", Description = "Use osu! current PP (legacy alias)", Value = "", SlashName = "is_special_pp" },
                     new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" },
                 ]
             };
@@ -49,10 +50,11 @@ namespace KanonBot.Functions
                 [
                     new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
                     new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
+                    new() { Name = "pp_version", LegacyName = "pp", Description = "PP algorithm version", Prefix = ArgPrefix.And },
                 ],
                 Flags =
                 [
-                    new() { Name = "special_pp", Description = "Alternative pp calculater", Value = "", SlashName = "is_special_pp" },
+                    new() { Name = "special_pp", Description = "Use osu! current PP (legacy alias)", Value = "", SlashName = "is_special_pp" },
                     new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" },
                 ]
             };
@@ -124,7 +126,6 @@ namespace KanonBot.Functions
             // 正常是找不到玩家，但是上面有验证，这里做保险
             if (scoreInfos.Length > 0)
             {
-                bool special_version_pp = cmd.Flag("special_pp");
                 List<Image.ScoreList.ScoreRank> scores = [ ];
                 for (int i = 0; i < scoreInfos.Length; ++i)
                 {
@@ -133,15 +134,24 @@ namespace KanonBot.Functions
                     );
                 }
 
+                var calculatorId = await PerformanceCommandOptions.Resolve(
+                    target,
+                    cmd,
+                    scores[0].Score.Mode,
+                    is_ppysb
+                );
+                if (calculatorId is null)
+                    return;
+
                 await Parallel.ForEachAsync(
                     scores,
                     async (s, _) =>
                     {
                         var b = await Utils.LoadOrDownloadBeatmap(s.Score.Beatmap!);
-                        s.PPInfo = UniversalCalculator.CalculateData(
+                        s.Performance = UniversalCalculator.CalculateData(
                             b,
                             s.Score,
-                            UniversalCalculator.GetCalculatorKind(is_ppysb, special_version_pp)
+                            calculatorId
                         );
                     }
                 );

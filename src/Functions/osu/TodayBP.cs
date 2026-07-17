@@ -26,6 +26,7 @@ namespace KanonBot.Functions
                     new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
                     new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
                     new() { Name = "order_number", Description = "Score index", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
+                    new() { Name = "pp_version", LegacyName = "pp", Description = "PP algorithm version", Prefix = ArgPrefix.And },
                 ],
                 Flags = [ new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" }, ]
             };
@@ -123,20 +124,29 @@ namespace KanonBot.Functions
                     return;
                 }
 
+                var calculatorId = await PerformanceCommandOptions.Resolve(
+                    target,
+                    cmd,
+                    scores[0].Score.Mode,
+                    is_ppysb
+                );
+                if (calculatorId is null)
+                    return;
+
                 await Parallel.ForEachAsync(
                     scores,
                     async (s, _) =>
                     {
                         var b = await Utils.LoadOrDownloadBeatmap(s.Score.Beatmap!);
-                        s.PPInfo = UniversalCalculator.CalculateData(
+                        s.Performance = UniversalCalculator.CalculateData(
                             b,
                             s.Score,
-                            UniversalCalculator.GetCalculatorKind(is_ppysb, false)
+                            calculatorId
                         );
                     }
                 );
 
-                scores.Sort((a, b) => b.PPInfo!.ppStat.total > a.PPInfo!.ppStat.total ? 1 : -1);
+                scores.Sort((a, b) => b.Performance!.Score.Total.CompareTo(a.Performance!.Score.Total));
 
                 using var img = await KanonBot
                     .Image
@@ -172,6 +182,7 @@ namespace KanonBot.Functions
                     new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
                     new() { Name = "order_number", Description = "Score index", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
                     new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
+                    new() { Name = "pp_version", LegacyName = "pp", Description = "PP algorithm version", Prefix = ArgPrefix.And },
                 ],
                 Flags = [ new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" } ]
             };

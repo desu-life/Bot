@@ -22,6 +22,8 @@ public class ParsedCommand
     /// </summary>
     public Dictionary<string, bool?> Flags { get; init; } = new();
 
+    public List<string> Errors { get; init; } = [];
+
     /// <summary>
     /// 是否查询自己（username 为空时为 true）
     /// </summary>

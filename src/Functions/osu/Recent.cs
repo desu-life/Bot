@@ -27,10 +27,11 @@ namespace KanonBot.Functions
                     new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
                     new() { Name = "order_number", Description = "Score index", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
                     new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
+                    new() { Name = "pp_version", LegacyName = "pp", Description = "PP algorithm version", Prefix = ArgPrefix.And },
                 ],
                 Flags =
                 [
-                    new() { Name = "special_pp", Description = "Alternative pp calculater", Value = "", SlashName = "is_special_pp" },
+                    new() { Name = "special_pp", Description = "Use osu! current PP (legacy alias)", Value = "", SlashName = "is_special_pp" },
                     new() { Name = "dev_panel", Description = "Use the Dev panel", Value = "dev", SlashName = "is_dev" },
                     new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" },
                 ]
@@ -52,10 +53,11 @@ namespace KanonBot.Functions
                     new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
                     new() { Name = "order_number", Description = "Score index", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
                     new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
+                    new() { Name = "pp_version", LegacyName = "pp", Description = "PP algorithm version", Prefix = ArgPrefix.And },
                 ],
                 Flags =
                 [
-                    new() { Name = "special_pp", Description = "Alternative pp calculater", Value = "", SlashName = "is_special_pp" },
+                    new() { Name = "special_pp", Description = "Use osu! current PP (legacy alias)", Value = "", SlashName = "is_special_pp" },
                     new() { Name = "dev_panel", Description = "Use the Dev panel", Value = "dev", SlashName = "is_dev" },
                     new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" },
                 ]
@@ -94,7 +96,6 @@ namespace KanonBot.Functions
             var orderNumber = cmd.Get<int>("order_number");
             if (orderNumber < 1)
                 orderNumber = 1;
-            bool special_version_pp = cmd.Flag("special_pp");
             bool dev_panel = cmd.Flag("dev_panel");
 
             if (is_ppysb)
@@ -133,11 +134,17 @@ namespace KanonBot.Functions
             // 正常是找不到玩家，但是上面有验证，这里做保险
             if (scoreInfos.Length > 0)
             {
-                Image.ScorePanelData data;
-                data = await UniversalCalculator.CalculatePanelData(
-                    scoreInfos[0],
-                    UniversalCalculator.GetCalculatorKind(is_ppysb, special_version_pp)
+                var calculatorId = await PerformanceCommandOptions.Resolve(
+                    target,
+                    cmd,
+                    scoreInfos[0].Mode,
+                    is_ppysb
                 );
+                if (calculatorId is null)
+                    return;
+
+                Image.ScorePanelData data;
+                data = await UniversalCalculator.CalculatePanelData(scoreInfos[0], calculatorId);
 
                 if (dev_panel)
                 {
@@ -157,7 +164,7 @@ namespace KanonBot.Functions
                     return;
                 _ = Task.Run(async () =>
                 {
-                    try { await BeatmapTechDataProcess(scoreInfos, osuID); }
+                    try { await BeatmapTechDataProcess(scoreInfos, osuID, calculatorId); }
                     catch (Exception ex) { Log.Error(ex, "BeatmapTechDataProcess failed"); }
                 });
             }
@@ -168,7 +175,11 @@ namespace KanonBot.Functions
             }
         }
 
-        private static async Task BeatmapTechDataProcess(Models.ScoreLazer[] scoreInfos, long? oid)
+        private static async Task BeatmapTechDataProcess(
+            Models.ScoreLazer[] scoreInfos,
+            long? oid,
+            string calculatorId
+        )
         {
             if (Config.inner!.dev)
                 return;
@@ -178,7 +189,7 @@ namespace KanonBot.Functions
                 if (x.Rank.ToUpper() != "F")
                 {
                     //计算pp数据
-                    var data = await UniversalCalculator.CalculatePanelData(x);
+                    var data = await UniversalCalculator.CalculatePanelData(x, calculatorId);
 
                     //季票信息
                     if (oid is not null)
@@ -187,7 +198,15 @@ namespace KanonBot.Functions
                             c.Acronym.Equals("AP", StringComparison.OrdinalIgnoreCase) ||
                             c.Acronym.Equals("RX", StringComparison.OrdinalIgnoreCase));
                         if (temp_abletoinsert)
-                            await SeasonalPass.Update(oid.Value, data);
+                        {
+                            var seasonalData = calculatorId == PerformanceCalculatorIds.RosuCurrent
+                                ? data
+                                : await UniversalCalculator.CalculatePanelData(
+                                    x,
+                                    PerformanceCalculatorIds.RosuCurrent
+                                );
+                            await SeasonalPass.Update(oid.Value, seasonalData);
+                        }
                     }
                     //std推图
                     if (x.Mode == API.OSU.Mode.OSU)
@@ -202,15 +221,16 @@ namespace KanonBot.Functions
                                     .Client
                                     .InsertOsuStandardBeatmapTechData(
                                         x.Beatmap!.BeatmapId,
-                                        data.ppInfo!.star,
-                                        (int)data.ppInfo.ppStats![0].total,
-                                        (int)data.ppInfo.ppStats![0].acc!,
-                                        (int)data.ppInfo.ppStats![0].speed!,
-                                        (int)data.ppInfo.ppStats![0].aim!,
-                                        (int)data.ppInfo.ppStats![1].total,
-                                        (int)data.ppInfo.ppStats![2].total,
-                                        (int)data.ppInfo.ppStats![3].total,
-                                        (int)data.ppInfo.ppStats![4].total,
+                                        data.performance!.Difficulty.Stars,
+                                        (int)data.performance.GetForecast(PerformanceForecast.Perfect)!.Total,
+                                        (int)(data.performance.GetForecast(PerformanceForecast.Perfect)!.Get(PerformanceComponent.Accuracy) ?? 0),
+                                        (int)(data.performance.GetForecast(PerformanceForecast.Perfect)!.Get(PerformanceComponent.Speed) ?? 0),
+                                        (int)(data.performance.GetForecast(PerformanceForecast.Perfect)!.Get(PerformanceComponent.Aim) ?? 0),
+                                        (int)data.performance.GetForecast(PerformanceForecast.Accuracy99)!.Total,
+                                        (int)data.performance.GetForecast(PerformanceForecast.Accuracy98)!.Total,
+                                        (int)data.performance.GetForecast(PerformanceForecast.Accuracy97)!.Total,
+                                        (int)data.performance.GetForecast(PerformanceForecast.Accuracy95)!.Total,
+                                        data.performance.CalculatorId,
                                         x.Mods.Map(c => c.Acronym).ToArray()
                                     );
                             }

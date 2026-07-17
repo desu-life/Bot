@@ -117,9 +117,8 @@ public static class PPYSBConverters
 
     public static OSU.Models.ScoreLazer ToOsu(this Models.Score s, Models.User user, Mode mode) {
         using var rmods = RosuPP.Mods.FromBits(s.Mods, mode.ToOsu().ToRosu());
-        using var js = RosuPP.OwnedString.Empty();
-        rmods.Json(js);
-        var mods = Json.Deserialize<List<OSU.Models.Mod>>(js.ToCstr());
+        using var js = rmods.Json();
+        var mods = Json.Deserialize<List<OSU.Models.Mod>>(js.String);
         mods?.Add(OSU.Models.Mod.FromString("CL"));
 
         OSU.Models.ScoreStatisticsLazer statistics = new OSU.Models.ScoreStatistics { 

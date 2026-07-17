@@ -5,6 +5,7 @@
   "error.unknown": "An unknown error occurred and has been automatically reported.",
   "error.user_not_found": "User not found.",
   "error.query_scores_failed": "An error occurred while querying scores.",
+  "error.command_parse": "Unable to parse the command arguments.",
 
   "account.platform_unknown": "Unable to determine your platform information.",
   "account.platform_unsupported": "This feature is not supported on the current platform.",
@@ -60,6 +61,7 @@
   "osu.ppvs_loading": "Fetching PP+ data, please wait...",
   "osu.ppvs_error": "Error fetching PP+ data. Please try again later.",
   "osu.ppvs_user_not_found": "Could not find user named {0}.",
+  "osu.pp_version_invalid": "The specified PP algorithm version is not available.",
 
   "bind.platform_unsupported": "Binding is not supported on this platform.",
   "bind.code_format_error": "Invalid verification code format. Please enter the code shown on the webpage.\nUsage: {prefix}bind <code>",

@@ -11,6 +11,7 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using static KanonBot.Image.Fonts;
 using static KanonBot.Image.Takumi.TakumiHelper;
+using KanonBot.OsuPerformance;
 using Img = SixLabors.ImageSharp.Image;
 using IOPath = System.IO.Path;
 using OSU = KanonBot.API.OSU;
@@ -48,7 +49,7 @@ public static class ScoreV2
     )
     {
         ArgumentNullException.ThrowIfNull(data);
-        ArgumentNullException.ThrowIfNull(data.ppInfo);
+        ArgumentNullException.ThrowIfNull(data.performance);
         ArgumentNullException.ThrowIfNull(data.scoreInfo);
         ArgumentNullException.ThrowIfNull(data.scoreInfo.Beatmap);
         ArgumentNullException.ThrowIfNull(data.scoreInfo.Beatmapset);
@@ -81,7 +82,9 @@ public static class ScoreV2
         string workingRoot
     )
     {
-        var ppInfo = data.ppInfo;
+        var performance = data.performance!;
+        var difficulty = performance.Difficulty;
+        var comparison = data.comparisons.FirstOrDefault();
         var score = data.scoreInfo!;
         var beatmap = score.Beatmap!;
         var beatmapset = score.Beatmapset!;
@@ -106,7 +109,7 @@ public static class ScoreV2
             ),
             DifficultyRing = new DifficultyRingModel
             {
-                Color = Utils.ForStarDifficultyScore(ppInfo!.star).ToCssColor(),
+                Color = Utils.ForStarDifficultyScore(difficulty.Stars).ToCssColor(),
                 CoverSrc = AssetPath("icons", "ringcontent.png"),
                 RingSrc = GetRingAssetPath(data.mode)
             },
@@ -115,39 +118,41 @@ public static class ScoreV2
             CreatorDisplay = beatmapset.Creator,
             BeatmapIdDisplay = beatmap.BeatmapId.ToString(),
             SongTimeDisplay = BuildSongTimeDisplay(data),
-            BpmDisplay = ppInfo.bpm.ToString("0.##"),
-            ArDisplay = ppInfo.AR.ToString("0.0#"),
-            OdDisplay = ppInfo.OD.ToString("0.0#"),
-            CsDisplay = ppInfo.CS.ToString("0.0#"),
-            HpDisplay = ppInfo.HP.ToString("0.0#"),
-            StarDisplay = $"Stars: {ppInfo.star:0.##}",
+            BpmDisplay = difficulty.Bpm.ToString("0.##"),
+            ArDisplay = difficulty.ApproachRate.ToString("0.0#"),
+            OdDisplay = difficulty.OverallDifficulty.ToString("0.0#"),
+            CsDisplay = difficulty.CircleSize.ToString("0.0#"),
+            HpDisplay = difficulty.DrainRate.ToString("0.0#"),
+            StarDisplay = $"Stars: {difficulty.Stars:0.##}",
             VersionDisplay = beatmap.Version,
             UsernameDisplay = user.Username,
             EndedAtDisplay = score.EndedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm:ss"),
-            PpIfFcValue = GetForecastValue(ppInfo.ppStats, 5),
+            PpIfFcValue = GetForecastValue(performance, PerformanceForecast.FullComboAtCurrentAccuracy),
             PpForecastValues =
             [
-                GetForecastValue(ppInfo.ppStats, 4),
-                GetForecastValue(ppInfo.ppStats, 3),
-                GetForecastValue(ppInfo.ppStats, 2),
-                GetForecastValue(ppInfo.ppStats, 1),
-                GetForecastValue(ppInfo.ppStats, 0)
+                GetForecastValue(performance, PerformanceForecast.Accuracy95),
+                GetForecastValue(performance, PerformanceForecast.Accuracy97),
+                GetForecastValue(performance, PerformanceForecast.Accuracy98),
+                GetForecastValue(performance, PerformanceForecast.Accuracy99),
+                GetForecastValue(performance, PerformanceForecast.Perfect)
             ],
             PpBreakdownValues =
             [
-                FormatPpValue(ppInfo.ppStat.aim),
-                FormatPpValue(ppInfo.ppStat.speed),
-                FormatPpValue(ppInfo.ppStat.acc)
+                FormatPpValue(performance.Score.Get(PerformanceComponent.Aim)),
+                FormatPpValue(performance.Score.Get(PerformanceComponent.Speed)),
+                FormatPpValue(performance.Score.Get(PerformanceComponent.Accuracy))
             ],
-            TotalPpValue = Math.Round(ppInfo.ppStat.total).ToString("0"),
-            OldPpValue = data.oldPP is not null ? Math.Round(data.oldPP.Value).ToString("0") : null,
+            TotalPpValue = Math.Round(performance.Score.Total).ToString("0"),
+            OldPpValue = comparison is not null ? Math.Round(comparison.Total).ToString("0") : null,
+            OldPpLabel = comparison?.CalculatorId,
+            CalculatorId = performance.CalculatorId,
             ScoreDisplay = score.ScoreAuto.ToString("N0"),
             Judgements = BuildJudgements(data),
             AccuracyDisplay = $"{accuracyPercent:0.0#}%",
             AccuracyHueDeg = GetAccuracyHue(accuracyPercent),
             ComboCurrentDisplay = $"{score.MaxCombo}x",
-            ComboMaxDisplay = GetComboMaxDisplay(ppInfo.maxCombo),
-            ComboHueDeg = GetComboHue(score.MaxCombo, ppInfo.maxCombo),
+            ComboMaxDisplay = GetComboMaxDisplay(difficulty.MaxCombo),
+            ComboHueDeg = GetComboHue(score.MaxCombo, difficulty.MaxCombo),
             Server = string.IsNullOrWhiteSpace(data.server) ? null : data.server,
             StatusIconSrc = GetStatusIconAssetPath(beatmap.Status),
             IsLazer = score.IsLazer ? true : null,
@@ -220,7 +225,7 @@ public static class ScoreV2
     {
         var score = data.scoreInfo!;
 
-        if (data.mode is RosuPP.Mode.Catch)
+        if (data.mode == RosuPP.Mode.Catch)
         {
             var statistics = score.ConvertStatistics;
             return [
@@ -231,7 +236,7 @@ public static class ScoreV2
             ];
         }
 
-        if (data.mode is RosuPP.Mode.Mania)
+        if (data.mode == RosuPP.Mode.Mania)
         {
             var statistics = score.Statistics;
             return [
@@ -255,12 +260,12 @@ public static class ScoreV2
     private static string BuildSongTimeDisplay(ScorePanelData data)
     {
         var songTime = Utils.Duration2TimeString(
-            (long)Math.Round(data.scoreInfo.Beatmap!.TotalLength / data.ppInfo!.clockrate)
+            (long)Math.Round(data.scoreInfo.Beatmap!.TotalLength / data.performance!.Difficulty.ClockRate)
         );
         if (data.playtime is not null)
         {
             var playTime = Utils.Duration2TimeString(
-                (long)Math.Round(data.playtime.Value / data.ppInfo.clockrate)
+                (long)Math.Round(data.playtime.Value / data.performance.Difficulty.ClockRate)
             );
             songTime = $"{playTime} / {songTime}";
         }
@@ -268,12 +273,10 @@ public static class ScoreV2
         return songTime;
     }
 
-    private static string GetForecastValue(List<OsuPerformance.PPInfo.PPStat>? stats, int index)
-    {
-        return stats is not null && index >= 0 && index < stats.Count
-            ? stats[index].total.ToString("0")
-            : "-";
-    }
+    private static string GetForecastValue(
+        PerformanceResult performance,
+        PerformanceForecast forecast
+    ) => performance.GetForecast(forecast)?.Total.ToString("0") ?? "-";
 
     private static string FormatPpValue(double? value)
     {
@@ -297,33 +300,32 @@ public static class ScoreV2
 
     private static string GetTemplateMode(RosuPP.Mode mode)
     {
-        return mode switch
+        return (int)mode switch
         {
-            RosuPP.Mode.Catch => "fruits",
-            RosuPP.Mode.Mania => "mania",
+            2 => "fruits",
+            3 => "mania",
             _ => "osu"
         };
     }
 
     private static string GetPanelAssetPath(RosuPP.Mode mode)
     {
-        return mode switch
+        return (int)mode switch
         {
-            RosuPP.Mode.Catch
-                => AssetPath("legacy", "v2_scorepanel", "default-score-v2-fruits.png"),
-            RosuPP.Mode.Mania => AssetPath("legacy", "v2_scorepanel", "default-score-v2-mania.png"),
+            2 => AssetPath("legacy", "v2_scorepanel", "default-score-v2-fruits.png"),
+            3 => AssetPath("legacy", "v2_scorepanel", "default-score-v2-mania.png"),
             _ => AssetPath("legacy", "v2_scorepanel", "default-score-v2.png")
         };
     }
 
     private static string GetRingAssetPath(RosuPP.Mode mode)
     {
-        return mode switch
+        return (int)mode switch
         {
-            RosuPP.Mode.Osu => AssetPath("icons", "std-expertplus.png"),
-            RosuPP.Mode.Taiko => AssetPath("icons", "taiko-expertplus.png"),
-            RosuPP.Mode.Catch => AssetPath("icons", "ctb-expertplus.png"),
-            RosuPP.Mode.Mania => AssetPath("icons", "mania-expertplus.png"),
+            0 => AssetPath("icons", "std-expertplus.png"),
+            1 => AssetPath("icons", "taiko-expertplus.png"),
+            2 => AssetPath("icons", "ctb-expertplus.png"),
+            3 => AssetPath("icons", "mania-expertplus.png"),
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
         };
     }

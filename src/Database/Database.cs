@@ -540,6 +540,7 @@ public class Client
         int a98,
         int a97,
         int a95,
+        string calculatorId,
         string[] mods
     )
     {
@@ -563,7 +564,9 @@ public class Client
             modstring = modstring[..^1];
         }
 
-        //查找谱面对应的mod数据是否存在
+        modstring = $"{calculatorId}|{modstring}";
+
+        //查找谱面对应的mod和计算器数据是否存在
         var db_info = db.OsuStandardBeatmapTechData
             .Where(it => it.bid == bid)
             .Where(it => it.mod == modstring);
@@ -623,6 +626,7 @@ public class Client
         int aim,
         int speed,
         int acc,
+        string calculatorId,
         int range = 20,
         bool boost = false
     )
@@ -631,9 +635,12 @@ public class Client
         var trange = range;
         if (boost)
             trange = 50;
-        return await db.OsuStandardBeatmapTechData
+        var calculatorPrefix = $"{calculatorId}|";
+        var results = await db.OsuStandardBeatmapTechData
             .Where(
                 it =>
+                    it.mod!.StartsWith(calculatorPrefix)
+                    &&
                     it.aim > aim - range / 2
                     && it.aim < aim + trange
                     && it.speed > speed - range / 2
@@ -642,6 +649,13 @@ public class Client
                     && it.acc < acc + trange
             )
             .ToListAsync();
+
+        foreach (var result in results)
+        {
+            result.mod = result.mod![calculatorPrefix.Length..];
+        }
+
+        return results;
     }
 
     //true=成功生成代码

@@ -1,5 +1,6 @@
 using CommandSystem;
 using CommandSystem.Definition;
+using CommandSystem.Execution;
 using CommandSystem.Parsing;
 
 namespace Tests;
@@ -52,6 +53,29 @@ public class CommandParsingTests
         Description = "Ping",
         Args = [],
         Flags = []
+    };
+
+    private static CommandDef MakeAndValueDef() => new()
+    {
+        Name = "bp",
+        Description = "Show bp",
+        Args =
+        [
+            new() { Name = "username", Description = "osu! Username" },
+            new()
+            {
+                Name = "pp_version",
+                LegacyName = "pp",
+                Description = "PP version",
+                Prefix = ArgPrefix.And
+            },
+        ],
+        Flags =
+        [
+            new() { Name = "special_pp", Description = "Special pp", Value = "", SlashName = "is_special_pp" },
+            new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" },
+            new() { Name = "dev", Description = "Development mode", Value = "dev", SlashName = "is_dev" },
+        ]
     };
 
     // ─── LegacyParser Tests ──────────────────────────────
@@ -163,6 +187,60 @@ public class CommandParsingTests
 
         // &xyz doesn't match any known flag
         Assert.False(result.Flag("sb_server"));
+    }
+
+    [Fact]
+    public void Legacy_AndValueParameter()
+    {
+        var result = _legacy.Parse("bp", "&pp=2019", MakeAndValueDef());
+
+        Assert.Equal("2019", result.Args["pp_version"]);
+    }
+
+    [Fact]
+    public void Legacy_AndValueParameterIsCaseInsensitive()
+    {
+        var result = _legacy.Parse("bp", "&PP=2019", MakeAndValueDef());
+
+        Assert.Equal("2019", result.Args["pp_version"]);
+        Assert.Empty(result.Errors);
+    }
+
+    [Theory]
+    [InlineData("&ppp=2019", "Unknown option")]
+    [InlineData("&pp=", "requires a value")]
+    public void Legacy_InvalidAndValueParameterReportsError(string raw, string expected)
+    {
+        var result = _legacy.Parse("bp", raw, MakeAndValueDef());
+
+        Assert.Contains(expected, Assert.Single(result.Errors));
+        Assert.Null(result.Args["pp_version"]);
+    }
+
+    [Fact]
+    public void Legacy_MultipleAndSegments()
+    {
+        var result = _legacy.Parse(
+            "bp",
+            "zhjk &sb &pp=2019 &dev",
+            MakeAndValueDef()
+        );
+
+        Assert.Equal("zhjk", result.Args["username"]);
+        Assert.Equal("2019", result.Args["pp_version"]);
+        Assert.True(result.Flag("sb_server"));
+        Assert.True(result.Flag("dev"));
+        Assert.False(result.Flag("special_pp"));
+    }
+
+    [Fact]
+    public void Legacy_BareAndFlag()
+    {
+        var result = _legacy.Parse("bp", "zhjk &", MakeAndValueDef());
+
+        Assert.True(result.Flag("special_pp"));
+        Assert.False(result.Flag("sb_server"));
+        Assert.Null(result.Args["pp_version"]);
     }
 
     // ─── SlashParser Tests ──────────────────────────────
@@ -283,5 +361,54 @@ public class CommandParsingTests
         );
 
         Assert.Equal("zhjk :mania &sb", result.RawArgs);
+    }
+
+    [Fact]
+    public void Slash_AndValueParameterUsesArgNameAndLegacyRawSyntax()
+    {
+        var result = _slash.Parse(
+            "bp",
+            new() { ["pp_version"] = "2019" },
+            MakeAndValueDef()
+        );
+
+        Assert.Equal("2019", result.Args["pp_version"]);
+        Assert.Equal("&pp=2019", result.RawArgs);
+    }
+
+    [Fact]
+    public void PerformanceCommandsExposeVersionArgument()
+    {
+        string[] commandNames =
+        [
+            "bp",
+            "bplist",
+            "get bplist",
+            "recent",
+            "pr",
+            "recentlist",
+            "prs",
+            "score",
+            "pp",
+            "search",
+            "todaybp",
+            "get todaybp",
+            "info",
+            "get recommend",
+            "get bpht",
+        ];
+        var registry = CommandRegistrar.BuildRegistry();
+
+        foreach (var commandName in commandNames)
+        {
+            var command = Assert.Single(
+                registry.Commands.Where(command => command.Definition.Name == commandName)
+            );
+            var argument = Assert.Single(
+                command.Definition.Args.Where(argument => argument.Name == "pp_version")
+            );
+            Assert.Equal(ArgPrefix.And, argument.Prefix);
+            Assert.Equal("pp", argument.LegacyName);
+        }
     }
 }

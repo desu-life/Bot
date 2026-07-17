@@ -2,6 +2,7 @@ using CommandSystem;
 using CommandSystem.Definition;
 using CommandSystem.Parsing;
 using KanonBot.Drivers;
+using KanonBot.OsuPerformance;
 
 namespace KanonBot.Functions
 {
@@ -16,10 +17,18 @@ namespace KanonBot.Functions
                 [
                     new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
                     new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
+new() { Name = "pp_version", LegacyName = "pp", Description = "PP algorithm version", Prefix = ArgPrefix.And },
                 ],
                 Flags =
                 [
-                    new() { Name = "special_pp", Description = "Alternative pp calculater", Value = "", SlashName = "is_special_pp" },
+                    new() { Name = "special_pp", Description = "Use osu! current PP and legacy scores (legacy alias)", Value = "", SlashName = "is_special_pp" },
+                    new()
+                    {
+                        Name = "legacy_scores",
+                        Description = "Fetch only legacy osu! scores",
+                        Value = "legacy",
+                        SlashName = "is_legacy_scores",
+                    },
                     new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" },
                 ]
             };
@@ -33,6 +42,7 @@ namespace KanonBot.Functions
             long osuID = resolved.OsuId;
             API.OSU.Mode? mode = resolved.Mode;
             bool special_version_pp = cmd.Flag("special_pp");
+            bool legacyScoresOnly = special_version_pp || cmd.Flag("legacy_scores");
 
             // 验证osu信息
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID, mode!.Value);
@@ -51,12 +61,37 @@ namespace KanonBot.Functions
                     mode!.Value,
                     100,
                     0,
-                    LegacyOnly: special_version_pp
+                    LegacyOnly: legacyScoresOnly
                 );
             if (allBP == null)
             {
                 await target.Treply("error.query_scores_failed");
                 return;
+            }
+
+            if (special_version_pp || cmd.Has("pp_version"))
+            {
+                var calculatorId = await PerformanceCommandOptions.Resolve(
+                    target,
+                    cmd,
+                    mode.Value,
+                    false
+                );
+                if (calculatorId is null)
+                    return;
+
+                await Parallel.ForEachAsync(
+                    allBP,
+                    async (score, _) =>
+                    {
+                        var beatmap = await Utils.LoadOrDownloadBeatmap(score.Beatmap!);
+                        score.pp = UniversalCalculator
+                            .CalculateData(beatmap, score, calculatorId)
+                            .Score
+                            .Total;
+                    }
+                );
+                allBP.Sort((left, right) => right.pp.GetValueOrDefault().CompareTo(left.pp.GetValueOrDefault()));
             }
             double totalPP = 0;
             // 如果bp数量小于10则取消

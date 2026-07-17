@@ -10,7 +10,9 @@ public class LegacyParser
 {
     // ── 状态机：把原始字符串切成各前缀的 bucket ──────────
 
-    private static Dictionary<ArgPrefix, string> Tokenize(string cmd)
+    private static (Dictionary<ArgPrefix, string> Buckets, List<string> AndSegments) Tokenize(
+        string cmd
+    )
     {
         var buckets = new Dictionary<ArgPrefix, StringBuilder>
         {
@@ -21,7 +23,9 @@ public class LegacyParser
             [ArgPrefix.And] = new(),
         };
 
+        var andSegments = new List<StringBuilder>();
         var current = ArgPrefix.None;
+        StringBuilder? currentAndSegment = null;
 
         foreach (var ch in cmd)
         {
@@ -38,21 +42,32 @@ public class LegacyParser
             {
                 current = next.Value;
                 buckets[current].Append(ch); // 保留前缀字符，方便后续剥离
+                currentAndSegment = null;
+
+                if (current == ArgPrefix.And)
+                {
+                    currentAndSegment = new StringBuilder().Append(ch);
+                    andSegments.Add(currentAndSegment);
+                }
             }
             else
             {
                 buckets[current].Append(ch);
+                currentAndSegment?.Append(ch);
             }
         }
 
-        return buckets.ToDictionary(kv => kv.Key, kv => kv.Value.ToString().Trim());
+        return (
+            buckets.ToDictionary(kv => kv.Key, kv => kv.Value.ToString().Trim()),
+            andSegments.Select(segment => segment.ToString().Trim()).ToList()
+        );
     }
 
     // ── 主解析 ───────────────────────────────────────────
 
     public ParsedCommand Parse(string cmdName, string rawArgs, CommandDef def)
     {
-        var buckets = Tokenize(rawArgs);
+        var (buckets, andSegments) = Tokenize(rawArgs);
         var result = new ParsedCommand
         {
             CommandName = cmdName,
@@ -60,11 +75,16 @@ public class LegacyParser
             Parse = def.Args.DistinctBy(a => a.Name).ToDictionary(a => a.Name, a => a.Parse)
         };
 
-        // 解析 flags（& 前缀）
-        ParseFlags(buckets[ArgPrefix.And], def, result);
+        // 解析带值参数和 flags（& 前缀）
+        ParseAndArgs(andSegments, def, result);
+        ParseFlags(andSegments, def, result);
 
         // 解析有明确前缀的 args（: # +）
-        foreach (var argDef in def.Args.Where(a => a.Prefix != ArgPrefix.None))
+        foreach (
+            var argDef in def.Args.Where(a =>
+                a.Prefix is not (ArgPrefix.None or ArgPrefix.And)
+            )
+        )
         {
             var raw = buckets[argDef.Prefix];
             if (string.IsNullOrWhiteSpace(raw))
@@ -150,25 +170,65 @@ public class LegacyParser
         }
     }
 
-    // ── Flag 解析 ─────────────────────────────────────────
+    // ── & 参数和 Flag 解析 ─────────────────────────────────
 
-    private static void ParseFlags(string andRaw, CommandDef def, ParsedCommand result)
+    private static void ParseAndArgs(
+        IReadOnlyList<string> andSegments,
+        CommandDef def,
+        ParsedCommand result
+    )
+    {
+        var andArgs = def.Args.Where(a => a.Prefix == ArgPrefix.And).ToList();
+        foreach (var argDef in andArgs)
+            result.Args[argDef.Name] = null;
+
+        foreach (var segment in andSegments)
+        {
+            var raw = segment[1..].Trim();
+            var separator = raw.IndexOf('=');
+            if (separator <= 0)
+                continue;
+
+            var legacyName = raw[..separator].Trim();
+            var argDef = andArgs.FirstOrDefault(a =>
+                a.LegacyName.Equals(legacyName, StringComparison.OrdinalIgnoreCase)
+            );
+            if (argDef is null)
+            {
+                result.Errors.Add($"Unknown option '&{legacyName}'.");
+                continue;
+            }
+
+            var value = raw[(separator + 1)..].Trim();
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                result.Errors.Add($"Option '&{argDef.LegacyName}' requires a value.");
+                continue;
+            }
+
+            result.Args[argDef.Name] = value;
+        }
+    }
+
+    private static void ParseFlags(
+        IReadOnlyList<string> andSegments,
+        CommandDef def,
+        ParsedCommand result
+    )
     {
         // 初始化所有 flag 为 false
         foreach (var f in def.Flags)
             result.Flags[f.Name] = false;
 
-        if (string.IsNullOrWhiteSpace(andRaw))
-            return;
+        foreach (var segment in andSegments)
+        {
+            var flagValue = segment[1..].Trim();
+            if (flagValue.Contains('='))
+                continue;
 
-        var flagValue = andRaw[1..].Trim(); // 去掉 &
-
-        // 按 Value 长度降序匹配，防止 & 提前匹配掉 &sb
-        var matched = def.Flags
-            .OrderByDescending(f => f.Value.Length)
-            .FirstOrDefault(f => f.Value == flagValue);
-
-        if (matched != null)
-            result.Flags[matched.Name] = true;
+            var matched = def.Flags.FirstOrDefault(f => f.Value == flagValue);
+            if (matched is not null)
+                result.Flags[matched.Name] = true;
+        }
     }
 }

@@ -30,10 +30,11 @@ namespace KanonBot.Functions
                     new() { Name = "search_arg", Description = "Beatmap search query", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Simple },
                     new() { Name = "order_number", Description = "Search result index", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseInt(s) },
                     new() { Name = "osu_mods", Description = "osu! mods", Prefix = ArgPrefix.Plus },
+                    new() { Name = "pp_version", LegacyName = "pp", Description = "PP algorithm version", Prefix = ArgPrefix.And },
                 ],
                 Flags =
                 [
-                    new() { Name = "special_pp", Description = "Alternative pp calculater", Value = "", SlashName = "is_special_pp" },
+                    new() { Name = "special_pp", Description = "Use osu! current PP (legacy alias)", Value = "", SlashName = "is_special_pp" },
                 ]
             };
 
@@ -228,32 +229,40 @@ namespace KanonBot.Functions
             using var rmods = RosuPP.Mods.FromAcronyms(osu_mods, beatmap.Mode.ToRosu());
             rmods.Sanitize();
             rmods.RemoveUnknownMods();
-            using var js = RosuPP.OwnedString.Empty();
-            rmods.Json(js.Context);
-            mods_lazer = Serializer.Json.Deserialize<API.OSU.Models.Mod[]>(js.ToCstr())!;
+            using var js = rmods.Json();
+            mods_lazer = Serializer.Json.Deserialize<API.OSU.Models.Mod[]>(js.String)!;
             Log.Debug($"Mods: {string.Join(",", mods_lazer.Select(x => x.Acronym))}");
 
             ScorePanelData data;
             API.OSU.Models.User? user = await API.OSU.Client.GetUser(3);
+            user ??= new API.OSU.Models.User
+            {
+                Id = 3,
+                Username = "osu!",
+                AvatarUrl = new Uri("https://a.ppy.sh/3"),
+            };
             var is_sb = mods_lazer.Any(x => x.Acronym is "RX" or "AP");
+            var calculatorId = await PerformanceCommandOptions.Resolve(
+                target,
+                cmd,
+                beatmap.Mode,
+                is_sb
+            );
+            if (calculatorId is null)
+                return;
+
+            data = UniversalCalculator.CalculatePerfectPanelData(
+                b,
+                beatmap,
+                mods_lazer,
+                calculatorId
+            );
             if (is_sb)
             {
-                data = SBRosuCalculator.CalculatePanelSSData(b, beatmap, mods_lazer);
                 user!.Id = 1;
                 user!.Username = "ChinoBot";
                 user!.IsBot = true;
                 user!.AvatarUrl = new Uri("https://a.ppy.sb/1");
-            }
-            else
-            {
-                if (cmd.Flag("special_pp"))
-                {
-                    data = OsuCalculator.CalculatePanelSSData(b, beatmap, mods_lazer);
-                }
-                else
-                {
-                    data = RosuCalculator.CalculatePanelSSData(b, beatmap, mods_lazer);
-                }
             }
 
             data.scoreInfo.UserId = user!.Id;

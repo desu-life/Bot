@@ -1073,7 +1073,7 @@ public static class OsuInfoPanelV2
         bool eventmode = false,
         bool isDataOfDayAvaiavle = true,
         bool output4k = false,
-        CalculatorKind kind = CalculatorKind.Unset
+        string calculatorId = PerformanceCalculatorIds.RosuCurrent
     )
     {
         var ColorMode = data.customMode;
@@ -1882,11 +1882,11 @@ public static class OsuInfoPanelV2
             );
         }
 
-        List<PPInfo> ppinfos =  [ ];
+        List<PerformanceResult> ppinfos =  [ ];
         for (int i = 0; i < Math.Min(5, allBP.Length); i++)
         {
-            PPInfo ppinfo;
-            ppinfo = await UniversalCalculator.CalculateData(allBP[i], kind);
+            PerformanceResult ppinfo;
+            ppinfo = await UniversalCalculator.CalculateData(allBP[i], calculatorId);
             ppinfos.Add(ppinfo);
         }
 
@@ -1984,7 +1984,7 @@ public static class OsuInfoPanelV2
 
             textOptions.Origin = new PointF(2657, 1668);
             info.Mutate(
-                x => x.DrawText(textOptions, ppinfos[0].star.ToString("0.##*"), MainBPStarsColor)
+                x => x.DrawText(textOptions, ppinfos[0].Difficulty.Stars.ToString("0.##*"), MainBPStarsColor)
             );
 
             //acc
@@ -2197,10 +2197,10 @@ public static class OsuInfoPanelV2
 
                 //star
                 textOptions.Origin = new PointF(textMeasurePos, 1925 + 186 * (i - 1));
-                info.Mutate(x => x.DrawText(textOptions, ppinfos[i].star.ToString("0.##*"), starC));
+                info.Mutate(x => x.DrawText(textOptions, ppinfos[i].Difficulty.Stars.ToString("0.##*"), starC));
                 textMeasurePos =
                     textMeasurePos
-                    + TextMeasurer.MeasureSize(ppinfos[i].star.ToString("0.##*"), textOptions).Width
+                    + TextMeasurer.MeasureSize(ppinfos[i].Difficulty.Stars.ToString("0.##*"), textOptions).Width
                     + 5;
 
                 //split
@@ -2336,7 +2336,7 @@ public static class OsuInfoPanelV2
                 else
                 {
                     //随难度渐变
-                    modeC = Utils.ForStarDifficulty(ppinfos[i].star);
+                    modeC = Utils.ForStarDifficulty(ppinfos[i].Difficulty.Stars);
                     osuscoremode_icon.Mutate(
                         x =>
                             x.ProcessPixelRowsAsVector4(row =>
@@ -2472,7 +2472,7 @@ public static class OsuInfoPanelV2
 
         if (0 <= bound)
         {
-            pp_text = string.Format("{0:N1}", ppinfos[0].ppStat.total);
+            pp_text = string.Format("{0:N1}", ppinfos[0].Score.Total);
         }
         else
         {
@@ -2486,6 +2486,12 @@ public static class OsuInfoPanelV2
         textOptions.Origin = new PointF(bp1pptextpos, 1610);
         textOptions.HorizontalAlignment = HorizontalAlignment.Left;
         info.Mutate(x => x.DrawText(textOptions, "pp", MainBPppTitleColor));
+        textOptions.HorizontalAlignment = HorizontalAlignment.Center;
+        textOptions.Font = TorusRegular.Get(22);
+        textOptions.Origin = new PointF(3642, 1720);
+        info.Mutate(x =>
+            x.DrawText(textOptions, calculatorId, MainBPppTitleColor)
+        );
 
         textOptions.HorizontalAlignment = HorizontalAlignment.Center;
         textOptions.Font = TorusRegular.Get(70);
@@ -2493,7 +2499,7 @@ public static class OsuInfoPanelV2
 
         if (1 <= bound)
         {
-            pp_text = string.Format("{0:N0}pp", ppinfos[1].ppStat.total);
+            pp_text = string.Format("{0:N0}pp", ppinfos[1].Score.Total);
         }
         else
         {
@@ -2505,7 +2511,7 @@ public static class OsuInfoPanelV2
 
         if (2 <= bound)
         {
-            pp_text = string.Format("{0:N0}pp", ppinfos[2].ppStat.total);
+            pp_text = string.Format("{0:N0}pp", ppinfos[2].Score.Total);
         }
         else
         {
@@ -2517,7 +2523,7 @@ public static class OsuInfoPanelV2
 
         if (3 <= bound)
         {
-            pp_text = string.Format("{0:N0}pp", ppinfos[3].ppStat.total);
+            pp_text = string.Format("{0:N0}pp", ppinfos[3].Score.Total);
         }
         else
         {
@@ -2529,7 +2535,7 @@ public static class OsuInfoPanelV2
 
         if (4 <= bound)
         {
-            pp_text = string.Format("{0:N0}pp", ppinfos[4].ppStat.total);
+            pp_text = string.Format("{0:N0}pp", ppinfos[4].Score.Total);
         }
         else
         {

@@ -19,7 +19,14 @@ namespace KanonBot.Functions
                 ],
                 Flags =
                 [
-                    new() { Name = "special_pp", Description = "Alternative pp calculater", Value = "", SlashName = "is_special_pp" },
+                    new() { Name = "special_pp", Description = "Fetch legacy scores (legacy alias)", Value = "", SlashName = "is_special_pp" },
+                    new()
+                    {
+                        Name = "legacy_scores",
+                        Description = "Fetch only legacy osu! scores",
+                        Value = "legacy",
+                        SlashName = "is_legacy_scores",
+                    },
                     new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" },
                 ]
             };
@@ -32,7 +39,7 @@ namespace KanonBot.Functions
 
             long osuID = resolved.OsuId;
             API.OSU.Mode? mode = resolved.Mode;
-            bool special_version_pp = cmd.Flag("special_pp");
+            bool legacyScoresOnly = cmd.Flag("special_pp") || cmd.Flag("legacy_scores");
 
             // 验证osu信息
             var OnlineOsuInfo = await API.OSU.Client.GetUser(osuID, mode!.Value);
@@ -58,7 +65,7 @@ namespace KanonBot.Functions
                         mode!.Value,
                         100,
                         0,
-                        LegacyOnly: special_version_pp
+                        LegacyOnly: legacyScoresOnly
                     ),
                     API.OSU.Client.GetUserScores(
                         OnlineOsuInfo.Id,
@@ -66,7 +73,7 @@ namespace KanonBot.Functions
                         mode!.Value,
                         100,
                         100,
-                        LegacyOnly: special_version_pp
+                        LegacyOnly: legacyScoresOnly
                     )
                 ]
             );

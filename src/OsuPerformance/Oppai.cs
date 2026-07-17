@@ -9,8 +9,15 @@ using OSU = KanonBot.API.OSU;
 
 namespace KanonBot.OsuPerformance;
 
-public static class OppaiCalculator
+public sealed class OppaiCalculator : IPerformanceCalculator
 {
+    public PerformanceCalculatorDescriptor Descriptor { get; } =
+        new(
+            PerformanceCalculatorIds.Oppai,
+            "oppai-ng",
+            new System.Collections.Generic.HashSet<API.OSU.Mode> { API.OSU.Mode.OSU },
+            true
+        );
     public static Oppai.Beatmap LoadBeatmap(byte[] b)
     {
         using var stream = new MemoryStream(b, false);
@@ -18,7 +25,19 @@ public static class OppaiCalculator
         return Oppai.Beatmap.Read(reader);
     }
 
-    public static ScorePanelData CalculatePanelData(byte[] b, API.OSU.Models.ScoreLazer score)
+    public ScorePanelData CalculatePerfectPanelData(
+        byte[] beatmap,
+        API.OSU.Models.Beatmap beatmapInfo,
+        API.OSU.Models.Mod[] mods
+    )
+    {
+        var score = new RosuCalculator()
+            .CalculatePerfectPanelData(beatmap, beatmapInfo, mods)
+            .scoreInfo;
+        return CalculatePanelData(beatmap, score);
+    }
+
+    public ScorePanelData CalculatePanelData(byte[] b, API.OSU.Models.ScoreLazer score)
     {
         var data = new ScorePanelData { scoreInfo = score };
         if (score.IsLazer) {
@@ -32,18 +51,19 @@ public static class OppaiCalculator
         rosubeatmap.Convert(rmode);
 
         if (score.Passed == false) {
-            using var hitobjects = HitObjects.New(rosubeatmap);
-            var obj = hitobjects.Get(statistics.PassedObjects(data.scoreInfo.Mode) - 1).ToNullable();
-            if (obj.HasValue) {
-                var endTime = obj.Value.data.duration + obj.Value.start_time;
-                data.playtime = endTime / 1000.0;
+            var passedObjects = statistics.PassedObjects(data.scoreInfo.Mode);
+            var endTime = passedObjects > 0
+                ? rosubeatmap.HitObjectEndTime(passedObjects - 1).ToNullable()
+                : null;
+            if (endTime.HasValue) {
+                data.playtime = endTime.Value / 1000.0;
             }
         }
 
         var clockRate = 1.0;
         using var mods = Mods.FromJson(data.scoreInfo.JsonMods, rmode);
 
-        using var builder = BeatmapAttributesBuilder.New();
+        using var builder = BeatmapAttributesBuilder.Create();
         builder.Mode(rmode);
         builder.Mods(mods);
         var bmAttr = builder.Build(rosubeatmap);
@@ -66,18 +86,26 @@ public static class OppaiCalculator
         );
         var maxcombo = beatmap.GetMaxCombo();
 
-        data.ppInfo = PPInfo.New(score, bAttr, dAttr, bmAttr, bpm, clockRate, maxcombo);
+        data.performance = PerformanceResult.FromOppai(
+            score,
+            bAttr,
+            dAttr,
+            bmAttr,
+            bpm,
+            clockRate,
+            maxcombo
+        );
 
         // 5种acc + 全连
         double[] accs = [100.00, 99.00, 98.00, 97.00, 95.00, data.scoreInfo.AccAuto * 100.00];
 
-        data.ppInfo.ppStats = [];
+        var forecasts = new List<PerformanceBreakdown>();
 
         for (int i = 0; i < accs.Length; i++)
         {
             ref var acc = ref accs[i];
 
-            using var p = Performance.New();
+            using var p = Performance.Create();
             p.Lazer(score.IsLazer);
             p.Mode(rmode);
             p.Mods(mods);
@@ -97,15 +125,27 @@ public static class OppaiCalculator
                 )
             );
 
-            data.ppInfo.ppStats.Add(PPInfo.New(score, bAttr, dAttr, bmAttr, bpm, clockRate, maxcombo).ppStat);
+            forecasts.Add(
+                PerformanceResult.FromOppai(
+                    score,
+                    bAttr,
+                    dAttr,
+                    bmAttr,
+                    bpm,
+                    clockRate,
+                    maxcombo
+                ).Score
+            );
         }
+
+        data.performance = data.performance.WithForecasts(forecasts);
 
         data.mode = rmode;
 
         return data;
     }
 
-    public static PPInfo CalculateData(byte[] b, API.OSU.Models.ScoreLazer score)
+    public PerformanceResult CalculateData(byte[] b, API.OSU.Models.ScoreLazer score)
     {
         var statistics = score.ConvertStatistics;
 
@@ -116,7 +156,7 @@ public static class OppaiCalculator
         var mods_json = score.JsonMods;
         using var mods = Mods.FromJson(mods_json, rmode);
 
-        using var builder = BeatmapAttributesBuilder.New();
+        using var builder = BeatmapAttributesBuilder.Create();
         builder.Mode(rmode);
         builder.Mods(mods);
         var bmAttr = builder.Build(rosubeatmap);
@@ -140,13 +180,13 @@ public static class OppaiCalculator
         );
         var maxcombo = beatmap.GetMaxCombo();
 
-        return PPInfo.New(score, bAttr, dAttr, bmAttr, bpm, clockRate, maxcombo);
+        return PerformanceResult.FromOppai(score, bAttr, dAttr, bmAttr, bpm, clockRate, maxcombo);
     }
 }
 
-public partial class PPInfo
+public sealed partial record PerformanceResult
 {
-    public static PPInfo New(
+    public static PerformanceResult FromOppai(
         API.OSU.Models.ScoreLazer score,
         Oppai.PPv2 result,
         Oppai.DiffCalc dAttr,
@@ -156,27 +196,12 @@ public partial class PPInfo
         int maxcombo
     )
     {
-        return new PPInfo()
-        {
-            star = dAttr.Total,
-            CS = bmAttr.cs,
-            HP = bmAttr.hp,
-            AR = bmAttr.ar,
-            OD = bmAttr.od,
-            accuracy = result.Acc,
-            maxCombo = (uint)maxcombo,
-            bpm = bpm,
-            clockrate = clockrate,
-            ppStat = new PPInfo.PPStat()
-            {
-                total = result.Total,
-                aim = result.Aim,
-                speed = result.Speed,
-                acc = result.Acc,
-                strain = null,
-                flashlight = null,
-            },
-            ppStats = null
-        };
+        return Create(
+            PerformanceCalculatorIds.Oppai, score.Mode, dAttr.Total, bmAttr.cs, bmAttr.hp,
+            bmAttr.ar, bmAttr.od, bpm, clockrate, (uint)maxcombo, result.Total,
+            (PerformanceComponent.Aim, result.Aim),
+            (PerformanceComponent.Speed, result.Speed),
+            (PerformanceComponent.Accuracy, result.Acc)
+        );
     }
 }

@@ -1,99 +1,171 @@
 using KanonBot.Image;
 
-namespace KanonBot.OsuPerformance
+namespace KanonBot.OsuPerformance;
+
+public static class UniversalCalculator
 {
-    public enum CalculatorKind
+    private static readonly PerformanceCalculatorRegistry registry = CreateRegistry();
+
+    public static IReadOnlyCollection<IPerformanceCalculator> Calculators => registry.Calculators;
+
+    public static void Register(IPerformanceCalculator calculator, bool replace = false) =>
+        registry.Register(calculator, replace);
+
+    public static async Task<ScorePanelData> CalculatePanelData(
+        API.OSU.Models.ScoreLazer score,
+        string calculatorId
+    )
     {
-        Unset,
-        Special,
-        Osu,
-        Rosu,
-        Oppai,
-        Sb
+        var beatmap = await Utils.LoadOrDownloadBeatmap(score.Beatmap!);
+        return CalculatePanelData(beatmap, score, calculatorId);
     }
 
-    public static class UniversalCalculator
+    public static ScorePanelData CalculatePanelData(
+        byte[] beatmap,
+        API.OSU.Models.ScoreLazer score,
+        string calculatorId
+    )
     {
-        public static async Task<ScorePanelData> CalculatePanelData(
-            API.OSU.Models.ScoreLazer score,
-            CalculatorKind kind = CalculatorKind.Unset
+        var resolvedId = ResolveCalculatorId(calculatorId, score.Mode);
+        var result = registry.Resolve(resolvedId, score).CalculatePanelData(beatmap, score);
+
+        if (
+            KanonBot.Config.inner?.calcOldPP == true
+            && resolvedId == PerformanceCalculatorIds.OsuCurrent
         )
         {
-            var b = await Utils.LoadOrDownloadBeatmap(score.Beatmap!);
-            return CalculatePanelData(b, score, kind);
+            var comparison = registry
+                .Resolve(PerformanceCalculatorIds.RosuCurrent, score)
+                .CalculateData(beatmap, score);
+            result.comparisons =
+            [new PerformanceComparison(comparison.CalculatorId, comparison.Score.Total)];
         }
 
-        public static ScorePanelData CalculatePanelData(
-            byte[] b,
-            API.OSU.Models.ScoreLazer score,
-            CalculatorKind kind = CalculatorKind.Unset
-        )
-        {
-            if (kind is CalculatorKind.Oppai && score.Mode != API.OSU.Mode.OSU) {
-                kind = CalculatorKind.Unset;
-            }
-
-            // oldpp_calc
-            if (kind == CalculatorKind.Unset && KanonBot.Config.inner!.calcOldPP)
-            {
-                var currpp = OsuCalculator.CalculatePanelData(b, score);
-                var oldpp = RosuCalculator.CalculatePanelData(b, score);
-                currpp.oldPP = oldpp.ppInfo!.ppStat.total;
-                return currpp;
-            }
-
-
-            return kind switch
-            {
-                CalculatorKind.Osu => OsuCalculator.CalculatePanelData(b, score),
-                CalculatorKind.Rosu => RosuCalculator.CalculatePanelData(b, score),
-                CalculatorKind.Oppai => OppaiCalculator.CalculatePanelData(b, score),
-                CalculatorKind.Sb => SBRosuCalculator.CalculatePanelData(b, score),
-                CalculatorKind.Special => OsuCalculator.CalculatePanelData(b, score),
-                _ => RosuCalculator.CalculatePanelData(b, score),
-            };
-        }
-
-        public static async Task<PPInfo> CalculateData(
-            API.OSU.Models.ScoreLazer score,
-            CalculatorKind kind = CalculatorKind.Unset
-        )
-        {
-            var b = await Utils.LoadOrDownloadBeatmap(score.Beatmap!);
-            return CalculateData(b, score, kind);
-        }
-
-        public static PPInfo CalculateData(
-            byte[] b,
-            API.OSU.Models.ScoreLazer score,
-            CalculatorKind kind = CalculatorKind.Unset
-        )
-        {
-            if (kind is CalculatorKind.Oppai && score.Mode != API.OSU.Mode.OSU) {
-                kind = CalculatorKind.Unset;
-            }
-
-            return kind switch
-            {
-                CalculatorKind.Osu => OsuCalculator.CalculateData(b, score),
-                CalculatorKind.Rosu => RosuCalculator.CalculateData(b, score),
-                CalculatorKind.Oppai => OppaiCalculator.CalculateData(b,score),
-                CalculatorKind.Sb => SBRosuCalculator.CalculateData(b,score),
-                CalculatorKind.Special => OsuCalculator.CalculateData(b, score),
-                _ => RosuCalculator.CalculateData(b,score),
-            };
-        }
-
-        public static CalculatorKind GetCalculatorKind(bool isPpysb, bool specialVersionPp) {
-            if (isPpysb) {
-                return CalculatorKind.Sb;
-            }
-            
-            if (specialVersionPp) {
-                return CalculatorKind.Special;
-            } else {
-                return CalculatorKind.Unset;
-            }
-        }
+        return result;
     }
+
+    public static ScorePanelData CalculatePerfectPanelData(
+        byte[] beatmap,
+        API.OSU.Models.Beatmap beatmapInfo,
+        API.OSU.Models.Mod[] mods,
+        string calculatorId
+    )
+    {
+        var resolvedId = ResolveCalculatorId(calculatorId, beatmapInfo.Mode);
+        return registry
+            .Resolve(resolvedId, beatmapInfo.Mode)
+            .CalculatePerfectPanelData(beatmap, beatmapInfo, mods);
+    }
+
+    public static async Task<PerformanceResult> CalculateData(
+        API.OSU.Models.ScoreLazer score,
+        string calculatorId
+    )
+    {
+        var beatmap = await Utils.LoadOrDownloadBeatmap(score.Beatmap!);
+        return CalculateData(beatmap, score, calculatorId);
+    }
+
+    public static PerformanceResult CalculateData(
+        byte[] beatmap,
+        API.OSU.Models.ScoreLazer score,
+        string calculatorId
+    ) => Resolve(calculatorId, score).CalculateData(beatmap, score);
+
+    public static string ResolveCalculatorId(
+        string? requestedVersion,
+        API.OSU.Mode mode,
+        bool isPpysb = false,
+        bool specialVersionPp = false
+    )
+    {
+        if (string.IsNullOrWhiteSpace(requestedVersion))
+        {
+            if (isPpysb)
+            {
+                return PerformanceCalculatorIds.PpySb;
+            }
+
+            return specialVersionPp
+                ? PerformanceCalculatorIds.OsuCurrent
+                : KanonBot.Config.inner?.calcOldPP == true
+                    ? PerformanceCalculatorIds.OsuCurrent
+                    : PerformanceCalculatorIds.RosuCurrent;
+        }
+
+        var requested = requestedVersion.Trim();
+        var direct = registry.Calculators.FirstOrDefault(calculator =>
+            calculator.Descriptor.Id.Equals(requested, StringComparison.OrdinalIgnoreCase)
+        );
+        if (direct is not null)
+        {
+            if (!direct.Descriptor.Supports(mode))
+            {
+                throw new NotSupportedException(
+                    $"Performance calculator '{direct.Descriptor.Id}' does not support mode '{mode}'."
+                );
+            }
+
+            return direct.Descriptor.Id;
+        }
+
+        var normalized = requested.ToLowerInvariant() switch
+        {
+            "current" => isPpysb
+                ? PerformanceCalculatorIds.PpySb
+                : PerformanceCalculatorIds.RosuCurrent,
+            "official" or "osu" => PerformanceCalculatorIds.OsuCurrent,
+            "rosu" => PerformanceCalculatorIds.RosuCurrent,
+            "sb" or "ppy.sb" => PerformanceCalculatorIds.PpySb,
+            _ => ResolveHistoricalAlias(requested, mode),
+        };
+
+        var calculator = registry.GetRequired(normalized);
+        if (!calculator.Descriptor.Supports(mode))
+        {
+            throw new NotSupportedException(
+                $"Performance calculator '{normalized}' does not support mode '{mode}'."
+            );
+        }
+
+        return normalized;
+    }
+
+    private static IPerformanceCalculator Resolve(
+        string calculatorId,
+        API.OSU.Models.ScoreLazer score
+    ) => registry.Resolve(ResolveCalculatorId(calculatorId, score.Mode), score);
+
+    private static string ResolveHistoricalAlias(string alias, API.OSU.Mode mode)
+    {
+        var suffix = $"/{alias.Trim().ToLowerInvariant()}";
+        var match = registry.Calculators
+            .Where(calculator => calculator.Descriptor.Supports(mode))
+            .Where(calculator =>
+                calculator.Descriptor.Id.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)
+            )
+            .OrderByDescending(calculator => calculator.Descriptor.Id.Count(character => character == '/'))
+            .FirstOrDefault();
+
+        return match?.Descriptor.Id
+            ?? throw new KeyNotFoundException(
+                $"Performance calculator version '{alias}' is not registered for mode '{mode}'."
+            );
+    }
+
+    private static PerformanceCalculatorRegistry CreateRegistry()
+    {
+        var result = new PerformanceCalculatorRegistry();
+        result.Register(new OsuCalculator());
+        result.Register(new RosuCalculator());
+        result.Register(new OppaiCalculator());
+        result.Register(new SBRosuCalculator());
+        foreach (var calculator in PerformanceCalculatorCatalog.LegacyCalculators)
+        {
+            result.Register(new RosuLegacyCalculator(calculator.Id, calculator.Version, calculator.Mode));
+        }
+
+        return result;
+    }
+
 }

@@ -107,7 +107,7 @@ public class Model
     [Table("osu_standard_beatmap_tech_data")]
     public class OsuStandardBeatmapTechData
     {
-        [PrimaryKey]
+        [PrimaryKey(0)]
         public long bid { get; set; }
 
         [Column]
@@ -125,7 +125,7 @@ public class Model
         [Column]
         public int acc { get; set; }
 
-        [Column]
+        [PrimaryKey(1)]
         public string? mod { get; set; }
 
         [Column]

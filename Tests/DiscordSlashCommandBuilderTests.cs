@@ -19,6 +19,13 @@ file class SlashBuilderTestCommand : ICommand
         Args =
         [
             new() { Name = "username", Description = "osu! Username", Prefix = ArgPrefix.None },
+            new()
+            {
+                Name = "pp_version",
+                LegacyName = "pp",
+                Description = "PP version",
+                Prefix = ArgPrefix.And
+            },
         ],
         Flags =
         [
@@ -42,6 +49,7 @@ public class DiscordSlashCommandBuilderTests
 
         var options = Values(slash, "Options").ToArray();
         Assert.Equal(ApplicationCommandOptionType.String, Value<ApplicationCommandOptionType>(options.Single(o => Value<string>(o, "Name") == "username"), "Type"));
+        Assert.Equal(ApplicationCommandOptionType.String, Value<ApplicationCommandOptionType>(options.Single(o => Value<string>(o, "Name") == "pp_version"), "Type"));
         Assert.Equal(ApplicationCommandOptionType.Boolean, Value<ApplicationCommandOptionType>(options.Single(o => Value<string>(o, "Name") == "is_sb"), "Type"));
         Assert.All(options, option => Assert.False(string.IsNullOrWhiteSpace(Value<string>(option, "Description"))));
     }

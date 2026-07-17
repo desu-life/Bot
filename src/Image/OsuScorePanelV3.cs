@@ -7,6 +7,7 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using static KanonBot.Image.Fonts;
+using KanonBot.OsuPerformance;
 using Img = SixLabors.ImageSharp.Image;
 using OSU = KanonBot.API.OSU;
 
@@ -18,7 +19,8 @@ namespace KanonBot.Image
         {
             var scoreimg = new Image<Rgba32>(2848, 1602);
 
-            var ppInfo = data.ppInfo!;
+            var performance = data.performance!;
+            var difficulty = performance.Difficulty;
 
             //下载头像
             using var avatar = await Utils.LoadOrDownloadAvatar(data.scoreInfo.User!);
@@ -68,7 +70,7 @@ namespace KanonBot.Image
                 $"./work/panelv2/icons/mode_icon/score/{data.scoreInfo.Mode.ToStr()}.png"
             );
             osuscoremode_icon.Mutate(x => x.Resize(110, 110));
-            var modeC = Utils.ForStarDifficulty(data.ppInfo!.star);
+            var modeC = Utils.ForStarDifficulty(difficulty.Stars);
             osuscoremode_icon.Mutate(
                 x =>
                     x.ProcessPixelRowsAsVector4(row =>
@@ -147,7 +149,7 @@ namespace KanonBot.Image
             textOptions.HorizontalAlignment = HorizontalAlignment.Left;
             textOptions.Font = TorusSemiBold.Get(50);
 
-            var stars = $"Stars: {data.ppInfo.star:0.##}";
+            var stars = $"Stars: {difficulty.Stars:0.##}";
             var stars_measure = TextMeasurer.MeasureSize(stars, textOptions);
 
             // 批处理 stars 的两层绘制（阴影+主文本）
@@ -159,8 +161,8 @@ namespace KanonBot.Image
 
             //star icons
 
-            var stars_i = (int)Math.Floor(data.ppInfo.star);
-            var stars_d = data.ppInfo.star - Math.Truncate(data.ppInfo.star);
+            var stars_i = (int)Math.Floor(difficulty.Stars);
+            var stars_d = difficulty.Stars - Math.Truncate(difficulty.Stars);
             int stars_pos = 924 + (int)stars_measure.Width + 10;
             using var stars_icon = await Utils.ReadImageRgba(
                 $"./work/panelv2/score_panel/Star.png"
@@ -205,6 +207,11 @@ namespace KanonBot.Image
             textOptions.Origin = new PointF(924, 478);
             scoreimg.Mutate(
                 x => x.DrawText(textOptions, $"Version: {temp_string}", Color.ParseHex("#333333"))
+            );
+            textOptions.Font = TorusRegular.Get(26);
+            textOptions.Origin = new PointF(924, 515);
+            scoreimg.Mutate(x =>
+                x.DrawText(textOptions, performance.CalculatorId, Color.ParseHex("#666666"))
             );
 
             //username
@@ -266,7 +273,7 @@ namespace KanonBot.Image
                 x =>
                     x.DrawText(
                         textOptions,
-                        ((int)data.ppInfo.ppStat.total).ToString(),
+                        ((int)performance.Score.Total).ToString(),
                         Color.ParseHex("#fc65a9")
                     )
             );
@@ -285,7 +292,7 @@ namespace KanonBot.Image
 
             if (!data.scoreInfo.Passed)
             {
-                if (ppInfo.maxCombo != null)
+                if (difficulty.MaxCombo != null)
                 {
                     double online_obj_count = (double)(
                         data.scoreInfo.Beatmap.CountCircles
@@ -405,7 +412,7 @@ namespace KanonBot.Image
             textOptions.Font = TorusSemiBold.Get(50);
             textOptions.Origin = new PointF(mainpp_details_pos_base, pp_details_posy_base);
             //aim
-            var mainpp_text = ((int)data.ppInfo.ppStat.aim!).ToString();
+            var mainpp_text = FormatComponent(performance, PerformanceComponent.Aim);
             scoreimg.Mutate(x => x.DrawText(textOptions, mainpp_text, Color.ParseHex("#fc65a9")));
 
             pp_measure = TextMeasurer.MeasureSize(mainpp_text, textOptions);
@@ -417,7 +424,7 @@ namespace KanonBot.Image
 
             //spd
             mainpp_details_pos_base = 2401;
-            mainpp_text = ((int)data.ppInfo.ppStat.speed!).ToString();
+            mainpp_text = FormatComponent(performance, PerformanceComponent.Speed);
             textOptions.Origin = new PointF(mainpp_details_pos_base, pp_details_posy_base);
             scoreimg.Mutate(x => x.DrawText(textOptions, mainpp_text, Color.ParseHex("#fc65a9")));
 
@@ -430,7 +437,7 @@ namespace KanonBot.Image
 
             //spd
             mainpp_details_pos_base = 2596;
-            mainpp_text = ((int)data.ppInfo.ppStat.acc!).ToString();
+            mainpp_text = FormatComponent(performance, PerformanceComponent.Accuracy);
             textOptions.Origin = new PointF(mainpp_details_pos_base, pp_details_posy_base);
             scoreimg.Mutate(x => x.DrawText(textOptions, mainpp_text, Color.ParseHex("#fc65a9")));
 
@@ -444,9 +451,17 @@ namespace KanonBot.Image
             //prediction pps
             mainpp_details_pos_base = 108;
 
-            for (int i = 0; i < 5; i++)
+            PerformanceForecast[] forecasts =
+            [
+                PerformanceForecast.Accuracy95,
+                PerformanceForecast.Accuracy97,
+                PerformanceForecast.Accuracy98,
+                PerformanceForecast.Accuracy99,
+                PerformanceForecast.Perfect,
+            ];
+            for (int i = 0; i < forecasts.Length; i++)
             {
-                mainpp_text = ((int)data.ppInfo.ppStats![4 - i].total).ToString();
+                mainpp_text = FormatForecast(performance, forecasts[i]);
                 textOptions.Origin = new PointF(mainpp_details_pos_base, pp_details_posy_base);
                 scoreimg.Mutate(
                     x => x.DrawText(textOptions, mainpp_text, Color.ParseHex("#fc65a9"))
@@ -465,7 +480,10 @@ namespace KanonBot.Image
             textOptions.Font = TorusRegular.Get(36);
             mainpp_details_pos_base = 178;
             pp_details_posy_base = 831;
-            mainpp_text = ((int)data.ppInfo.ppStats![5].total).ToString();
+            mainpp_text = FormatForecast(
+                performance,
+                PerformanceForecast.FullComboAtCurrentAccuracy
+            );
             textOptions.Origin = new PointF(mainpp_details_pos_base, pp_details_posy_base);
             scoreimg.Mutate(x => x.DrawText(textOptions, mainpp_text, Color.ParseHex("#3b3b3b")));
 
@@ -476,7 +494,10 @@ namespace KanonBot.Image
             );
             scoreimg.Mutate(x => x.DrawText(textOptions, "pp", Color.ParseHex("#3b3b3b")));
             pp_details_posy_base = 830;
-            mainpp_text = ((int)data.ppInfo.ppStats![5].total).ToString();
+            mainpp_text = FormatForecast(
+                performance,
+                PerformanceForecast.FullComboAtCurrentAccuracy
+            );
             textOptions.Origin = new PointF(mainpp_details_pos_base, pp_details_posy_base);
             scoreimg.Mutate(x => x.DrawText(textOptions, mainpp_text, Color.ParseHex("#fc65a9")));
 
@@ -489,5 +510,15 @@ namespace KanonBot.Image
 
             return scoreimg;
         }
+
+        private static string FormatComponent(
+            PerformanceResult performance,
+            PerformanceComponent component
+        ) => performance.Score.Get(component) is double value ? ((int)value).ToString() : "-";
+
+        private static string FormatForecast(
+            PerformanceResult performance,
+            PerformanceForecast forecast
+        ) => performance.GetForecast(forecast) is { } value ? ((int)value.Total).ToString() : "-";
     }
 }

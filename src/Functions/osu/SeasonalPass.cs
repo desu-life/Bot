@@ -33,25 +33,25 @@ namespace KanonBot.Functions
                     //pt基准值
                     double pt = 10.0;
                     //各难度区间加成
-                    if (score.ppInfo!.star < 1 && score.ppInfo.star > 0)
+                    if (score.performance!.Difficulty.Stars < 1 && score.performance.Difficulty.Stars > 0)
                         multiply += 1.0;
-                    else if (score.ppInfo.star < 2)
+                    else if (score.performance.Difficulty.Stars < 2)
                         multiply += 1.1;
-                    else if (score.ppInfo.star < 3)
+                    else if (score.performance.Difficulty.Stars < 3)
                         multiply += 1.2;
-                    else if (score.ppInfo.star < 4)
+                    else if (score.performance.Difficulty.Stars < 4)
                         multiply += 1.3;
-                    else if (score.ppInfo.star < 5)
+                    else if (score.performance.Difficulty.Stars < 5)
                         multiply += 1.4;
-                    else if (score.ppInfo.star < 6)
+                    else if (score.performance.Difficulty.Stars < 6)
                         multiply += 1.5;
-                    else if (score.ppInfo.star < 7)
+                    else if (score.performance.Difficulty.Stars < 7)
                         multiply += 1.6;
-                    else if (score.ppInfo.star < 8)
+                    else if (score.performance.Difficulty.Stars < 8)
                         multiply += 1.7;
-                    else if (score.ppInfo.star < 9)
+                    else if (score.performance.Difficulty.Stars < 9)
                         multiply += 1.8;
-                    else if (score.ppInfo.star < 10)
+                    else if (score.performance.Difficulty.Stars < 10)
                         multiply += 1.9;
                     else
                         multiply += 2.0;

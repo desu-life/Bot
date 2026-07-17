@@ -27,10 +27,11 @@ namespace KanonBot.Functions
                     new() { Name = "range", Description = "Score rank range", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseRange(s) },
                     new() { Name = "range", Description = "Score rank range", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseRange(s) },
                     new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
+                    new() { Name = "pp_version", LegacyName = "pp", Description = "PP algorithm version", Prefix = ArgPrefix.And },
                 ],
                 Flags =
                 [
-                    new() { Name = "special_pp", Description = "Alternative pp calculater", Value = "", SlashName = "is_special_pp" },
+                    new() { Name = "special_pp", Description = "Use osu! current PP (legacy alias)", Value = "", SlashName = "is_special_pp" },
                     new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" }
                 ]
             };
@@ -145,20 +146,29 @@ namespace KanonBot.Functions
                     return;
                 }
 
+                var calculatorId = await PerformanceCommandOptions.Resolve(
+                    target,
+                    cmd,
+                    scores[0].Score.Mode,
+                    is_ppysb
+                );
+                if (calculatorId is null)
+                    return;
+
                 await Parallel.ForEachAsync(
                     scores,
                     async (s, _) =>
                     {
                         var b = await Utils.LoadOrDownloadBeatmap(s.Score.Beatmap!);
-                        s.PPInfo = UniversalCalculator.CalculateData(
+                        s.Performance = UniversalCalculator.CalculateData(
                             b,
                             s.Score,
-                            UniversalCalculator.GetCalculatorKind(is_ppysb, cmd.Flag("special_pp"))
+                            calculatorId
                         );
                     }
                 );
 
-                scores.Sort((a, b) => b.PPInfo!.ppStat.total > a.PPInfo!.ppStat.total ? 1 : -1);
+                scores.Sort((a, b) => b.Performance!.Score.Total.CompareTo(a.Performance!.Score.Total));
 
                 using var img = await KanonBot
                     .Image
@@ -195,6 +205,7 @@ namespace KanonBot.Functions
                     new() { Name = "range", Description = "Score rank range", Prefix = ArgPrefix.None, Strategy = ParseStrategy.Ambiguous, Parse = s => CommandDefs.ParseRange(s) },
                     new() { Name = "range", Description = "Score rank range", Prefix = ArgPrefix.Hash, Parse = s => CommandDefs.ParseRange(s) },
                     new() { Name = "osu_mode", Description = "osu! Gamemode", Prefix = ArgPrefix.Colon },
+                    new() { Name = "pp_version", LegacyName = "pp", Description = "PP algorithm version", Prefix = ArgPrefix.And },
                 ],
                 Flags = [ new() { Name = "sb_server", Description = "Fetch from ppysb", Value = "sb", SlashName = "is_sb" } ]
             };

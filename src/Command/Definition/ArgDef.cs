@@ -26,7 +26,14 @@ public enum ParseStrategy
 /// </summary>
 public class ArgDef
 {
+    private string? _legacyName;
+
     public string Name { get; init; } = "";
+    public string LegacyName
+    {
+        get => string.IsNullOrWhiteSpace(_legacyName) ? Name : _legacyName;
+        init => _legacyName = value;
+    }
     public string Description { get; init; } = "";
     public ArgPrefix Prefix { get; init; } = ArgPrefix.None;
     public ParseStrategy Strategy { get; init; } = ParseStrategy.Simple;

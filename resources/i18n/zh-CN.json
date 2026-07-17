@@ -5,6 +5,7 @@
   "error.unknown": "出现了未知错误，错误内容已自动上报",
   "error.user_not_found": "猫猫没有找到此用户。",
   "error.query_scores_failed": "查询成绩时出错。",
+  "error.command_parse": "解析指令时遇到了问题。。",
 
   "account.platform_unknown": "无法获取您的平台信息。",
   "account.platform_unsupported": "当前平台暂不支持此功能。",
@@ -60,6 +61,7 @@
   "osu.ppvs_loading": "正在获取pp+数据，请稍等。。",
   "osu.ppvs_error": "获取pp+数据时出错，等会儿再试试吧",
   "osu.ppvs_user_not_found": "猫猫没有找到叫 {0} 用户。",
+  "osu.pp_version_invalid": "猫猫找不到对应的PP算法版本呢。。",
 
   "bind.platform_unsupported": "当前平台暂不支持绑定流程。",
   "bind.code_format_error": "验证码格式不正确，请输入网页显示的验证码。\n用法: {prefix}bind 验证码",
