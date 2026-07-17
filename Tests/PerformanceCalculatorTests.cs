@@ -12,7 +12,7 @@ public class PerformanceCalculatorTests
     {
         var calculators = UniversalCalculator.Calculators.ToArray();
 
-        Assert.Equal(29, calculators.Length);
+        Assert.Equal(18, calculators.Length);
         Assert.Equal(
             calculators.Length,
             calculators.Select(calculator => calculator.Descriptor.Id).Distinct().Count()
@@ -20,10 +20,10 @@ public class PerformanceCalculatorTests
     }
 
     [Theory]
-    [InlineData("2019", Mode.OSU, PerformanceCalculatorIds.RosuOsu2019)]
-    [InlineData("2022", Mode.Taiko, PerformanceCalculatorIds.RosuTaiko2022)]
-    [InlineData("2022", Mode.Fruits, PerformanceCalculatorIds.RosuFruits2022)]
-    [InlineData("ppv1", Mode.Mania, PerformanceCalculatorIds.RosuManiaPpv1)]
+    [InlineData("2019", Mode.OSU, PerformanceCalculatorIds.V2019)]
+    [InlineData("2022", Mode.Taiko, PerformanceCalculatorIds.V2022)]
+    [InlineData("2022", Mode.Fruits, PerformanceCalculatorIds.V2022)]
+    [InlineData("ppv1", Mode.Mania, PerformanceCalculatorIds.VPpv1)]
     [InlineData("official", Mode.OSU, PerformanceCalculatorIds.OsuCurrent)]
     public void ResolvesModeAwareAliases(string alias, Mode mode, string expected)
     {
@@ -31,13 +31,25 @@ public class PerformanceCalculatorTests
     }
 
     [Fact]
-    public void ExplicitUnsupportedCalculatorDoesNotFallback()
+    public void ExplicitUnsupportedCalculatorFallsBackToDefault()
     {
-        Assert.Throws<NotSupportedException>(() =>
+        Assert.Equal(
+            PerformanceCalculatorIds.RosuCurrent,
             UniversalCalculator.ResolveCalculatorId(
-                PerformanceCalculatorIds.RosuOsu2019,
+                PerformanceCalculatorIds.V2019,
                 Mode.Taiko
             )
+        );
+    }
+
+    [Theory]
+    [InlineData("ppv1", Mode.OSU)]
+    [InlineData("not-registered", Mode.OSU)]
+    public void InvalidCalculatorFallsBackToDefault(string requested, Mode mode)
+    {
+        Assert.Equal(
+            PerformanceCalculatorIds.RosuCurrent,
+            UniversalCalculator.ResolveCalculatorId(requested, mode)
         );
     }
 
@@ -93,7 +105,7 @@ public class PerformanceCalculatorTests
             "2019"
         );
 
-        Assert.Equal(PerformanceCalculatorIds.RosuOsu2019, panel.performance!.CalculatorId);
+        Assert.Equal(PerformanceCalculatorIds.V2019, panel.performance!.CalculatorId);
         Assert.True(panel.performance.Score.Total > 0);
         Assert.Equal(6, panel.performance.Forecasts.Count);
     }
@@ -110,7 +122,7 @@ public class PerformanceCalculatorTests
                 beatmapBytes,
                 beatmap,
                 [],
-                PerformanceCalculatorIds.RosuMania2018
+                PerformanceCalculatorIds.V2018
             )
             .scoreInfo;
 
@@ -118,13 +130,13 @@ public class PerformanceCalculatorTests
         var perfect = UniversalCalculator.CalculateData(
             beatmapBytes,
             score,
-            PerformanceCalculatorIds.RosuMania2018
+            PerformanceCalculatorIds.V2018
         );
         score.LegacyTotalScore = 500_000;
         var halfScore = UniversalCalculator.CalculateData(
             beatmapBytes,
             score,
-            PerformanceCalculatorIds.RosuMania2018
+            PerformanceCalculatorIds.V2018
         );
 
         Assert.True(perfect.Score.Total > halfScore.Score.Total);

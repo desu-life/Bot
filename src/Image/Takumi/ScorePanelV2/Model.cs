@@ -120,7 +120,8 @@ public record ScorePanelContext
     public string? OldPpLabel { get; init; }
 
     [JsonPropertyName("calculator_id")]
-    public required string CalculatorId { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? CalculatorId { get; init; }
 
     [JsonPropertyName("mods")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

@@ -30,7 +30,7 @@ public static class UniversalCalculator
         var result = registry.Resolve(resolvedId, score).CalculatePanelData(beatmap, score);
 
         if (
-            KanonBot.Config.inner?.calcOldPP == true
+            KanonBot.Config.inner?.preview == true
             && resolvedId == PerformanceCalculatorIds.OsuCurrent
         )
         {
@@ -79,56 +79,36 @@ public static class UniversalCalculator
         bool specialVersionPp = false
     )
     {
-        if (string.IsNullOrWhiteSpace(requestedVersion))
-        {
-            if (isPpysb)
-            {
-                return PerformanceCalculatorIds.PpySb;
-            }
-
-            return specialVersionPp
-                ? PerformanceCalculatorIds.OsuCurrent
-                : KanonBot.Config.inner?.calcOldPP == true
+        var defaultId = isPpysb
+            ? PerformanceCalculatorIds.PpySb
+            : specialVersionPp
+                ? KanonBot.Config.inner?.preview == true
                     ? PerformanceCalculatorIds.OsuCurrent
-                    : PerformanceCalculatorIds.RosuCurrent;
-        }
+                    : PerformanceCalculatorIds.V2025_10
+                : PerformanceCalculatorIds.RosuCurrent;
+
+        if (string.IsNullOrWhiteSpace(requestedVersion))
+            return defaultId;
 
         var requested = requestedVersion.Trim();
-        var direct = registry.Calculators.FirstOrDefault(calculator =>
-            calculator.Descriptor.Id.Equals(requested, StringComparison.OrdinalIgnoreCase)
-        );
-        if (direct is not null)
+        var alias = requested.ToLowerInvariant() switch
         {
-            if (!direct.Descriptor.Supports(mode))
-            {
-                throw new NotSupportedException(
-                    $"Performance calculator '{direct.Descriptor.Id}' does not support mode '{mode}'."
-                );
-            }
-
-            return direct.Descriptor.Id;
-        }
-
-        var normalized = requested.ToLowerInvariant() switch
-        {
-            "current" => isPpysb
-                ? PerformanceCalculatorIds.PpySb
-                : PerformanceCalculatorIds.RosuCurrent,
-            "official" or "osu" => PerformanceCalculatorIds.OsuCurrent,
+            "current" => defaultId,
+            "official" or "preview" => PerformanceCalculatorIds.OsuCurrent,
             "rosu" => PerformanceCalculatorIds.RosuCurrent,
             "sb" or "ppy.sb" => PerformanceCalculatorIds.PpySb,
-            _ => ResolveHistoricalAlias(requested, mode),
+            _ => requested,
         };
 
-        var calculator = registry.GetRequired(normalized);
-        if (!calculator.Descriptor.Supports(mode))
-        {
-            throw new NotSupportedException(
-                $"Performance calculator '{normalized}' does not support mode '{mode}'."
-            );
-        }
+        var calculator = registry.Calculators.FirstOrDefault(candidate =>
+            candidate.Descriptor.Id.Equals(alias, StringComparison.OrdinalIgnoreCase)
+            || (!alias.Contains('/')
+                && candidate.Descriptor.Id.EndsWith($"/{alias}", StringComparison.OrdinalIgnoreCase))
+        );
 
-        return normalized;
+        return calculator?.Descriptor.Supports(mode) == true
+            ? calculator.Descriptor.Id
+            : defaultId;
     }
 
     private static IPerformanceCalculator Resolve(
@@ -136,33 +116,15 @@ public static class UniversalCalculator
         API.OSU.Models.ScoreLazer score
     ) => registry.Resolve(ResolveCalculatorId(calculatorId, score.Mode), score);
 
-    private static string ResolveHistoricalAlias(string alias, API.OSU.Mode mode)
-    {
-        var suffix = $"/{alias.Trim().ToLowerInvariant()}";
-        var match = registry.Calculators
-            .Where(calculator => calculator.Descriptor.Supports(mode))
-            .Where(calculator =>
-                calculator.Descriptor.Id.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)
-            )
-            .OrderByDescending(calculator => calculator.Descriptor.Id.Count(character => character == '/'))
-            .FirstOrDefault();
-
-        return match?.Descriptor.Id
-            ?? throw new KeyNotFoundException(
-                $"Performance calculator version '{alias}' is not registered for mode '{mode}'."
-            );
-    }
-
     private static PerformanceCalculatorRegistry CreateRegistry()
     {
         var result = new PerformanceCalculatorRegistry();
         result.Register(new OsuCalculator());
         result.Register(new RosuCalculator());
-        result.Register(new OppaiCalculator());
         result.Register(new SBRosuCalculator());
         foreach (var calculator in PerformanceCalculatorCatalog.LegacyCalculators)
         {
-            result.Register(new RosuLegacyCalculator(calculator.Id, calculator.Version, calculator.Mode));
+            result.Register(new RosuLegacyCalculator(calculator.Id, calculator.Version));
         }
 
         return result;

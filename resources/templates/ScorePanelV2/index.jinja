@@ -155,7 +155,9 @@
 
   {{ single(total_pp_value, 1825, 497, 61, '#fc65a9', 'right') }}
   {{ single('pp', 1899, 497, 61, '#cf93ae', 'right') }}
-  {{ single(calculator_id, 1899, 447, 16, '#cf93ae', 'right') }}
+  {% if calculator_id %}
+    {{ single(calculator_id, 1899, 447, 16, '#cf93ae', 'right') }}
+  {% endif %}
 
   {# 分数与判定 #}
   {{ single(score_display, 980, 742, 40, '#ffffff', 'center') }}

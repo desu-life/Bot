@@ -7,19 +7,11 @@ namespace KanonBot.OsuPerformance;
 /// Calculator for a specific algorithm exposed by rosu-pp-older.
 public sealed class RosuLegacyCalculator(
     string id,
-    LegacyVersion version,
-    API.OSU.Mode? supportedMode = null
+    LegacyVersion version
 ) : IPerformanceCalculator
 {
     public PerformanceCalculatorDescriptor Descriptor { get; } =
-        new(
-            id,
-            id,
-            supportedMode is null
-                ? Enum.GetValues<API.OSU.Mode>().ToHashSet()
-                : new System.Collections.Generic.HashSet<API.OSU.Mode> { supportedMode.Value },
-            true
-        );
+        new(id, id, version.SupportedModes().ToHashSet(), true);
 
     public ScorePanelData CalculatePerfectPanelData(
         byte[] beatmap,

@@ -208,11 +208,14 @@ namespace KanonBot.Image
             scoreimg.Mutate(
                 x => x.DrawText(textOptions, $"Version: {temp_string}", Color.ParseHex("#333333"))
             );
-            textOptions.Font = TorusRegular.Get(26);
-            textOptions.Origin = new PointF(924, 515);
-            scoreimg.Mutate(x =>
-                x.DrawText(textOptions, performance.CalculatorId, Color.ParseHex("#666666"))
-            );
+            if (PerformanceCalculatorIds.ShouldRenderVersion(performance.CalculatorId))
+            {
+                textOptions.Font = TorusRegular.Get(26);
+                textOptions.Origin = new PointF(924, 515);
+                scoreimg.Mutate(x =>
+                    x.DrawText(textOptions, performance.CalculatorId, Color.ParseHex("#666666"))
+                );
+            }
 
             //username
             textOptions.Font = TorusSemiBold.Get(50);

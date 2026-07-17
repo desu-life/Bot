@@ -3,75 +3,64 @@ using OSU = KanonBot.API.OSU;
 
 namespace KanonBot.OsuPerformance;
 
+public static class LegacyVersionExtensions
+{
+    public static OSU.Mode[] SupportedModes(this RosuPP.LegacyVersion version)
+    {
+        using var modes = RosuPP.Interop.legacy_version_supported_modes(version);
+        return [ .. modes.Select(mode => mode.ToOsu()) ];
+    }
+}
+
 public static class PerformanceCalculatorIds
 {
     public const string RosuCurrent = "rosu/current";
-    public const string Rosu2022 = "rosu/2022";
-    public const string RosuOlderBase = "rosu/older-base";
-    public const string RosuOsu2014May = "rosu/osu/2014-05";
-    public const string RosuOsu2014July = "rosu/osu/2014-07";
-    public const string RosuOsu2015February = "rosu/osu/2015-02";
-    public const string RosuOsu2015April = "rosu/osu/2015-04";
-    public const string RosuOsu2018 = "rosu/osu/2018";
-    public const string RosuOsu2019 = "rosu/osu/2019";
-    public const string RosuOsu2021January = "rosu/osu/2021-01";
-    public const string RosuOsu2021July = "rosu/osu/2021-07";
-    public const string RosuOsu2021November = "rosu/osu/2021-11";
-    public const string RosuOsu2022 = "rosu/osu/2022";
-    public const string RosuOsu2024 = "rosu/osu/2024";
-    public const string RosuOsu2025 = "rosu/osu/2025";
-    public const string RosuTaikoPpv1 = "rosu/taiko/ppv1";
-    public const string RosuTaiko2020 = "rosu/taiko/2020";
-    public const string RosuTaiko2022 = "rosu/taiko/2022";
-    public const string RosuTaiko2024 = "rosu/taiko/2024";
-    public const string RosuTaiko2025 = "rosu/taiko/2025";
-    public const string RosuFruitsPpv1 = "rosu/catch/ppv1";
-    public const string RosuFruits2022 = "rosu/catch/2022";
-    public const string RosuFruits2024 = "rosu/catch/2024";
-    public const string RosuManiaPpv1 = "rosu/mania/ppv1";
-    public const string RosuMania2018 = "rosu/mania/2018";
-    public const string RosuMania2022 = "rosu/mania/2022";
+    public const string V2022 = "rosu/2022";
+    public const string V2025_10 = "rosu/2025_10";
+    public const string V2025_3 = "rosu/2025_3";
+    public const string V2024 = "rosu/2024";
+    public const string V2021_11 = "rosu/2021_11";
+    public const string V2021_7 = "rosu/2021_7";
+    public const string V2021_1 = "rosu/2021_1";
+    public const string V2020 = "rosu/2020";
+    public const string V2019 = "rosu/2019";
+    public const string V2018 = "rosu/2018";
+    public const string V2015_4 = "rosu/2015_4";
+    public const string V2015_2 = "rosu/2015_2";
+    public const string V2014_7 = "rosu/2014_7";
+    public const string V2014_5 = "rosu/2014_5";
+    public const string VPpv1 = "rosu/ppv1";
     public const string OsuCurrent = "osu/current";
-    public const string Oppai = "oppai/current";
     public const string PpySb = "rosu/ppy.sb";
+
+    public static bool ShouldRenderVersion(string id) => id != RosuCurrent && id != PpySb;
 }
 
 internal readonly record struct LegacyPerformanceCalculatorRegistration(
     string Id,
-    RosuPP.LegacyVersion Version,
-    OSU.Mode? Mode = null
+    RosuPP.LegacyVersion Version
 );
 
 internal static class PerformanceCalculatorCatalog
 {
     public static IReadOnlyList<LegacyPerformanceCalculatorRegistration> LegacyCalculators { get; } =
-    [
-        new(PerformanceCalculatorIds.Rosu2022, RosuPP.LegacyVersion.V2022),
-        new(PerformanceCalculatorIds.RosuOlderBase, RosuPP.LegacyVersion.RosuPpOlderBase),
-        new(PerformanceCalculatorIds.RosuOsu2014May, RosuPP.LegacyVersion.Osu2014May, OSU.Mode.OSU),
-        new(PerformanceCalculatorIds.RosuOsu2014July, RosuPP.LegacyVersion.Osu2014July, OSU.Mode.OSU),
-        new(PerformanceCalculatorIds.RosuOsu2015February, RosuPP.LegacyVersion.Osu2015February, OSU.Mode.OSU),
-        new(PerformanceCalculatorIds.RosuOsu2015April, RosuPP.LegacyVersion.Osu2015April, OSU.Mode.OSU),
-        new(PerformanceCalculatorIds.RosuOsu2018, RosuPP.LegacyVersion.Osu2018, OSU.Mode.OSU),
-        new(PerformanceCalculatorIds.RosuOsu2019, RosuPP.LegacyVersion.Osu2019, OSU.Mode.OSU),
-        new(PerformanceCalculatorIds.RosuOsu2021January, RosuPP.LegacyVersion.Osu2021January, OSU.Mode.OSU),
-        new(PerformanceCalculatorIds.RosuOsu2021July, RosuPP.LegacyVersion.Osu2021July, OSU.Mode.OSU),
-        new(PerformanceCalculatorIds.RosuOsu2021November, RosuPP.LegacyVersion.Osu2021November, OSU.Mode.OSU),
-        new(PerformanceCalculatorIds.RosuOsu2022, RosuPP.LegacyVersion.Osu2022, OSU.Mode.OSU),
-        new(PerformanceCalculatorIds.RosuOsu2024, RosuPP.LegacyVersion.Osu2024, OSU.Mode.OSU),
-        new(PerformanceCalculatorIds.RosuOsu2025, RosuPP.LegacyVersion.Osu2025, OSU.Mode.OSU),
-        new(PerformanceCalculatorIds.RosuTaikoPpv1, RosuPP.LegacyVersion.TaikoPpv1, OSU.Mode.Taiko),
-        new(PerformanceCalculatorIds.RosuTaiko2020, RosuPP.LegacyVersion.Taiko2020, OSU.Mode.Taiko),
-        new(PerformanceCalculatorIds.RosuTaiko2022, RosuPP.LegacyVersion.Taiko2022, OSU.Mode.Taiko),
-        new(PerformanceCalculatorIds.RosuTaiko2024, RosuPP.LegacyVersion.Taiko2024, OSU.Mode.Taiko),
-        new(PerformanceCalculatorIds.RosuTaiko2025, RosuPP.LegacyVersion.Taiko2025, OSU.Mode.Taiko),
-        new(PerformanceCalculatorIds.RosuFruitsPpv1, RosuPP.LegacyVersion.FruitsPpv1, OSU.Mode.Fruits),
-        new(PerformanceCalculatorIds.RosuFruits2022, RosuPP.LegacyVersion.Fruits2022, OSU.Mode.Fruits),
-        new(PerformanceCalculatorIds.RosuFruits2024, RosuPP.LegacyVersion.Fruits2024, OSU.Mode.Fruits),
-        new(PerformanceCalculatorIds.RosuManiaPpv1, RosuPP.LegacyVersion.ManiaPpv1, OSU.Mode.Mania),
-        new(PerformanceCalculatorIds.RosuMania2018, RosuPP.LegacyVersion.Mania2018, OSU.Mode.Mania),
-        new(PerformanceCalculatorIds.RosuMania2022, RosuPP.LegacyVersion.Mania2022, OSU.Mode.Mania),
-    ];
+        [
+            new(PerformanceCalculatorIds.V2022, RosuPP.LegacyVersion.V2022),
+            new(PerformanceCalculatorIds.V2025_10, RosuPP.LegacyVersion.V2025_10),
+            new(PerformanceCalculatorIds.V2025_3, RosuPP.LegacyVersion.V2025_3),
+            new(PerformanceCalculatorIds.V2024, RosuPP.LegacyVersion.V2024),
+            new(PerformanceCalculatorIds.V2021_11, RosuPP.LegacyVersion.V2021_11),
+            new(PerformanceCalculatorIds.V2021_7, RosuPP.LegacyVersion.V2021_7),
+            new(PerformanceCalculatorIds.V2021_1, RosuPP.LegacyVersion.V2021_1),
+            new(PerformanceCalculatorIds.V2020, RosuPP.LegacyVersion.V2020),
+            new(PerformanceCalculatorIds.V2019, RosuPP.LegacyVersion.V2019),
+            new(PerformanceCalculatorIds.V2018, RosuPP.LegacyVersion.V2018),
+            new(PerformanceCalculatorIds.V2015_4, RosuPP.LegacyVersion.V2015_4),
+            new(PerformanceCalculatorIds.V2015_2, RosuPP.LegacyVersion.V2015_2),
+            new(PerformanceCalculatorIds.V2014_7, RosuPP.LegacyVersion.V2014_7),
+            new(PerformanceCalculatorIds.V2014_5, RosuPP.LegacyVersion.V2014_5),
+            new(PerformanceCalculatorIds.VPpv1, RosuPP.LegacyVersion.VPpv1),
+        ];
 }
 
 public sealed class PerformanceCalculatorRegistry
@@ -86,7 +75,7 @@ public sealed class PerformanceCalculatorRegistry
         {
             lock (syncRoot)
             {
-                return new ReadOnlyCollection<IPerformanceCalculator>([.. calculators.Values]);
+                return new ReadOnlyCollection<IPerformanceCalculator>([ .. calculators.Values ]);
             }
         }
     }
@@ -124,10 +113,8 @@ public sealed class PerformanceCalculatorRegistry
         throw new KeyNotFoundException($"Performance calculator '{id}' is not registered.");
     }
 
-    public IPerformanceCalculator Resolve(
-        string id,
-        OSU.Models.ScoreLazer score
-    ) => Resolve(id, score.Mode);
+    public IPerformanceCalculator Resolve(string id, OSU.Models.ScoreLazer score) =>
+        Resolve(id, score.Mode);
 
     public IPerformanceCalculator Resolve(string id, OSU.Mode mode)
     {

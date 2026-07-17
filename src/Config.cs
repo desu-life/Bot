@@ -247,8 +247,8 @@ public class Config
 
         [TomlProperty("dev")]
         public bool dev { get; set; }
-        [TomlProperty("calc_old_pp")]
-        public bool calcOldPP { get; set; }
+        [TomlProperty("pp_preview")]
+        public bool preview { get; set; }
 
         [TomlDoNotInlineObject]
         [TomlProperty("osu")]
@@ -287,7 +287,7 @@ public class Config
             {
                 debug = true,
                 dev = true,
-                calcOldPP = false,
+                preview = false,
                 osu = new()
                 {
                     clientId = 0,

@@ -34,6 +34,16 @@ internal static class RosuCalculatorExtensions
             _ => throw new ArgumentException()
         };
 
+    public static OSU.Mode ToOsu(this RosuPP.Mode mode)
+    {
+        if (mode.IsOsu) return OSU.Mode.OSU;
+        if (mode.IsTaiko) return OSU.Mode.Taiko;
+        if (mode.IsCatch) return OSU.Mode.Fruits;
+        if (mode.IsMania) return OSU.Mode.Mania;
+
+        throw new ArgumentException();
+    }
+
     public static uint GetLargeTicks(this DifficultyAttributes dattr) {
         return dattr.IsOsu ? dattr.AsOsu().n_large_ticks : 0;
     }

@@ -145,7 +145,9 @@ public static class ScoreV2
             TotalPpValue = Math.Round(performance.Score.Total).ToString("0"),
             OldPpValue = comparison is not null ? Math.Round(comparison.Total).ToString("0") : null,
             OldPpLabel = comparison?.CalculatorId,
-            CalculatorId = performance.CalculatorId,
+            CalculatorId = PerformanceCalculatorIds.ShouldRenderVersion(performance.CalculatorId)
+                ? performance.CalculatorId
+                : null,
             ScoreDisplay = score.ScoreAuto.ToString("N0"),
             Judgements = BuildJudgements(data),
             AccuracyDisplay = $"{accuracyPercent:0.0#}%",
